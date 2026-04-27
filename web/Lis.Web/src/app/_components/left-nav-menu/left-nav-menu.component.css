@@ -1,0 +1,16 @@
+
+.closebtn-area{
+    margin-top:40px;
+}
+.closebtn{
+    position: absolute;
+    top: 0;
+    right: 15px;
+    font-size: 18px;
+    margin-top: 4px;
+}
+@media screen and (max-width: 600px) {
+    .closebtn{
+        margin-top:-40px;
+    }
+}

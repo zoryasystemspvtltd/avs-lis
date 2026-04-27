@@ -1,0 +1,43 @@
+<div class="panel-group" id="accordion">
+    <div *ngFor="let item of departments">
+        <div>
+            <div class="panel-heading panel-head-area">
+                <div class="panel-title ">
+                    <a data-toggle="collapse" [ngClass]="!item.selected ? 'glyphicon-plus':'glyphicon-minus'" class="panel-link text-secondary font-weight-bold glyphicon" style="text-decoration: none;" (click)="selectPanel(item)" data-parent="#accordion" target="_self" href="#{{item.code}}">
+                        {{item.name}}
+                    </a>
+                </div>
+            </div>
+            <div [id]="item.code" class="panel-collapse collapse">
+                <div class="panel-body panel">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th style="width:20%"><label class="black-text">HIS Test Code</label></th>
+                                <th style="width:35%"><label class="black-text">Description</label></th>
+                                <th style="width:35%"><label class="black-text">LIS Code</label></th>
+                                <th style="width:10%"><label class="black-text">Is Active</label></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let mapping of filterMapping(mappings,item.code)">
+                                <td>
+                                    <label for=" {{$index}} ">{{mapping.hisTestCode}}</label>
+                                </td>
+                                <td><label for="{{$index}} ">{{mapping.hisTestCodeDescription}}</label>
+                                </td>
+                                <td>
+                                    <ng-multiselect-dropdown [placeholder]=" 'Select LIS Test Code' " [data]="lisTests " [(ngModel)]="mapping.selectedTests " [settings]="dropdownSettings ">
+                                    </ng-multiselect-dropdown>
+                                </td>
+                                <td>
+                                    <input [type]=" 'checkbox' " [checked]="mapping.isActive " (change)="onCheckActive($event,mapping) " />
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

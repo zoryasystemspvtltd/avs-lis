@@ -1,0 +1,233 @@
+<div class="content" *ngIf="isLoaded">
+    <h1>{{schemma.heading}}</h1>
+    <div class="qtable">
+        <div class="row">
+            <div class="col-md-12">
+                <div uib-alert class=" 'alert alert-'+alert.type ">
+                    <div></div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-8">
+                <div style="float:left;" *ngIf="!schemma.hideCreate">
+                    <a [routerLink]="['/',schemma.url,'create']" class="btn btn-default btn-default-alternet" *ngIf="hasAccess(1)">Create New</a>
+                </div>
+                
+                <div class="dropdown" style="padding-left:6px; float:left;" *ngIf="!schemma.hideAction">
+                    <button *ngIf="schemma.allowPrint" class="btn btn-default btn-default-alternet dropdown-toggle glyphicon glyphicon-print" [disabled]="!isAnySelected" printSectionId="print-section" title="Print Barcode" ngxPrint></button>
+                    <button *ngIf="isCorrectStatus" [disabled]="!isAnySelected" class="btn btn-default btn-default-alternet dropdown-toggle" style="margin-right:4px;" type="button" title="More" data-toggle="modal" data-target="#batchModal">
+                        ...
+                        <span class="caret"></span>
+                    </button>
+                    <!-- <ul class="dropdown-menu">
+                        <li *ngIf="hasAccess(8)"><a style="cursor: pointer;" (click)="editAll(3);"><span
+                                    class="glyphicon glyphicon-question-sign" title="Unpublish"></span>Approve & Send to HIS</a>
+                        </li>
+                        <li *ngIf="hasAccess(16)" class="divider"></li>
+                        <li *ngIf="hasAccess(16)"><a style="cursor: pointer;" (click)="editAll(4);"><span
+                                    class="glyphicon glyphicon-remove" title="Delete"></span>Reject</a></li>
+                        <li *ngIf="hasAccess(16)"><a style="cursor: pointer;" (click)="editAll(0);"><span
+                            class="glyphicon glyphicon-remove" title="Delete"></span>Reject & Re-Run Sample</a></li>
+                    </ul> -->
+                </div>
+
+                <div *ngIf="schemma.allowedFilter">
+                    <ul class="nav nav-tabs">
+                        <li *ngIf="allowFilter(0)" [ngClass]="{'active': filterStatus === 0}"><a style="cursor: pointer;" (click)="setFilterStatus(0);"><span
+                                    class="glyphicon glyphicon-pencil" title="New"></span>New</a></li>
+                        <li *ngIf="allowFilter(1)" [ngClass]="{'active': filterStatus === 1}"><a style="cursor: pointer;" (click)="setFilterStatus(1);"><span
+                                    class="glyphicon glyphicon-blackboard" title="Sent To Equipment"></span>Sent To
+                                Equipment</a></li>
+                        <li *ngIf="allowFilter(2)" [ngClass]="{'active': filterStatus === 2}"><a style="cursor: pointer;" (click)="setFilterStatus(2);"><span
+                                    class="glyphicon glyphicon-book" title="Report Generated"></span>Report
+                                Generated</a></li>
+                        <li *ngIf="allowFilter(3)" [ngClass]="{'active': filterStatus === 3}"><a style="cursor: pointer;" (click)="setFilterStatus(3);"><span
+                                    class="glyphicon glyphicon-eye-open" title="Technician Approved"></span>Technician
+                                Approved</a></li>
+                        <li *ngIf="allowFilter(4)" [ngClass]="{'active': filterStatus === 4}"><a style="cursor: pointer;" (click)="setFilterStatus(4);"><span
+                                    class="glyphicon glyphicon-eye-close" title="Technician Rejected"></span>Technician
+                                Rejected</a></li>
+                        <li *ngIf="allowFilter(5)" [ngClass]="{'active': filterStatus === 5}"><a style="cursor: pointer;" (click)="setFilterStatus(5);"><span
+                                    class="glyphicon glyphicon-thumbs-up" title="Doctor Approved"></span>Doctor
+                                Approvrd</a></li>
+                        <li *ngIf="allowFilter(6)" [ngClass]="{'active': filterStatus === 6}"><a style="cursor: pointer;" (click)="setFilterStatus(6);"><span
+                                    class="glyphicon glyphicon-thumbs-down" title="Doctor Rejected"></span>Doctor
+                                Rejected</a></li>
+                        <li *ngIf="allowFilter(7)" [ngClass]="{'active': filterStatus === 7}"><a style="cursor: pointer;" (click)="setFilterStatus(7);"><span
+                                    class="glyphicon glyphicon-time" title="Rerun Requested"></span>Rerun Requested</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-4" *ngIf="!schemma.hideSearch">
+                <div class="input-group">
+                    <span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>
+                    <input type="text" class="form-control ng-pristine ng-untouched ng-valid ng-empty" placeholder="Search" (keyup)="doSearch();" [(ngModel)]="searchText">
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th width="5%" style="min-width: 60px;" *ngIf="!schemma.hideAction || schemma.allowPrint">
+                                <input type="checkbox" title="Select All" (change)="selectAll();" [(ngModel)]="isSelectAll" />
+                            </th>
+                            <th *ngFor="let element of schemma.elements;" width="{{element.width}}">
+                                <a *ngIf="element.sortable" style="cursor: pointer;" (click)="sort(element.fieldName)" [class.currency-element]="element.type=='currency'">
+                                    {{element.heading}}
+                                    <i [class.hidden]="showSortIcon(element.fieldName,false)"
+                                        class="glyphicon glyphicon-arrow-down"></i>
+                                    <i [class.hidden]="showSortIcon(element.fieldName,true)"
+                                        class="glyphicon glyphicon-arrow-up"></i>
+                                </a>
+                                <a *ngIf="!element.sortable" style="cursor: pointer;" [class.currency-element]="element.type=='currency'">
+                                    {{element.heading}}
+                                </a>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let item of items">
+                            <td *ngIf="!schemma.hideAction || schemma.allowPrint">
+                                <input type="checkbox" name="chk_item" (change)="deSelectAll();" [(ngModel)]="item.IsSelected" />
+                                <app-you-frame [html]="item.reportStatus | statusType"></app-you-frame>
+                            </td>
+                            <td *ngFor="let element of schemma.elements;" width="{{element.width}}">
+                                <div [ngSwitch]="element.type">
+                                    <div *ngSwitchCase="'label'">
+                                        {{item[element.fieldName]}}
+                                    </div>
+                                    <div *ngSwitchCase="'chield'">
+                                        {{item[element.fieldName].name}}
+                                    </div>
+                                    <div *ngSwitchCase="'date'">
+                                        {{item[element.fieldName] | date:element.format}}
+                                    </div>
+                                    <div *ngSwitchCase="'currency'" class="currency-element">
+                                        {{item[element.fieldName] | currency:'INR'}}
+                                    </div>
+                                    <div *ngSwitchCase="'date-range'">
+                                        {{item[element.otherFieldName] | date:element.format}} {{element.seperater}} {{item[element.fieldName] | date:element.format}}
+                                    </div>
+                                    <div *ngSwitchCase="'link'">
+                                        <a [routerLink]="['/',schemma.url,item.id]">{{item[element.fieldName]}}</a>
+                                    </div>
+                                    <div *ngSwitchCase="'link_search'">
+                                        <a [routerLink]="['/',schemma.url,item[element.fieldName]]">{{item[element.fieldName]}}</a>
+                                    </div>
+                                    <div *ngSwitchCase="'link_patient'">
+                                        <a [routerLink]="['/',schemma.url,item.patient.id]">{{item[element.fieldName]}}</a>
+                                    </div>
+                                    <div *ngSwitchCase="'linktooltip'">
+                                        <div *ngIf="item.showTooltip" class="linktooltip">
+                                            <table>
+                                                <tr>
+                                                    <td colspan="2">Patient Details</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Name</td>
+                                                    <td> : {{item.patient.name}}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Age</td>
+                                                    <td> : {{item.patient.age}}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Gender</td>
+                                                    <td> : {{item.patient.gender}}</td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                        <a [routerLink]="['/',schemma.url,item.id]" (mouseover)="item.showTooltip = true" (mouseout)="item.showTooltip = false">{{item[element.fieldName]}}</a>
+                                    </div>
+                                    <div *ngSwitchCase="'label_age'">
+                                        {{item[element.fieldName].age}}
+                                    </div>
+                                    <div *ngSwitchCase="'label_gender'">
+                                        {{item[element.fieldName].gender}}
+                                    </div>
+                                    <div *ngSwitchCase="'status'">
+                                        <app-you-frame [html]="item.reportStatus | statusType"></app-you-frame>
+                                    </div>
+                                    <div *ngSwitchCase="'alternet_status'">
+                                        <div *ngIf="item.requireReOpenion" style="color: rgb(223, 23, 23);">
+                                            <app-you-frame [html]="-3 | statusType"></app-you-frame>
+                                        </div>
+                                        <div *ngIf="!item.requireReOpenion" >
+                                            <app-you-frame [html]="item.reportStatus | statusType"></app-you-frame>
+                                        </div>
+                                    </div>
+                                    <div *ngSwitchCase="'frame'">
+                                        <app-you-frame [html]="item[element.fieldName]" [maxLength]="element.length" [htmlToText]="element.textOnly"></app-you-frame>
+                                    </div>
+                                    <div *ngSwitchCase="'status_icon'">
+                                        <span class="glyphicon glyphicon glyphicon-ok-sign icon-large" title="Refresh Ststus." [ngClass]="{'icon-green': item[element.fieldName] === true,'icon-red': item[element.fieldName] !== true}"></span>
+                                    </div>
+                                </div>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="row" *ngIf="schemma.allowPaging">
+            <div class="col-md-5">
+                <h4 class="pagination">{{recordFrom}} to {{recordTo}} of {{totalRecord}} items - Page size &nbsp; </h4>
+                <select class="pagination" [ngModel]="option.RecordPerPage" (change)="onChangePageSize($event.target.value)">
+                    <option value="10">10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </select>
+            </div>
+            <div class="col-md-7" style="text-align:right">
+                <ngb-pagination [(page)]="option.CurrentPage" [pageSize]="option.RecordPerPage" [collectionSize]="totalRecord" [maxSize]="5" [rotate]="true" [boundaryLinks]="true" (pageChange)="getItems()">
+                    <ng-template ngbPaginationPrevious>Prev</ng-template>
+                    <ng-template ngbPaginationNext>Next</ng-template>
+                    <ng-template ngbPaginationFirst>First</ng-template>
+                    <ng-template ngbPaginationLast>Last</ng-template>
+                </ngb-pagination>
+            </div>
+        </div>
+
+    </div>
+</div>
+<div style="display: none;visibility: hidden;">
+    <div id="print-section">
+        <div *ngFor="let item of printAbleItems" style="width: 100%;page-break-before: always;">
+            <app-barcode [code]="item.sampleNo" [text]="item.barcodeText"></app-barcode>
+        </div>
+    </div>
+</div>
+<div id="batchModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Your Note</h4>
+            </div>
+            <div class="modal-body">
+                <textarea  rows="5 " style="width: 100%;" [(ngModel)]="note"></textarea>
+            </div>
+            <div class="modal-footer">
+                <!--TODO Remove Doctor's approval : review(5) and change text 'Approve & Send to HIS'-->
+                <button type="button" *ngIf="schemma.isTechnician" class="btn btn-primary" (click)="editAll(3);" data-dismiss="modal" >Verified and ready for doctor's approval</button>
+                <button type="button" *ngIf="schemma.isTechnician" class="btn btn-default" (click)="editAll(4);" data-dismiss="modal" >Reject</button>
+                <button type="button" *ngIf="schemma.isTechnician" class="btn btn-default" (click)="editAll(0);" data-dismiss="modal" >Reject & Re-Run Sample</button>
+                <button type="button" *ngIf="schemma.isDoctor" class="btn btn-primary" (click)="editAll(5);" data-dismiss="modal" >Approve &
+                    Send to HIS</button>
+                <button type="button" *ngIf="schemma.isDoctor" class="btn btn-default" (click)="editAll(3);" data-dismiss="modal" >Ask for Second Opinion</button>
+                <button type="button" *ngIf="schemma.isDoctor" class="btn btn-default" (click)="editAll(6);" data-dismiss="modal" >Reject</button>
+                <button type="button" *ngIf="schemma.isRejected" class="btn btn-default" (click)="editAll(0);" data-dismiss="modal" >Re-Run Sample</button>
+                <button type="button" *ngIf="schemma.isNew" class="btn btn-default" (click)="editAll(0);" data-dismiss="modal" >Re-Run Sample</button>
+                <button type="button" *ngIf="schemma.isNew" class="btn btn-default" (click)="editAll(4);" data-dismiss="modal" >Reject</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+
+    </div>
+</div>

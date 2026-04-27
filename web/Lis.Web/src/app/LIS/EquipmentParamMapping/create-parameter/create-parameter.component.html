@@ -1,0 +1,113 @@
+<div class="row" *ngIf="isLoaded">
+    <div class="col-sm-12 col-md-12 col-lg-12">
+        <h3>Create Equipment Parameter Mapping</h3>
+
+        <hr />
+        <div class="row">
+            <div class="col-sm-12 col-md-12 col-lg-12">
+                <div class="form-group">
+                    <div class="row">
+                        <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>HIS Parameter Code<span
+                                    class="error">*</span></label></div>
+                        <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
+                            <div class="input-group">
+                                <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
+                                <input [type]="'text'" class="form-control" formControlName="his_param_code"
+                                    placeholder="Enter HIS Parameter Code" maxlength="20">
+                            </div>
+                            <span *ngIf="isInValid('his_param_code')" class="error ">HIS Parameter Code is
+                                required.</span>
+                        </div>
+                        <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label> HIS Parameter Name<span
+                                    class="error">*</span></label></div>
+                        <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
+                            <div class="input-group">
+                                <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
+                                <input [type]="'text'" class="form-control" placeholder="Enter HIS Parameter Name"
+                                    maxlength="25" style="width:100%;" formControlName="his_param_name">
+                            </div>
+                            <span *ngIf="isInValid('his_param_name')" class="error ">HIS Parameter Name is
+                                required.</span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Equipment Parameter Code<span
+                                    class="error">*</span></label></div>
+                        <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
+                            <div class="input-group">
+                                <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
+                                <input [type]="'text'" class="form-control" formControlName="equp_param_code"
+                                    placeholder="Enter Equipment Parameter Code" maxlength="20">
+                            </div>
+                            <span *ngIf="isInValid('equp_param_code')" class="error ">Equipment Parameter Code is
+                                required.</span>
+                        </div>
+                        <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label> Equipment Parameter Name<span
+                                    class="error">*</span></label></div>
+                        <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
+                            <div class="input-group">
+                                <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
+                                <input [type]="'text'" class="form-control" placeholder="Enter Equipment Parameter Name"
+                                    maxlength="25" style="width:100%;" formControlName="equp_param_name">
+                            </div>
+                            <span *ngIf="isInValid('equp_param_name')" class="error ">Equipment Test Name is
+                                required.</span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>HIS Test Code<span
+                                    class="error">*</span></label></div>
+                        <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
+                            <div class="input-group">
+                                <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
+                                <input [type]="'text'" class="form-control" formControlName="his_test_code"
+                                    placeholder="Enter HIS Test Code" maxlength="20">
+                            </div>
+                            <span *ngIf="isInValid('his_test_code')" class="error ">HIS Test Code is required.</span>
+                        </div>
+                        <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Equipment Test Code<span
+                                    class="error">*</span></label></div>
+                        <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
+                            <div class="input-group">
+                                <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
+                                <input [type]="'text'" class="form-control" formControlName="equp_test_code"
+                                    placeholder="Enter Equipment Test Code" maxlength="20">
+                            </div>
+                            <span *ngIf="isInValid('equp_test_code')" class="error ">Equipment Test Code is
+                                required.</span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label> Equipment Name<span
+                                    class="error">*</span></label></div>
+                        <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
+                            <div class="input-group">
+                                <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
+                                <input [type]="'text'" class="form-control" placeholder="Enter Equipment Name"
+                                    maxlength="25" style="width:100%;" formControlName="equipment_name">
+                            </div>
+                            <span *ngIf="isInValid('equipment_name')" class="error ">Equipment Name is required.</span>
+                        </div>
+                        <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Is Active</label></div>
+                        <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
+                            <div class="input-group">
+                                <input [type]="'checkbox'" id="chk_isactive" [checked]="item.email_confirmed">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <hr />
+        <div class="row">
+            <div class="col-sm-12 col-md-12 col-lg-12">
+                <div style="float:left;">
+                    <button type="submit" class="btn btn-primary" *ngIf="hasAccess()">Save</button>
+                </div>
+                <div style="padding-left:6px; float:left;">
+                    <a [routerLink]="['/','users']" class="btn btn-default btn-default-alternet">Back to List</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

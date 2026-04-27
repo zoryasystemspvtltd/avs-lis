@@ -1,0 +1,111 @@
+<div *ngIf="authenticationService.isAuthenticated" id="sidenav" class="sidenav" [ngClass]="{'hidden': authenticationService.hideSideNav }">
+    <div class="col-md-12">
+        <app-equipment-alert></app-equipment-alert>
+        <div class="closebtn-area">
+            <button (click)="authenticationService.toggleSideNav()" class="closebtn" type="button" title="Close">&times;</button>
+        </div>
+        <app-available-app></app-available-app>
+        <div class="panel-group" id="accordion">
+            <div class="panel panel-default" *ngIf="hasGroupAccess('Reports,Samples,DoctorsApprovals')">
+                <div class="panel-heading">
+                    <h4 class="panel-title">
+                        <a data-toggle="collapse" data-parent="#accordion" target="_self" href="#collapseOne">
+                            <span class="glyphicon glyphicon-folder-close">
+                                </span>Working Board
+                        </a>
+                    </h4>
+                </div>
+                <div id="collapseOne" class="panel-collapse collapse in">
+                    <div class="panel-body">
+                        <table class="table">
+                            <tr *ngIf="hasAccess('Samples',63)">
+                                <td>
+                                    <span class="glyphicon glyphicon-blackboard text-primary"></span><a [routerLinkActive]="'active-menu-link'" [routerLink]='["/samples"]'>Recent Samples</a>
+                                </td>
+                            </tr>
+                            <tr *ngIf="hasAccess('Reports',63)">
+                                <td>
+                                    <span class="glyphicon glyphicon-filter text-primary"></span><a [routerLinkActive]="'active-menu-link'" [routerLink]='["/technicianapprovals"]'>Technician's Approval</a>
+                                </td>
+                            </tr>
+                            <!--TODO Remove Doctor's approval-->
+                            <tr *ngIf="hasAccess('DoctorsApprovals',63)">
+                                <td>
+                                    <span class="glyphicon glyphicon-scissors text-primary"></span><a [routerLinkActive]="'active-menu-link'" [routerLink]='["/doctorapprovals"]'>Doctor's Approval</a>
+                                </td>
+                            </tr>
+                            <tr *ngIf="hasGroupAccess('Reports,DoctorsApprovals')">
+                                <td>
+                                    <span class="glyphicon glyphicon-thumbs-up text-primary"></span><a [routerLinkActive]="'active-menu-link'" [routerLink]='["/approvedsamples"]'>Approved Samples</a>
+                                </td>
+                            </tr>
+                            <tr *ngIf="hasGroupAccess('Reports,DoctorsApprovals')">
+                                <td>
+                                    <span class="glyphicon glyphicon-thumbs-down text-primary"></span><a [routerLinkActive]="'active-menu-link'" [routerLink]='["/rejectedsamples"]'>Rejected Samples</a>
+                                </td>
+                            </tr>
+                            <tr *ngIf="hasGroupAccess('Reports,DoctorsApprovals')">
+                                <td>
+                                    <span class="glyphicon glyphicon-scale text-primary"></span><a [routerLinkActive]="'active-menu-link'" [routerLink]='["/quality-controls"]'>Quality Controls</a>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="panel panel-default" *ngIf="hasGroupAccess('Equipments')">
+                <div class="panel-heading">
+                    <h4 class="panel-title">
+                        <a data-toggle="collapse" data-parent="#accordion" target="_self" href="#collapseSettings">
+                            <span class="glyphicon glyphicon-lock">
+                                </span>Settings
+                        </a>
+                    </h4>
+                </div>
+                <div id="collapseSettings" class="panel-collapse collapse">
+                    <div class="panel-body">
+                        <table class="table">
+                            <tr *ngIf="hasAccess('Equipments',63)">
+                                <td>
+                                    <span class="glyphicon glyphicon-blackboard text-success"></span><a [routerLinkActive]="'active-menu-link'" [routerLink]='["/equipments"]'>Equipment</a>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h4 class="panel-title">
+                        <a data-toggle="collapse" data-parent="#accordion" target="_self" href="#collapseThree">
+                            <span class="glyphicon glyphicon-user">
+                                </span>Account
+                        </a>
+                    </h4>
+                </div>
+                <div id="collapseThree" class="panel-collapse collapse">
+                    <div class="panel-body">
+                        <table class="table">
+                            <tr *ngIf="hasAccess('Users',63)">
+                                <td>
+                                    <span class="glyphicon glyphicon-user text-success"></span><a [routerLinkActive]="'active-menu-link'" [routerLink]='["/users"]'>Users</a>
+                                </td>
+                            </tr>
+                            <tr *ngIf="hasAccess('Roles',63)">
+                                <td>
+                                    <span class="glyphicon glyphicon-user text-success"></span><a [routerLinkActive]="'active-menu-link'" [routerLink]='["/roles"]'>Roles</a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <span class="glyphicon glyphicon-user text-success"></span><a [routerLinkActive]="'active'" [routerLinkActive]="'active-menu-link'" [routerLink]='["/change-password"]'>Change Password</a>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

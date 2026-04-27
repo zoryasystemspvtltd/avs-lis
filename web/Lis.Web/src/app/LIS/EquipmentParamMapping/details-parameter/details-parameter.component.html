@@ -1,0 +1,85 @@
+<br>
+<h3>View Test Details</h3>
+<br>
+<div class="row" style="min-height:200px;" *ngIf="isLoaded">
+    <div class="col-lg-12 col-sm-12 col-md-12 col-lg-12">
+        <div class="form-group">
+            <div class="row">
+                <div class="col-md-2"><label> Test Name</label></div>
+                <div class="col-md-10">
+                    {{item.name}}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-2"><label> Test Code</label></div>
+                <div class="col-md-10">
+                    {{item.code}}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-2"><label> Specimen</label></div>
+                <div class="col-md-10">
+                    <para>
+                        {{item.specimen}}
+                    </para>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <div style="float:left;">
+                        <a class="btn btn-primary" [routerLink]="['/','parameters','edit',item.id]" title="Edit"
+                            *ngIf="hasAccess()">Edit</a>
+                    </div>
+
+                    <div style="padding-left:6px; float:left;">
+                        <a [routerLink]="['/equipments']" class="btn btn-default btn-default-alternet">Back to List</a>
+                    </div>
+                </div>
+            </div>
+            <hr />
+            <div class="row">
+                <div class="col-sm-12 col-md-12 col-lg-12 form-grid-stye">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th style="width:20%"><label class="black-text">HIS Param Code</label></th>
+                                    <th style="width:20%"><label class="black-text">LIS Param Code</label></th>
+                                    <th><label class="black-text">Description</label></th>
+                                    <th style="width:10%"><label class="black-text">Is Active</label></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let mapping of item.mappings">
+                                    <td><label for="{{$index}}">{{mapping.hisParamCode}}</label>
+                                    </td>
+                                    <td><label for="{{$index}}">{{mapping.lisParamCode}}</label>
+                                    </td>
+                                    <td><label for="{{$index}}">{{mapping.paramDescription}}</label>
+                                    </td>
+                                    <td>
+                                        <span *ngIf="mapping.isActive" style="color:rgb(7, 131, 48);;">Yes</span>
+                                        <span *ngIf="!mapping.isActive" style="color:#FF0000;">No</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <hr />
+            <div class="row">
+                <div class="col-md-12">
+                    <div style="float:left;">
+                        <a class="btn btn-primary" [routerLink]="['/','parameters','edit',item.id]" title="Edit"
+                            *ngIf="hasAccess()">Edit</a>
+                    </div>
+
+                    <div style="padding-left:6px; float:left;">
+                        <a [routerLink]="['/equipments']" class="btn btn-default btn-default-alternet">Back to List</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

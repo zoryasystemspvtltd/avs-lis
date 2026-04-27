@@ -1,0 +1,35 @@
+<div class="navbar navbar-inverse qnavbar navbar-fixed-top">
+    <div class="container">
+        <div class="navbar-header qheader">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <button *ngIf="authenticationService.isAuthenticated && authenticationService.hideSideNav" (click)="authenticationService.toggleSideNav()" class="navbar-toggler shift-down" type="button" title="Open Left Menu">&#9776;</button>
+            <app-company-info></app-company-info>
+        </div>
+        <div class="navbar-collapse collapse">
+            <ul class="nav navbar-nav qnav">
+                <li style="padding-left:60px;">
+                    <a [routerLink]='["/"]' (click)='collapse()'>
+                        LIS Home
+                    </a>
+                </li>
+                <li>
+                    <a [routerLink]='["/help"]' (click)='collapse()'>
+                        Help
+                    </a>
+                </li>
+            </ul>
+            <app-loading></app-loading>
+            <ul class="nav navbar-nav navbar-right">
+                <li *ngIf="!isAuthenticated"><a [routerLink]='["/register"]' title="Register" (click)='collapse()'>Register</a></li>
+                <li *ngIf="isAuthenticated">
+                    <a [routerLink]='["/profile"]'>Welcome {{displayName}}</a>
+                </li>
+                <li><a [title]="loginText" (click)="logout()">{{loginText}}</a></li>
+            </ul>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,134 @@
+
+<div class="content" *ngIf="isLoaded">
+    <h1>{{schemma.heading}}</h1>
+    <div class="qtable">
+        <div class="row">
+            <div class="col-md-12">
+                <div uib-alert class=" 'alert alert-'+alert.type ">
+                    <div></div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-5">
+                <div style="float:left;" *ngIf="!schemma.hideCreate">
+                    <a [routerLink]="['/',schemma.url,'create']" class="btn btn-default btn-default-alternet" *ngIf="hasAccess(1)">Create New</a>
+                </div>
+                <div class="dropdown" style="padding-left:6px; float:left;" *ngIf="!schemma.hideAction">
+                    <button class="btn btn-default btn-default-alternet dropdown-toggle" type="button" data-toggle="dropdown">
+                        More...
+                        <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li *ngIf="hasAccess(8)"><a style="cursor: pointer;" (click)="editAll(1);"><span class="glyphicon glyphicon-question-sign" title="Unpublish"></span>Unpublish</a></li>
+                        <li *ngIf="hasAccess(4)"><a style="cursor: pointer;" (click)="editAll(2);"><span class="glyphicon glyphicon-eye-open" title="Published"></span>Publish</a></li>
+                        <li *ngIf="hasAccess(32)"><a style="cursor: pointer;" (click)="editAll(3);"><span class="glyphicon glyphicon-warning-sign" title="Archive"></span>Archive</a></li>
+                        <li *ngIf="hasAccess(16)" class="divider"></li>
+                        <li *ngIf="hasAccess(16)"><a style="cursor: pointer;" (click)="editAll(4);"><span class="glyphicon glyphicon-remove" title="Delete"></span>Delete</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-7">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="dropdown">
+                            <button class="btn btn-default btn-default-alternet dropdown-toggle" type="button" data-toggle="dropdown">
+                                <app-you-frame [html]="filterStatus | statusType"></app-you-frame>Filter...
+                                <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a style="cursor: pointer;" (click)="setFilterStatus(0);"><span class="glyphicon glyphicon-asterisk" title="Any"></span>Any</a></li>
+                                <li *ngIf="hasAccess(8)"><a style="cursor: pointer;" (click)="setFilterStatus(1);"><span class="glyphicon glyphicon-question-sign" title="Unpublish"></span>Unpublished</a></li>
+                                <li *ngIf="hasAccess(4)"><a style="cursor: pointer;" (click)="setFilterStatus(2);"><span class="glyphicon glyphicon-eye-open" title="Published"></span>Published</a></li>
+                                <li *ngIf="hasAccess(32)"><a style="cursor: pointer;" (click)="setFilterStatus(3);"><span class="glyphicon glyphicon-warning-sign" title="Archived"></span>Archived</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-9">
+                        <div class="input-group">
+                            <span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>
+                            <input type="text" class="form-control ng-pristine ng-untouched ng-valid ng-empty" placeholder="Search" (keyup)="doSearch();" [(ngModel)]="searchText">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th width="5%" style="min-width: 60px;">
+                                <input *ngIf="!schemma.hideAction" type="checkbox" title="Select All" (change)="selectAll();" [(ngModel)]="isSelectAll" />
+                            </th>
+                            <th *ngFor="let element of schemma.elements;" width="{{element.width}}">
+                                <a *ngIf="element.sortable" style="cursor: pointer;" (click)="sort(element.fieldName)" [class.currency-element]="element.type=='currency'">
+                                    {{element.heading}}
+                                    <i [class.hidden]="showSortIcon(element.fieldName,false)" class="glyphicon glyphicon-arrow-down"></i>
+                                    <i [class.hidden]="showSortIcon(element.fieldName,true)" class="glyphicon glyphicon-arrow-up"></i>
+                                </a>
+                                <a *ngIf="!element.sortable" style="cursor: pointer;" [class.currency-element]="element.type=='currency'">
+                                    {{element.heading}}
+                                </a>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let item of items">
+                            <td>
+                                <input *ngIf="!schemma.hideAction" type="checkbox" name="chk_item" (change)="deSelectAll();" [(ngModel)]="item.IsSelected" />
+                                <app-you-frame [html]="item.status | statusType"></app-you-frame>
+                            </td>
+                            <td *ngFor="let element of schemma.elements;" width="{{element.width}}">
+                                
+                               
+                                <div [ngSwitch]="element.type">
+                                    <div *ngSwitchCase="'label'">
+                                        {{item[element.fieldName]}}
+                                    </div>
+                                    <div *ngSwitchCase="'chield'">
+                                        {{item[element.fieldName].name}}
+                                    </div>
+                                    <div *ngSwitchCase="'date'">
+                                        {{item[element.fieldName] | date:element.format}}
+                                    </div>
+                                    <div *ngSwitchCase="'currency'" class="currency-element">
+                                        {{item[element.fieldName] | currency:'INR'}}
+                                    </div>
+                                    <div *ngSwitchCase="'date-range'">
+                                        {{item[element.otherFieldName] | date:element.format}} {{element.seperater}} {{item[element.fieldName] | date:element.format}}
+                                    </div>
+                                    <div *ngSwitchCase="'link'">
+                                        <a  [routerLink]="['/',schemma.url,item.id]">{{item[element.fieldName]}}</a>
+                                    </div>
+                                    <div *ngSwitchCase="'frame'">
+                                        <app-you-frame [html]="item[element.fieldName]" [maxLength]="element.length" [htmlToText]="element.textOnly"></app-you-frame>
+                                    </div>
+                                </div>
+
+                               
+                            
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-5"><h4>Showing {{recordFrom}} to {{recordTo}} of {{totalRecord}} items</h4></div>
+            <div class="col-sm-7" style="text-align:right">
+                <ngb-pagination
+                    [(page)]="option.CurrentPage"
+                    [pageSize]="option.RecordPerPage"
+                    [collectionSize]="totalRecord"
+                    [maxSize]="5" [rotate]="true" [boundaryLinks]="true"
+                    (pageChange)="getItems()">
+                    <ng-template ngbPaginationPrevious>Prev</ng-template>
+                    <ng-template ngbPaginationNext>Next</ng-template>
+                    <ng-template ngbPaginationFirst>First</ng-template>
+                    <ng-template ngbPaginationLast>Last</ng-template>
+                </ngb-pagination>
+            </div>
+        </div>
+
+    </div>
+</div>

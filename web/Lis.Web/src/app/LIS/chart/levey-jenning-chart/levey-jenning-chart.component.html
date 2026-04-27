@@ -1,0 +1,20 @@
+<div class="row">
+    <div class="col-md-6">
+        <label> Test Name : </label>
+        <div class="form-group">
+            <div class="input-group">
+                <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
+                <select [(ngModel)]="selectedData" (change)="selectData()" class="form-control input-group-sm input-sm">
+                    <option *ngFor="let item of details" [ngValue]="item.lisParamValues">{{item.lisParamCode}}-{{item.testName}}</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div style="border:1px solid #CCC;">
+    <br>
+    <div echarts [options]="options" (chartInit)="onChartInit($event)" [loading]="loadingData"></div>
+    <br>
+</div>
