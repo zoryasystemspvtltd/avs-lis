@@ -71,7 +71,7 @@ namespace LIS.Com.Businesslogic
             Logger.Logger.LogInstance.LogDebug("CL1200i generateORMField method started for SampleNo: " + sampleNo);
             string datetime = DateTime.Now.ToString("yyyyMMddhhmmss");
             string specialchar = @"^~\&";
-            string message_MSH = $"MSH|{specialchar}|||||{datetime}||DSR^Q03|{messageControlId}|P|2.3.1||||||ASCII|||{(char)13}";
+            string message_MSH = $"MSH|{specialchar}|||||{datetime}||DSR^Q03|{messageControlId}|P|2.3.1||||||UTF8|||{(char)13}";
             string message_MSA = $"MSA|AA|{messageControlId}|Message accepted|||0|{(char)13}";
             string message_err = $"ERR|0|{(char)13}";
             string message_qak = string.Empty;
@@ -87,13 +87,16 @@ namespace LIS.Com.Businesslogic
                 var specimen = firstTest.SpecimenName.ToLower();
                 var name = firstTest.Patient?.Name;
                 string gender = "";
-                switch (firstTest.Patient.Gender)
+                switch (firstTest.Patient.Gender.ToUpperInvariant())
                 {
                     case "MALE":
-                        gender = "Male";
+                        gender = "M";
                         break;
                     case "FEMALE":
-                        gender = "Female";
+                        gender = "F";
+                        break;
+                    default:
+                        gender = "O";
                         break;
                 }
                 var dob = firstTest.Patient.DateOfBirth.ToString("yyyyMMddhhmmss");
@@ -138,7 +141,7 @@ namespace LIS.Com.Businesslogic
                     message_DSP += $"DSP|{j}||{testname}|||{(char)13}";
                 }
                 message_qak = $"QAK|SR|OK|{(char)13}";
-                string message_QRD = $"QRD|{datetime}|R|D|54|||RD|{sampleNo}|OTH|||T|{(char)13}";
+                string message_QRD = $"QRD|{datetime}|R|D|2|||RD|{sampleNo}|OTH|||T|{(char)13}";
                 string message_QRF = $"QRF||{datetime}|{datetime}|||RCT|COR|ALL||{(char)13}";
                 string message_DSC = $"DSC||{(char)13}";
 
@@ -163,7 +166,7 @@ namespace LIS.Com.Businesslogic
         {
             string datetime = DateTime.Now.ToString("yyyyMMddhhmmss");
             string specialchar = @"^~\&";
-            string message_MSH = $"MSH|{specialchar}|||Mindray|CL1200|{datetime}||QCK^Q02|{messageControlId}|P|2.3.1||||||ASCII|||{(char)13}";
+            string message_MSH = $"MSH|{specialchar}|||||{datetime}||QCK^Q02|{messageControlId}|P|2.3.1||||||UTF8|||{(char)13}";
             string message_MSA = $"MSA|AA|{messageControlId}|Message accepted|||0|{(char)13}";
             string message_err = $"ERR|0|{(char)13}";
             string message_qak = $"QAK|SR|{qak}|{(char)13}";
