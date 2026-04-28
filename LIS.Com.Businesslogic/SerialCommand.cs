@@ -24,7 +24,7 @@ namespace LIS.Com.Businesslogic
 
         protected SerialPort port;
 
-        protected string[] data = new string[7];// This need to be 7 for equipment XN1000
+        protected string[] data;
         protected int index;
         protected string sInputMsg = "";
         public bool IsReady { get; private set; }
@@ -103,7 +103,7 @@ namespace LIS.Com.Businesslogic
         /// EOT or (char)4 - end of transmission
         /// NAK or (char)21 - negative acknowledge
         /// DLE or (char)10 - data link escape 
-        /// CR	carriage return
+        /// CR	or (char)13 carriage return
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -139,31 +139,29 @@ namespace LIS.Com.Businesslogic
                             {
                                 case 0:
                                     //(char)2 means start of text
-                                    WriteToPort((char)2 + Add_CheckSum(data[index + 1]) + Constants.vbCrLf);
+                                    WriteToPort((char)2 + Add_CheckSum(data[index + 1]) + (char)13);
                                     index = 1;
                                     break;
                                 case 1:
                                     //(char)2 means start of text
-                                    WriteToPort((char)2 + Add_CheckSum(data[index + 1]) + Constants.vbCrLf);
+                                    WriteToPort((char)2 + Add_CheckSum(data[index + 1]) + (char)13);
                                     index = 2;
                                     break;
                                 case 2:
                                     //(char)2 means start of text
-                                    WriteToPort((char)2 + Add_CheckSum(data[index + 1]) + Constants.vbCrLf);
+                                    WriteToPort((char)2 + Add_CheckSum(data[index + 1]) + (char)13);
                                     index = 3;
                                     break;
                                 case 3:
                                     //(char)2 means start of text
-                                    WriteToPort((char)2 + Add_CheckSum(data[index + 1]) + Constants.vbCrLf);
+                                    WriteToPort((char)2 + Add_CheckSum(data[index + 1]) + (char)13);
                                     index = 4;
                                     break;
-                                case 4: 
-                                    // This section is required for XN1000, as it needs 5 frames of data to be sent to the equipment.
-                                    // For other equipment this section will not be executed as index will be reset to 0 in default section.
-                                    //(char)2 means start of text
-                                    WriteToPort((char)2 + Add_CheckSum(data[index + 1]) + Constants.vbCrLf);
-                                    index = 5;
-                                    break;
+                                //case 4:
+                                //    //(char)2 means start of text
+                                //    WriteToPort((char)2 + Add_CheckSum(data[index + 1]) + (char)13);
+                                //    index = 5;
+                                //    break;
                                 default:
                                     //(char)4 means end of transmission
                                     WriteToPort("" + (char)4);
@@ -185,7 +183,7 @@ namespace LIS.Com.Businesslogic
                             {
                                 if (index > 0)
                                 {
-                                    WriteToPort((char)2 + Add_CheckSum(data[index]) + Constants.vbCrLf);
+                                    WriteToPort((char)2 + Add_CheckSum(data[index]) + (char)13);
                                 }
                                 else
                                 {

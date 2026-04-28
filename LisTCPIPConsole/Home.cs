@@ -91,8 +91,15 @@ namespace LisTCPIPConsole
                     IsReady = true;
                     this.InitLIS();
                     Logger.LogInstance.LogInfo($"{Settings.Default.IP_ADDRESS} IP Address connected.");
-                    context.TcpIpCommand.StartListenerAsync();
+                    context.TcpIpHL7Command.StartListenerAsync();
 
+                }
+                else if (Settings.Default.PROTOCOL_NAME == "ASTM")
+                {
+                    IsReady = true;
+                    this.InitLIS();
+                    Logger.LogInstance.LogInfo($"{Settings.Default.IP_ADDRESS} IP Address connected.");
+                    context.TcpIpASTMCommand.StartListenerAsync(cancellationToken);
                 }
 
                 Logger.LogInstance.LogDebug("LisConsole ConnectTCPIP completed.");
@@ -112,10 +119,15 @@ namespace LisTCPIPConsole
 
         private void DisconnectIP()
         {
-            if (Settings.Default.PROTOCOL_NAME == "HL7")
+            if (Settings.Default.PROTOCOL_NAME == "ASTM")
             {
                 IsReady = false;
-                LisContext.LisDOM.TcpIpCommand.DisconnectToTCPIPAsync();
+                LisContext.LisDOM.TcpIpASTMCommand.DisconnectToTCPIPAsync();
+            }
+            else
+            {
+                IsReady = false;
+                LisContext.LisDOM.TcpIpHL7Command.DisconnectToTCPIPAsync();
             }
         }
 

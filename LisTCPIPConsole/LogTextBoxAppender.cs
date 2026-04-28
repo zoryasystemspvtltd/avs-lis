@@ -4,6 +4,7 @@ using System.Linq;
 using System.Windows.Forms;
 using log4net.Appender;
 using log4net.Core;
+using System.IO;
 
 namespace LisTCPIPConsole
 {
@@ -71,7 +72,12 @@ namespace LisTCPIPConsole
                     if (_textBox != null)
                     {
                         _textBox.SelectionColor = text_color;
-                        _textBox.AppendText(RenderLoggingEvent(loggingEvent));
+                        using (var sw = new StringWriter())
+                        {
+                            // RenderLoggingEvent writes the formatted event to the provided TextWriter.
+                            RenderLoggingEvent(sw, loggingEvent);
+                            _textBox.AppendText(sw.ToString());
+                        }
                     }
                 }
             };

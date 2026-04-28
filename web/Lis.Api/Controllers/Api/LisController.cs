@@ -123,7 +123,7 @@ namespace Lis.Api.Controllers.Api
             {
                 logger.LogInfo($"Get Sample Request: {Id}");
 
-                var testRequestDetails = testRequestManager.GetBySampleNo(Id, ReportStatusType.New);
+                var testRequestDetails = testRequestManager.GetBySampleNo(Id);
 
                 var responseStrign = JsonConvert.SerializeObject(testRequestDetails);
                 logger.LogInfo($"Get Sample Response: {responseStrign }");

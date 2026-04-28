@@ -23,8 +23,8 @@ namespace LIS.Com.Businesslogic
             }
         }
 
-        private string serverUrl = "https://localhost:44392/";// ConfigurationManager.AppSettings["ServerURL"];
-        private string apiKey = "2b29e86e5d3844768d3ee545f148e5fa";// ConfigurationManager.AppSettings["ApiKey"];
+        //private string serverUrl = "https://localhost:44392/";// ConfigurationManager.AppSettings["ServerURL"];
+        //private string apiKey = "2b29e86e5d3844768d3ee545f148e5fa";// ConfigurationManager.AppSettings["ApiKey"];
         private ICommunicationChannel api;
       
         public void InitAPI(string serverUrl, string apiKey)

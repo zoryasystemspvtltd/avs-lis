@@ -9,7 +9,7 @@ namespace LIS.DtoModel.Interfaces
         long Add(TestRequestDetail testRequestDetail);
         void Update(TestRequestDetail testRequestDetail);
         IEnumerable<TestRequestDetail> Get(long Id);
-        IEnumerable<TestRequestDetail> GetBySampleNo(string SampleNo, ReportStatusType status);
+        IEnumerable<TestRequestDetail> GetBySampleNo(string SampleNo);
         IEnumerable<TestRequestDetail> GetAllNewSamples(ReportStatusType status);
         IEnumerable<TestRequestDetail> GetByHisRequestNo(string RequestNo, ReportStatusType status);
         bool IsPanelTest(string SampleNo, string LisHostCode);

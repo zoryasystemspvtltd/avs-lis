@@ -68,14 +68,6 @@ namespace LIS.BusinessLogic
             long resultId = 0;
             var equpment = equpmentRepo.Get(e => e.AccessKey.Equals(this.identity.AccessKey)).FirstOrDefault();
             var testRequestDetailManager = new TestRequestDetailsManager(logger, identity, this.genericUnitOfWork, this.file);
-            if (equpment.Model == "MindRay")
-            {
-                var request = testRequestDetailManager.GetBySampleNo(result.TestResult.SampleNo, ReportStatusType.SentToEquipment).FirstOrDefault();
-                if (request != null)
-                {
-                    result.TestResult.LISTestCode = request.LISTestCode;
-                }
-            }
 
             var testRequestList = testRequestDetailManager.GetRequestDetails(result.TestResult.SampleNo, result.TestResult.LISTestCode);
             if (testRequestList.Count == 0)
@@ -130,54 +122,6 @@ namespace LIS.BusinessLogic
                     }
 
                     testRequestDetailManager.UpdateStatus(testRequest.Id, ReportStatusType.ReportGenerated);
-
-                    //DXH800 or Mindray or XN1000 machines for missing tests
-                    if (equpment.Model == "DXH800" || equpment.Model == "MindRay" || equpment.Model == "XN1000")
-                    {
-                        var requestList = testRequestDetailManager.GetBySampleNo(result.TestResult.SampleNo, ReportStatusType.SentToEquipment).ToList();
-                        foreach (var subRequest in requestList)
-                        {
-                            var specimenDetails = testMappingRepo.Get(p => p.HISTestCode.Equals(subRequest.HISTestCode, StringComparison.OrdinalIgnoreCase))
-                                .Select(p => new { p.SpecimenCode, p.SpecimenName })
-                                .FirstOrDefault();
-
-                            var paramList = parameterMapRepo.Get(p => p.HISTestCode.Equals(subRequest.HISTestCode, StringComparison.OrdinalIgnoreCase))
-                                .Select(p => new { p.LISParamCode })
-                                .Distinct().ToList();
-
-                            var list = paramList
-                                .Join(result.ResultDetails,
-                                param => param.LISParamCode,
-                                rd => rd.LISParamCode,
-                                (param, rd) => rd).ToList();
-
-                            if (list.Count() > 0)
-                            {
-                                var subResult = new TestResult
-                                {
-                                    PatientId = subRequest.PatientId,
-                                    HISTestCode = subRequest.HISTestCode,
-                                    SampleCollectionDate = subRequest.SampleCollectionDate,
-                                    SampleReceivedDate = subRequest.SampleReceivedDate,
-                                    SpecimenCode = specimenDetails.SpecimenCode,
-                                    SpecimenName = specimenDetails.SpecimenName,
-                                    TestRequestId = subRequest.Id,
-                                    EquipmentId = equpment.Id,
-                                    ResultDate = result.TestResult.ResultDate,
-                                    SampleNo = result.TestResult.SampleNo,
-                                    LISTestCode = subRequest.LISTestCode
-                                };
-
-                                var subresultId = testResultRepo.Add(subResult);
-                                foreach (TestResultDetails resultDetail in list)
-                                {
-                                    resultDetail.TestResultId = subresultId;
-                                    resultDetailsRepo.Add(resultDetail);
-                                }
-                                testRequestDetailManager.UpdateStatus(subRequest.Id, ReportStatusType.ReportGenerated);
-                            }
-                        }
-                    }
                 }
                 else
                 {

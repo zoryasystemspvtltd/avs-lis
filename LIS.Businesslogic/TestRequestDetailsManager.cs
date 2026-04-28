@@ -387,14 +387,13 @@ namespace LIS.Businesslogic
             return results;
         }
 
-        public IEnumerable<TestRequestDetail> GetBySampleNo(string SampleNo, ReportStatusType status)
+        public IEnumerable<TestRequestDetail> GetBySampleNo(string SampleNo)
         {
             var requestDetails = new List<TestRequestDetail>();
 
             var testRequestDetails = testRequestDetailsRepo
                                         .Get(p => p.SampleNo.Equals(SampleNo
-                                                        , StringComparison.OrdinalIgnoreCase)
-                                                  && p.ReportStatus == status);
+                                                        , StringComparison.OrdinalIgnoreCase));
 
             var mappingInfo = mappingRepo.Get(p => p.IsActive == true
                                                 && p.Equipment.AccessKey.Equals(identity.AccessKey

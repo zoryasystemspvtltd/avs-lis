@@ -10,7 +10,7 @@ using System.Timers;
 
 namespace LIS.Com.Businesslogic
 {
-    public class TCPIPCommand
+    public class TCPIPHL7Command
     {
         private TCPIPSettings _settings;
         protected Thread reportingThread;
@@ -28,17 +28,17 @@ namespace LIS.Com.Businesslogic
         private volatile bool _connectionEstablished = false;
         private volatile bool isDisconnecting = false;
 
-        public TCPIPCommand(TCPIPSettings settings)
+        public TCPIPHL7Command(TCPIPSettings settings)
         {
-            Logger.Logger.LogInstance.LogDebug("LIS.Com.Businesslogic TCPIPCommand Constructor method started.");
+            Logger.Logger.LogInstance.LogDebug("LIS.Com.Businesslogic TCPIPHL7Command Constructor method started.");
             this._settings = settings;
 
             // Initialize heartbeat timer (60 seconds)
-            timer = new System.Timers.Timer(60 * 1000);
+            timer = new System.Timers.Timer(_settings.HeartbitTimeout*1000);
             timer.Elapsed += OnHeartbeatTimerElapsed;
             timer.AutoReset = true;
 
-            Logger.Logger.LogInstance.LogDebug("LIS.Com.Businesslogic TCPIPCommand Constructor method completed.");
+            Logger.Logger.LogInstance.LogDebug("LIS.Com.Businesslogic TCPIPHL7Command Constructor method completed.");
         }
 
         public void StartListenerAsync()

@@ -69,32 +69,12 @@ namespace LIS.Com.Businesslogic
             }
         }
         public SerialCommand Command { get; private set; }
-        public TCPIPCommand TcpIpCommand { get; private set; }
+        public TCPIPHL7Command TcpIpHL7Command { get; private set; }
+        public TCPIPASTMCommand TcpIpASTMCommand { get; private set; }
         public void InitSerialCommand(PortSettings settings, EquipmentType type)
         {
             switch (type)
             {
-                //case EquipmentType.DxI800:
-                //    this.Command = new DxI800SerialCommand(settings);
-                //    break;
-                //case EquipmentType.DxH800:
-                //    this.Command = new DxH800SerialCommand(settings);
-                //    break;
-                //case EquipmentType.DxC700:
-                //    this.Command = new DxC700SerialCommand(settings);
-                //    break;
-                //case EquipmentType.E411:
-                //    this.Command = new E411SerialCommand(settings);
-                //    break;
-                //case EquipmentType.D10:
-                //    this.Command = new D10SerialCommand(settings);
-                //    break;
-                //case EquipmentType.XN1000:
-                //    this.Command = new XN1000SerialCommand(settings);
-                //    break;
-                //case EquipmentType.CA600:
-                //    this.Command = new CA600SerialCommand(settings);
-                //    break;
                 default:
                     throw new NotImplementedException();
             }
@@ -102,7 +82,25 @@ namespace LIS.Com.Businesslogic
 
         public void InitTCPIPCommand(TCPIPSettings settings, EquipmentType type)
         {
-            this.TcpIpCommand = new Metis6000TCPIPCommand(settings);
+            if (settings.ProtocolName.ToUpper() == "ASTM")
+            {
+                switch (type)
+                {
+                    default:
+                        throw new NotImplementedException();
+                }
+            }
+            else
+            {
+                switch (type)
+                {
+                    case EquipmentType.Metis6000:
+                        this.TcpIpHL7Command = new Metis6000TCPIPCommand(settings);
+                        break;                    
+                    default:
+                        throw new NotImplementedException();
+                }
+            }
         }
 
         public void InitAPI(string serverUrl, string apiKey)
@@ -114,7 +112,7 @@ namespace LIS.Com.Businesslogic
         {
             bool isPanel = false;
 
-            var response = await api.Get($"api/Lis/?SampleNo={sampleNo}&LisHostCode={lisHostCode}", null, null);
+            var response = await api.Get($"lis/?SampleNo={sampleNo}&LisHostCode={lisHostCode}", null, null);
 
             if (response.StatusCode == 200 && response.Result != null)
             {
@@ -125,36 +123,53 @@ namespace LIS.Com.Businesslogic
 
         public async Task<IEnumerable<TestRequestDetail>> GetTestRequestDetails(string sampleNo)
         {
-            Logger.Logger.LogInstance.LogDebug("LISContext GetTestRequestDetails method started.");
-            Logger.Logger.LogInstance.LogDebug("LISContext GetTestRequestDetails method started for SampleNo: '{0}'", sampleNo);
-            string apiName = $"Lis/{sampleNo}";
-            var response = await api.Get($"api/{apiName}", null, null);
-            var jsonModel = JsonConvert.SerializeObject(response.Result);
-            Logger.Logger.LogInstance.LogDebug("LISContext GetTestRequestDetails get data: '{0}'", jsonModel);
-            IEnumerable<TestRequestDetail> items = null;
-            if (jsonModel.Length > 0)
+            try
             {
-                items = JsonConvert.DeserializeObject<IEnumerable<TestRequestDetail>>(jsonModel);
+                Logger.Logger.LogInstance.LogDebug("LISContext GetTestRequestDetails method started.");
+                Logger.Logger.LogInstance.LogDebug("LISContext GetTestRequestDetails method started for SampleNo: '{0}'", sampleNo);
+                string apiName = $"lis/{sampleNo}";
+                var response = await api.Get($"{apiName}", null, null);
+                var jsonModel = JsonConvert.SerializeObject(response.Result);
+                Logger.Logger.LogInstance.LogDebug("LISContext GetTestRequestDetails get data: '{0}'", jsonModel);
+                IEnumerable<TestRequestDetail> items = null;
+                if (jsonModel.Length > 0)
+                {
+                    items = JsonConvert.DeserializeObject<IEnumerable<TestRequestDetail>>(jsonModel);
+                }
+                Logger.Logger.LogInstance.LogDebug("LISContext GetTestRequestDetails method completed.");
+                return items;
+
             }
-            Logger.Logger.LogInstance.LogDebug("LISContext GetTestRequestDetails method completed.");
-            return items;
+            catch (Exception ex)
+            {
+                Logger.Logger.LogInstance.LogError(ex.Message);
+                throw;
+            }
         }
 
         public async Task SaveTestResult(Result result)
         {
-            Logger.Logger.LogInstance.LogDebug("LISContext SaveTestResult method started.");
-            var jsonModel = JsonConvert.SerializeObject(result);
-            Logger.Logger.LogInstance.LogDebug("LISContext SaveTestResult method posted data:" + jsonModel);
-            string apiName = "Lis";
-            await api.Post($"api/{apiName}", result, null);
-            Logger.Logger.LogInstance.LogDebug("LISContext SaveTestResult method completed.");
+            try
+            {
+                Logger.Logger.LogInstance.LogDebug("LISContext SaveTestResult method started.");
+                var jsonModel = JsonConvert.SerializeObject(result);
+                Logger.Logger.LogInstance.LogDebug("LISContext SaveTestResult method posted data:" + jsonModel);
+                string apiName = "lis";
+                await api.Post($"{apiName}", result, null);
+                Logger.Logger.LogInstance.LogDebug("LISContext SaveTestResult method completed.");
+            }
+            catch (Exception ex)
+            {
+                Logger.Logger.LogInstance.LogError(ex.Message);
+                throw;
+            }
         }
 
         public async Task<bool> PingAPI()
         {
             Logger.Logger.LogInstance.LogDebug("LISContext PingAPI method started.");
-            string apiName = $"Lis";
-            var response = await api.Get($"api/{apiName}", null, null);
+            string apiName = $"lis";
+            var response = await api.Get($"{apiName}", null, null);
             var jsonModel = JsonConvert.SerializeObject(response.Result);
             bool isValid = false;
             if (jsonModel.Length > 0)
@@ -173,15 +188,15 @@ namespace LIS.Com.Businesslogic
             {
                 IsAlive = IsActive
             };
-            await api.Post($"api/{apiName}", bitStatus, null);
+            await api.Post($"{apiName}", bitStatus, null);
             Logger.Logger.LogInstance.LogDebug("LISContext SendHeartBeat method completed.");
         }
 
         public async Task<bool> AcknowledgeSample(long SampleId)
         {
             Logger.Logger.LogInstance.LogDebug("LISContext AcknowledgeSample method started for SampleNo:" + SampleId);
-            string apiName = $"Lis/{SampleId}";
-            var response = await api.Put($"api/{apiName}", null, null);
+            string apiName = $"lis/{SampleId}";
+            var response = await api.Put($"{apiName}", null, null);
 
             bool isValid = (bool)response.Result;
 
