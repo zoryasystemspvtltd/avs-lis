@@ -39,7 +39,7 @@ import { RejectedSampleDetailsComponent } from './LIS/samples/rejected-sample/sa
 import { NgMultiSelectDropDownModule } from 'ng-multiselect-dropdown';
 import { CreateSampleComponent } from './LIS/samples/create-sample/create-sample.component';
 import { BarcodeComponent } from './LIS/barcode/barcode.component';
-import { NgxPrintModule } from 'ngx-print';
+//import { NgxPrintModule } from 'ngx-print';
 import { LeveyJenningChartComponent } from './LIS/chart/levey-jenning-chart/levey-jenning-chart.component';
 import { EditSampleComponent } from './LIS/samples/edit-sample/edit-sample.component';
 import { AlertEquipmentComponent } from './LIS/Equipment/list-equipment/alert-equipment.component';
@@ -142,8 +142,8 @@ export const options: Partial<IConfig> | (() => Partial<IConfig>) = null;
     EditorModule,
     NgbModule,
     NgMultiSelectDropDownModule.forRoot(),
-    NgxBarcodeModule,
-    NgxPrintModule
+    NgxBarcodeModule
+    //NgxPrintModule
   ],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
