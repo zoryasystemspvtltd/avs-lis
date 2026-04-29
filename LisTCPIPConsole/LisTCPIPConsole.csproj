@@ -165,10 +165,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="assets\banner.png" />
-    <Content Include="assets\logo.ico" />
-    <Content Include="assets\logo.png" />
-    <Content Include="assets\unicell_banner.png" />
     <Content Include="logo.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
