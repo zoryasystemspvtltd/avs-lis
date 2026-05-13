@@ -1,0 +1,66 @@
+<br>
+<h3>Edit Equipment</h3>
+<br>
+<form [formGroup]="editEquipmentForm" (ngSubmit)="onSubmit()" *ngIf="isLoaded">
+    <div class="form-group">
+        <div class="row">
+            <input [type]="'hidden'" name="id" class="form-control" formControlName="id" />
+            <div class="col-sm-2 col-md-2 col-lg-2"><label> Equipment Name<span class="error">*</span></label></div>
+            <div class="col-sm-6 col-md-6 col-lg-6">
+                <div class="input-group">
+                    <span class="input-group-addon"><i class="glyphicon glyphicon-blackboard"></i></span>
+                    <input [type]="'text'" name="name" class="form-control" formControlName="name" placeholder="Enter Equipment Name" maxlength="25" style="width:100%;" />
+                </div>
+                <span *ngIf="isInValid('name')" class="error ">Equipment Name is required.</span>
+            </div>
+        </div>
+        <br>
+        <div class="row">
+            <div class="col-sm-2 col-md-2 col-lg-2"><label> Equipment Model<span class="error">*</span></label></div>
+            <div class="col-sm-6 col-md-6 col-lg-6">
+                <div class="input-group">
+                    <span class="input-group-addon"><i class="glyphicon glyphicon-lock"></i></span>
+                    <input [type]="'text'" name="model" class="form-control" formControlName="model" placeholder="Enter Equipment Model" maxlength="32" style="width:100%;" readonly />
+                </div>
+                <span *ngIf="isInValid('model')" class="error ">Equipment Model is required.</span>
+            </div>
+        </div>
+        <br>
+        <div class="row">
+            <div class="col-sm-2 col-md-2 col-lg-2"><label> Access Key<span class="error">*</span></label></div>
+            <div class="col-sm-6 col-md-6 col-lg-6">
+                <div class="input-group">
+                    <span class="input-group-addon"><i class="glyphicon glyphicon-lock"></i></span>
+                    <input [type]="'text'" name="accessKey" class="form-control" formControlName="accessKey" placeholder="Enter Access Key" maxlength="32" style="width:100%;" readonly />
+                </div>
+                <span *ngIf="isInValid('accessKey')" class="error ">Access Key is required.</span>
+            </div>
+        </div>
+        <br>
+        <div class="row">
+            <div class="col-sm-12 col-md-12 col-lg-12 form-grid-stye">
+                <div class="table-responsive">
+                    <app-edit-test-mapping [mappings]="item.mappings" [model]="item.model"></app-edit-test-mapping>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-12 col-md-12 col-lg-12">
+                <alert></alert>
+            </div>
+        </div>
+        <hr>
+        <div class="row">
+            <div class="col-sm-12 col-md-12 col-lg-12">
+                <!-- <div style="float:left;">
+                    <button type="submit" class="btn btn-primary" *ngIf="hasAccess()">Save</button>
+                </div> -->
+                <div style="padding-left:6px; float:left;">
+                    <a [routerLink]="['/','equipments']" class="btn btn-default btn-default-alternet">Back to
+                        List</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</form>

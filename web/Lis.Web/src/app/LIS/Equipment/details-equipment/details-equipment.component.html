@@ -1,0 +1,97 @@
+<br>
+<h3>View Equipment Details</h3>
+<br>
+<div class="row" style="min-height:200px;" *ngIf="isLoaded">
+    <div class="col-lg-12 col-sm-12 col-md-12 col-lg-12">
+        <div class="form-group">
+            <div class="row">
+                <div class="col-md-2"><label> Equipment Name</label></div>
+                <div class="col-md-10">
+                    {{item.name}}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-2"><label> Equipment Model</label></div>
+                <div class="col-md-10">
+                    {{item.model}}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-2"><label> Access Key</label></div>
+                <div class="col-md-10">
+                    <para>
+                        {{item.accessKey}}
+                    </para>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-2"><label> Equipment Status</label></div>
+                <div class="col-md-10">
+                    <para>
+                        <span class="glyphicon glyphicon glyphicon-ok-sign icon-large" [ngClass]="{'icon-green': item.isAlive === true,'icon-red': item.isAlive !== true}" [title]="item.heartBeatTime | date:'dd/MM/yyyy hh:mm:ss:a'"></span>
+                    </para>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <!-- <div style="float:left;">
+                        <a class="btn btn-primary" [routerLink]="['/','equipments','edit',item.id]" title="Edit" *ngIf="hasAccess()">Edit</a>
+                    </div> -->
+
+                    <div style="padding-left:6px; float:left;">
+                        <a [routerLink]="['/equipments']" class="btn btn-default btn-default-alternet">Back to List</a>
+                    </div>
+                </div>
+            </div>
+            <hr />
+            <div class="row">
+                <div class="col-sm-12 col-md-12 col-lg-12 form-grid-stye">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th style="width:10%"><label class="black-text">HIS Code</label></th>
+                                <th style="width:40%"><label class="black-text">HIS Description</label></th>
+                                <th style="width:50%"><label class="black-text">LIS Code & Description</label></th>
+                            </tr>
+                        </thead>
+                        <tbody *ngFor="let mapping of item.mappings">
+                            <tr *ngIf="mapping.isActive">
+                                <td>
+                                    <span class="glyphicon" style="cursor: pointer;" [ngClass]="{ 'glyphicon-plus': !mapping.showDetails,'glyphicon-minus': mapping.showDetails }" (click)=" showDetails(mapping) " *ngIf="hasMapping(mapping) "></span>
+                                    <label> {{mapping.hisTestCode}}</label>
+                                </td>
+                                <td><label for="{{$index}} ">{{mapping.hisTestCodeDescription}}</label>
+                                </td>
+                                <td>
+                                    <ul>
+                                        <li *ngFor="let lisTest of mapping.lisTests ">
+                                            <label for="{{$index}} ">{{lisTest.code}} - {{lisTest.description}}</label>
+                                        </li>
+                                    </ul>
+                                </td>
+                            </tr>
+                            <tr *ngIf="mapping.isActive ">
+                                <td colspan="3 " *ngIf="mapping.showDetails " style="border:1px solid #ccc; ">
+                                    <app-his-test-details [hisTestCode]="mapping.hisTestCode ">
+                                    </app-his-test-details>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <hr />
+            <div class="row ">
+                <div class="col-md-12 ">
+                    <!-- <div style="float:left; ">
+                        <a class="btn btn-primary " [routerLink]="[ '/', 'equipments', 'edit',item.id] " title="Edit " *ngIf="hasAccess() ">Edit</a>
+                    </div> -->
+
+                    <div style="padding-left:6px; float:left; ">
+                        <a [routerLink]="[ '/equipments'] " class="btn btn-default btn-default-alternet ">Back to List</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

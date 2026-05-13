@@ -1,0 +1,126 @@
+﻿[
+  {
+    "Code": "WBC",
+    "Description": "WBC - White Blood Cell or leukocyte count (corrected for the presence of NRBC and other WBC interferences)"
+  },
+  {
+    "Code": "RBC",
+    "Description": "RBC - Red Blood Cell or erythrocyte count."
+  },
+  {
+    "Code": "HGB",
+    "Description": "HGB - Hemoglobin concentration."
+  },
+  {
+    "Code": "HCT",
+    "Description": "HCT - Hematocrit (relative volume of erythrocytes)"
+  },
+  {
+    "Code": "MCV",
+    "Description": "MCV - Mean Corpuscular (erythrocyte) Volume"
+  },
+  {
+    "Code": "MCH",
+    "Description": "MCH - Mean Corpuscular (erythrocyte) Hemoglobin"
+  },
+  {
+    "Code": "MCHC",
+    "Description": "MCHC - Mean Corpuscular (erythrocyte) Hemoglobin Concentration"
+  },
+  {
+    "Code": "RDW",
+    "Description": "RDW - Red Cell (erythrocyte volume) Distribution Width"
+  },
+  {
+    "Code": "RDW-CV",
+    "Description": "RDW-CV - Red Cell Distribution Width SD"
+  },
+  {
+    "Code": "RDW-SD",
+    "Description": "RDW-SD - Red Cell Distribution Width SD"
+  },
+  {
+    "Code": "PLT",
+    "Description": "PLT - Platelet or thrombocyte count"
+  },
+  {
+    "Code": "MPV",
+    "Description": "MPV - Mean Platelet (thrombocyte) Volume"
+  },
+  {
+    "Code": "NEUT%",
+    "Description": "NE - Neutrophil percent"
+  },
+  {
+    "Code": "LYMPH%",
+    "Description": "LY - Lymphocyte percent"
+  },
+  {
+    "Code": "MONO%",
+    "Description": "MO - Monocyte percent"
+  },
+  {
+    "Code": "EO%",
+    "Description": "EO - Eosinophil percent"
+  },
+  {
+    "Code": "BASO%",
+    "Description": "BA - Basophil percent"
+  },
+  {
+    "Code": "NEUT#",
+    "Description": "NE# - Neutrophil number"
+  },
+  {
+    "Code": "LYMPH#",
+    "Description": "LY# - Lymphocyte number"
+  },
+  {
+    "Code": "MONO#",
+    "Description": "MO# - Monocyte number"
+  },
+  {
+    "Code": "EO#",
+    "Description": "EO# - Eosinophil number"
+  },
+  {
+    "Code": "BASO#",
+    "Description": "BA# - Basophil number"
+  },
+  {
+    "Code": "NRBC%",
+    "Description": "NRBC - Nucleated Red Blood Cell percent"
+  },
+  {
+    "Code": "NRBC#",
+    "Description": "NRBC# - Nucleated Red Blood Cell number"
+  },
+  {
+    "Code": "RET",
+    "Description": "RET - Reticulocyte percent"
+  },
+  {
+    "Code": "RET#",
+    "Description": "RET# - Reticulocyte number, if RBC is available"
+  },
+  {
+    "Code": "PDW",
+    "Description": "PDW - Platelet Distribution Width"
+  },
+  {
+    "Code": "PCT",
+    "Description": "PCT - Plateletcrit (impedance)"
+  },
+  {
+    "Code": "P-LCR",
+    "Description": "P-LCR - Plateletcrit (impedance)"
+  },
+  {
+    "Code": "IG%",
+    "Description": "IG percent"
+  },
+  {
+    "Code": "IG#",
+    "Description": "IG Number"
+  }
+]

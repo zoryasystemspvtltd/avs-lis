@@ -1,0 +1,236 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+https://go.microsoft.com/fwlink/?LinkID=208121. 
+-->
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <_PublishTargetUrl>C:\Users\Rajiv\Desktop\Bellevue Publish\LISApi</_PublishTargetUrl>
+  </PropertyGroup>
+  <ItemGroup>
+    <File Include="App_Data/2021-07-05_Bellevue.sql">
+      <publishTime>07/09/2021 16:24:25</publishTime>
+    </File>
+    <File Include="App_Data/Beckman_LIS%28local%29.sql">
+      <publishTime>07/09/2021 16:24:25</publishTime>
+    </File>
+    <File Include="App_Data/Data.sql">
+      <publishTime>05/29/2021 16:46:50</publishTime>
+    </File>
+    <File Include="App_Data/HisData.sql">
+      <publishTime>03/02/2021 19:39:03</publishTime>
+    </File>
+    <File Include="App_Data/Models/DXC700.json">
+      <publishTime>08/26/2021 13:25:34</publishTime>
+    </File>
+    <File Include="App_Data/Models/DXH800.json">
+      <publishTime>04/17/2021 15:11:27</publishTime>
+    </File>
+    <File Include="App_Data/Models/DXI800.json">
+      <publishTime>08/24/2021 10:49:17</publishTime>
+    </File>
+    <File Include="App_Data/Schemma.sql">
+      <publishTime>05/29/2021 16:46:50</publishTime>
+    </File>
+    <File Include="bin/Antlr3.Runtime.dll">
+      <publishTime>09/10/2013 16:29:20</publishTime>
+    </File>
+    <File Include="bin/Antlr3.Runtime.pdb">
+      <publishTime>09/10/2013 16:29:20</publishTime>
+    </File>
+    <File Include="bin/App_Data/Models/DXC700.json">
+      <publishTime>08/26/2021 13:25:34</publishTime>
+    </File>
+    <File Include="bin/App_Data/Models/DXH800.json">
+      <publishTime>04/17/2021 15:11:27</publishTime>
+    </File>
+    <File Include="bin/App_Data/Models/DXI800.json">
+      <publishTime>08/24/2021 10:49:17</publishTime>
+    </File>
+    <File Include="bin/EntityFramework.dll">
+      <publishTime>04/16/2020 20:38:42</publishTime>
+    </File>
+    <File Include="bin/EntityFramework.SqlServer.dll">
+      <publishTime>04/16/2020 20:38:56</publishTime>
+    </File>
+    <File Include="bin/Lis.Api.Client.dll">
+      <publishTime>11/18/2021 12:12:20</publishTime>
+    </File>
+    <File Include="bin/Lis.Api.Client.pdb">
+      <publishTime>11/18/2021 12:12:20</publishTime>
+    </File>
+    <File Include="bin/Lis.Api.dll">
+      <publishTime>11/18/2021 12:12:27</publishTime>
+    </File>
+    <File Include="bin/Lis.Api.pdb">
+      <publishTime>11/18/2021 12:12:27</publishTime>
+    </File>
+    <File Include="bin/LIS.BusinessLogic.dll">
+      <publishTime>11/18/2021 12:12:21</publishTime>
+    </File>
+    <File Include="bin/LIS.BusinessLogic.pdb">
+      <publishTime>11/18/2021 12:12:21</publishTime>
+    </File>
+    <File Include="bin/LIS.Com.Businesslogic.dll">
+      <publishTime>11/18/2021 12:12:22</publishTime>
+    </File>
+    <File Include="bin/LIS.Com.Businesslogic.pdb">
+      <publishTime>11/18/2021 12:12:22</publishTime>
+    </File>
+    <File Include="bin/LIS.DataAccess.dll">
+      <publishTime>11/18/2021 12:12:18</publishTime>
+    </File>
+    <File Include="bin/LIS.DataAccess.dll.config">
+      <publishTime>10/01/2021 20:49:38</publishTime>
+    </File>
+    <File Include="bin/LIS.DataAccess.pdb">
+      <publishTime>11/18/2021 12:12:18</publishTime>
+    </File>
+    <File Include="bin/LIS.DtoModel.dll">
+      <publishTime>11/18/2021 12:12:15</publishTime>
+    </File>
+    <File Include="bin/LIS.DtoModel.pdb">
+      <publishTime>11/18/2021 12:12:15</publishTime>
+    </File>
+    <File Include="bin/LIS.Logger.dll">
+      <publishTime>11/18/2021 12:12:15</publishTime>
+    </File>
+    <File Include="bin/LIS.Logger.pdb">
+      <publishTime>11/18/2021 12:12:15</publishTime>
+    </File>
+    <File Include="bin/log4net.dll">
+      <publishTime>10/19/2020 06:40:10</publishTime>
+    </File>
+    <File Include="bin/Microsoft.AspNet.Identity.Core.dll">
+      <publishTime>11/25/2019 10:57:50</publishTime>
+    </File>
+    <File Include="bin/Microsoft.AspNet.Identity.EntityFramework.dll">
+      <publishTime>11/25/2019 10:57:50</publishTime>
+    </File>
+    <File Include="bin/Microsoft.AspNet.Identity.Owin.dll">
+      <publishTime>11/25/2019 10:57:50</publishTime>
+    </File>
+    <File Include="bin/Microsoft.AspNet.SignalR.Client.dll">
+      <publishTime>04/16/2021 00:26:58</publishTime>
+    </File>
+    <File Include="bin/Microsoft.AspNet.SignalR.Client.pdb">
+      <publishTime>04/16/2021 00:18:52</publishTime>
+    </File>
+    <File Include="bin/Microsoft.AspNet.SignalR.Core.dll">
+      <publishTime>04/16/2021 00:26:58</publishTime>
+    </File>
+    <File Include="bin/Microsoft.AspNet.SignalR.Core.pdb">
+      <publishTime>04/16/2021 00:18:54</publishTime>
+    </File>
+    <File Include="bin/Microsoft.AspNet.SignalR.SystemWeb.dll">
+      <publishTime>04/16/2021 00:26:58</publishTime>
+    </File>
+    <File Include="bin/Microsoft.AspNet.SignalR.SystemWeb.pdb">
+      <publishTime>04/16/2021 00:19:42</publishTime>
+    </File>
+    <File Include="bin/Microsoft.Owin.Cors.dll">
+      <publishTime>09/08/2020 20:51:20</publishTime>
+    </File>
+    <File Include="bin/Microsoft.Owin.dll">
+      <publishTime>09/08/2020 20:51:20</publishTime>
+    </File>
+    <File Include="bin/Microsoft.Owin.Host.SystemWeb.dll">
+      <publishTime>09/08/2020 20:51:10</publishTime>
+    </File>
+    <File Include="bin/Microsoft.Owin.Security.Cookies.dll">
+      <publishTime>09/08/2020 20:51:30</publishTime>
+    </File>
+    <File Include="bin/Microsoft.Owin.Security.dll">
+      <publishTime>09/08/2020 20:52:32</publishTime>
+    </File>
+    <File Include="bin/Microsoft.Owin.Security.OAuth.dll">
+      <publishTime>09/08/2020 20:51:52</publishTime>
+    </File>
+    <File Include="bin/Microsoft.Web.Infrastructure.dll">
+      <publishTime>07/25/2012 11:48:56</publishTime>
+    </File>
+    <File Include="bin/Newtonsoft.Json.dll">
+      <publishTime>03/17/2021 20:03:36</publishTime>
+    </File>
+    <File Include="bin/Owin.dll">
+      <publishTime>11/13/2012 12:19:34</publishTime>
+    </File>
+    <File Include="bin/SimpleInjector.dll">
+      <publishTime>03/04/2021 19:25:34</publishTime>
+    </File>
+    <File Include="bin/SimpleInjector.Integration.WebApi.dll">
+      <publishTime>06/10/2020 17:39:56</publishTime>
+    </File>
+    <File Include="bin/System.Buffers.dll">
+      <publishTime>02/19/2020 10:05:18</publishTime>
+    </File>
+    <File Include="bin/System.Memory.dll">
+      <publishTime>02/19/2020 10:05:18</publishTime>
+    </File>
+    <File Include="bin/System.Net.Http.Formatting.dll">
+      <publishTime>11/28/2018 13:00:36</publishTime>
+    </File>
+    <File Include="bin/System.Runtime.CompilerServices.Unsafe.dll">
+      <publishTime>10/19/2020 18:46:30</publishTime>
+    </File>
+    <File Include="bin/System.Web.Cors.dll">
+      <publishTime>11/28/2018 12:58:44</publishTime>
+    </File>
+    <File Include="bin/System.Web.Helpers.dll">
+      <publishTime>11/28/2018 13:04:24</publishTime>
+    </File>
+    <File Include="bin/System.Web.Http.Cors.dll">
+      <publishTime>11/28/2018 13:01:26</publishTime>
+    </File>
+    <File Include="bin/System.Web.Http.dll">
+      <publishTime>11/28/2018 13:01:00</publishTime>
+    </File>
+    <File Include="bin/System.Web.Http.Owin.dll">
+      <publishTime>11/28/2018 13:01:48</publishTime>
+    </File>
+    <File Include="bin/System.Web.Http.WebHost.dll">
+      <publishTime>11/28/2018 13:02:56</publishTime>
+    </File>
+    <File Include="bin/System.Web.Mvc.dll">
+      <publishTime>11/28/2018 12:59:46</publishTime>
+    </File>
+    <File Include="bin/System.Web.Razor.dll">
+      <publishTime>11/28/2018 13:00:12</publishTime>
+    </File>
+    <File Include="bin/System.Web.WebPages.Deployment.dll">
+      <publishTime>11/28/2018 13:04:24</publishTime>
+    </File>
+    <File Include="bin/System.Web.WebPages.dll">
+      <publishTime>11/28/2018 13:04:24</publishTime>
+    </File>
+    <File Include="bin/System.Web.WebPages.Razor.dll">
+      <publishTime>11/28/2018 13:04:24</publishTime>
+    </File>
+    <File Include="db.aspx">
+      <publishTime>03/02/2021 19:39:03</publishTime>
+    </File>
+    <File Include="favicon.ico">
+      <publishTime>03/02/2021 19:39:03</publishTime>
+    </File>
+    <File Include="Scripts/jquery-1.6.4.js">
+      <publishTime>05/23/2021 15:34:22</publishTime>
+    </File>
+    <File Include="Scripts/jquery-1.6.4.min.js">
+      <publishTime>05/23/2021 15:34:22</publishTime>
+    </File>
+    <File Include="Scripts/jquery.signalR-2.4.2.js">
+      <publishTime>05/23/2021 15:34:26</publishTime>
+    </File>
+    <File Include="Scripts/jquery.signalR-2.4.2.min.js">
+      <publishTime>05/23/2021 15:34:26</publishTime>
+    </File>
+    <File Include="Views/Home/Index.cshtml">
+      <publishTime>03/02/2021 19:39:03</publishTime>
+    </File>
+    <File Include="Views/Web.config">
+      <publishTime>03/02/2021 19:39:03</publishTime>
+    </File>
+    <File Include="Web.config">
+      <publishTime>11/18/2021 12:12:29</publishTime>
+    </File>
+  </ItemGroup>
+</Project>

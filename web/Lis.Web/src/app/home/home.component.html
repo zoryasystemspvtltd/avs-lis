@@ -1,0 +1,27 @@
+<br>
+
+<div style="min-height:400px;">
+    <div *ngIf="!emailConfirmed" class="alert alert-danger">
+        You are using default password for this account, you are suggested to change your password.
+        <br> By changing your password, you help make sure that only you can use your account.
+        <br>
+        Change your password by clicking
+        <a [routerLink]='["/change-password"]' title="Change Password">
+            here
+        </a>
+    </div>
+    <br>
+    <app-his-sample (onGetOrder)="refreshOrder($event)" *ngIf="hasAccess('Samples',63)"></app-his-sample><br>
+    <div class="row">
+        <div class="col-md-6" *ngIf="hasAccess('Samples',63)">
+            <app-raw-sample-chart></app-raw-sample-chart>
+        </div>
+        <div class="col-md-6" *ngIf="hasAccess('Samples',63)">
+            <app-processed-sample-chart></app-processed-sample-chart>
+        </div>
+        <!-- <div class="col-md-6" *ngIf="hasAccess('DoctorsApprovals',63)">
+            <app-doctor-sample-chart></app-doctor-sample-chart>
+        </div> -->
+    </div>
+    <hr>
+</div>

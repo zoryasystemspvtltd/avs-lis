@@ -1,0 +1,69 @@
+
+<div class="content" *ngIf="isLoaded">
+    <h1>
+        <a data-toggle="collapse" data-parent="#accordion" target="_self" href="#log">
+            Activity history
+        </a>
+    </h1>
+    <div class="qtable panel-collapse collapse in" id="log">
+        <div class="row">
+            <div class="col-md-12">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th width="30%">
+                                <a style="cursor: pointer;" (click)="sort('activityDate')">
+                                    Activity Date
+                                    <i [class.hidden]="showSortIcon('activityDate',false)" class="glyphicon glyphicon-arrow-down"></i>
+                                    <i [class.hidden]="showSortIcon('activityDate',true)" class="glyphicon glyphicon-arrow-up"></i>
+                                </a>
+                            </th>
+                            <th width="30%">
+                                <a style="cursor: pointer;" (click)="sort('activityMember')">
+                                    Activity Member
+                                    <i [class.hidden]="showSortIcon('activityMember',false)" class="glyphicon glyphicon-arrow-down"></i>
+                                    <i [class.hidden]="showSortIcon('activityMember',true)" class="glyphicon glyphicon-arrow-up"></i>
+                                </a>
+                            </th>
+                            <th width="40%">
+                                <a style="cursor: pointer;" (click)="sort('activityType')">
+                                    Activity Type
+                                    <i [class.hidden]="showSortIcon('activityType',false)" class="glyphicon glyphicon-arrow-down"></i>
+                                    <i [class.hidden]="showSortIcon('activityType',true)" class="glyphicon glyphicon-arrow-up"></i>
+                                </a>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let item of items">
+                            <td>
+                                <span>{{item.activityDate|date:'MM/dd/yyyy h:mma'}}</span>
+                            </td>
+                            <td>
+                                <span>{{item.activityMember}}</span>
+                            </td>
+                            <td><span>{{item.activityType|activityType}}</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-5"><h4>Showing {{recordFrom}} to {{recordTo}} of {{totalRecord}} items</h4></div>
+            <div class="col-sm-7" style="text-align:right">
+                <ngb-pagination
+                    [(page)]="option.CurrentPage"
+                    [pageSize]="option.RecordPerPage"
+                    [collectionSize]="totalRecord"
+                    [maxSize]="5" [rotate]="true" [boundaryLinks]="true"
+                    (pageChange)="getItems()">
+                    <ng-template ngbPaginationPrevious>Prev</ng-template>
+                    <ng-template ngbPaginationNext>Next</ng-template>
+                    <ng-template ngbPaginationFirst>First</ng-template>
+                    <ng-template ngbPaginationLast>Last</ng-template>
+                </ngb-pagination>
+            </div>
+        </div>
+
+    </div>
+</div>

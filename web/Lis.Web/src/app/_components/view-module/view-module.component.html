@@ -1,0 +1,65 @@
+
+<div class="page-content" *ngIf="isLoaded">
+    <br />
+    <div class="row">
+        <div style="padding-left:15px;float:left;">
+            <a class="btn btn-primary" [routerLink]="['/',schemma.url,'edit',id]" title="Edit" *ngIf="hasAccess(2,1)">Edit</a>
+        </div>
+        <div style="padding-left:6px; float:left;">
+            <button type="button" class="btn btn-default btn-default-alternet" *ngIf="hasAccess(4,2)" (click)="editItem(2)" >Publish</button> 
+        </div>
+        <div style="padding-left:6px; float:left;">
+            <button type="button" class="btn btn-default btn-default-alternet" *ngIf="hasAccess(32,3)" (click)="editItem(3)">Archive</button> 
+        </div>
+        <div style="padding-left:6px; float:left;">
+            <a [routerLink]="['/',schemma.url]" class="btn btn-default btn-default-alternet">Back to List</a>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <alert></alert>
+        </div>
+        <div class="col-md-12 col-sm-12">
+            <article >
+                <div *ngFor="let element of schemma.elements;">
+                    <div [ngSwitch]="element.type">
+                        <p *ngSwitchCase="'chield'">
+                            <i *ngIf="element.icon" class="glyphicon glyphicon-{{element.icon}} "></i> {{element.heading}}: {{item[element.fieldName].name}}
+                        </p>
+                        <p *ngSwitchCase="'para'">
+                            <i *ngIf="element.icon" class="glyphicon glyphicon-{{element.icon}} "></i>{{element.heading}}: {{item[element.fieldName]}}
+                        </p>
+                        <p *ngSwitchCase="'currency'">
+                            <i *ngIf="element.icon" class="glyphicon glyphicon-{{element.icon}} "></i>{{element.heading}}: {{item[element.fieldName] | currency:'INR'}}
+                        </p>
+                        <p *ngSwitchCase="'date'">
+                            <i *ngIf="element.icon" class="glyphicon glyphicon-{{element.icon}} "></i>{{element.heading}}: {{item[element.fieldName] | date:element.format}}
+                        </p>
+                        <p *ngSwitchCase="'date-range'">
+                            <i *ngIf="element.icon" class="glyphicon glyphicon-{{element.icon}} "></i>{{element.heading}}: {{item[element.otherFieldName] | date:element.format}} {{element.seperater}} {{item[element.fieldName] | date:element.format}}
+                        </p>
+                        <h1 *ngSwitchCase="'h1'">
+                            <i *ngIf="element.icon" class="glyphicon glyphicon-{{element.icon}} "></i>{{element.heading}}: {{item[element.fieldName]}}
+                        </h1>
+                        <p *ngSwitchCase="'area'">
+                            <app-you-frame [html]="item[element.fieldName]"></app-you-frame>
+                        </p>
+                        <p *ngSwitchCase="'media-list'">
+                            <app-media-list-view [MediaId]="item.id"></app-media-list-view>
+                        </p>
+                        <p *ngSwitchCase="'chield-list'">
+                            <app-chield-list [schemma]="element.schemma" [filterName]="element.filterName" [filterValue]="item.id"></app-chield-list>
+                        </p>
+
+                    </div>
+                </div>
+                
+            </article><!--//news-item-->
+        </div><!--//news-wrapper-->
+    </div><!--//page-row-->
+    <div class="row">
+        <div class="col-md-12">
+            <app-log-list [entityId]="id" [module]="schemma.module"></app-log-list>
+        </div>
+    </div>
+</div><!--//page-content-->

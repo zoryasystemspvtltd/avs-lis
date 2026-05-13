@@ -1,0 +1,26 @@
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th width="30%">Name</th>
+            <th width="10%">Icon</th>
+            <th>Url</th>
+            <th width="5%"></th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr *ngFor="let item of items">
+            <td>{{item.name}}</td>
+            <td>
+                <img *ngIf="mediaType(item.extention) == 1" [src]="trustUrl(item.url)" height="30" [title]="item.name">
+                <img *ngIf="mediaType(item.extention) == 2" [src]="mediaDocumentIcon(item.extention)" height="30" [title]="item.name">
+                <img *ngIf="mediaType(item.extention) == 3" [src]="formatVideoThumb(item.url)" height="30" [title]="item.name">
+            </td>
+            <td>
+                <a [href]="trustUrl(item.url)" target="_balnk">{{item.url}}</a>
+            </td>
+            <td>
+                <a style="cursor: pointer;" class="glyphicon glyphicon-remove" (click)="deleteFile(item.id)" title="Delete"></a>
+            </td>
+        </tr>
+    </tbody>
+</table>

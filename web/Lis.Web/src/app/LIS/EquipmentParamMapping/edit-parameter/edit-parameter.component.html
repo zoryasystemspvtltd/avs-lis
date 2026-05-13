@@ -1,0 +1,39 @@
+<br>
+<h3>Edit Equipment</h3>
+<br>
+<form [formGroup]="editEquipmentForm" (ngSubmit)="onSubmit()" *ngIf="isLoaded">
+    <div class="form-group">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th style="width:20%"><label class="black-text">HIS Param Code</label></th>
+                    <th style="width:20%"><label class="black-text">LIS Param Code</label></th>
+                    <th><label class="black-text">Param Name</label></th>
+                    <th style="width:10%"><label class="black-text">Is Active</label></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let mapping of mappings">
+                    <td>
+                        <div class="input-group">
+                            <span class="input-group-addon"><i class="glyphicon glyphicon-blackboard"></i></span>
+                            <input [type]="'text'" name="hisTestCode" class="form-control"
+                                [(ngModel)]="mapping.hisParamCode" placeholder="Enter HIS Code" maxlength="25"
+                                style="width:100%;" />
+                        </div>
+                        <span *ngIf="isInValid(mapping)" class="error ">HIS Code is required.</span>
+                    </td>
+                    <td>
+                        <label for="{{$index}}">{{mapping.lisParamCode}}</label>
+                    </td>
+                    <td><label for="{{$index}}">{{mapping.paramDescription}}</label>
+                    </td>
+                    <td>
+                        <input [type]="'checkbox'" [checked]="mapping.isActive"
+                            (change)="onCheckActive($event,mapping)" />
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>div>
+</form>

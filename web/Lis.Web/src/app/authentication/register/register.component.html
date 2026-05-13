@@ -1,0 +1,73 @@
+<div class="content">
+    <div class="page-wrapper">
+        <header class="page-heading clearfix">
+            <h1 class="heading-title pull-left">Join LIS</h1>
+        </header>
+        <div class="page-content">
+            <div class="row">
+                <article class="contact-form col-md-8 col-sm-7  page-row">
+                    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+                        <div class="form-group" >
+                            <div class="row">
+                                <div class="col-md-12"><alert></alert></div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label for="firstname"><span class="error ">*</span>First Name</label>
+                                    <div class="input-group ">
+                                        <span class="input-group-addon "><i class="glyphicon glyphicon-user "></i></span>
+                                        <input class="form-control input-sm" placeholder="Add First Name" [type]="'text'" formControlName="firstname" [ngClass]="{ 'is-invalid': submitted && f.firstname.errors }" maxlength="100">
+                                    </div>
+                                    <span *ngIf="submitted && f.firstname.errors" class="error ">First Name is required.</span>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="lastname"><span class="error ">*</span>Last Name</label>
+                                    <div class="input-group ">
+                                        <span class="input-group-addon "><i class="glyphicon glyphicon-user "></i></span>
+                                        <input class="form-control input-sm" placeholder="Add Last Name" [type]="'text'" formControlName="lastname" [ngClass]="{ 'is-invalid': submitted && f.lastname.errors }" maxlength="100">
+                                    </div>
+                                    <span *ngIf="submitted && f.lastname.errors" class="error ">Last Name is required.</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label for="email"><span class="error ">*</span>Email</label>
+                                    <div class="input-group ">
+                                        <span class="input-group-addon "><i class="glyphicon glyphicon-envelope "></i></span>
+                                        <input [type]="'email'" placeholder="Email " class="form-control" formControlName="email" [ngClass]="{ 'is-invalid': submitted && f.email.errors }" />
+                                    </div>
+                                    <span *ngIf="submitted && f.email.errors" class="error ">Email is required.</span>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="phone"><span class="error ">*</span>Phone number</label>
+                                    <div class="input-group ">
+                                        <span class="input-group-addon "><i class="glyphicon glyphicon-phone-alt "></i></span>
+                                        <input [type]="'text'" mask="(000) 000-0000" placeholder="(___) ___-____" class="form-control" formControlName="phone_number" [ngClass]="{ 'is-invalid': submitted && f.phone_number.errors }" />
+                                    </div>
+                                    <span *ngIf="submitted && f.phone_number.errors" class="error ">Phone Number is required.</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <button class="btn btn-default btn-blue ">Register Now</button>
+                        </div>
+                        <hr />
+                        <div class="form-group ">
+                                <p>
+                                    <a [routerLink]='["/forgot-password"]'  style="text-decoration: none; ">Forgot your password?</a>
+                                </p>
+                                <p>
+                                    <a  [routerLink]='["/login"]'  style="text-decoration: none; ">Already have an account ? Login here</a>
+                                </p>
+                            </div>
+                    </form>
+                </article><!--//register-form-->
+                
+            </div><!--//page-row-->
+
+        </div>
+    </div><!--//page-wrapper-->
+</div>

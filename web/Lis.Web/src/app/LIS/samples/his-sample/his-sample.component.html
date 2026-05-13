@@ -1,0 +1,20 @@
+<div class="row">
+    <div class="col-md-6">
+        <!-- <div style="float:left; margin-right: 5px;">
+            <button type="button" class="btn btn-primary" (click)="getHisSample()" [disabled]="isInProgress" *ngIf="hasAccess()">Collect all
+                available
+                orders from HIS system.</button>
+        </div> -->
+        <div style="padding-left:6px; float:left;">
+            <a class="btn btn-default" [routerLink]="['/samples/create']" *ngIf="hasAccess()">Create Sample</a>
+        </div>
+    </div>
+    <div class="col-md-6">
+
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-12 col-md-12 col-lg-12">
+        <alert></alert>
+    </div>
+</div>

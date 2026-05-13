@@ -1,0 +1,274 @@
+﻿<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Zorya LIS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/x-icon" href="assets/images/favicon.ico">
+    <script src="https://code.jquery.com/jquery-3.5.0.min.js"
+            integrity="sha256-xNzN2a4ltkB44Mc/Jz3pT4iU1cmeR0FkXs4pru/JxaQ="
+            crossorigin="anonymous"></script>
+    <style>
+        /* Remove default bullets */
+        ul, #node0 {
+            list-style-type: none;
+        }
+
+        /* Remove margins and padding from the parent ul */
+        #node0 {
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Style the caret/arrow */
+        .caret {
+            cursor: pointer;
+            user-select: none; /* Prevent text selection */
+        }
+
+            /* Create the caret/arrow with a unicode, and style it */
+            .caret::before {
+                content: "\25B6";
+                color: black;
+                display: inline-block;
+                margin-right: 6px;
+            }
+
+        /* Rotate the caret/arrow icon when clicked on (using JavaScript) */
+        .caret-down::before {
+            transform: rotate(90deg);
+        }
+
+        /* Hide the nested list */
+        .nested {
+            display: none;
+        }
+
+        /* Show the nested list when the user clicks on the caret/arrow (with JavaScript) */
+        .active {
+            display: block;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="root">
+        <ul id="node0">
+            
+        </ul>
+    </div>
+</body>
+
+<script type="text/javascript">
+    $(function () {
+        
+        let option = {
+            'RecordPerPage': 0,
+            'CurrentPage': 1,
+            'SortColumnName': 'Name',
+            'SortDirection': true
+        };
+        
+        var currentUser = JSON.parse(localStorage.getItem('currentUser'))
+        var applicationServae = localStorage.getItem('applicationServae');
+        var mediaAPI = applicationServae+ '/api/media';
+        $.ajax({
+            url: mediaAPI,
+            type: "GET",
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader('accessKey', currentUser.accessKey);
+                xhr.setRequestHeader('ApiOption', JSON.stringify(option));
+                xhr.setRequestHeader('Authorization', `Bearer ${currentUser.accessToken}`);
+            },
+            success: function (data) {
+                
+                for (var i = 0; i < data.items.length; i++) {
+                    var node = $('<span class= "caret" >' + data.items[i].name + '</span >')
+                        .click(function () {
+                            $(this).parent().toggleClass('active');
+                            $(this).toggleClass('caret-down');
+                            getItems($(this).parent());
+                        });
+
+                    var li = $('<li></li>').html(node);
+
+                    $('#node0')
+                        .html(li);
+                }
+                
+                
+            }
+        });
+
+
+
+        function getItems(parent) {
+
+            var isOpen = $(parent).hasClass('active');
+
+            var itemMediaAPI = applicationServae + '/api/mediafile';
+            $(parent).find('.nested').remove();
+
+            if (isOpen) {
+                $.ajax({
+                    url: itemMediaAPI,
+                    type: "GET",
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader('accessKey', currentUser.accessKey);
+                        xhr.setRequestHeader('ApiOption', JSON.stringify(option));
+                        xhr.setRequestHeader('Authorization', `Bearer ${currentUser.accessToken}`);
+                    },
+                    success: function (data) {
+                        var ul = $('<ul class="nested active"></ul>')
+                        $(parent).append(ul);
+                        var qmedias = new Array();
+                        for (var i = 0; i < data.items.length; i++) {
+                            $(ul)
+                                .append($('<li> <input class="chk" id="' + data.items[i].id+'" type="checkbox" />' + createThumb(data.items[i]) + '</li>')
+                                    .click(function () {
+                                        var chk = $(this).find('.chk');
+                                        var isChecked = !$(chk).is(":checked");
+                                        var id = $(chk).prop("id");
+                                        var item = jQuery.grep(data.items, function (a) {
+                                            return a.id == id;
+                                        });
+
+                                        $(chk).prop('checked', isChecked);
+                                        if (isChecked) {
+                                            qmedias.push(item[0]);
+                                        }
+                                        else {
+                                            qmedias = jQuery.grep(qmedias, function (a) {
+                                                return a.id !== item[0].id;
+                                            });
+                                        }
+                                        localStorage.setItem("qmedias", JSON.stringify(qmedias));
+                                    }));
+
+                        }
+
+
+                    }
+                });
+            }
+        }
+
+        function createThumb(item) {
+            var type = mediaType(item.extention);
+            switch (type) {
+                case 1:
+                    return '<img src="' + item.url+'" height= "60" title= "' + item.name+'" /> &nbsp; ';
+                case 2:
+                    return '<img src="' + mediaDocumentIcon(item.extention) + '" height="60" title="' + item.name+'" />';
+                case 3:
+					var url = '<img src="' + thumbVideo(item.url) + '" height="60" title="' + item.name+'">';
+                    item.url = embedVideoUrl(item.url);
+                    return url;
+            }
+        }
+
+        function mediaDocumentIcon(ext) {
+            ext = ext.replace('.', '');
+            let path = `/assets/images/${ext}.png`;
+            return path;
+        }
+
+        function parseQueryString(queryString) {
+            let data = {},
+                pairs, separatorIndex, escapedKey, escapedValue, key, value;
+
+            if (queryString === null) {
+                return data;
+            }
+
+            pairs = queryString.split('&');
+
+            for (const pair of pairs) {
+
+                separatorIndex = pair.indexOf('=');
+
+                if (separatorIndex === -1) {
+                    escapedKey = pair;
+                    escapedValue = null;
+                } else {
+                    escapedKey = pair.substr(0, separatorIndex);
+                    escapedValue = pair.substr(separatorIndex + 1);
+                }
+
+                key = decodeURIComponent(escapedKey);
+                value = decodeURIComponent(escapedValue);
+
+                data[key] = value;
+            }
+
+            return data;
+        }
+
+        function thumbVideo(url){
+            if (url.indexOf('youtu.be') > 0) {
+                let fileName = url.substring(url.lastIndexOf('/'));
+                fileName = fileName.replace('/', '');
+                let thumb = `http://img.youtube.com/vi/${fileName}/0.jpg`;
+                return thumb;
+            }
+
+            if (url.indexOf('youtube.com') > 0) {
+
+                let fileName = url.substring(url.lastIndexOf('?'));
+                fileName = fileName.replace('?', '');
+                let querys = parseQueryString(fileName);
+
+                let mediaName = querys.v;
+
+                let thumb = `http://img.youtube.com/vi/${mediaName}/0.jpg`;
+                return thumb;
+            }
+        }
+
+        function embedVideoUrl(url){
+            if (url.indexOf('youtu.be') > 0) {
+                let fileName = url.substring(url.lastIndexOf('/'));
+                fileName = fileName.replace('/', '');
+                let thumb = `https://www.youtube.com/embed/${fileName}`;
+                return thumb;
+            }
+
+            if (url.indexOf('youtube.com') > 0) {
+
+                let fileName = url.substring(url.lastIndexOf('?'));
+                fileName = fileName.replace('?', '');
+                let querys = parseQueryString(fileName);
+
+                let mediaName = querys.v;
+
+                let thumb = `https://www.youtube.com/embed/${mediaName}`;
+                return thumb;
+            }
+        }
+
+        function mediaType(ext) {
+            switch (ext) {
+                case 'jpg':
+                case '.jpeg':
+                case 'gif':
+                case 'png':
+                    return 1; // Image
+                case 'pdf':
+                case 'doc':
+                case 'docx':
+                case 'ppt':
+                case 'pptx':
+                case 'xls':
+                case 'xlsx':
+                    return 2; // Document
+                case 'http':
+                    return 3;
+                default:
+                    return 2;
+            }
+        }
+    });
+
+</script>
+</html>

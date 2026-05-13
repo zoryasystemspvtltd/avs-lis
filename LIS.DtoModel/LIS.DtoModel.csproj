@@ -1,0 +1,128 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{FB39B26C-CE07-4229-8FFB-828BFCDA7AAE}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>LIS.DtoModel</RootNamespace>
+    <AssemblyName>LIS.DtoModel</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Interfaces\IApiError.cs" />
+    <Compile Include="Interfaces\IApiResponse.cs" />
+    <Compile Include="Interfaces\ICommunicationChannel.cs" />
+    <Compile Include="Interfaces\IEquipmentHeartBeatManager.cs" />
+    <Compile Include="Interfaces\IEquipmentManager.cs" />
+    <Compile Include="Interfaces\IEquipmentParamMappingManager.cs" />
+    <Compile Include="Interfaces\IDepartmentManager.cs" />
+    <Compile Include="Interfaces\IEquipmentTestMappingManager.cs" />
+    <Compile Include="Interfaces\IExternalApiManager.cs" />
+    <Compile Include="Interfaces\IFileHandler.cs" />
+    <Compile Include="Interfaces\IModuleManager.cs" />
+    <Compile Include="Interfaces\IParameter.cs" />
+    <Compile Include="Interfaces\IHisMasterManager.cs" />
+    <Compile Include="Interfaces\IPatientDetailsManager.cs" />
+    <Compile Include="Interfaces\IResponseManager.cs" />
+    <Compile Include="Interfaces\INewOrder.cs" />
+    <Compile Include="Interfaces\IQualityControlResult.cs" />
+    <Compile Include="Interfaces\IResult.cs" />
+    <Compile Include="Interfaces\IQualityControlManager.cs" />
+    <Compile Include="Interfaces\IResultManager.cs" />
+    <Compile Include="Interfaces\ISpecimenManager.cs" />
+    <Compile Include="Interfaces\ITestMappingMasterManager.cs" />
+    <Compile Include="Interfaces\ITestParameterManager.cs" />
+    <Compile Include="Interfaces\ITestRequestDetailsManager.cs" />
+    <Compile Include="Interfaces\IValidationError.cs" />
+    <Compile Include="Models\ApiError.cs" />
+    <Compile Include="Models\ApiResponse.cs" />
+    <Compile Include="Models\AuthDetails.cs" />
+    <Compile Include="Models\DTO\Mapping\Department.cs" />
+    <Compile Include="Models\DTO\Mapping\EquipmentHeartBeat.cs" />
+    <Compile Include="Models\DTO\Mapping\EquipmentMaster.cs" />
+    <Compile Include="Models\DTO\HIS\HISParameterMaster.cs" />
+    <Compile Include="Models\DTO\HIS\HisTestMaster.cs" />
+    <Compile Include="Models\DTO\Mapping\TestMappingMaster.cs" />
+    <Compile Include="Models\DTO\HIS\HISParameterRangMaster.cs" />
+    <Compile Include="Models\DTO\Inflow\PatientDetails.cs" />
+    <Compile Include="Models\DTO\Outflow\ControlResult.cs" />
+    <Compile Include="Models\DTO\Outflow\ControlResultDetails.cs" />
+    <Compile Include="Models\DTO\Outflow\TestResultDetails.cs" />
+    <Compile Include="Models\DTO\HIS\HISSpecimenMaster.cs" />
+    <Compile Include="Models\DTO\Inflow\TestParameter.cs" />
+    <Compile Include="Models\DTO\Inflow\TestRequestDetails.cs" />
+    <Compile Include="Models\DTO\Outflow\TestResult.cs" />
+    <Compile Include="Models\ExtendedMethods.cs" />
+    <Compile Include="Models\ExternalApi\TestAcknowledgement.cs" />
+    <Compile Include="Models\ExternalApi\TestDetail.cs" />
+    <Compile Include="Models\ExternalApi\TestResult.cs" />
+    <Compile Include="Interfaces\IModuleIdentity.cs" />
+    <Compile Include="Models\ItemList.cs" />
+    <Compile Include="Models\ListOptions.cs" />
+    <Compile Include="Models\NameValue.cs" />
+    <Compile Include="Models\Parameter.cs" />
+    <Compile Include="Models\TCPIPSettings.cs" />
+    <Compile Include="Models\PortSettings.cs" />
+    <Compile Include="Models\NewOrder.cs" />
+    <Compile Include="Models\QualityControlResult.cs" />
+    <Compile Include="Models\Result.cs" />
+    <Compile Include="Models\ReviewTest.cs" />
+    <Compile Include="Models\BarcodeElements.cs" />
+    <Compile Include="Models\SampleItem.cs" />
+    <Compile Include="Models\DTOEnums.cs" />
+    <Compile Include="Models\TestNameItem.cs" />
+    <Compile Include="Models\Token.cs" />
+    <Compile Include="Models\ValidationError.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+    <None Include="Scripts\jquery-3.7.1.min.map" />
+    <None Include="Scripts\jquery-3.7.1.slim.min.map" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Scripts\jquery-3.7.1.intellisense.js" />
+    <Content Include="Scripts\jquery-3.7.1.js" />
+    <Content Include="Scripts\jquery-3.7.1.min.js" />
+    <Content Include="Scripts\jquery-3.7.1.slim.js" />
+    <Content Include="Scripts\jquery-3.7.1.slim.min.js" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
