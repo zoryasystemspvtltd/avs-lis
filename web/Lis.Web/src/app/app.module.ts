@@ -43,7 +43,10 @@ import { BarcodeComponent } from './LIS/barcode/barcode.component';
 import { LeveyJenningChartComponent } from './LIS/chart/levey-jenning-chart/levey-jenning-chart.component';
 import { EditSampleComponent } from './LIS/samples/edit-sample/edit-sample.component';
 import { AlertEquipmentComponent } from './LIS/Equipment/list-equipment/alert-equipment.component';
-
+import { TestListComponent } from './LIS/testMaster/test-list/test-list.component';
+import { TestDetailsComponent } from './LIS/testMaster/test-details/test-details.component';
+import { TestCreateComponent } from './LIS/testMaster/test-create/test-create.component';
+import { TestEditComponent } from './LIS/testMaster/test-edit/test-edit.component';
 
 export const options: Partial<IConfig> | (() => Partial<IConfig>) = null;
 
@@ -126,7 +129,11 @@ export const options: Partial<IConfig> | (() => Partial<IConfig>) = null;
     QualityDetailsComponent,
     BarcodeComponent,
     LeveyJenningChartComponent,
-    EditSampleComponent
+    EditSampleComponent,
+    TestListComponent,
+    TestEditComponent,
+    TestCreateComponent,
+    TestDetailsComponent
   ],
   imports: [
     BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),

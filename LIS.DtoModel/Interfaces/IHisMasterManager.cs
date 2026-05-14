@@ -5,7 +5,7 @@ namespace LIS.DtoModel.Interfaces
 {
     public interface IHisMasterManager
     {
-        HisTestMaster GetTestById(string TestId);
+        HisTestMaster GetTestById(long TestId);
         IEnumerable<HISParameterMaster> GetParameterByTestId(int TestId);
         IEnumerable<HISParameterRangMaster> GetRangesByParameterId(int ParameterId);
         IEnumerable<HisTestMaster> GetTests();
