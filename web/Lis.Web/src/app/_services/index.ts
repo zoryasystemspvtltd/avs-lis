@@ -8,3 +8,4 @@ export * from './equipment.service';
 export * from './parameter.service';
 export * from './sample.service';
 export * from './quality.service';
+export * from './testmaster.service';

@@ -7,7 +7,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Threading.Tasks;
 using System.Web.Http;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Lis.Api.Controllers.Api
 {
@@ -25,12 +27,22 @@ namespace Lis.Api.Controllers.Api
 
         [AllowAnonymous]
         [HttpGet]
-        public IEnumerable<HisTestMaster> Get()
+        public async Task<dynamic> Get()
         {
             try
             {
-                var tests = hisManager.GetTests();
+                dynamic tests = new
+                {
+                    items = new List<HisTestMaster>()
+                };
+
+                foreach (var test in hisManager.GetTests())
+                {
+                    tests.items.Add(test);
+                }
+
                 return tests;
+                
             }
             catch (Exception e)
             {
@@ -50,7 +62,7 @@ namespace Lis.Api.Controllers.Api
         {
             try
             {
-                var tests = hisManager.GetTestById(Id);
+                var tests = hisManager.GetTestById(long.Parse(Id));
                 return tests;
             }
             catch (Exception e)

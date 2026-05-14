@@ -57,9 +57,9 @@ namespace LIS.BusinessLogic
             return ranges;
         }
 
-        public HisTestMaster GetTestById(string hisTestCode)
+        public HisTestMaster GetTestById(long id)
         {
-            var test = testRepo.Get(p => p.HISTestCode.Equals(hisTestCode, StringComparison.OrdinalIgnoreCase))
+            var test = testRepo.Get(p => p.Id==id)
                 .FirstOrDefault();
             return test;
         }

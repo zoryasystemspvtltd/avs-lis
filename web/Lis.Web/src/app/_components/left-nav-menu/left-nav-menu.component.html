@@ -70,6 +70,11 @@
                                     <span class="glyphicon glyphicon-blackboard text-success"></span><a [routerLinkActive]="'active-menu-link'" [routerLink]='["/equipments"]'>Equipment</a>
                                 </td>
                             </tr>
+                            <tr *ngIf="hasAccess('Equipments',63)">
+                                <td>
+                                    <span class="glyphicon glyphicon-blackboard text-success"></span><a [routerLinkActive]="'active-menu-link'" [routerLink]='["/test-master"]'>Test Master</a>
+                                </td>
+                            </tr>
                         </table>
                     </div>
                 </div>
