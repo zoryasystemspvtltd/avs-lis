@@ -17,7 +17,7 @@ export class ListEquipmentComponent implements OnInit {
     module: 'Equipments',
     hideAction:true,
     hideSearch:true,
-    auto_refresh:true,
+    auto_refresh:false,
     elements: [
       {
         heading: 'Equipment Name', fieldName: 'name', sortable: true, width: '60%', type: 'link'

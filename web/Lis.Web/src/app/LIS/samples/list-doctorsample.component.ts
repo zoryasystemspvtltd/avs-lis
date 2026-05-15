@@ -21,7 +21,7 @@ export class ListDoctorSampleComponent implements OnInit {
     allowPaging: true,
     filterStatus:3,
     //allowedFilter: [0, 1],
-    auto_refresh:true,
+    auto_refresh:false,
     isDoctor:true,
     elements: [
       {

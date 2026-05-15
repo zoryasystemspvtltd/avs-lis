@@ -15,9 +15,10 @@ export class TestListComponent implements OnInit {
     url: 'test-master',
     heading: 'Test Master',
     module: 'histest',
+    hideCreate: false,
     hideAction: true,
-    hideSearch: true,
-    allowPaging: false,
+    hideSearch: false,
+    allowPaging: true,
     elements: [
       {
         heading: 'Test Code', fieldName: 'hisTestCode', sortable: true, width: '20%', type: 'link'
@@ -28,9 +29,9 @@ export class TestListComponent implements OnInit {
       {
         heading: 'Specimen', fieldName: 'hisSpecimenName', sortable: true, width: '25%', type: 'label'
       },
-      // {
-      //   heading: 'Department', fieldName: 'department.name', sortable: true, width: '20%', type: 'label'
-      // },
+      {
+        heading: 'Department', fieldName: 'departmentName', sortable: true, width: '20%', type: 'label'
+      },
       {
         heading: 'Status', fieldName: 'isActive', sortable: true, width: '10%', type: 'label'
       }
