@@ -75,10 +75,10 @@ export class TestEditComponent implements OnInit {
 
   initForms() {
     this.editTestForm = this.formBuilder.group({
-      testCode: [this.item.testCode, Validators.required],
-      testName: [this.item.testName, Validators.required],
-      specimenId: [this.item.specimenId, Validators.required],
-      departmentId: [this.item.departmentId, Validators.required],
+      hisTestCode: [this.item.hisTestCode, Validators.required],
+      hisTestCodeDescription: [this.item.hisTestCodeDescription, Validators.required],
+      hisSpecimenCode: [this.item.hisSpecimenCode, Validators.required],
+      departmentCode: [this.item.departmentCode, Validators.required],
       isActive: [this.item.isActive]
     });
   }
@@ -103,18 +103,16 @@ export class TestEditComponent implements OnInit {
     const formValue = this.editTestForm.value;
     const test: any = {
       id: this.id,
-      testCode: formValue.testCode,
-      testName: formValue.testName,
-      specimenId: formValue.specimenId,
-      specimen: this.item.specimen,
-      departmentId: formValue.departmentId,
-      department: this.item.department,
-      createdDate: this.item.createdDate,
-      modifiedDate: new Date(),
+      hisTestCode: formValue.hisTestCode,
+      hisTestCodeDescription  : formValue.hisTestCodeDescription,
+      hisSpecimenCode: formValue.hisSpecimenCode,
+      hisSpecimenName: this.item.hisSpecimenName,
+      departmentCode: formValue.departmentCode,
+      createdOn: this.item.createdOn,
       isActive: formValue.isActive
     };
 
-    this.testMasterService.update(this.id, test)
+    this.testMasterService.update(test)
       .subscribe(
         data => {
           this.alertService.success('Test updated successfully');

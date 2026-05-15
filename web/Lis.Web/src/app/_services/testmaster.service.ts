@@ -10,49 +10,50 @@ export class TestMasterService {
      constructor(private http: HttpClient, private authenticationService: AuthenticationService) { }
 
     getAll() {
-        return this.http.get<any[]>(`${environment.ApplicationServer}/api/HisTest/`)
+        return this.http.get<any[]>(`${environment.ApplicationServer}/api/hisParameterRange/`)
             .pipe(map(response => {
                 return response;
             }));
     }
 
     getById(id: string) {
-        return this.http.get<any>(`${environment.ApplicationServer}/api/HisTest/${id}`)
+        return this.http.get<any>(`${environment.ApplicationServer}/api/histest/${id}`)
             .pipe(map(response => {
                 return response;
             }));
     }
 
     create(data: any) {
-        return this.http.post<any>(`${environment.ApplicationServer}/api/HisTest/`, data)
+        debugger;
+        return this.http.post<any>(`${environment.ApplicationServer}/api/histest/`, data)
             .pipe(map(response => {
                 return response;
             }));
     }
 
-    update(id: string, data: any) {
-        return this.http.put<any>(`${environment.ApplicationServer}/api/HisTest/${id}`, data)
+    update(data: any) {
+        return this.http.put<any>(`${environment.ApplicationServer}/api/histest/`, data)
             .pipe(map(response => {
                 return response;
             }));
     }
 
     delete(id: string) {
-        return this.http.delete<any>(`${environment.ApplicationServer}/api/HisTest/${id}`)
+        return this.http.delete<any>(`${environment.ApplicationServer}/api/histest/${id}`)
             .pipe(map(response => {
                 return response;
             }));
     }
 
     getSpecimens() {
-        return this.http.get<any[]>(`${environment.ApplicationServer}/api/Specimen/`)
+        return this.http.get<any[]>(`${environment.ApplicationServer}/api/specimens/`)
             .pipe(map(response => {
                 return response;
             }));
     }
 
     getDepartments() {
-        return this.http.get<any[]>(`${environment.ApplicationServer}/api/Department/`)
+        return this.http.get<any[]>(`${environment.ApplicationServer}/api/department/`)
             .pipe(map(response => {
                 return response;
             }));

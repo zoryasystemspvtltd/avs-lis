@@ -2,6 +2,7 @@
 using LIS.DtoModel.Interfaces;
 using LIS.DtoModel.Models;
 using LIS.Logger;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,34 +16,156 @@ namespace Lis.Api.Controllers.Api
 {
     public class HisTestController : ApiController
     {
-        private IHisMasterManager hisManager;
+        private IHisTestMasterManager hisManager;
         private ILogger logger;
         private IResponseManager responseMgr;
-        public HisTestController(IHisMasterManager hisManager, IResponseManager responseManager, ILogger Logger)
+        public HisTestController(IHisTestMasterManager hisManager, IResponseManager responseManager, ILogger Logger)
         {
             this.hisManager = hisManager;
             responseMgr = responseManager;
             logger = Logger;
         }
 
+        private ListOptions ApiOption
+        {
+            get
+            {
+                var apiOption = System.Web.HttpContext.Current.Request.Headers.GetValues("ApiOption");
+                if (apiOption == null || apiOption.Count() == 0)
+                {
+                    throw new KeyNotFoundException("Invalid Option specified");
+                }
+
+                var option = JsonConvert.DeserializeObject<ListOptions>(apiOption.FirstOrDefault(),
+                new JsonSerializerSettings()
+                {
+                    ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
+                });
+                return option;
+            }
+        }
+
+        /// <summary>
+        /// Add Test Master details to database
+        /// </summary>
+        /// <param name="specimen"> Test object of type LIS.DtoModel</param>
+        /// <returns>HttpResponseMessage</returns>
         [AllowAnonymous]
-        [HttpGet]
-        public async Task<dynamic> Get()
+        public HttpResponseMessage Post(HisTestMaster test)
         {
             try
             {
-                dynamic tests = new
-                {
-                    items = new List<HisTestMaster>()
-                };
+                APIResponse aPIResponse = null;
 
-                foreach (var test in hisManager.GetTests())
+                if (ModelState.IsValid)
                 {
-                    tests.items.Add(test);
+                    try
+                    {
+                        hisManager.Add(test);
+                        aPIResponse = responseMgr.CreateResponse(HttpStatusCode.OK, "Test added successfully", null, null);
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.LogError(ex.Message);
+                        aPIResponse = responseMgr.CreateResponse(HttpStatusCode.OK, ex.Message, null, ex);
+                        return Request.CreateResponse<APIResponse>(HttpStatusCode.InternalServerError, aPIResponse);
+                    }
+                }
+                else
+                {
+                    return Request.CreateResponse(HttpStatusCode.PreconditionFailed, ModelState.Keys);
                 }
 
+                return Request.CreateResponse<APIResponse>(HttpStatusCode.OK, aPIResponse);
+            }
+            catch (Exception e)
+            {
+                logger.LogException(e);
+                return null;
+            }
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        public HttpResponseMessage Put(HisTestMaster test)
+        {
+            try
+            {
+                APIResponse aPIResponse = null;
+
+                if (ModelState.IsValid)
+                {
+                    try
+                    {
+                        hisManager.Update(test);
+                        aPIResponse = responseMgr.CreateResponse(HttpStatusCode.OK, "Test updated successfully", null, null);
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.LogError(ex.Message);
+                        aPIResponse = responseMgr.CreateResponse(HttpStatusCode.OK, ex.Message, null, ex);
+                        return Request.CreateResponse<APIResponse>(HttpStatusCode.InternalServerError, aPIResponse);
+                    }
+                }
+                else
+                {
+                    return Request.CreateResponse(HttpStatusCode.PreconditionFailed, ModelState.Keys);
+                }
+
+                return Request.CreateResponse<APIResponse>(HttpStatusCode.OK, aPIResponse);
+            }
+            catch (Exception e)
+            {
+                logger.LogException(e);
+                return null;
+            }
+        }
+
+        [AllowAnonymous]
+        [HttpPut]
+        public HttpResponseMessage Delete(HisTestMaster test)
+        {
+            try
+            {
+                APIResponse aPIResponse = null;
+
+                if (ModelState.IsValid)
+                {
+                    try
+                    {
+                        hisManager.Delete(test);
+                        aPIResponse = responseMgr.CreateResponse(HttpStatusCode.OK, "Test deleted successfully", null, null);
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.LogError(ex.Message);
+                        aPIResponse = responseMgr.CreateResponse(HttpStatusCode.OK, ex.Message, null, ex);
+                        return Request.CreateResponse<APIResponse>(HttpStatusCode.InternalServerError, aPIResponse);
+                    }
+                }
+                else
+                {
+                    return Request.CreateResponse(HttpStatusCode.PreconditionFailed, ModelState.Keys);
+                }
+
+                return Request.CreateResponse<APIResponse>(HttpStatusCode.OK, aPIResponse);
+            }
+            catch (Exception e)
+            {
+                logger.LogException(e);
+                return null;
+            }
+        }
+
+        [AllowAnonymous]
+        [HttpGet]
+        public ItemList<HisTestMaster> Get()
+        {
+            try
+            {
+                var tests = hisManager.Get(ApiOption);
                 return tests;
-                
+
             }
             catch (Exception e)
             {

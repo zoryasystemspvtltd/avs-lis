@@ -25,6 +25,9 @@ namespace LIS.DtoModel.Models
         [ForeignKey("Departments")]
         public string DepartmentCode { get; set; }
 
+        [NotMapped]
+        public string DepartmentName { get; set; }
+
         [JsonIgnore]
         public virtual Departments Departments { get; set; }
 

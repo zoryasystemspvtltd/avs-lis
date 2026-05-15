@@ -21,7 +21,7 @@ export class ListTestedSampleComponent implements OnInit {
     allowPaging: true,
     filterStatus: 2,
     //allowedFilter: [0, 1],
-    auto_refresh:true,
+    auto_refresh:false,
     isTechnician:true,
     elements: [
       {

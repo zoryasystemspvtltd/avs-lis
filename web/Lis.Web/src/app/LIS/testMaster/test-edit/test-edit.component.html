@@ -14,20 +14,20 @@
                                 <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
                                     <div class="input-group">
                                         <span class="input-group-addon"><i class="glyphicon glyphicon-barcode"></i></span>
-                                        <input [type]="'text'" class="form-control" formControlName="testCode"
+                                        <input [type]="'text'" class="form-control" formControlName="hisTestCode"
                                             placeholder="Enter Test Code" maxlength="50">
                                     </div>
-                                    <span *ngIf="isInValid('testCode')" class="error">Test Code is required.</span>
+                                    <span *ngIf="isInValid('hisTestCode')" class="error">Test Code is required.</span>
                                 </div>
                                 <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Test Name<span
                                             class="error">*</span></label></div>
                                 <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
                                     <div class="input-group">
                                         <span class="input-group-addon"><i class="glyphicon glyphicon-tag"></i></span>
-                                        <input [type]="'text'" class="form-control" formControlName="testName"
+                                        <input [type]="'text'" class="form-control" formControlName="hisTestCodeDescription"
                                             placeholder="Enter Test Name" maxlength="100">
                                     </div>
-                                    <span *ngIf="isInValid('testName')" class="error">Test Name is required.</span>
+                                    <span *ngIf="isInValid('hisTestCodeDescription')" class="error">Test Name is required.</span>
                                 </div>
                             </div>
                             <br />
@@ -37,28 +37,28 @@
                                 <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
                                     <div class="input-group">
                                         <span class="input-group-addon"><i class="glyphicon glyphicon-list"></i></span>
-                                        <select class="form-control" formControlName="specimenId">
+                                        <select class="form-control" formControlName="hisSpecimenCode">
                                             <option value="">Select Specimen</option>
-                                            <option *ngFor="let specimen of specimens" value="{{specimen.id}}">
+                                            <option *ngFor="let specimen of specimens" value="{{specimen.code}}">
                                                 {{specimen.name}}
                                             </option>
                                         </select>
                                     </div>
-                                    <span *ngIf="isInValid('specimenId')" class="error">Specimen is required.</span>
+                                    <span *ngIf="isInValid('hisSpecimenCode')" class="error">Specimen is required.</span>
                                 </div>
                                 <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Department<span
                                             class="error">*</span></label></div>
                                 <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
                                     <div class="input-group">
                                         <span class="input-group-addon"><i class="glyphicon glyphicon-list"></i></span>
-                                        <select class="form-control" formControlName="departmentId">
+                                        <select class="form-control" formControlName="departmentCode">
                                             <option value="">Select Department</option>
-                                            <option *ngFor="let department of departments" value="{{department.id}}">
+                                            <option *ngFor="let department of departments" value="{{department.code}}">
                                                 {{department.name}}
                                             </option>
                                         </select>
                                     </div>
-                                    <span *ngIf="isInValid('departmentId')" class="error">Department is required.</span>
+                                    <span *ngIf="isInValid('departmentCode')" class="error">Department is required.</span>
                                 </div>
                             </div>
                             <br />

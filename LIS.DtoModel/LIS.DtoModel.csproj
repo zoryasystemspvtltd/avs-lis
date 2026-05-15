@@ -56,9 +56,10 @@
     <Compile Include="Interfaces\IEquipmentTestMappingManager.cs" />
     <Compile Include="Interfaces\IExternalApiManager.cs" />
     <Compile Include="Interfaces\IFileHandler.cs" />
+    <Compile Include="Interfaces\IHisMasterManager.cs" />
     <Compile Include="Interfaces\IModuleManager.cs" />
     <Compile Include="Interfaces\IParameter.cs" />
-    <Compile Include="Interfaces\IHisMasterManager.cs" />
+    <Compile Include="Interfaces\IHisTestMasterManager.cs" />
     <Compile Include="Interfaces\IPatientDetailsManager.cs" />
     <Compile Include="Interfaces\IResponseManager.cs" />
     <Compile Include="Interfaces\INewOrder.cs" />

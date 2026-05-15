@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AlertService,TestMasterService } from '../../../_services';
+import { AlertService, TestMasterService } from '../../../_services';
 
 @Component({
   selector: 'app-test-create',
@@ -10,7 +10,7 @@ import { AlertService,TestMasterService } from '../../../_services';
 })
 export class TestCreateComponent implements OnInit {
 
-  public isLoaded: boolean;
+  public isLoaded: boolean = false;
   submitted: boolean = false;
   loading: boolean = false;
   createTestForm: FormGroup;
@@ -60,10 +60,10 @@ export class TestCreateComponent implements OnInit {
 
   initForms() {
     this.createTestForm = this.formBuilder.group({
-      testCode: ['', Validators.required],
-      testName: ['', Validators.required],
-      specimenId: ['', Validators.required],
-      departmentId: ['', Validators.required],
+      hisTestCode: ['', Validators.required],
+      hisTestCodeDescription: ['', Validators.required],
+      hisSpecimenCode: ['', Validators.required],
+      departmentCode: ['', Validators.required],
       isActive: [true]
     });
   }
@@ -86,25 +86,21 @@ export class TestCreateComponent implements OnInit {
 
     this.loading = true;
     const formValue = this.createTestForm.value;
+    const selectedSpecimen = this.specimens.find(s => s.code === formValue.hisSpecimenCode);
     const test: any = {
-      id: '',
-      testCode: formValue.testCode,
-      testName: formValue.testName,
-      specimenId: formValue.specimenId,
-      specimen: null,
-      departmentId: formValue.departmentId,
-      department: null,
-      createdDate: new Date(),
-      modifiedDate: new Date(),
-      isActive: formValue.isActive
+      hisTestCode: formValue.hisTestCode,
+      hisTestCodeDescription: formValue.hisTestCodeDescription,
+      hisSpecimenCode: formValue.hisSpecimenCode,
+      hisSpecimenName: selectedSpecimen ? selectedSpecimen.name : null,
+      departmentCode: formValue.departmentCode,
+      isActive: formValue.isActive === true || formValue.isActive === 'true'
     };
 
     this.testMasterService.create(test)
-      .subscribe(
-        data => {
-          this.alertService.success('Test added successfully');
-          this.router.navigate(['/test-master']);
-        },
+      .subscribe(data => {
+        this.alertService.success('Test added successfully');
+        this.router.navigate(['/test-master']);
+      },
         error => {
           this.loading = false;
           this.alertService.error(error?.error?.message || 'Failed to add test');

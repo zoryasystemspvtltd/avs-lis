@@ -67,6 +67,7 @@
     <Compile Include="Helper\Config.cs" />
     <Compile Include="Helper\Helper.cs" />
     <Compile Include="Helper\ObjectExtensionMethods.cs" />
+    <Compile Include="HISTestMasterManager.cs" />
     <Compile Include="HISParameterRangeMasterManager.cs" />
     <Compile Include="PatientDetailManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

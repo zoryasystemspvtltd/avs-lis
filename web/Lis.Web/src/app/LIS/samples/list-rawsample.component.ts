@@ -23,7 +23,7 @@ export class ListRawSampleComponent implements OnInit {
     allowPaging: true,
     //filterStatus:0,
     allowedFilter: [0, 1],
-    auto_refresh:true,
+    auto_refresh:false,
     isNew:true,
     elements: [
       {
