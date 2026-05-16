@@ -8,5 +8,5 @@ import { Component, OnInit } from '@angular/core';
 export class RawSampleChartComponent {
   type: number = 0;
   title: string = 'Daily sample status';
-  subtitle: string = 'New vs Processing'
+  subtitle: string = 'New vs processing';
 }

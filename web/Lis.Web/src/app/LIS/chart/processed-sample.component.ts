@@ -6,6 +6,6 @@ import { Component, OnInit } from '@angular/core';
 })
 export class ProcessedSampleChartComponent {
   type: number = 1;
-  title: string = 'Technician\'s - Daily report status';
-  subtitle: string = 'Approval vs Rejection'
+  title: string = 'Technician daily report status';
+  subtitle: string = 'Approval vs rejection';
 }
