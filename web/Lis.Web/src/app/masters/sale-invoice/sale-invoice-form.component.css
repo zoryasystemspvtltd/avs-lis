@@ -1,5 +1,103 @@
-.print-invoice h3 {
+.sale-invoice-page .invoice-header-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.sale-invoice-page .invoice-title {
+  margin: 0;
+}
+
+.sale-invoice-page .invoice-status-badges .label {
+  margin-left: 6px;
+  font-size: 12px;
+}
+
+.sale-invoice-page .patient-info-row {
+  margin-bottom: 4px;
+}
+
+.sale-invoice-page .invoice-lines-table th.col-test {
+  min-width: 220px;
+}
+
+.sale-invoice-page .invoice-lines-table .col-num {
+  width: 100px;
+}
+
+.sale-invoice-page .invoice-lines-table .col-qty {
+  width: 70px;
+}
+
+.sale-invoice-page .invoice-lines-table .col-action {
+  width: 44px;
+}
+
+.sale-invoice-page .line-net {
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.sale-invoice-page .invoice-totals-panel {
+  margin-top: 16px;
+  max-width: 360px;
+  margin-left: auto;
+  border: 1px solid #d4e8ec;
+  border-radius: 4px;
+  background: rgba(26, 127, 140, 0.05);
+  padding: 8px 12px;
+}
+
+.sale-invoice-page .invoice-totals-table {
+  margin-bottom: 0;
+}
+
+.sale-invoice-page .invoice-totals-table td {
+  border: none !important;
+  padding: 4px 8px;
+}
+
+.sale-invoice-page .totals-net-row td {
+  border-top: 1px solid #d4e8ec !important;
+  padding-top: 8px !important;
+}
+
+.sale-invoice-page .invoice-actions {
+  margin-top: 18px;
+}
+
+.sale-invoice-page .invoice-actions .btn {
+  margin-right: 6px;
+  margin-bottom: 6px;
+  min-height: 34px;
+}
+
+.sale-invoice-page .invoice-actions .btn[disabled] {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.print-invoice .print-title {
   color: #155f69;
+  margin-bottom: 16px;
+}
+
+.print-invoice .print-meta {
+  margin-bottom: 12px;
+}
+
+.print-invoice .print-patient {
+  font-size: 15px;
+}
+
+.print-invoice .print-lines-table {
+  margin-top: 8px;
+}
+
+.print-invoice .print-totals {
+  margin-top: 12px;
 }
 
 .print-invoice .no-print {
@@ -9,5 +107,15 @@
 @media print {
   .no-print {
     display: none !important;
+  }
+
+  .print-invoice .print-body {
+    padding: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .sale-invoice-page .invoice-totals-panel {
+    max-width: 100%;
   }
 }

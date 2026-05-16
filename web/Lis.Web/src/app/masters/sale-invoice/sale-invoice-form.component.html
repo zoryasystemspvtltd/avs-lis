@@ -1,12 +1,16 @@
 <br>
-<div class="col-md-10 col-md-offset-1" [class.print-invoice]="isPrintView">
-  <h3 *ngIf="!isPrintView">Sale Invoice {{form?.value?.invoiceNo}}
-    <small class="text-muted" *ngIf="form?.value?.id"> — Status: {{form.value.invoiceStatus}} / Payment: {{form.value.paymentStatus}}</small>
-  </h3>
-  <h3 *ngIf="isPrintView" class="text-center">TAX INVOICE<br><small>{{form.value.invoiceNo}}</small></h3>
+<div class="col-md-10 col-md-offset-1 sale-invoice-page" [class.print-invoice]="isPrintView">
+  <div class="invoice-header-row" *ngIf="!isPrintView">
+    <h3 class="invoice-title">Sale Invoice {{form?.value?.invoiceNo}}</h3>
+    <div class="invoice-status-badges" *ngIf="form?.value?.id">
+      <span class="label" [ngClass]="form.value.invoiceStatus | invoiceStatusClass">{{form.value.invoiceStatus | invoiceStatusLabel}}</span>
+      <span class="label" [ngClass]="form.value.paymentStatus | paymentStatusClass">{{form.value.paymentStatus | paymentStatusLabel}}</span>
+    </div>
+  </div>
+  <h3 *ngIf="isPrintView" class="text-center print-title">TAX INVOICE<br><small>{{form.value.invoiceNo}}</small></h3>
 
   <form [formGroup]="form" *ngIf="!isPrintView">
-    <div class="row">
+    <div class="row patient-info-row">
       <div class="col-md-3 form-group">
         <label>Invoice No</label>
         <input class="form-control" formControlName="invoiceNo" readonly />
@@ -46,67 +50,88 @@
       </div>
     </div>
 
-    <table class="table table-bordered qtable">
+    <table class="table table-bordered qtable invoice-lines-table">
       <thead>
         <tr>
-          <th>Test</th>
-          <th>Rate</th>
-          <th>Qty</th>
-          <th>Discount</th>
-          <th>Tax</th>
-          <th>Net</th>
-          <th></th>
+          <th class="col-test">Test</th>
+          <th class="col-num text-right">Rate</th>
+          <th class="col-qty text-right">Qty</th>
+          <th class="col-num text-right">Discount</th>
+          <th class="col-num text-right">Tax</th>
+          <th class="col-num text-right">Net</th>
+          <th class="col-action"></th>
         </tr>
       </thead>
       <tbody formArrayName="lines">
         <tr *ngFor="let line of lines.controls; let i=index" [formGroupName]="i">
           <td>
-            <select class="form-control" formControlName="testId" (change)="onTestChange(i)">
+            <select class="form-control input-sm" formControlName="testId" (change)="onTestChange(i)">
               <option value="">-- Test --</option>
               <option *ngFor="let t of tests" [value]="t.id">{{t.hisTestCode}} - {{t.hisTestCodeDescription}}</option>
             </select>
           </td>
-          <td><input type="number" class="form-control" formControlName="rate" (change)="recalcLine(i)" /></td>
-          <td><input type="number" class="form-control" formControlName="quantity" (change)="recalcLine(i)" /></td>
-          <td><input type="number" class="form-control" formControlName="discountAmount" (change)="recalcLine(i)" /></td>
-          <td><input type="number" class="form-control" formControlName="taxAmount" (change)="recalcLine(i)" /></td>
-          <td>{{line.value.netAmount | number:'1.2-2'}}</td>
-          <td><button type="button" class="btn btn-xs btn-danger" (click)="removeLine(i)">X</button></td>
+          <td class="text-right"><input type="number" class="form-control input-sm text-right" formControlName="rate" (change)="recalcLine(i)" /></td>
+          <td class="text-right"><input type="number" class="form-control input-sm text-right" formControlName="quantity" (change)="recalcLine(i)" /></td>
+          <td class="text-right"><input type="number" class="form-control input-sm text-right" formControlName="discountAmount" (change)="recalcLine(i)" /></td>
+          <td class="text-right"><input type="number" class="form-control input-sm text-right" formControlName="taxAmount" (change)="recalcLine(i)" /></td>
+          <td class="text-right line-net">{{line.value.netAmount | currency:'INR'}}</td>
+          <td class="text-center"><button type="button" class="btn btn-xs btn-danger" (click)="removeLine(i)" [disabled]="isCancelled">X</button></td>
         </tr>
       </tbody>
     </table>
-    <button type="button" class="btn btn-default btn-sm" (click)="addLine()">+ Add Test</button>
+    <button type="button" class="btn btn-default btn-sm" (click)="addLine()" [disabled]="isCancelled">+ Add Test</button>
 
-    <div class="row" style="margin-top:15px">
-      <div class="col-md-3 col-md-offset-6"><strong>Gross:</strong> {{form.value.grossAmount | number:'1.2-2'}}</div>
-      <div class="col-md-3"><strong>Net:</strong> {{form.value.netAmount | number:'1.2-2'}}</div>
+    <div class="invoice-totals-panel">
+      <table class="table table-condensed invoice-totals-table">
+        <tbody>
+          <tr><td>Gross Amount</td><td class="text-right">{{form.value.grossAmount | currency:'INR'}}</td></tr>
+          <tr><td>Discount</td><td class="text-right">{{form.value.discountAmount | currency:'INR'}}</td></tr>
+          <tr><td>Tax</td><td class="text-right">{{form.value.taxAmount | currency:'INR'}}</td></tr>
+          <tr class="totals-net-row"><td><strong>Net Amount</strong></td><td class="text-right"><strong>{{form.value.netAmount | currency:'INR'}}</strong></td></tr>
+          <tr *ngIf="form.value.paidAmount"><td>Paid</td><td class="text-right">{{form.value.paidAmount | currency:'INR'}}</td></tr>
+          <tr *ngIf="form.value.dueAmount"><td>Due</td><td class="text-right">{{form.value.dueAmount | currency:'INR'}}</td></tr>
+        </tbody>
+      </table>
     </div>
 
-    <div class="form-group" style="margin-top:15px">
+    <div class="form-group invoice-actions">
       <button type="button" class="btn btn-primary" (click)="onSubmit(false)" [disabled]="loading || saving || isCancelled">Save Draft</button>
       <button type="button" class="btn btn-success" (click)="onSubmit(true)" [disabled]="loading || saving || isCancelled">Confirm</button>
-      <button type="button" class="btn btn-info" (click)="markPaid()" *ngIf="form.value.id && !isPaid && !isCancelled">Mark Paid</button>
-      <button type="button" class="btn btn-warning" (click)="cancelInvoice()" *ngIf="form.value.id && !isCancelled">Cancel Invoice</button>
+      <button type="button" class="btn btn-info" (click)="markPaid()" *ngIf="form.value.id && !isPaid && !isCancelled" [disabled]="loading || saving">Mark Paid</button>
+      <button type="button" class="btn btn-warning" (click)="cancelInvoice()" *ngIf="form.value.id && !isCancelled" [disabled]="loading || saving">Cancel Invoice</button>
       <button type="button" class="btn btn-default" (click)="back()">Back</button>
       <a *ngIf="form.value.id" class="btn btn-default" [routerLink]="['/sale-invoices/print', form.value.id]">Print</a>
     </div>
   </form>
 
   <div *ngIf="isPrintView && invoiceDto" class="print-body">
-    <p><strong>Patient:</strong> {{invoiceDto.invoice.patientName}}</p>
-    <p><strong>Date:</strong> {{invoiceDto.invoice.invoiceDate | date:'dd/MM/yyyy'}}</p>
-    <table class="table table-bordered">
-      <thead><tr><th>Test</th><th>Rate</th><th>Qty</th><th>Net</th></tr></thead>
+    <div class="print-meta row">
+      <div class="col-xs-6">
+        <p class="print-patient"><strong>Patient:</strong> {{invoiceDto.invoice.patientName}}</p>
+        <p *ngIf="invoiceDto.invoice.refDoctorName"><strong>Doctor:</strong> {{invoiceDto.invoice.refDoctorName}}</p>
+      </div>
+      <div class="col-xs-6 text-right">
+        <p><strong>Date:</strong> {{invoiceDto.invoice.invoiceDate | date:'dd/MM/yyyy'}}</p>
+        <p>
+          <span class="label" [ngClass]="invoiceDto.invoice.invoiceStatus | invoiceStatusClass">{{invoiceDto.invoice.invoiceStatus | invoiceStatusLabel}}</span>
+          <span class="label" [ngClass]="invoiceDto.invoice.paymentStatus | paymentStatusClass">{{invoiceDto.invoice.paymentStatus | paymentStatusLabel}}</span>
+        </p>
+      </div>
+    </div>
+    <table class="table table-bordered qtable print-lines-table">
+      <thead><tr><th>Test</th><th class="text-right">Rate</th><th class="text-right">Qty</th><th class="text-right">Net</th></tr></thead>
       <tbody>
         <tr *ngFor="let d of invoiceDto.details">
           <td>{{getTestName(d.testId)}}</td>
-          <td>{{d.rate}}</td>
-          <td>{{d.quantity}}</td>
-          <td>{{d.netAmount}}</td>
+          <td class="text-right">{{d.rate | currency:'INR'}}</td>
+          <td class="text-right">{{d.quantity}}</td>
+          <td class="text-right">{{d.netAmount | currency:'INR'}}</td>
         </tr>
       </tbody>
     </table>
-    <p class="text-right"><strong>Net Amount: {{invoiceDto.invoice.netAmount | number:'1.2-2'}}</strong></p>
+    <div class="print-totals">
+      <p class="text-right"><strong>Net Amount: {{invoiceDto.invoice.netAmount | currency:'INR'}}</strong></p>
+    </div>
     <button class="btn btn-primary no-print" (click)="print()">Print</button>
   </div>
 </div>

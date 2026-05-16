@@ -18,7 +18,7 @@ import { HomeComponent } from './home/home.component';
 import { LoginComponent, ChangePasswordComponent, ForgotPasswordComponent, RegisterComponent } from './authentication';
 import { AboutComponent, ContactComponent, TremsComponent } from './annonimious';
 import { LogListComponent } from './activitylog/log-list/log-list.component';
-import { StatusTypePipe, ActivityTypePipe } from './_pipes';
+import { StatusTypePipe, ActivityTypePipe, InvoiceStatusLabelPipe, InvoiceStatusClassPipe, PaymentStatusLabelPipe, PaymentStatusClassPipe } from './_pipes';
 import { ProfileComponent } from './authentication/profile/profile.component';
 import { NgxBarcodeModule } from 'ngx-barcode';
 
@@ -74,6 +74,10 @@ export const options: Partial<IConfig> | (() => Partial<IConfig>) = null;
     AvailableAppComponent,
     StatusTypePipe,
     ActivityTypePipe,
+    InvoiceStatusLabelPipe,
+    InvoiceStatusClassPipe,
+    PaymentStatusLabelPipe,
+    PaymentStatusClassPipe,
     TinyMceEditorComponent,
     NgbdModalComponent,
     CreateModuleComponent,

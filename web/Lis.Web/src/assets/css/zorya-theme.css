@@ -178,6 +178,47 @@ a:hover {
   border-top: 3px solid var(--zorya-primary);
 }
 
+/* Status badges (invoice / payment) */
+.label.zorya-badge-draft {
+  background-color: #95a5a6;
+  color: #fff;
+}
+
+.label.zorya-badge-confirmed {
+  background-color: var(--zorya-primary);
+  color: #fff;
+}
+
+.label.zorya-badge-paid {
+  background-color: #2e9d6b;
+  color: #fff;
+}
+
+.label.zorya-badge-cancelled {
+  background-color: #c0392b;
+  color: #fff;
+}
+
+.label.zorya-badge-payment-unpaid {
+  background-color: #e67e22;
+  color: #fff;
+}
+
+.label.zorya-badge-payment-partial {
+  background-color: #f39c12;
+  color: #fff;
+}
+
+.label.zorya-badge-payment-paid {
+  background-color: #2e9d6b;
+  color: #fff;
+}
+
+.label.zorya-badge-default {
+  background-color: #7f8c8d;
+  color: #fff;
+}
+
 /* Invoice print */
 .print-invoice .print-body {
   background: var(--zorya-surface);
@@ -205,4 +246,11 @@ a:hover {
   background-color: rgba(26, 127, 140, 0.1);
   border-color: var(--zorya-border);
   color: var(--zorya-primary-dark);
+}
+
+/* Disabled buttons — clearer affordance */
+.btn[disabled],
+.btn.disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }

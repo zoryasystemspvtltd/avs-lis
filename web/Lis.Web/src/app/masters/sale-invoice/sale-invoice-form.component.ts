@@ -196,6 +196,7 @@ export class SaleInvoiceFormComponent implements OnInit {
     const val = this.form.getRawValue();
     const dto = {
       invoice: Object.assign({}, val, {
+        id: val.id || (this.id ? +this.id : 0),
         invoiceDate: new Date(val.invoiceDate),
         invoiceStatus: confirm ? 1 : (val.invoiceStatus || 0),
         patientId: +val.patientId

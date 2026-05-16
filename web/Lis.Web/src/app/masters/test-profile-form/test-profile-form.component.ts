@@ -110,7 +110,7 @@ export class TestProfileFormComponent implements OnInit {
 
     const val = this.form.value;
     const profile = {
-      id: val.id || 0,
+      id: this.id ? +this.id : (val.id || 0),
       code: val.code,
       name: val.name,
       packageRate: val.packageRate,

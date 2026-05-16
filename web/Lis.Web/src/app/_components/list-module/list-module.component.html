@@ -109,6 +109,12 @@
                                     <div *ngSwitchCase="'currency'" class="currency-element">
                                         {{item[element.fieldName] | currency:'INR'}}
                                     </div>
+                                    <div *ngSwitchCase="'invoice_status'">
+                                        <span class="label" [ngClass]="item[element.fieldName] | invoiceStatusClass">{{item[element.fieldName] | invoiceStatusLabel}}</span>
+                                    </div>
+                                    <div *ngSwitchCase="'payment_status'">
+                                        <span class="label" [ngClass]="item[element.fieldName] | paymentStatusClass">{{item[element.fieldName] | paymentStatusLabel}}</span>
+                                    </div>
                                     <div *ngSwitchCase="'date-range'">
                                         {{item[element.otherFieldName] | date:element.format}} {{element.seperater}} {{item[element.fieldName] | date:element.format}}
                                     </div>

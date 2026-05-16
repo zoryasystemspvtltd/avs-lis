@@ -112,9 +112,9 @@ export const MASTER_LIST_SCHEMAS: { [key: string]: any } = {
       { heading: 'Invoice No', fieldName: 'invoiceNo', sortable: true, width: '18%', type: 'link' },
       { heading: 'Date', fieldName: 'invoiceDate', sortable: true, width: '14%', type: 'date', format: 'dd/MM/yyyy' },
       { heading: 'Patient', fieldName: 'patientName', sortable: false, width: '22%', type: 'label' },
-      { heading: 'Net Amount', fieldName: 'netAmount', sortable: true, width: '12%', type: 'label' },
-      { heading: 'Status', fieldName: 'invoiceStatus', sortable: false, width: '12%', type: 'label' },
-      { heading: 'Payment', fieldName: 'paymentStatus', sortable: false, width: '12%', type: 'label' }
+      { heading: 'Net Amount', fieldName: 'netAmount', sortable: true, width: '12%', type: 'currency' },
+      { heading: 'Status', fieldName: 'invoiceStatus', sortable: false, width: '12%', type: 'invoice_status' },
+      { heading: 'Payment', fieldName: 'paymentStatus', sortable: false, width: '12%', type: 'payment_status' }
     ]
   }
 };
