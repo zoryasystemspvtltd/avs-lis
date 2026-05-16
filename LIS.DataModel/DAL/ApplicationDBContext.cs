@@ -48,6 +48,10 @@ namespace LIS.DataAccess
         public virtual DbSet<ControlResult> ControlResults { get; set; }
         public virtual DbSet<ControlResultDetails> ControlResultDetails { get; set; }
 
+        //SaleInvoice
+        public virtual DbSet<SaleInvoice> SaleInvoices { get; set; }
+        public virtual DbSet<SaleInvoiceDetail> SaleInvoiceDetails { get; set; }
+
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             if (modelBuilder != null)
