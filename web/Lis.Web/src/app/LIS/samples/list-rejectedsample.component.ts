@@ -21,7 +21,7 @@ export class ListRejectedSampleComponent implements OnInit {
     allowPaging: true,
     filterStatus:4,
     allowedFilter: [4, 6, 7], // TODO Removel Doctor's approval: [4, 6, 7]
-    auto_refresh:true,
+    auto_refresh:false,
     isRejected:true,
     elements: [
       {

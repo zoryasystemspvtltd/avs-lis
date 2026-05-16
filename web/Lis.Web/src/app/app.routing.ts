@@ -17,6 +17,10 @@ import { ApprovedSampleDetailsComponent } from './LIS/samples/approved-sample/sa
 import { RejectedSampleDetailsComponent } from './LIS/samples/rejected-sample/sample-details.component';
 import { CreateSampleComponent } from './LIS/samples/create-sample/create-sample.component';
 import { EditSampleComponent } from './LIS/samples/edit-sample/edit-sample.component';
+import { TestListComponent } from './LIS/testMaster/test-list/test-list.component';
+import { TestDetailsComponent } from './LIS/testMaster/test-details/test-details.component';
+import { TestCreateComponent } from './LIS/testMaster/test-create/test-create.component';
+import { TestEditComponent } from './LIS/testMaster/test-edit/test-edit.component';
 
 const appRoutes: Routes = [
     // Default
@@ -76,7 +80,10 @@ const appRoutes: Routes = [
     { path: 'quality-controls', component: ListQualitySampleComponent, canActivate: [AuthGuard] },
     { path: 'quality-controls/:id', component: QualityDetailsComponent, canActivate: [AuthGuard] },
 
-
+    { path: 'test-master', component: TestListComponent, canActivate: [AuthGuard] },
+    { path: 'test-master/create', component: TestCreateComponent, canActivate: [AuthGuard] },
+    { path: 'test-master/:id', component: TestDetailsComponent, canActivate: [AuthGuard] },
+    { path: 'test-master/edit/:id', component: TestEditComponent, canActivate: [AuthGuard] },
     // otherwise redirect to home
     { path: '**', redirectTo: '' }
 ];

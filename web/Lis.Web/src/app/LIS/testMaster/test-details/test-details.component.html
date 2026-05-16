@@ -1,0 +1,60 @@
+<div class="row" *ngIf="isLoaded">
+    <div class="col-sm-12 col-md-12 col-lg-12">
+        <h3>Test Details</h3>
+        <hr />
+        <div class="row">
+            <div class="col-sm-12 col-md-12 col-lg-12">
+               
+                    <div class="row">
+                        <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Test Code</label></div>
+                        <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
+                            <p>{{item.hisTestCode}}</p>
+                        </div>
+                        <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Test Name</label></div>
+                        <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
+                            <p>{{item.hisTestCodeDescription}}</p>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Specimen</label></div>
+                        <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
+                            <p>{{item.hisSpecimenName}}</p>
+                        </div>
+                        <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Department</label></div>
+                        <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
+                            <p>{{item.department?.name}}</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Status</label></div>
+                        <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
+                            <p>{{item.isActive ? 'Active' : 'Inactive'}}</p>
+                        </div>
+                    </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-12 col-md-12 col-lg-12">
+                <alert></alert>
+            </div>
+        </div>
+        <hr />
+        <div class="row">
+            <div class="col-sm-12 col-md-12 col-lg-12">
+                <div>
+                    <button class="btn btn-warning" (click)="router.navigate(['/test-master/edit', item.id])">
+                        <i class="glyphicon glyphicon-pencil"></i> Edit
+                    </button>
+                    &nbsp;
+                    <button class="btn btn-danger" (click)="deleteTest()">
+                        <i class="glyphicon glyphicon-trash"></i> Delete
+                    </button>
+                    &nbsp;
+                    <button class="btn btn-default" (click)="router.navigate(['/test-master'])">Back</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

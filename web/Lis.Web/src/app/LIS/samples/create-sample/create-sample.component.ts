@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthenticationToken } from '../../../_models';
-import { AuthenticationService, AlertService, EquipmentService, SampleService } from '../../../_services';
+import { AuthenticationService, AlertService, TestMasterService, SampleService } from '../../../_services';
 import * as moment from 'moment';
 @Component({
   selector: 'app-create-sample',
@@ -26,7 +26,7 @@ export class CreateSampleComponent implements OnInit {
   departments: any[];
 
   constructor(private authenticationService: AuthenticationService,
-    private equipmentService: EquipmentService,
+    private testMasterService: TestMasterService,
     private sampleService: SampleService,
     private route: ActivatedRoute,
     private formBuilder: FormBuilder,
@@ -44,7 +44,7 @@ export class CreateSampleComponent implements OnInit {
   }
 
   getAvailableHisTests() {
-    this.equipmentService.getHisTests()
+    this.testMasterService.getAll()
       .subscribe(response => {
         this.hisTests = response;
         this.allTests = response;
@@ -57,7 +57,7 @@ export class CreateSampleComponent implements OnInit {
   }
 
   getDepartments() {
-    this.equipmentService.getDepartments()
+    this.testMasterService.getDepartments()
       .subscribe(response => {
         this.departments = response;
         this.getAvailableHisTests();

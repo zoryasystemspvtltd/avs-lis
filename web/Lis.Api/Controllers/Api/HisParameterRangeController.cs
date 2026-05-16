@@ -1,4 +1,5 @@
-﻿using LIS.DtoModel;
+﻿using LIS.DataAccess.Repo;
+using LIS.DtoModel;
 using LIS.DtoModel.Interfaces;
 using LIS.DtoModel.Models;
 using LIS.Logger;
@@ -23,6 +24,21 @@ namespace Lis.Api.Controllers.Api
             logger = Logger;
         }
 
+        [AllowAnonymous]
+        [HttpGet]
+        public IEnumerable<HisTestMaster> Get()
+        {
+            try
+            {
+                var ranges = hisManager.GetTests();
+                return ranges;
+            }
+            catch (Exception e)
+            {
+                logger.LogException(e);
+                return null;
+            }
+        }
 
         [AllowAnonymous]
         [HttpGet]

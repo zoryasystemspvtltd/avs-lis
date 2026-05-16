@@ -82,6 +82,7 @@ export class ListModuleComponent implements OnInit {
         if(!this.items){
           this.items = [];
         }
+
         let oldItems = this.items.map(x => x);
         this.items = response.items;
         this.items.forEach(i => {

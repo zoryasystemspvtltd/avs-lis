@@ -21,7 +21,7 @@ export class ListApprovedSampleComponent implements OnInit {
     allowPaging: true,
     filterStatus:5,
     //allowedFilter: [0, 1],
-    auto_refresh:true,
+    auto_refresh:false,
     isRejected:true,
     elements: [
       {
