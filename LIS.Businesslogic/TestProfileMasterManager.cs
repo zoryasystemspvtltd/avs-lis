@@ -44,25 +44,27 @@ namespace LIS.BusinessLogic
 
         public void SaveWithDetails(TestProfileMaster profile, IEnumerable<TestProfileDetail> details)
         {
+            var lineItems = (details ?? Enumerable.Empty<TestProfileDetail>()).ToList();
             long id;
             if (profile.Id == 0)
             {
+                profile.ProfileDetails = null;
                 id = Add(profile);
                 profile.Id = (int)id;
             }
             else
             {
-                Update(profile);
                 id = profile.Id;
-                foreach (var old in detailRepo.Get(d => d.TestProfileId == id).ToList())
-                {
-                    detailRepo.Delete(old);
-                }
+                detailRepo.Delete(d => d.TestProfileId == id);
+                profile.ProfileDetails = null;
+                Update(profile);
             }
 
-            foreach (var detail in details ?? Enumerable.Empty<TestProfileDetail>())
+            foreach (var detail in lineItems)
             {
                 detail.TestProfileId = (int)id;
+                detail.TestProfileMaster = null;
+                detail.HisTestMaster = null;
                 detailRepo.Add(detail);
             }
         }

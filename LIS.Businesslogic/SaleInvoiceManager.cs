@@ -136,6 +136,8 @@ namespace LIS.BusinessLogic
 
                 header.CreatedOn = now;
                 header.CreatedBy = identity?.ActivityMember;
+                header.ModifiedOn = now;
+                header.ModifiedBy = identity?.ActivityMember;
                 header.IsActive = true;
                 if (header.InvoiceDate == default(DateTime))
                 {

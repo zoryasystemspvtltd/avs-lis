@@ -27,13 +27,27 @@ namespace LIS.DataAccess.Repo
 
         public void SetActivityLog<T>(T item, IModuleIdentity identity) where T : class
         {
-            this.dbContext.Entry<T>(item).Property("CreatedOn").CurrentValue = DateTime.Now;
-            this.dbContext.Entry<T>(item).Property("CreatedBy").CurrentValue = identity.ActivityMember;
+            var entry = this.dbContext.Entry(item);
+            var entityType = typeof(T);
+            if (entityType.GetProperty("CreatedOn") != null)
+            {
+                entry.Property("CreatedOn").CurrentValue = DateTime.Now;
+            }
+
+            if (entityType.GetProperty("CreatedBy") != null)
+            {
+                entry.Property("CreatedBy").CurrentValue = identity?.ActivityMember;
+            }
         }
         public int GetId<T>(T item) where T : class
         {
-            var itemId = Convert.ToInt32(this.dbContext.Entry<T>(item).Property("Id").CurrentValue);
-            return itemId;
+            var idProp = typeof(T).GetProperty("Id");
+            if (idProp == null)
+            {
+                return 0;
+            }
+
+            return Convert.ToInt32(this.dbContext.Entry(item).Property("Id").CurrentValue);
         }
 
         ~GenericUnitOfWork()
