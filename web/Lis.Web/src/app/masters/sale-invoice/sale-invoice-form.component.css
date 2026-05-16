@@ -79,43 +79,216 @@
   cursor: not-allowed;
 }
 
+/* —— Print preview (screen) —— */
+.print-invoice .print-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #d4e8ec;
+}
+
+.print-invoice .print-toolbar .btn {
+  min-height: 36px;
+}
+
+.print-invoice .print-letterhead {
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #1a7f8c;
+}
+
+.print-invoice .print-letterhead-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.print-invoice .print-logo {
+  max-height: 48px;
+  width: auto;
+}
+
+.print-invoice .print-lab-meta {
+  margin: 0;
+}
+
+.print-invoice .print-lab-name {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #155f69;
+}
+
+.print-invoice .print-doc-type {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: #5a6c75;
+}
+
 .print-invoice .print-title {
   color: #155f69;
+  font-size: 20px;
+  font-weight: 700;
+  margin: 12px 0 16px;
+  letter-spacing: 0.02em;
+}
+
+.print-invoice .print-header-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 24px;
   margin-bottom: 16px;
 }
 
-.print-invoice .print-meta {
-  margin-bottom: 12px;
+.print-invoice .print-header-col {
+  flex: 1 1 280px;
+  min-width: 0;
 }
 
-.print-invoice .print-patient {
-  font-size: 15px;
+.print-invoice .print-info-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.print-invoice .print-info-table th,
+.print-invoice .print-info-table td {
+  padding: 5px 8px;
+  vertical-align: top;
+  border-bottom: 1px solid #e8f0f2;
+}
+
+.print-invoice .print-info-table th {
+  width: 38%;
+  font-weight: 600;
+  color: #155f69;
+  text-align: left;
+  background: rgba(26, 127, 140, 0.06);
+}
+
+.print-invoice .print-info-table td {
+  color: #2c3e50;
 }
 
 .print-invoice .print-lines-table {
+  margin-top: 4px;
+  margin-bottom: 16px;
+  font-size: 12px;
+}
+
+.print-invoice .print-lines-table th.col-test-name {
+  min-width: 180px;
+}
+
+.print-invoice .print-lines-table .col-rate,
+.print-invoice .print-lines-table .col-qty,
+.print-invoice .print-lines-table .col-disc,
+.print-invoice .print-lines-table .col-tax,
+.print-invoice .print-lines-table .col-net {
+  white-space: nowrap;
+}
+
+.print-invoice .print-summary {
+  display: flex;
+  justify-content: flex-end;
   margin-top: 8px;
 }
 
-.print-invoice .print-totals {
-  margin-top: 12px;
+.print-invoice .print-summary-table {
+  width: 100%;
+  max-width: 320px;
+  border-collapse: collapse;
+  font-size: 13px;
+  border: 1px solid #d4e8ec;
 }
 
-.print-invoice .no-print {
-  display: none;
+.print-invoice .print-summary-table td {
+  padding: 6px 12px;
+  border-bottom: 1px solid #e8f0f2;
 }
 
+.print-invoice .print-summary-table td:first-child {
+  color: #5a6c75;
+}
+
+.print-invoice .print-summary-net td {
+  border-top: 2px solid #1a7f8c;
+  background: rgba(26, 127, 140, 0.06);
+  font-size: 14px;
+}
+
+.print-invoice .print-footer-note {
+  margin-top: 20px;
+  font-size: 11px;
+  color: #7a8a94;
+  text-align: center;
+}
+
+/* —— Browser print (A4 portrait) —— */
 @media print {
-  .no-print {
-    display: none !important;
+  @page {
+    size: A4 portrait;
+    margin: 12mm 14mm;
+  }
+
+  .sale-invoice-page.print-invoice {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    float: none !important;
   }
 
   .print-invoice .print-body {
-    padding: 0;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: #fff !important;
+  }
+
+  .print-invoice .print-title {
+    font-size: 18px;
+    margin-bottom: 12px;
+  }
+
+  .print-invoice .print-lines-table {
+    font-size: 11px;
+    page-break-inside: auto;
+  }
+
+  .print-invoice .print-lines-table tr {
+    page-break-inside: avoid;
+  }
+
+  .print-invoice .print-summary {
+    page-break-inside: avoid;
+  }
+
+  .print-invoice .table > thead > tr > th {
+    background-color: #1a7f8c !important;
+    color: #fff !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .print-invoice .print-info-table th {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 }
 
 @media (max-width: 768px) {
   .sale-invoice-page .invoice-totals-panel {
+    max-width: 100%;
+  }
+
+  .print-invoice .print-header-grid {
+    flex-direction: column;
+  }
+
+  .print-invoice .print-summary-table {
     max-width: 100%;
   }
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AlertService, MasterService } from '../../_services';
@@ -8,7 +8,7 @@ import { AlertService, MasterService } from '../../_services';
   templateUrl: './sale-invoice-form.component.html',
   styleUrls: ['./sale-invoice-form.component.css']
 })
-export class SaleInvoiceFormComponent implements OnInit {
+export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
   form: FormGroup;
   submitted = false;
   loading = false;
@@ -31,6 +31,9 @@ export class SaleInvoiceFormComponent implements OnInit {
   ngOnInit() {
     this.id = this.route.snapshot.params['id'];
     this.isPrintView = this.route.snapshot.url.some(s => s.path === 'print');
+    if (this.isPrintView) {
+      document.body.classList.add('sale-invoice-print-mode');
+    }
 
     this.form = this.fb.group({
       id: [0],
@@ -119,6 +122,24 @@ export class SaleInvoiceFormComponent implements OnInit {
   getTestName(testId: number): string {
     const t = this.tests.find(x => +x.id === +testId);
     return t ? `${t.hisTestCode} - ${t.hisTestCodeDescription}` : String(testId);
+  }
+
+  getCorporateName(corporateId: number | null | undefined): string {
+    if (!corporateId) { return '—'; }
+    const c = this.corporates.find(x => +x.id === +corporateId);
+    return c?.name || '—';
+  }
+
+  getDoctorName(referralDoctorId: number | null | undefined, refDoctorName?: string): string {
+    if (referralDoctorId) {
+      const d = this.doctors.find(x => +x.id === +referralDoctorId);
+      if (d?.name) { return d.name; }
+    }
+    return refDoctorName?.trim() || '—';
+  }
+
+  ngOnDestroy() {
+    document.body.classList.remove('sale-invoice-print-mode');
   }
 
   onTestChange(i: number) {

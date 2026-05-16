@@ -18,6 +18,7 @@ export class NavMenuComponent {
 	public loginText: string;
 	public isAuthenticated: boolean;
 	isReLoginTrigerred: boolean = false;
+	public copyrightYear: string = new Date().getFullYear().toString();
 
 	constructor(private router: Router,
 		public authenticationService: AuthenticationService) {
