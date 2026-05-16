@@ -155,4 +155,23 @@ export class EditEquipmentComponent implements OnInit {
 
     this.loading = true;
   }
+
+  deactivate() {
+    if (!confirm('Deactivate this equipment? Analyzer communication will stop for this device.')) {
+      return;
+    }
+
+    this.loading = true;
+    this.equipmentService.deactivateEquipment(+this.id).subscribe(
+      () => {
+        this.loading = false;
+        this.alertService.success('Equipment deactivated');
+        this.router.navigate(['/equipments']);
+      },
+      () => {
+        this.loading = false;
+        this.alertService.error('Deactivate failed');
+      }
+    );
+  }
 }

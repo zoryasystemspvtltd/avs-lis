@@ -28,5 +28,11 @@ namespace LIS.DtoModel.Models
 
         [JsonIgnore]
         public virtual HISParameterMaster HisParameter { get; set; }
+
+        [NotMapped]
+        public string HisParamCode { get; set; }
+
+        [NotMapped]
+        public string HisParamDescription { get; set; }
     }
 }

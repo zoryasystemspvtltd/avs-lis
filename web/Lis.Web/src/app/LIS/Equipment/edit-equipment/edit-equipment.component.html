@@ -52,12 +52,14 @@
         <hr>
         <div class="row">
             <div class="col-sm-12 col-md-12 col-lg-12">
-                <!-- <div style="float:left;">
+                <div style="float:left;">
                     <button type="submit" class="btn btn-primary" *ngIf="hasAccess()">Save</button>
-                </div> -->
+                </div>
                 <div style="padding-left:6px; float:left;">
-                    <a [routerLink]="['/','equipments']" class="btn btn-default btn-default-alternet">Back to
-                        List</a>
+                    <button type="button" class="btn btn-warning" *ngIf="hasAccess()" (click)="deactivate()">Deactivate</button>
+                </div>
+                <div style="padding-left:6px; float:left;">
+                    <a [routerLink]="['/','equipments']" class="btn btn-default btn-default-alternet">Back to List</a>
                 </div>
             </div>
         </div>

@@ -347,7 +347,8 @@ export class ListModuleComponent implements OnInit, OnChanges {
     let acc = this.user.access.find(element => element.name == module);
     if (acc == null) {
       const setupApiModules = ['Department', 'Specimens', 'ReferralDoctor', 'Corporate', 'TestGroup',
-        'TestCategory', 'Unit', 'Method', 'SampleType', 'Container', 'TestProfile'];
+        'TestCategory', 'Unit', 'Method', 'SampleType', 'Container', 'TestProfile',
+        'HisParameterMaster', 'HisParameterRangeMaster', 'TestMappingMaster', 'PatientMaster', 'TestParameterCatalog'];
       if (setupApiModules.indexOf(module) >= 0) {
         acc = this.user.access.find(element => element.name == 'Masters');
       } else if (module === 'TestRate') {

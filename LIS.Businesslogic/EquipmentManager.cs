@@ -33,7 +33,12 @@ namespace LIS.Businesslogic
 
         public void Delete(EquipmentMaster equipment)
         {
-            equipmentRepo.Delete(equipment);
+            var existing = equipmentRepo.Get(equipment.Id);
+            if (existing != null)
+            {
+                existing.IsActive = false;
+                equipmentRepo.Update(existing);
+            }
         }
 
         public IEnumerable<EquipmentMaster> Get()
@@ -83,8 +88,17 @@ namespace LIS.Businesslogic
         public void Update(EquipmentMaster equipment)
         {
             var exustingEquipment = equipmentRepo.Get(equipment.Id);
+            if (exustingEquipment == null)
+            {
+                return;
+            }
+
             exustingEquipment.IsActive = true;
             exustingEquipment.Name = equipment.Name;
+            if (!string.IsNullOrWhiteSpace(equipment.Model))
+            {
+                exustingEquipment.Model = equipment.Model;
+            }
 
             equipmentRepo.Update(exustingEquipment);
         }

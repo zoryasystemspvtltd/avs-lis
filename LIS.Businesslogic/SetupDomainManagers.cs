@@ -12,21 +12,51 @@ namespace LIS.BusinessLogic
     public class HisParameterMasterManager : MasterCrudManager<HISParameterMaster>, IMasterCrudManager<HISParameterMaster>
     {
         private readonly ModuleRepo<HisTestMaster> testRepo;
+        private readonly ModuleRepo<HISParameterRangMaster> rangeRepo;
 
         public HisParameterMasterManager(ILogger logger, IModuleIdentity identity, GenericUnitOfWork uow)
             : base(logger, identity, uow, x => x.HISParamCode, x => x.HISParamDescription, x => true, "HISParamCode")
         {
             testRepo = new ModuleRepo<HisTestMaster>(logger, identity, uow);
+            rangeRepo = new ModuleRepo<HISParameterRangMaster>(logger, identity, uow);
         }
 
         public new long Add(HISParameterMaster item)
         {
+            if (ExistsDuplicate(item, null))
+            {
+                throw new InvalidOperationException("A parameter with this code already exists for the selected test.");
+            }
+
             item.CreatedOn = DateTime.Now;
+            if (item.HisTestId > 0 && string.IsNullOrEmpty(item.HISTestCode))
+            {
+                var test = testRepo.Get(item.HisTestId);
+                if (test != null)
+                {
+                    item.HISTestCode = test.HISTestCode;
+                }
+            }
+
             return base.Add(item);
         }
 
         public new void Update(HISParameterMaster item)
         {
+            if (ExistsDuplicate(item, item.Id))
+            {
+                throw new InvalidOperationException("A parameter with this code already exists for the selected test.");
+            }
+
+            if (item.HisTestId > 0)
+            {
+                var test = testRepo.Get(item.HisTestId);
+                if (test != null)
+                {
+                    item.HISTestCode = test.HISTestCode;
+                }
+            }
+
             base.Update(item);
         }
 
@@ -37,9 +67,27 @@ namespace LIS.BusinessLogic
                 var existing = Repo.Get(item.Id);
                 if (existing != null)
                 {
+                    if (rangeRepo.Get(r => r.HisParameterId == existing.Id).Any())
+                    {
+                        throw new InvalidOperationException("Cannot delete parameter while ranges exist. Remove ranges first.");
+                    }
+
                     Repo.Delete(existing);
                 }
             }
+        }
+
+        private bool ExistsDuplicate(HISParameterMaster item, int? excludeId)
+        {
+            if (item == null || string.IsNullOrWhiteSpace(item.HISParamCode))
+            {
+                return false;
+            }
+
+            return Repo.Get(p =>
+                p.HisTestId == item.HisTestId &&
+                p.HISParamCode == item.HISParamCode &&
+                (!excludeId.HasValue || p.Id != excludeId.Value)).Any();
         }
 
         public override ItemList<HISParameterMaster> Get(ListOptions option)
@@ -79,13 +127,53 @@ namespace LIS.BusinessLogic
 
     public class HisParameterRangeCrudManager : MasterCrudManager<HISParameterRangMaster>, IMasterCrudManager<HISParameterRangMaster>
     {
+        private readonly ModuleRepo<HISParameterMaster> parameterRepo;
+
         public HisParameterRangeCrudManager(ILogger logger, IModuleIdentity identity, GenericUnitOfWork uow)
-            : base(logger, identity, uow, x => x.HISRangeCode, x => x.HISRangeValue, x => true, "HISRangeCode") { }
+            : base(logger, identity, uow, x => x.HISRangeCode, x => x.HISRangeValue, x => true, "HISRangeCode")
+        {
+            parameterRepo = new ModuleRepo<HISParameterMaster>(logger, identity, uow);
+        }
 
         public new long Add(HISParameterRangMaster item)
         {
             item.CreatedOn = DateTime.Now;
             return base.Add(item);
+        }
+
+        public override ItemList<HISParameterRangMaster> Get(ListOptions option)
+        {
+            var result = base.Get(option);
+            if (result?.Items != null)
+            {
+                Enrich(result.Items);
+            }
+
+            return result;
+        }
+
+        public override HISParameterRangMaster GetById(int id)
+        {
+            var item = base.GetById(id);
+            if (item != null)
+            {
+                Enrich(new[] { item });
+            }
+
+            return item;
+        }
+
+        private void Enrich(IEnumerable<HISParameterRangMaster> items)
+        {
+            var parameters = parameterRepo.Get().ToDictionary(p => p.Id, p => p);
+            foreach (var range in items)
+            {
+                if (parameters.TryGetValue(range.HisParameterId, out var parameter))
+                {
+                    range.HisParamCode = parameter.HISParamCode;
+                    range.HisParamDescription = parameter.HISParamDescription;
+                }
+            }
         }
 
         public new void Delete(HISParameterRangMaster item)
@@ -236,6 +324,24 @@ namespace LIS.BusinessLogic
         {
             return repo.Get(id);
         }
+
+        public void Update(TestParameter item)
+        {
+            if (item == null || item.Id <= 0)
+            {
+                throw new ArgumentException("Invalid parameter record.");
+            }
+
+            var existing = repo.Get(item.Id);
+            if (existing == null)
+            {
+                throw new InvalidOperationException("Parameter record not found.");
+            }
+
+            existing.HISParamCode = item.HISParamCode;
+            existing.HISParamName = item.HISParamName;
+            repo.Update(existing);
+        }
     }
 
     public class PatientMasterManager
@@ -281,14 +387,42 @@ namespace LIS.BusinessLogic
 
         public long Add(PatientDetail item)
         {
+            if (ExistsDuplicatePatient(item, null))
+            {
+                throw new InvalidOperationException("A patient with this external ID already exists.");
+            }
+
             item.IsActive = true;
             item.CreatedOn = DateTime.Now;
+            if (item.DateOfBirth == default(DateTime))
+            {
+                item.DateOfBirth = DateTime.Today;
+            }
+
             return repo.Add(item);
         }
 
         public void Update(PatientDetail item)
         {
+            if (ExistsDuplicatePatient(item, item.Id))
+            {
+                throw new InvalidOperationException("A patient with this external ID already exists.");
+            }
+
             repo.Update(item);
+        }
+
+        private bool ExistsDuplicatePatient(PatientDetail item, long? excludeId)
+        {
+            if (item == null || string.IsNullOrWhiteSpace(item.HisPatientId))
+            {
+                return false;
+            }
+
+            return repo.Get(p =>
+                p.HisPatientId == item.HisPatientId &&
+                p.IsActive &&
+                (!excludeId.HasValue || p.Id != excludeId.Value)).Any();
         }
 
         public void Delete(PatientDetail item)

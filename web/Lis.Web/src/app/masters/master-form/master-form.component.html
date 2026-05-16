@@ -15,7 +15,7 @@
             <input *ngIf="field.type === 'text' || field.type === 'number' || field.type === 'date'"
               [type]="field.type === 'number' ? 'number' : (field.type === 'date' ? 'date' : 'text')"
               class="form-control" [formControlName]="field.name"
-              [readonly]="field.name === 'code' && !!id && apiName !== 'Department'" />
+              [readonly]="field.readonly || (field.name === 'code' && !!id && apiName !== 'Department')" />
           </div>
           <select *ngIf="field.type === 'select'" class="form-control" [formControlName]="field.name">
             <option *ngFor="let opt of field.options" [value]="opt.value">{{opt.label}}</option>
@@ -117,6 +117,16 @@
 
     <ng-container *ngIf="apiName === 'TestMappingMaster'">
       <div class="row">
+        <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Test<span class="error">*</span></label></div>
+        <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
+          <select class="form-control" formControlName="hisTestPicker" [disabled]="!lookupsLoaded" (change)="onHisTestSelected()">
+            <option [ngValue]="null">-- Select Test --</option>
+            <option *ngFor="let t of tests" [ngValue]="t.id">{{t.hisTestCode}} - {{t.hisTestCodeDescription}}</option>
+          </select>
+        </div>
+      </div>
+      <br />
+      <div class="row">
         <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Equipment<span class="error">*</span></label></div>
         <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
           <select class="form-control" formControlName="equipmentId" [disabled]="!lookupsLoaded">
@@ -130,6 +140,6 @@
 
     <button type="submit" class="btn btn-primary" [disabled]="loading">Save</button>
     <button type="button" class="btn btn-default" (click)="cancel()">Cancel</button>
-    <button type="button" class="btn btn-warning" *ngIf="id && apiName !== 'Department'" (click)="deactivate()">Deactivate</button>
+    <button type="button" class="btn btn-warning" *ngIf="id && apiName !== 'Department' && apiName !== 'TestParameterCatalog'" (click)="deactivate()">Deactivate</button>
   </form>
 </div>

@@ -16,7 +16,7 @@ export class ListEquipmentComponent implements OnInit {
     heading: 'Equipment Management',
     module: 'Equipments',
     hideAction:true,
-    hideSearch:true,
+    hideSearch:false,
     auto_refresh:false,
     elements: [
       {

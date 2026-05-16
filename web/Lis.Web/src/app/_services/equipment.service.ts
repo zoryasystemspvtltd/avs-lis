@@ -83,6 +83,11 @@ export class EquipmentService {
             }));
     }
 
+    deactivateEquipment(id: number) {
+        return this.http.post<any>(`${environment.ApplicationServer}/api/Equipments/Deactivate`, { id })
+            .pipe(map(response => response));
+    }
+
     changeMappings(equipmentId: number, mappings: any[]) {
         var equipment = {
             equipmentId: equipmentId,

@@ -120,7 +120,8 @@ export const MASTER_LIST_SCHEMAS: { [key: string]: any } = {
     url: 'his-parameter-ranges', heading: 'Parameter Range Master', module: 'HisParameterRangeMaster', hideAction: true,
     elements: [
       { heading: 'Range Code', fieldName: 'hisRangeCode', sortable: true, width: '15%', type: 'link' },
-      { heading: 'Range Value', fieldName: 'hisRangeValue', sortable: true, width: '25%', type: 'label' },
+      { heading: 'Parameter', fieldName: 'hisParamCode', sortable: false, width: '15%', type: 'label' },
+      { heading: 'Range Value', fieldName: 'hisRangeValue', sortable: true, width: '20%', type: 'label' },
       { heading: 'Gender', fieldName: 'gender', sortable: false, width: '10%', type: 'label' },
       { heading: 'Min', fieldName: 'minValue', sortable: false, width: '10%', type: 'label' },
       { heading: 'Max', fieldName: 'maxValue', sortable: false, width: '10%', type: 'label' }
@@ -138,7 +139,7 @@ export const MASTER_LIST_SCHEMAS: { [key: string]: any } = {
   testParameter: {
     url: 'test-parameters', heading: 'Test Parameter (Sample Lines)', module: 'TestParameterCatalog', hideAction: true, hideCreate: true,
     elements: [
-      { heading: 'Param Code', fieldName: 'hisParamCode', sortable: false, width: '20%', type: 'label' },
+      { heading: 'Param Code', fieldName: 'hisParamCode', sortable: false, width: '20%', type: 'link' },
       { heading: 'Param Name', fieldName: 'hisParamName', sortable: false, width: '30%', type: 'label' },
       { heading: 'Test Code', fieldName: 'hisTestCode', sortable: false, width: '20%', type: 'label' },
       { heading: 'Created', fieldName: 'createdOn', sortable: false, width: '20%', type: 'date', format: 'dd/MM/yyyy' }

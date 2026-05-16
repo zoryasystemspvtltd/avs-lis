@@ -127,6 +127,27 @@ namespace Lis.Api.Controllers.Api
             }
         }
 
+        [HttpPost]
+        [Route("Deactivate")]
+        [QAuthorize(ModuleName = "Equipments", ModulePermissionTypes = ModulePermissionType.CanDelete)]
+        public HttpResponseMessage Deactivate(EquipmentMaster equipment)
+        {
+            try
+            {
+                if (equipment == null || equipment.Id <= 0)
+                {
+                    return Request.CreateResponse(HttpStatusCode.BadRequest, "Invalid equipment.");
+                }
 
+                manager.Delete(equipment);
+                var aPIResponse = responseMgr.CreateResponse(HttpStatusCode.OK, "Equipment deactivated successfully", null, null);
+                return Request.CreateResponse(HttpStatusCode.OK, aPIResponse);
+            }
+            catch (Exception e)
+            {
+                logger.LogException(e);
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, e.Message);
+            }
+        }
     }
 }

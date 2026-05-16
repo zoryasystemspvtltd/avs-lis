@@ -60,6 +60,12 @@ export class MasterFormComponent implements OnInit {
     }
     if (this.apiName === 'TestMappingMaster') {
       group['equipmentId'] = [null, Validators.required];
+      group['hisTestPicker'] = [null];
+    }
+    if (this.apiName === 'TestParameterCatalog' && this.id) {
+      this.masterService.getItem(this.apiName, this.id).subscribe(item => {
+        if (item) { this.patchItem(item); }
+      });
     }
     if (this.fields.find(f => f.name === 'isActive')) {
       group['isActive'] = [true];
@@ -70,6 +76,8 @@ export class MasterFormComponent implements OnInit {
       this.loadTestRateLookups();
     } else if (this.apiName === 'HisParameterMaster' || this.apiName === 'HisParameterRangeMaster' || this.apiName === 'TestMappingMaster') {
       this.loadSetupLookups();
+    } else if (this.apiName === 'TestParameterCatalog') {
+      // load handled above when id present
     } else if (this.id) {
       this.masterService.getItem(this.apiName, this.id).subscribe(item => {
         if (item) {
@@ -121,12 +129,37 @@ export class MasterFormComponent implements OnInit {
         this.lookupsLoaded = true;
         if (this.id) {
           this.masterService.getItem(this.apiName, this.id).subscribe(item => {
-            if (item) { this.patchItem(item); }
+            if (item) {
+              this.patchItem(item);
+              this.syncHisTestPicker(item);
+            }
           });
         }
       },
       () => this.alertService.error('Failed to load lookup data.')
     );
+  }
+
+  onHisTestSelected() {
+    const testId = this.form.get('hisTestPicker').value;
+    const test = this.tests.find(t => t.id === testId);
+    if (test) {
+      this.form.patchValue({
+        hisTestCode: test.hisTestCode,
+        hisTestCodeDescription: test.hisTestCodeDescription
+      });
+    }
+  }
+
+  private syncHisTestPicker(item: any) {
+    if (this.apiName !== 'TestMappingMaster' || !item?.hisTestCode) {
+      return;
+    }
+
+    const test = this.tests.find(t => t.hisTestCode === item.hisTestCode);
+    if (test) {
+      this.form.patchValue({ hisTestPicker: test.id });
+    }
   }
 
   private httpEquipmentList(): Observable<any[]> {
@@ -188,6 +221,7 @@ export class MasterFormComponent implements OnInit {
     const patch: any = Object.assign({}, item);
     if (patch.effectiveStart) { patch.effectiveStart = this.toDateInput(patch.effectiveStart); }
     if (patch.effectiveEnd) { patch.effectiveEnd = this.toDateInput(patch.effectiveEnd); }
+    if (patch.dateOfBirth) { patch.dateOfBirth = this.toDateInput(patch.dateOfBirth); }
     if (patch.testId != null) { patch.testId = +patch.testId; }
     if (patch.rateType != null) { patch.rateType = +patch.rateType; }
     if (patch.corporateId != null) { patch.corporateId = +patch.corporateId; }
@@ -206,9 +240,20 @@ export class MasterFormComponent implements OnInit {
     }
     if (this.form.invalid) { return; }
 
-    const item = Object.assign({}, this.form.value);
+    let item = Object.assign({}, this.form.value);
     if (item.effectiveStart) { item.effectiveStart = new Date(item.effectiveStart); }
     if (item.effectiveEnd) { item.effectiveEnd = new Date(item.effectiveEnd); }
+    if (item.dateOfBirth) { item.dateOfBirth = new Date(item.dateOfBirth); }
+    if (this.apiName === 'TestMappingMaster') {
+      delete item.hisTestPicker;
+    }
+    if (this.apiName === 'TestParameterCatalog') {
+      item = {
+        id: this.id || item.id,
+        hisParamCode: item.hisParamCode,
+        hisParamName: item.hisParamName
+      };
+    }
     if (this.apiName === 'TestRate') {
       const rt = +item.rateType;
       if (rt !== 1) { item.corporateId = null; }
@@ -218,6 +263,8 @@ export class MasterFormComponent implements OnInit {
     if (this.id) {
       if (this.apiName === 'Department') {
         item.code = this.id;
+      } else if (this.apiName === 'TestParameterCatalog') {
+        item.id = this.id;
       } else {
         item.id = +this.id;
       }

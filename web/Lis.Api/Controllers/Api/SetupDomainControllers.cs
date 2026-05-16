@@ -236,6 +236,23 @@ namespace Lis.Api.Controllers.Api
             try { return manager.GetById(id); }
             catch (Exception e) { logger.LogException(e); return null; }
         }
+
+        [HttpPost]
+        [ActionName("Put")]
+        [QAuthorize(ModuleName = "Masters", ModulePermissionTypes = ModulePermissionType.CanEdit)]
+        public HttpResponseMessage Put(TestParameter item)
+        {
+            try
+            {
+                manager.Update(item);
+                return Request.CreateResponse(HttpStatusCode.OK, "Record updated successfully");
+            }
+            catch (Exception e)
+            {
+                logger.LogException(e);
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, e.Message);
+            }
+        }
     }
 
     public class EquipmentHeartbeatController : ApiController
@@ -255,7 +272,7 @@ namespace Lis.Api.Controllers.Api
         {
             try
             {
-                return equipmentManager.Get();
+                return equipmentManager.Get().Where(e => e.IsActive);
             }
             catch (Exception e)
             {
