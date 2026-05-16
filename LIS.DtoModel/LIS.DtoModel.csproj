@@ -75,6 +75,9 @@
     <Compile Include="Models\ApiError.cs" />
     <Compile Include="Models\ApiResponse.cs" />
     <Compile Include="Models\AuthDetails.cs" />
+    <Compile Include="Models\DTO\SaleInvoice\SaleInvoice.cs" />
+    <Compile Include="Models\DTO\SaleInvoice\SaleInvoiceDetails.cs" />
+    <Compile Include="Models\DTO\HIS\TestRateMaster.cs" />
     <Compile Include="Models\DTO\Mapping\Department.cs" />
     <Compile Include="Models\DTO\Mapping\EquipmentHeartBeat.cs" />
     <Compile Include="Models\DTO\Mapping\EquipmentMaster.cs" />
