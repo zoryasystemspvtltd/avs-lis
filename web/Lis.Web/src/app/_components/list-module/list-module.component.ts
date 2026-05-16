@@ -74,6 +74,15 @@ export class ListModuleComponent implements OnInit, OnChanges {
     if (this.schemma.module === 'SaleInvoice') {
       this.option.SortColumnName = 'InvoiceDate';
     }
+    if (this.schemma.module === 'HisParameterMaster') {
+      this.option.SortColumnName = 'HISParamCode';
+    }
+    if (this.schemma.module === 'TestMappingMaster') {
+      this.option.SortColumnName = 'HISTestCode';
+    }
+    if (this.schemma.module === 'PatientMaster') {
+      this.option.SortColumnName = 'Name';
+    }
     if (this.schemma.filterStatus != null) {
       this.filterStatus = this.schemma.filterStatus;
     }
@@ -109,9 +118,13 @@ export class ListModuleComponent implements OnInit, OnChanges {
     this.setFilter();
     this.authenticationService.CurrentPage = this.option.CurrentPage;
 
+    const masterApiModules = [
+      'HisTest', 'TestRate', 'SaleInvoice', 'HisParameterMaster', 'HisParameterRangeMaster',
+      'TestMappingMaster', 'TestParameterCatalog', 'PatientMaster', 'EquipmentHeartbeat'
+    ];
     const source$ = this.shouldUseGetAll()
       ? this.masterService.getAll(this.schemma.module)
-      : (this.schemma.module === 'HisTest' || this.schemma.module === 'TestRate' || this.schemma.module === 'SaleInvoice'
+      : (masterApiModules.indexOf(this.schemma.module) >= 0
         ? this.masterService.getItems(this.schemma.module, this.option)
         : this.moduleService.getItems(this.schemma.module, this.option));
 

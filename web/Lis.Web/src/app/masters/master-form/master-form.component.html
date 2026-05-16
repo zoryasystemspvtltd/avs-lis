@@ -89,6 +89,45 @@
       <br *ngIf="rateType === 3" />
     </ng-container>
 
+    <ng-container *ngIf="apiName === 'HisParameterMaster'">
+      <div class="row">
+        <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Test<span class="error">*</span></label></div>
+        <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
+          <select class="form-control" formControlName="hisTestId" [disabled]="!lookupsLoaded">
+            <option [ngValue]="null">-- Select Test --</option>
+            <option *ngFor="let t of tests" [ngValue]="t.id">{{t.hisTestCode}} - {{t.hisTestCodeDescription}}</option>
+          </select>
+        </div>
+      </div>
+      <br />
+    </ng-container>
+
+    <ng-container *ngIf="apiName === 'HisParameterRangeMaster'">
+      <div class="row">
+        <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Parameter<span class="error">*</span></label></div>
+        <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
+          <select class="form-control" formControlName="hisParameterId" [disabled]="!lookupsLoaded">
+            <option [ngValue]="null">-- Select Parameter --</option>
+            <option *ngFor="let p of hisParameters" [ngValue]="p.id">{{p.hisParamCode}} - {{p.hisParamDescription}}</option>
+          </select>
+        </div>
+      </div>
+      <br />
+    </ng-container>
+
+    <ng-container *ngIf="apiName === 'TestMappingMaster'">
+      <div class="row">
+        <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Equipment<span class="error">*</span></label></div>
+        <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
+          <select class="form-control" formControlName="equipmentId" [disabled]="!lookupsLoaded">
+            <option [ngValue]="null">-- Select Equipment --</option>
+            <option *ngFor="let e of equipments" [ngValue]="e.id">{{e.name}} ({{e.model}})</option>
+          </select>
+        </div>
+      </div>
+      <br />
+    </ng-container>
+
     <button type="submit" class="btn btn-primary" [disabled]="loading">Save</button>
     <button type="button" class="btn btn-default" (click)="cancel()">Cancel</button>
     <button type="button" class="btn btn-warning" *ngIf="id && apiName !== 'Department'" (click)="deactivate()">Deactivate</button>

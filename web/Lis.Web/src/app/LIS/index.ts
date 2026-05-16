@@ -1,5 +1,6 @@
 // Equipment Components
 export * from './Equipment/list-equipment/list-equipment.component';
+export * from './Equipment/list-equipment-heartbeat/list-equipment-heartbeat.component';
 export * from './Equipment/create-equipment/create-equipment.component';
 export * from './Equipment/edit-equipment/edit-equipment.component';
 export * from './Equipment/details-equipment/details-equipment.component';

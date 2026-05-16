@@ -130,6 +130,14 @@ namespace Lis.Api
             container.Register<MethodManager, MethodManager>(Lifestyle.Scoped);
             container.Register<SampleTypeManager, SampleTypeManager>(Lifestyle.Scoped);
             container.Register<ContainerManager, ContainerManager>(Lifestyle.Scoped);
+            container.Register<IMasterCrudManager<HISParameterMaster>, HisParameterMasterManager>(Lifestyle.Scoped);
+            container.Register<IMasterCrudManager<HISParameterRangMaster>, HisParameterRangeCrudManager>(Lifestyle.Scoped);
+            container.Register<IMasterCrudManager<TestMappingMaster>, TestMappingCrudManager>(Lifestyle.Scoped);
+            container.Register<HisParameterMasterManager, HisParameterMasterManager>(Lifestyle.Scoped);
+            container.Register<HisParameterRangeCrudManager, HisParameterRangeCrudManager>(Lifestyle.Scoped);
+            container.Register<TestMappingCrudManager, TestMappingCrudManager>(Lifestyle.Scoped);
+            container.Register<PatientMasterManager, PatientMasterManager>(Lifestyle.Scoped);
+            container.Register<TestParameterCatalogManager, TestParameterCatalogManager>(Lifestyle.Scoped);
             container.Register<IHubContext<ILisClient>>(() =>
             {
                 return GlobalHost.ConnectionManager.GetHubContext<LisHub, ILisClient>();

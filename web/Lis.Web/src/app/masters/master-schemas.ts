@@ -106,6 +106,55 @@ export const MASTER_LIST_SCHEMAS: { [key: string]: any } = {
       { heading: 'Active', fieldName: 'isActive', sortable: false, width: '8%', type: 'label' }
     ]
   },
+  hisParameter: {
+    url: 'his-parameters', heading: 'Parameter Master', module: 'HisParameterMaster', hideAction: true,
+    elements: [
+      { heading: 'Param Code', fieldName: 'hisParamCode', sortable: true, width: '15%', type: 'link' },
+      { heading: 'Description', fieldName: 'hisParamDescription', sortable: true, width: '30%', type: 'label' },
+      { heading: 'Test Code', fieldName: 'hisTestCode', sortable: true, width: '15%', type: 'label' },
+      { heading: 'Unit', fieldName: 'hisParamUnit', sortable: false, width: '12%', type: 'label' },
+      { heading: 'Method', fieldName: 'hisParamMethod', sortable: false, width: '12%', type: 'label' }
+    ]
+  },
+  hisParameterRange: {
+    url: 'his-parameter-ranges', heading: 'Parameter Range Master', module: 'HisParameterRangeMaster', hideAction: true,
+    elements: [
+      { heading: 'Range Code', fieldName: 'hisRangeCode', sortable: true, width: '15%', type: 'link' },
+      { heading: 'Range Value', fieldName: 'hisRangeValue', sortable: true, width: '25%', type: 'label' },
+      { heading: 'Gender', fieldName: 'gender', sortable: false, width: '10%', type: 'label' },
+      { heading: 'Min', fieldName: 'minValue', sortable: false, width: '10%', type: 'label' },
+      { heading: 'Max', fieldName: 'maxValue', sortable: false, width: '10%', type: 'label' }
+    ]
+  },
+  testMapping: {
+    url: 'test-mappings', heading: 'Test Mapping Master', module: 'TestMappingMaster', hideAction: true,
+    elements: [
+      { heading: 'Test', fieldName: 'hisTestCode', sortable: true, width: '15%', type: 'link' },
+      { heading: 'LIS Test', fieldName: 'lisTestCode', sortable: true, width: '15%', type: 'label' },
+      { heading: 'Equipment', fieldName: 'groupName', sortable: false, width: '25%', type: 'label' },
+      { heading: 'Active', fieldName: 'isActive', sortable: false, width: '10%', type: 'label' }
+    ]
+  },
+  testParameter: {
+    url: 'test-parameters', heading: 'Test Parameter (Sample Lines)', module: 'TestParameterCatalog', hideAction: true, hideCreate: true,
+    elements: [
+      { heading: 'Param Code', fieldName: 'hisParamCode', sortable: false, width: '20%', type: 'label' },
+      { heading: 'Param Name', fieldName: 'hisParamName', sortable: false, width: '30%', type: 'label' },
+      { heading: 'Test Code', fieldName: 'hisTestCode', sortable: false, width: '20%', type: 'label' },
+      { heading: 'Created', fieldName: 'createdOn', sortable: false, width: '20%', type: 'date', format: 'dd/MM/yyyy' }
+    ]
+  },
+  patientMaster: {
+    url: 'patient-master', heading: 'Patient Master', module: 'PatientMaster', hideAction: true,
+    elements: [
+      { heading: 'Name', fieldName: 'name', sortable: true, width: '25%', type: 'link' },
+      { heading: 'Phone', fieldName: 'phone', sortable: false, width: '15%', type: 'label' },
+      { heading: 'Gender', fieldName: 'gender', sortable: false, width: '10%', type: 'label' },
+      { heading: 'Age', fieldName: 'age', sortable: false, width: '10%', type: 'label' },
+      { heading: 'External ID', fieldName: 'hisPatientId', sortable: false, width: '15%', type: 'label' },
+      { heading: 'Active', fieldName: 'isActive', sortable: false, width: '10%', type: 'label' }
+    ]
+  },
   saleInvoice: {
     url: 'sale-invoices', heading: 'Sale Invoices', module: 'SaleInvoice', hideAction: true, hideCreate: false,
     elements: [

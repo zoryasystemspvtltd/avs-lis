@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { AlertService, MasterService } from '../../_services';
 
 @Component({
@@ -21,6 +22,8 @@ export class MasterFormComponent implements OnInit {
   corporates: any[] = [];
   doctors: any[] = [];
   profiles: any[] = [];
+  hisParameters: any[] = [];
+  equipments: any[] = [];
   lookupsLoaded = false;
 
   constructor(
@@ -49,6 +52,15 @@ export class MasterFormComponent implements OnInit {
       group['testProfileId'] = [null];
       group['isActive'] = [true];
     }
+    if (this.apiName === 'HisParameterMaster') {
+      group['hisTestId'] = [null, Validators.required];
+    }
+    if (this.apiName === 'HisParameterRangeMaster') {
+      group['hisParameterId'] = [null, Validators.required];
+    }
+    if (this.apiName === 'TestMappingMaster') {
+      group['equipmentId'] = [null, Validators.required];
+    }
     if (this.fields.find(f => f.name === 'isActive')) {
       group['isActive'] = [true];
     }
@@ -56,6 +68,8 @@ export class MasterFormComponent implements OnInit {
 
     if (this.apiName === 'TestRate') {
       this.loadTestRateLookups();
+    } else if (this.apiName === 'HisParameterMaster' || this.apiName === 'HisParameterRangeMaster' || this.apiName === 'TestMappingMaster') {
+      this.loadSetupLookups();
     } else if (this.id) {
       this.masterService.getItem(this.apiName, this.id).subscribe(item => {
         if (item) {
@@ -80,6 +94,45 @@ export class MasterFormComponent implements OnInit {
     if (!d) { return ''; }
     const dt = typeof d === 'string' ? new Date(d) : d;
     return dt.toISOString().substring(0, 10);
+  }
+
+  private loadSetupLookups() {
+    const requests: { [key: string]: Observable<any> } = {
+      tests: this.masterService.getLookupList('HisTest')
+    };
+    if (this.apiName === 'HisParameterRangeMaster') {
+      requests.params = this.masterService.getItems('HisParameterMaster', {
+        RecordPerPage: 500, CurrentPage: 1, SortColumnName: 'HISParamCode', SortDirection: true
+      });
+    }
+    if (this.apiName === 'TestMappingMaster') {
+      requests.equipments = this.httpEquipmentList();
+    }
+
+    forkJoin(requests).subscribe(
+      (data: any) => {
+        this.tests = data.tests || [];
+        if (data.params) {
+          this.hisParameters = (data.params.items || data.params.Items || data.params) || [];
+        }
+        if (data.equipments) {
+          this.equipments = data.equipments || [];
+        }
+        this.lookupsLoaded = true;
+        if (this.id) {
+          this.masterService.getItem(this.apiName, this.id).subscribe(item => {
+            if (item) { this.patchItem(item); }
+          });
+        }
+      },
+      () => this.alertService.error('Failed to load lookup data.')
+    );
+  }
+
+  private httpEquipmentList(): Observable<any[]> {
+    return this.masterService.getItems('EquipmentHeartbeat', {}).pipe(
+      map((list: any) => Array.isArray(list) ? list : [])
+    );
   }
 
   private loadTestRateLookups() {
@@ -140,6 +193,9 @@ export class MasterFormComponent implements OnInit {
     if (patch.corporateId != null) { patch.corporateId = +patch.corporateId; }
     if (patch.referralDoctorId != null) { patch.referralDoctorId = +patch.referralDoctorId; }
     if (patch.testProfileId != null) { patch.testProfileId = +patch.testProfileId; }
+    if (patch.hisTestId != null) { patch.hisTestId = +patch.hisTestId; }
+    if (patch.hisParameterId != null) { patch.hisParameterId = +patch.hisParameterId; }
+    if (patch.equipmentId != null) { patch.equipmentId = +patch.equipmentId; }
     this.form.patchValue(patch);
   }
 

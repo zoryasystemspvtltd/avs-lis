@@ -55,7 +55,7 @@ export class HisSampleComponent implements OnInit {
     this.isInProgress = true;
     this.sampleService.getHisSamples()
       .subscribe(data => {
-        this.message = 'Orders collected from HIS';
+        this.message = 'Orders collected';
         this.alertService.success(this.message);
         this.isInProgress = false;
         this.onGetOrder.emit(true);

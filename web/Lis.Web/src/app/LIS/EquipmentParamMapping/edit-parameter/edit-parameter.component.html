@@ -6,7 +6,7 @@
         <table class="table table-striped">
             <thead>
                 <tr>
-                    <th style="width:20%"><label class="black-text">HIS Param Code</label></th>
+                    <th style="width:20%"><label class="black-text">Param Code</label></th>
                     <th style="width:20%"><label class="black-text">LIS Param Code</label></th>
                     <th><label class="black-text">Param Name</label></th>
                     <th style="width:10%"><label class="black-text">Is Active</label></th>
@@ -18,10 +18,10 @@
                         <div class="input-group">
                             <span class="input-group-addon"><i class="glyphicon glyphicon-blackboard"></i></span>
                             <input [type]="'text'" name="hisTestCode" class="form-control"
-                                [(ngModel)]="mapping.hisParamCode" placeholder="Enter HIS Code" maxlength="25"
+                                [(ngModel)]="mapping.hisParamCode" placeholder="Enter code" maxlength="25"
                                 style="width:100%;" />
                         </div>
-                        <span *ngIf="isInValid(mapping)" class="error ">HIS Code is required.</span>
+                        <span *ngIf="isInValid(mapping)" class="error ">Code is required.</span>
                     </td>
                     <td>
                         <label for="{{$index}}">{{mapping.lisParamCode}}</label>

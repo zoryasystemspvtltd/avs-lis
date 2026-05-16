@@ -102,11 +102,7 @@ namespace LIS.BusinessLogic
             var list = query.ToList();
             result.TotalRecord = list.Count;
 
-            var sortColumn = string.IsNullOrEmpty(option.SortColumnName) ? DefaultSortColumn : option.SortColumnName;
-            if (sortColumn != "Code" && sortColumn != "Name" && sortColumn != "Id")
-            {
-                sortColumn = DefaultSortColumn;
-            }
+            var sortColumn = ResolveSortColumn(option.SortColumnName);
 
             int minRow = (option.CurrentPage - 1) * option.RecordPerPage;
             int pageSize = option.RecordPerPage == 0 ? result.TotalRecord : option.RecordPerPage;
@@ -118,6 +114,29 @@ namespace LIS.BusinessLogic
                 .ToList();
 
             return result;
+        }
+
+        protected virtual string ResolveSortColumn(string sortColumnName)
+        {
+            if (string.IsNullOrWhiteSpace(sortColumnName))
+            {
+                return DefaultSortColumn;
+            }
+
+            var col = sortColumnName.Trim();
+            if (col.Equals("Code", StringComparison.OrdinalIgnoreCase) ||
+                col.Equals("Name", StringComparison.OrdinalIgnoreCase) ||
+                col.Equals("Id", StringComparison.OrdinalIgnoreCase))
+            {
+                return char.ToUpper(col[0]) + col.Substring(1);
+            }
+
+            if (col.Equals(DefaultSortColumn, StringComparison.OrdinalIgnoreCase))
+            {
+                return DefaultSortColumn;
+            }
+
+            return DefaultSortColumn;
         }
     }
 }

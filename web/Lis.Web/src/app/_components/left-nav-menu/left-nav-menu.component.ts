@@ -75,4 +75,8 @@ export class LeftNavMenuComponent implements OnInit {
   hasMasterAccess(): boolean {
     return this.hasAccess('Masters', 63) || this.hasAccess('HisTest', 63) || this.hasAccess('TestRates', 63);
   }
+
+  hasTransactionAccess(): boolean {
+    return this.hasAccess('SaleInvoices', 63) || this.hasAccess('Masters', 63);
+  }
 }

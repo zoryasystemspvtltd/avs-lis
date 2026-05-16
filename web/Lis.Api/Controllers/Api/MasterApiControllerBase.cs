@@ -36,48 +36,50 @@ namespace Lis.Api.Controllers.Api
         {
             get
             {
-                var apiOption = System.Web.HttpContext.Current.Request.Headers.GetValues("ApiOption");
+                var defaultOption = new ListOptions
+                {
+                    RecordPerPage = 10,
+                    CurrentPage = 1,
+                    SortColumnName = "Name",
+                    SortDirection = true
+                };
+
+                var headers = System.Web.HttpContext.Current?.Request?.Headers;
+                if (headers == null)
+                {
+                    return defaultOption;
+                }
+
+                var apiOption = headers.GetValues("ApiOption");
                 if (apiOption == null || !apiOption.Any())
                 {
-                    throw new KeyNotFoundException("Invalid Option specified");
+                    return defaultOption;
                 }
 
                 return JsonConvert.DeserializeObject<ListOptions>(apiOption.FirstOrDefault(),
-                    new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
+                    new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore }) ?? defaultOption;
             }
         }
 
-        [HttpGet]
-        public virtual ItemList<T> Get()
+        protected IHttpActionResult GetCore(int? id = null)
         {
             try
             {
-                return Manager.Get(ApiOption);
+                if (id.HasValue)
+                {
+                    return Ok(Manager.GetById(id.Value));
+                }
+
+                return Ok(Manager.Get(ApiOption) ?? EmptyList());
             }
             catch (Exception e)
             {
                 Logger.LogException(e);
-                return null;
+                return id.HasValue ? (IHttpActionResult)Ok() : Ok(EmptyList());
             }
         }
 
-        [HttpGet]
-        public virtual T Get(int Id)
-        {
-            try
-            {
-                return Manager.GetById(Id);
-            }
-            catch (Exception e)
-            {
-                Logger.LogException(e);
-                return null;
-            }
-        }
-
-        [HttpGet]
-        [ActionName("GetAll")]
-        public virtual IEnumerable<T> GetAll()
+        protected IEnumerable<T> FetchAllActiveCore()
         {
             try
             {
@@ -88,6 +90,11 @@ namespace Lis.Api.Controllers.Api
                 Logger.LogException(e);
                 return null;
             }
+        }
+
+        private ItemList<T> EmptyList()
+        {
+            return new ItemList<T> { TotalRecord = 0, Items = new List<T>() };
         }
 
         [QAuthorize(ModuleName = "Masters", ModulePermissionTypes = ModulePermissionType.CanAdd)]

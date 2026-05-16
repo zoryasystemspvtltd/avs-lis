@@ -11,6 +11,11 @@ export class MasterService {
   constructor(private http: HttpClient) { }
 
   getItems(apiName: string, option: any): Observable<any> {
+    if (apiName === 'EquipmentHeartbeat') {
+      return this.http.get<any>(`${this.baseUrl}/api/EquipmentHeartbeat`).pipe(
+        catchError(() => of([]))
+      );
+    }
     const headers = new HttpHeaders({ ApiOption: JSON.stringify(option) });
     return this.http.get<any>(`${this.baseUrl}/api/${apiName}/`, { headers });
   }

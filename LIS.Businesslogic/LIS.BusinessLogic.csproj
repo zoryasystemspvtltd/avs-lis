@@ -84,6 +84,7 @@
     <Compile Include="SaleInvoiceManager.cs" />
     <Compile Include="LookupMasterManagers.cs" />
     <Compile Include="TestProfileMasterManager.cs" />
+    <Compile Include="SetupDomainManagers.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\LIS.DataModel\LIS.DataAccess.csproj">

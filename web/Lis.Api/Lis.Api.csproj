@@ -215,6 +215,7 @@
     <Compile Include="Controllers\Api\HisTestController.cs" />
     <Compile Include="Controllers\Api\MasterApiControllerBase.cs" />
     <Compile Include="Controllers\Api\LookupMasterControllers.cs" />
+    <Compile Include="Controllers\Api\SetupDomainControllers.cs" />
     <Compile Include="Controllers\Api\TestRateController.cs" />
     <Compile Include="Controllers\Api\SaleInvoiceController.cs" />
     <Compile Include="Controllers\Api\PatientsController.cs" />

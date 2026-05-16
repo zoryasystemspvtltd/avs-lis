@@ -27,7 +27,7 @@
                     </button>
                     <!-- <ul class="dropdown-menu">
                         <li *ngIf="hasAccess(8)"><a style="cursor: pointer;" (click)="editAll(3);"><span
-                                    class="glyphicon glyphicon-question-sign" title="Unpublish"></span>Approve & Send to HIS</a>
+                                    class="glyphicon glyphicon-question-sign" title="Unpublish"></span>Approve & Send</a>
                         </li>
                         <li *ngIf="hasAccess(16)" class="divider"></li>
                         <li *ngIf="hasAccess(16)"><a style="cursor: pointer;" (click)="editAll(4);"><span
@@ -225,12 +225,12 @@
                 <textarea  rows="5 " style="width: 100%;" [(ngModel)]="note"></textarea>
             </div>
             <div class="modal-footer">
-                <!--TODO Remove Doctor's approval : review(5) and change text 'Approve & Send to HIS'-->
+                <!--TODO Remove Doctor's approval : review(5) and change text 'Approve & Send'-->
                 <button type="button" *ngIf="schemma.isTechnician" class="btn btn-primary" (click)="editAll(3);" data-dismiss="modal" >Verified and ready for doctor's approval</button>
                 <button type="button" *ngIf="schemma.isTechnician" class="btn btn-default" (click)="editAll(4);" data-dismiss="modal" >Reject</button>
                 <button type="button" *ngIf="schemma.isTechnician" class="btn btn-default" (click)="editAll(0);" data-dismiss="modal" >Reject & Re-Run Sample</button>
                 <button type="button" *ngIf="schemma.isDoctor" class="btn btn-primary" (click)="editAll(5);" data-dismiss="modal" >Approve &
-                    Send to HIS</button>
+                    Send</button>
                 <button type="button" *ngIf="schemma.isDoctor" class="btn btn-default" (click)="editAll(3);" data-dismiss="modal" >Ask for Second Opinion</button>
                 <button type="button" *ngIf="schemma.isDoctor" class="btn btn-default" (click)="editAll(6);" data-dismiss="modal" >Reject</button>
                 <button type="button" *ngIf="schemma.isRejected" class="btn btn-default" (click)="editAll(0);" data-dismiss="modal" >Re-Run Sample</button>
