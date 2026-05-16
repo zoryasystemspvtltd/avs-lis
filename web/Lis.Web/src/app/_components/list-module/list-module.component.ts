@@ -107,6 +107,9 @@ export class ListModuleComponent implements OnInit, OnChanges {
     return source$.pipe(
       map(response => this.normalizeListResponse(response)),
       map(response => {
+        if (response.items && response.items.length > 0) {
+          this.loadError = null;
+        }
         if (!this.items) {
           this.items = [];
         }

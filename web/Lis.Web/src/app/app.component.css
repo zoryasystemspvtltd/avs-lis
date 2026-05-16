@@ -1,7 +1,7 @@
 .container-main.qcontent {
-  min-height: calc(100vh - 50px);
+  min-height: calc(100vh - 52px);
   padding: 16px 20px 24px;
-  background-color: #ffffff;
+  background-color: var(--zorya-bg, #f4f8f9);
   box-sizing: border-box;
   width: 100%;
 }

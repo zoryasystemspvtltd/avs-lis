@@ -1,7 +1,8 @@
 @import "~@ng-select/ng-select/themes/default.theme.css";
 body {
-    padding-top: 50px;
+    padding-top: 56px;
     padding-bottom: 20px;
+    font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
 }
 
 
@@ -24,7 +25,7 @@ body {
     /* Stay in place */
     z-index: 1;
     /* Stay on top */
-    top: 50px;
+    top: 56px;
     left: 0;
     background-color: #1e6570;
     overflow-x: hidden;
@@ -240,9 +241,9 @@ body {
 }
 
 .logo {
-    max-height: 64px;
-    position: absolute;
-    left: 10px;
+    max-height: 40px;
+    width: auto;
+    height: auto;
 }
 
 #sidenav.hidden {
@@ -254,7 +255,7 @@ body {
 }
 
 .shift-down {
-    margin-top: 64px;
+    margin-top: 56px;
     position: absolute;
     left: 0px;
 }

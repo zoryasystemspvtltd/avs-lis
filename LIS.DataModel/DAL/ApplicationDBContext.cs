@@ -15,7 +15,8 @@ namespace LIS.DataAccess
         /// </summary>
         public ApplicationDBContext() : base("name=DefaultConnection")
         {
-            Database.SetInitializer<ApplicationDBContext>(new CreateDatabaseIfNotExists<ApplicationDBContext>());
+            // Disabled: empty MigrationHistory.Model rows cause XmlException on Initialize (breaks all API lists).
+            Database.SetInitializer<ApplicationDBContext>(null);
         }
 
         public static ApplicationDBContext Create()
