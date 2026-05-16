@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import { AlertService, MasterService } from '../../_services';
 
 @Component({
@@ -20,6 +21,7 @@ export class MasterFormComponent implements OnInit {
   corporates: any[] = [];
   doctors: any[] = [];
   profiles: any[] = [];
+  lookupsLoaded = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -40,7 +42,7 @@ export class MasterFormComponent implements OnInit {
       group[f.name] = f.required ? ['', Validators.required] : [''];
     });
     if (this.apiName === 'TestRate') {
-      group['testId'] = ['', Validators.required];
+      group['testId'] = [null, Validators.required];
       group['rateType'] = [0];
       group['corporateId'] = [null];
       group['referralDoctorId'] = [null];
@@ -53,26 +55,21 @@ export class MasterFormComponent implements OnInit {
     this.form = this.fb.group(group);
 
     if (this.apiName === 'TestRate') {
-      this.masterService.getAll('HisTest').subscribe(t => this.tests = t || []);
-      this.masterService.getAll('Corporate').subscribe(c => this.corporates = c || []);
-      this.masterService.getAll('ReferralDoctor').subscribe(d => this.doctors = d || []);
-      this.masterService.getAll('TestProfile').subscribe(p => this.profiles = p || []);
-    }
-
-    if (this.id) {
+      this.loadTestRateLookups();
+    } else if (this.id) {
       this.masterService.getItem(this.apiName, this.id).subscribe(item => {
         if (item) {
           this.patchItem(item);
         }
       });
-    } else if (this.apiName === 'TestRate') {
-      const now = new Date();
-      const nextYear = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate());
-      this.form.patchValue({ effectiveStart: this.toDateInput(now), effectiveEnd: this.toDateInput(nextYear), rateType: 0 });
     }
   }
 
   get f() { return this.form.controls; }
+
+  get rateType(): number {
+    return +this.form.get('rateType').value;
+  }
 
   isInValid(controlName: string) {
     const c = this.form.get(controlName);
@@ -85,15 +82,72 @@ export class MasterFormComponent implements OnInit {
     return dt.toISOString().substring(0, 10);
   }
 
+  private loadTestRateLookups() {
+    forkJoin({
+      tests: this.masterService.getLookupList('HisTest'),
+      corporates: this.masterService.getLookupList('Corporate'),
+      doctors: this.masterService.getLookupList('ReferralDoctor'),
+      profiles: this.masterService.getLookupList('TestProfile')
+    }).subscribe(
+      data => {
+        this.tests = data.tests || [];
+        this.corporates = (data.corporates || []).filter(c => c.isActive !== false);
+        this.doctors = (data.doctors || []).filter(d => d.isActive !== false);
+        this.profiles = (data.profiles || []).filter(p => p.isActive !== false);
+        this.lookupsLoaded = true;
+
+        if (this.id) {
+          this.masterService.getItem(this.apiName, this.id).subscribe(item => {
+            if (item) {
+              this.patchItem(item);
+            }
+          });
+        } else {
+          const now = new Date();
+          const nextYear = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate());
+          this.form.patchValue({
+            effectiveStart: this.toDateInput(now),
+            effectiveEnd: this.toDateInput(nextYear),
+            rateType: 0
+          });
+        }
+      },
+      () => {
+        this.alertService.error('Failed to load lookup data for Test Rate form.');
+      }
+    );
+  }
+
+  onRateTypeChange() {
+    const rt = this.rateType;
+    if (rt !== 1) {
+      this.form.patchValue({ corporateId: null });
+    }
+    if (rt !== 2) {
+      this.form.patchValue({ referralDoctorId: null });
+    }
+    if (rt !== 3) {
+      this.form.patchValue({ testProfileId: null });
+    }
+  }
+
   patchItem(item: any) {
     const patch: any = Object.assign({}, item);
     if (patch.effectiveStart) { patch.effectiveStart = this.toDateInput(patch.effectiveStart); }
     if (patch.effectiveEnd) { patch.effectiveEnd = this.toDateInput(patch.effectiveEnd); }
+    if (patch.testId != null) { patch.testId = +patch.testId; }
+    if (patch.rateType != null) { patch.rateType = +patch.rateType; }
+    if (patch.corporateId != null) { patch.corporateId = +patch.corporateId; }
+    if (patch.referralDoctorId != null) { patch.referralDoctorId = +patch.referralDoctorId; }
+    if (patch.testProfileId != null) { patch.testProfileId = +patch.testProfileId; }
     this.form.patchValue(patch);
   }
 
   onSubmit() {
     this.submitted = true;
+    if (this.apiName === 'TestRate') {
+      this.applyTestRateValidators();
+    }
     if (this.form.invalid) { return; }
 
     const item = Object.assign({}, this.form.value);
@@ -129,6 +183,25 @@ export class MasterFormComponent implements OnInit {
         this.alertService.error(err?.error?.message || 'Save failed');
       }
     );
+  }
+
+  private applyTestRateValidators() {
+    const corp = this.form.get('corporateId');
+    const doc = this.form.get('referralDoctorId');
+    const prof = this.form.get('testProfileId');
+    corp.clearValidators();
+    doc.clearValidators();
+    prof.clearValidators();
+    if (this.rateType === 1) {
+      corp.setValidators([Validators.required]);
+    } else if (this.rateType === 2) {
+      doc.setValidators([Validators.required]);
+    } else if (this.rateType === 3) {
+      prof.setValidators([Validators.required]);
+    }
+    corp.updateValueAndValidity();
+    doc.updateValueAndValidity();
+    prof.updateValueAndValidity();
   }
 
   deactivate() {

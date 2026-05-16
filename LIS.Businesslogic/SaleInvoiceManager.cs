@@ -95,7 +95,7 @@ namespace LIS.BusinessLogic
             }).ToList();
 
             result.TotalRecord = list.Count;
-            var sortColumn = string.IsNullOrEmpty(option.SortColumnName) ? "InvoiceDate" : option.SortColumnName;
+            var sortColumn = ResolveSortColumn(option.SortColumnName);
             int minRow = (option.CurrentPage - 1) * option.RecordPerPage;
             int pageSize = option.RecordPerPage == 0 ? result.TotalRecord : option.RecordPerPage;
 
@@ -103,6 +103,7 @@ namespace LIS.BusinessLogic
                 .OrderBy(sortColumn, option.SortDirection)
                 .Skip(minRow)
                 .Take(pageSize)
+                .Select(ToListItem)
                 .ToList();
 
             return result;
@@ -278,6 +279,66 @@ namespace LIS.BusinessLogic
                 invoice.PatientName = patient.Name;
                 invoice.PatientPhone = patient.Phone;
             }
+        }
+
+        private static string ResolveSortColumn(string sortColumnName)
+        {
+            if (string.IsNullOrWhiteSpace(sortColumnName))
+            {
+                return "InvoiceDate";
+            }
+
+            switch (sortColumnName.Trim())
+            {
+                case "invoiceNo":
+                case "InvoiceNo":
+                    return "InvoiceNo";
+                case "invoiceDate":
+                case "InvoiceDate":
+                    return "InvoiceDate";
+                case "netAmount":
+                case "NetAmount":
+                    return "NetAmount";
+                case "patientName":
+                case "PatientName":
+                    return "PatientName";
+                case "id":
+                case "Id":
+                    return "Id";
+                default:
+                    return "InvoiceDate";
+            }
+        }
+
+        private static SaleInvoice ToListItem(SaleInvoice invoice)
+        {
+            return new SaleInvoice
+            {
+                Id = invoice.Id,
+                InvoiceNo = invoice.InvoiceNo,
+                InvoiceDate = invoice.InvoiceDate,
+                InvoiceStatus = invoice.InvoiceStatus,
+                PaymentStatus = invoice.PaymentStatus,
+                RequestDetailId = invoice.RequestDetailId,
+                PatientId = invoice.PatientId,
+                GrossAmount = invoice.GrossAmount,
+                DiscountAmount = invoice.DiscountAmount,
+                TaxAmount = invoice.TaxAmount,
+                NetAmount = invoice.NetAmount,
+                PaidAmount = invoice.PaidAmount,
+                DueAmount = invoice.DueAmount,
+                RefDoctorName = invoice.RefDoctorName,
+                ReferralDoctorId = invoice.ReferralDoctorId,
+                CorporateId = invoice.CorporateId,
+                Notes = invoice.Notes,
+                CreatedOn = invoice.CreatedOn,
+                CreatedBy = invoice.CreatedBy,
+                ModifiedOn = invoice.ModifiedOn,
+                ModifiedBy = invoice.ModifiedBy,
+                IsActive = invoice.IsActive,
+                PatientName = invoice.PatientName,
+                PatientPhone = invoice.PatientPhone
+            };
         }
     }
 }

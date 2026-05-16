@@ -13,6 +13,7 @@ using System.Web.Http;
 
 namespace Lis.Api.Controllers.Api
 {
+    [RoutePrefix("api/SaleInvoice")]
     public class SaleInvoiceController : ApiController
     {
         private readonly ISaleInvoiceManager manager;
@@ -33,34 +34,51 @@ namespace Lis.Api.Controllers.Api
                 var apiOption = System.Web.HttpContext.Current.Request.Headers.GetValues("ApiOption");
                 if (apiOption == null || !apiOption.Any())
                 {
-                    throw new KeyNotFoundException("Invalid Option specified");
+                    return new ListOptions
+                    {
+                        RecordPerPage = 10,
+                        CurrentPage = 1,
+                        SortColumnName = "InvoiceDate",
+                        SortDirection = true
+                    };
                 }
 
-                return JsonConvert.DeserializeObject<ListOptions>(apiOption.FirstOrDefault(),
+                var option = JsonConvert.DeserializeObject<ListOptions>(apiOption.FirstOrDefault(),
                     new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
+
+                return option ?? new ListOptions
+                {
+                    RecordPerPage = 10,
+                    CurrentPage = 1,
+                    SortColumnName = "InvoiceDate",
+                    SortDirection = true
+                };
             }
         }
 
         [HttpGet]
+        [Route("")]
         public ItemList<SaleInvoice> Get()
         {
             try
             {
-                return manager.Get(ApiOption);
+                var result = manager.Get(ApiOption);
+                return result ?? new ItemList<SaleInvoice> { TotalRecord = 0, Items = new List<SaleInvoice>() };
             }
             catch (Exception e)
             {
                 logger.LogException(e);
-                return null;
+                return new ItemList<SaleInvoice> { TotalRecord = 0, Items = new List<SaleInvoice>() };
             }
         }
 
         [HttpGet]
-        public SaleInvoiceDto Get(long Id)
+        [Route("{id:long}")]
+        public SaleInvoiceDto Get(long id)
         {
             try
             {
-                return manager.GetById(Id);
+                return manager.GetById(id);
             }
             catch (Exception e)
             {
@@ -70,6 +88,7 @@ namespace Lis.Api.Controllers.Api
         }
 
         [HttpGet]
+        [Route("NextInvoiceNo")]
         [ActionName("NextInvoiceNo")]
         public string GetNextInvoiceNo()
         {

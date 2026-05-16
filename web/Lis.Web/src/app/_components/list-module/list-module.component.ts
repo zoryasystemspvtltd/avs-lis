@@ -65,6 +65,15 @@ export class ListModuleComponent implements OnInit, OnChanges {
     this.items = [];
     this.isLoaded = false;
     this.loadError = null;
+    if (this.schemma.module === 'HisTest') {
+      this.option.SortColumnName = 'HISTestCode';
+    }
+    if (this.schemma.module === 'TestRate') {
+      this.option.SortColumnName = 'EffectiveStart';
+    }
+    if (this.schemma.module === 'SaleInvoice') {
+      this.option.SortColumnName = 'InvoiceDate';
+    }
     if (this.schemma.filterStatus != null) {
       this.filterStatus = this.schemma.filterStatus;
     }
@@ -102,7 +111,9 @@ export class ListModuleComponent implements OnInit, OnChanges {
 
     const source$ = this.shouldUseGetAll()
       ? this.masterService.getAll(this.schemma.module)
-      : this.moduleService.getItems(this.schemma.module, this.option);
+      : (this.schemma.module === 'HisTest' || this.schemma.module === 'TestRate' || this.schemma.module === 'SaleInvoice'
+        ? this.masterService.getItems(this.schemma.module, this.option)
+        : this.moduleService.getItems(this.schemma.module, this.option));
 
     return source$.pipe(
       map(response => this.normalizeListResponse(response)),

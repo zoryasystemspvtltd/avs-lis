@@ -1,4 +1,4 @@
-﻿using LIS.DataAccess.Repo;
+using LIS.DataAccess.Repo;
 using LIS.DtoModel;
 using LIS.DtoModel.Interfaces;
 using LIS.DtoModel.Models;
@@ -46,21 +46,26 @@ namespace LIS.BusinessLogic
 
             ItemList<HisTestMaster> result = new ItemList<HisTestMaster>();
 
-            var query = testRepo.Get()
-                .Join(
-                    departmentRepo.Get(d => d.Code != null),
-                    test => test.DepartmentCode,
-                    dept => dept.Code,
-                    (test, dept) => new HisTestMaster
-                    {
-                        Id = test.Id,
-                        HISTestCode = test.HISTestCode,
-                        HISTestCodeDescription = test.HISTestCodeDescription,
-                        HISSpecimenCode = test.HISSpecimenCode,
-                        HISSpecimenName = test.HISSpecimenName,
-                        DepartmentCode = test.DepartmentCode,
-                        DepartmentName = dept.Name
-                    });
+            var departments = departmentRepo.Get(d => d.Code != null).ToList();
+            var query = testRepo.Get().AsEnumerable().Select(test =>
+            {
+                var dept = departments.FirstOrDefault(d =>
+                    !string.IsNullOrEmpty(test.DepartmentCode) &&
+                    d.Code.Equals(test.DepartmentCode, StringComparison.OrdinalIgnoreCase));
+                return new HisTestMaster
+                {
+                    Id = test.Id,
+                    HISTestCode = test.HISTestCode,
+                    HISTestCodeDescription = test.HISTestCodeDescription,
+                    HISSpecimenCode = test.HISSpecimenCode,
+                    HISSpecimenName = test.HISSpecimenName,
+                    DepartmentCode = test.DepartmentCode,
+                    DepartmentName = dept != null ? dept.Name : test.DepartmentCode,
+                    IsActive = test.IsActive,
+                    CreatedOn = test.CreatedOn,
+                    CreatedBy = test.CreatedBy
+                };
+            }).AsQueryable();
 
             if (!string.IsNullOrEmpty(option.SearchText))
             {

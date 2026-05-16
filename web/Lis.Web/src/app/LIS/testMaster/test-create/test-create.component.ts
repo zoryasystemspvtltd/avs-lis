@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import { AlertService, TestMasterService } from '../../../_services';
 
 @Component({
@@ -32,28 +33,25 @@ export class TestCreateComponent implements OnInit {
   }
 
   loadDropdowns() {
-    this.testMasterService.getSpecimens().subscribe(
-      response => {
-        this.specimens = response;
-        this.loadDepartments();
-      },
-      error => {
-        this.alertService.error('Failed to load specimens');
-        this.isLoaded = true;
-      }
-    );
-  }
-
-  loadDepartments() {
-    this.testMasterService.getDepartments().subscribe(
-      response => {
-        this.departments = response;
+    forkJoin({
+      specimens: this.testMasterService.getSpecimens(),
+      departments: this.testMasterService.getDepartments()
+    }).subscribe(
+      data => {
+        this.specimens = data.specimens || [];
+        this.departments = data.departments || [];
+        if (this.specimens.length === 0 || this.departments.length === 0) {
+          this.alertService.error('Specimen or department lookup data is empty. Check master setup.');
+        }
         this.isLoaded = true;
         this.initForms();
       },
-      error => {
-        this.alertService.error('Failed to load departments');
+      () => {
+        this.alertService.error('Failed to load specimens or departments');
+        this.specimens = [];
+        this.departments = [];
         this.isLoaded = true;
+        this.initForms();
       }
     );
   }

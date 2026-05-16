@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import { AlertService, TestMasterService } from '../../../_services';
 
 @Component({
@@ -37,25 +38,20 @@ export class TestEditComponent implements OnInit {
   }
 
   loadDropdowns() {
-    this.testMasterService.getSpecimens().subscribe(
-      response => {
-        this.specimens = response;
-        this.loadDepartments();
-      },
-      error => {
-        this.alertService.error('Failed to load specimens');
-      }
-    );
-  }
-
-  loadDepartments() {
-    this.testMasterService.getDepartments().subscribe(
-      response => {
-        this.departments = response;
+    forkJoin({
+      specimens: this.testMasterService.getSpecimens(),
+      departments: this.testMasterService.getDepartments()
+    }).subscribe(
+      data => {
+        this.specimens = data.specimens || [];
+        this.departments = data.departments || [];
         this.loadTestData();
       },
-      error => {
-        this.alertService.error('Failed to load departments');
+      () => {
+        this.alertService.error('Failed to load specimens or departments');
+        this.specimens = [];
+        this.departments = [];
+        this.loadTestData();
       }
     );
   }

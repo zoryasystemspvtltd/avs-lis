@@ -101,12 +101,45 @@ body {
   color: var(--zorya-sidebar-menu) !important;
 }
 
-/* Tables */
+/* Tables — list grid headers (masters, transactions, list-module) */
 .qtable .table > thead > tr > th,
-.table > thead > tr > th {
+.table > thead > tr > th,
+.content .table > thead > tr > th {
   background-color: var(--zorya-primary);
-  color: #fff;
+  color: #fff !important;
   border-color: var(--zorya-primary-dark) !important;
+  font-weight: 600;
+}
+
+/* Sortable column captions are <a> inside <th> — override global link color */
+.qtable .table > thead > tr > th a,
+.table > thead > tr > th a,
+.content .table > thead > tr > th a {
+  color: #fff !important;
+  text-decoration: none;
+}
+
+.qtable .table > thead > tr > th a:hover,
+.qtable .table > thead > tr > th a:focus,
+.table > thead > tr > th a:hover,
+.table > thead > tr > th a:focus,
+.content .table > thead > tr > th a:hover,
+.content .table > thead > tr > th a:focus {
+  color: #e8f7f9 !important;
+  text-decoration: none;
+}
+
+.qtable .table > thead > tr > th .glyphicon,
+.table > thead > tr > th .glyphicon,
+.content .table > thead > tr > th .glyphicon {
+  color: #fff !important;
+}
+
+/* List footer caption (record count / page size) */
+.content .qtable h4.pagination,
+.content h4.pagination {
+  color: var(--zorya-text) !important;
+  font-weight: 500;
 }
 
 .qtable .table-striped > tbody > tr:nth-of-type(odd) {

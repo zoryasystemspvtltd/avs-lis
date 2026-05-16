@@ -32,53 +32,61 @@
     </ng-container>
 
     <ng-container *ngIf="apiName === 'TestRate'">
+      <p *ngIf="!lookupsLoaded" class="text-muted">Loading lookups...</p>
       <div class="row">
         <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Test<span class="error">*</span></label></div>
         <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
-          <select class="form-control" formControlName="testId">
-            <option value="">-- Select --</option>
-            <option *ngFor="let t of tests" [value]="t.id">{{t.hisTestCode}} - {{t.hisTestCodeDescription}}</option>
+          <select class="form-control" formControlName="testId" [disabled]="!lookupsLoaded">
+            <option [ngValue]="null">-- Select Test --</option>
+            <option *ngFor="let t of tests" [ngValue]="t.id">{{t.hisTestCode}} - {{t.hisTestCodeDescription}}</option>
           </select>
           <span *ngIf="submitted && f.testId?.invalid" class="error">Test is required.</span>
         </div>
         <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Rate Type</label></div>
         <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
-          <select class="form-control" formControlName="rateType">
-            <option [value]="0">Standard</option>
-            <option [value]="1">Corporate</option>
-            <option [value]="2">Referral Doctor</option>
-            <option [value]="3">Profile</option>
-            <option [value]="4">Emergency</option>
+          <select class="form-control" formControlName="rateType" (change)="onRateTypeChange()">
+            <option [ngValue]="0">Standard</option>
+            <option [ngValue]="1">Corporate</option>
+            <option [ngValue]="2">Referral Doctor</option>
+            <option [ngValue]="3">Profile</option>
+            <option [ngValue]="4">Emergency</option>
           </select>
         </div>
       </div>
       <br />
-      <div class="row">
-        <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Corporate</label></div>
+      <div class="row" *ngIf="rateType === 1">
+        <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Corporate<span class="error">*</span></label></div>
         <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
-          <select class="form-control" formControlName="corporateId">
-            <option [ngValue]="null">-- None --</option>
-            <option *ngFor="let c of corporates" [ngValue]="c.id">{{c.name}}</option>
+          <select class="form-control" formControlName="corporateId" [disabled]="!lookupsLoaded">
+            <option [ngValue]="null">-- Select Corporate --</option>
+            <option *ngFor="let c of corporates" [ngValue]="c.id">{{c.code}} - {{c.name}}</option>
           </select>
-        </div>
-        <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Referral Doctor</label></div>
-        <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
-          <select class="form-control" formControlName="referralDoctorId">
-            <option [ngValue]="null">-- None --</option>
-            <option *ngFor="let d of doctors" [ngValue]="d.id">{{d.name}}</option>
-          </select>
+          <span *ngIf="submitted && f.corporateId?.invalid" class="error">Corporate is required.</span>
         </div>
       </div>
-      <br />
-      <div class="row" *ngIf="form.value.rateType == 3">
-        <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Test Profile</label></div>
+      <br *ngIf="rateType === 1" />
+      <div class="row" *ngIf="rateType === 2">
+        <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Referral Doctor<span class="error">*</span></label></div>
         <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
-          <select class="form-control" formControlName="testProfileId">
+          <select class="form-control" formControlName="referralDoctorId" [disabled]="!lookupsLoaded">
+            <option [ngValue]="null">-- Select Doctor --</option>
+            <option *ngFor="let d of doctors" [ngValue]="d.id">{{d.code}} - {{d.name}}</option>
+          </select>
+          <span *ngIf="submitted && f.referralDoctorId?.invalid" class="error">Referral Doctor is required.</span>
+        </div>
+      </div>
+      <br *ngIf="rateType === 2" />
+      <div class="row" *ngIf="rateType === 3">
+        <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Test Profile<span class="error">*</span></label></div>
+        <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
+          <select class="form-control" formControlName="testProfileId" [disabled]="!lookupsLoaded">
             <option [ngValue]="null">-- Select Profile --</option>
             <option *ngFor="let p of profiles" [ngValue]="p.id">{{p.code}} - {{p.name}}</option>
           </select>
+          <span *ngIf="submitted && f.testProfileId?.invalid" class="error">Test Profile is required.</span>
         </div>
       </div>
+      <br *ngIf="rateType === 3" />
     </ng-container>
 
     <button type="submit" class="btn btn-primary" [disabled]="loading">Save</button>

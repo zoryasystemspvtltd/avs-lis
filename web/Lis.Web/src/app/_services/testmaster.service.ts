@@ -1,61 +1,71 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../environments/environment';
-import { AuthenticationService } from './authentication.service';
-import { map } from 'rxjs/operators';
+import { map, catchError } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class TestMasterService {
-     constructor(private http: HttpClient, private authenticationService: AuthenticationService) { }
+  constructor(private http: HttpClient) { }
 
-    getAll() {
-        return this.http.get<any[]>(`${environment.ApplicationServer}/api/hisParameterRange/`)
-            .pipe(map(response => {
-                return response;
-            }));
+  private normalizeList(response: any): any[] {
+    if (response == null) {
+      return [];
     }
+    if (Array.isArray(response)) {
+      return response;
+    }
+    return response.items || response.Items || [];
+  }
 
-    getById(id: string) {
-        return this.http.get<any>(`${environment.ApplicationServer}/api/histest/${id}`)
-            .pipe(map(response => {
-                return response;
-            }));
-    }
+  private hisTestListOption() {
+    return {
+      RecordPerPage: 500,
+      CurrentPage: 1,
+      SortColumnName: 'HISTestCode',
+      SortDirection: true
+    };
+  }
 
-    create(data: any) {
-        debugger;
-        return this.http.post<any>(`${environment.ApplicationServer}/api/histest/`, data)
-            .pipe(map(response => {
-                return response;
-            }));
-    }
+  getAll() {
+    const headers = new HttpHeaders({ ApiOption: JSON.stringify(this.hisTestListOption()) });
+    return this.http.get<any>(`${environment.ApplicationServer}/api/HisTest/`, { headers })
+      .pipe(
+        map(response => this.normalizeList(response)),
+        catchError(() => of([]))
+      );
+  }
 
-    update(data: any) {
-        return this.http.put<any>(`${environment.ApplicationServer}/api/histest/`, data)
-            .pipe(map(response => {
-                return response;
-            }));
-    }
+  getById(id: string) {
+    return this.http.get<any>(`${environment.ApplicationServer}/api/HisTest/${id}`)
+      .pipe(catchError(() => of(null)));
+  }
 
-    delete(id: string) {
-        return this.http.delete<any>(`${environment.ApplicationServer}/api/histest/${id}`)
-            .pipe(map(response => {
-                return response;
-            }));
-    }
+  create(data: any) {
+    return this.http.post<any>(`${environment.ApplicationServer}/api/HisTest/`, data);
+  }
 
-    getSpecimens() {
-        return this.http.get<any[]>(`${environment.ApplicationServer}/api/specimens/`)
-            .pipe(map(response => {
-                return response;
-            }));
-    }
+  update(data: any) {
+    return this.http.post<any>(`${environment.ApplicationServer}/api/HisTest/Put`, data);
+  }
 
-    getDepartments() {
-        return this.http.get<any[]>(`${environment.ApplicationServer}/api/department/`)
-            .pipe(map(response => {
-                return response;
-            }));
-    }
+  delete(id: string) {
+    return this.http.post<any>(`${environment.ApplicationServer}/api/HisTest/Delete`, { id: +id });
+  }
+
+  getSpecimens() {
+    return this.http.get<any>(`${environment.ApplicationServer}/api/Specimens/`)
+      .pipe(
+        map(response => this.normalizeList(response)),
+        catchError(() => of([]))
+      );
+  }
+
+  getDepartments() {
+    return this.http.get<any>(`${environment.ApplicationServer}/api/Department/`)
+      .pipe(
+        map(response => this.normalizeList(response)),
+        catchError(() => of([]))
+      );
+  }
 }

@@ -1,4 +1,4 @@
-﻿using LIS.DtoModel;
+using LIS.DtoModel;
 using LIS.DtoModel.Interfaces;
 using LIS.DtoModel.Models;
 using LIS.Logger;
@@ -33,7 +33,13 @@ namespace Lis.Api.Controllers.Api
                 var apiOption = System.Web.HttpContext.Current.Request.Headers.GetValues("ApiOption");
                 if (apiOption == null || apiOption.Count() == 0)
                 {
-                    throw new KeyNotFoundException("Invalid Option specified");
+                    return new ListOptions
+                    {
+                        RecordPerPage = 500,
+                        CurrentPage = 1,
+                        SortColumnName = "HISTestCode",
+                        SortDirection = true
+                    };
                 }
 
                 var option = JsonConvert.DeserializeObject<ListOptions>(apiOption.FirstOrDefault(),
@@ -41,7 +47,13 @@ namespace Lis.Api.Controllers.Api
                 {
                     ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
                 });
-                return option;
+                return option ?? new ListOptions
+                {
+                    RecordPerPage = 500,
+                    CurrentPage = 1,
+                    SortColumnName = "HISTestCode",
+                    SortDirection = true
+                };
             }
         }
 

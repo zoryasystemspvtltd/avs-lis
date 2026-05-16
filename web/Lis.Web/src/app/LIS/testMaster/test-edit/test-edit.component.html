@@ -39,7 +39,7 @@
                                         <span class="input-group-addon"><i class="glyphicon glyphicon-list"></i></span>
                                         <select class="form-control" formControlName="hisSpecimenCode">
                                             <option value="">Select Specimen</option>
-                                            <option *ngFor="let specimen of specimens" value="{{specimen.code}}">
+                                            <option *ngFor="let specimen of specimens" [ngValue]="specimen.code">
                                                 {{specimen.name}}
                                             </option>
                                         </select>
@@ -53,7 +53,7 @@
                                         <span class="input-group-addon"><i class="glyphicon glyphicon-list"></i></span>
                                         <select class="form-control" formControlName="departmentCode">
                                             <option value="">Select Department</option>
-                                            <option *ngFor="let department of departments" value="{{department.code}}">
+                                            <option *ngFor="let department of departments" [ngValue]="department.code">
                                                 {{department.name}}
                                             </option>
                                         </select>

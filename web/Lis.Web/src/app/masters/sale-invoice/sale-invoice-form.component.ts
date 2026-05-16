@@ -52,7 +52,7 @@ export class SaleInvoiceFormComponent implements OnInit {
       lines: this.fb.array([])
     });
 
-    this.masterService.getAll('HisTest').subscribe(t => this.tests = t || []);
+    this.masterService.getLookupList('HisTest').subscribe(t => this.tests = t || []);
     this.masterService.getAll('Corporate').subscribe(c => this.corporates = c || []);
     this.masterService.getAll('ReferralDoctor').subscribe(d => this.doctors = d || []);
     this.masterService.getBillingPatients({

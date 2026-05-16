@@ -86,7 +86,7 @@ namespace LIS.BusinessLogic
             var list = query.ToList().Select(Enrich).ToList();
             result.TotalRecord = list.Count;
 
-            var sortColumn = string.IsNullOrEmpty(option.SortColumnName) ? "EffectiveStart" : option.SortColumnName;
+            var sortColumn = ResolveSortColumn(option.SortColumnName);
             int minRow = (option.CurrentPage - 1) * option.RecordPerPage;
             int pageSize = option.RecordPerPage == 0 ? result.TotalRecord : option.RecordPerPage;
 
@@ -171,6 +171,41 @@ namespace LIS.BusinessLogic
             }
 
             return rate;
+        }
+
+        private static string ResolveSortColumn(string sortColumnName)
+        {
+            if (string.IsNullOrWhiteSpace(sortColumnName))
+            {
+                return "EffectiveStart";
+            }
+
+            switch (sortColumnName.Trim())
+            {
+                case "rate":
+                case "Rate":
+                    return "Rate";
+                case "emergencyRate":
+                case "EmergencyRate":
+                    return "EmergencyRate";
+                case "effectiveStart":
+                case "EffectiveStart":
+                    return "EffectiveStart";
+                case "effectiveEnd":
+                case "EffectiveEnd":
+                    return "EffectiveEnd";
+                case "testName":
+                case "TestName":
+                    return "TestName";
+                case "testCode":
+                case "TestCode":
+                    return "TestCode";
+                case "id":
+                case "Id":
+                    return "Id";
+                default:
+                    return "EffectiveStart";
+            }
         }
 
         private void Stamp(TestRateMaster item, bool isNew)

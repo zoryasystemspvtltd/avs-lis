@@ -33,11 +33,25 @@ namespace Lis.Api.Controllers.Api
                 var apiOption = System.Web.HttpContext.Current.Request.Headers.GetValues("ApiOption");
                 if (apiOption == null || !apiOption.Any())
                 {
-                    throw new KeyNotFoundException("Invalid Option specified");
+                    return new ListOptions
+                    {
+                        RecordPerPage = 10,
+                        CurrentPage = 1,
+                        SortColumnName = "EffectiveStart",
+                        SortDirection = true
+                    };
                 }
 
-                return JsonConvert.DeserializeObject<ListOptions>(apiOption.FirstOrDefault(),
+                var option = JsonConvert.DeserializeObject<ListOptions>(apiOption.FirstOrDefault(),
                     new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
+
+                return option ?? new ListOptions
+                {
+                    RecordPerPage = 10,
+                    CurrentPage = 1,
+                    SortColumnName = "EffectiveStart",
+                    SortDirection = true
+                };
             }
         }
 

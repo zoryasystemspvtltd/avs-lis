@@ -32,7 +32,7 @@ export class TestProfileFormComponent implements OnInit {
       lines: this.fb.array([])
     });
 
-    this.masterService.getAll('HisTest').subscribe(t => this.tests = t || []);
+    this.masterService.getLookupList('HisTest').subscribe(t => this.tests = t || []);
 
     if (this.id) {
       this.masterService.getItem('TestProfile', this.id).subscribe(profile => {

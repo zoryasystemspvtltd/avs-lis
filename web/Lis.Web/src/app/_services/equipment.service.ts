@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 import { User, ResetPassword, ChangePassword, UserInfo } from '../_models';
 import { environment } from '../../environments/environment';
@@ -112,9 +112,19 @@ export class EquipmentService {
     }
 
     getHisTests() {
-        return this.http.get<User[]>(`${environment.ApplicationServer}/api/histest/`)
+        const option = {
+            RecordPerPage: 500,
+            CurrentPage: 1,
+            SortColumnName: 'HISTestCode',
+            SortDirection: true
+        };
+        const headers = new HttpHeaders({ ApiOption: JSON.stringify(option) });
+        return this.http.get<any>(`${environment.ApplicationServer}/api/HisTest/`, { headers })
             .pipe(map(response => {
-                return response;
+                if (Array.isArray(response)) {
+                    return response;
+                }
+                return (response && response.items) ? response.items : [];
             }));
     }
 
