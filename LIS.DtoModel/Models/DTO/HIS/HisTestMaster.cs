@@ -3,9 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace LIS.DtoModel.Models
 {
@@ -20,7 +17,7 @@ namespace LIS.DtoModel.Models
         public string HISSpecimenCode { get; set; }
         public string HISSpecimenName { get; set; }
         public DateTime CreatedOn { get; set; }
-
+        public string CreatedBy { get; set; }
         public bool IsActive { get; set; }
         [ForeignKey("Departments")]
         public string DepartmentCode { get; set; }
