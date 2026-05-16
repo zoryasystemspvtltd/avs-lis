@@ -110,9 +110,15 @@ export class SaleInvoiceFormComponent implements OnInit {
   }
 
   getRateType(): number {
-    if (this.form.value.corporateId) { return 1; }
-    if (this.form.value.referralDoctorId) { return 2; }
+    const v = this.form.getRawValue ? this.form.getRawValue() : this.form.value;
+    if (v.corporateId) { return 1; }
+    if (v.referralDoctorId) { return 2; }
     return 0;
+  }
+
+  getTestName(testId: number): string {
+    const t = this.tests.find(x => +x.id === +testId);
+    return t ? `${t.hisTestCode} - ${t.hisTestCodeDescription}` : String(testId);
   }
 
   onTestChange(i: number) {

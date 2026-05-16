@@ -70,6 +70,15 @@
         </div>
       </div>
       <br />
+      <div class="row" *ngIf="form.value.rateType == 3">
+        <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Test Profile</label></div>
+        <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
+          <select class="form-control" formControlName="testProfileId">
+            <option [ngValue]="null">-- Select Profile --</option>
+            <option *ngFor="let p of profiles" [ngValue]="p.id">{{p.code}} - {{p.name}}</option>
+          </select>
+        </div>
+      </div>
     </ng-container>
 
     <button type="submit" class="btn btn-primary" [disabled]="loading">Save</button>

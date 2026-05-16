@@ -19,6 +19,7 @@ export class MasterFormComponent implements OnInit {
   tests: any[] = [];
   corporates: any[] = [];
   doctors: any[] = [];
+  profiles: any[] = [];
 
   constructor(
     private route: ActivatedRoute,
@@ -43,6 +44,7 @@ export class MasterFormComponent implements OnInit {
       group['rateType'] = [0];
       group['corporateId'] = [null];
       group['referralDoctorId'] = [null];
+      group['testProfileId'] = [null];
       group['isActive'] = [true];
     }
     if (this.fields.find(f => f.name === 'isActive')) {
@@ -54,12 +56,13 @@ export class MasterFormComponent implements OnInit {
       this.masterService.getAll('HisTest').subscribe(t => this.tests = t || []);
       this.masterService.getAll('Corporate').subscribe(c => this.corporates = c || []);
       this.masterService.getAll('ReferralDoctor').subscribe(d => this.doctors = d || []);
+      this.masterService.getAll('TestProfile').subscribe(p => this.profiles = p || []);
     }
 
     if (this.id) {
       this.masterService.getItem(this.apiName, this.id).subscribe(item => {
         if (item) {
-          this.form.patchValue(item);
+          this.patchItem(item);
         }
       });
     } else if (this.apiName === 'TestRate') {
@@ -76,8 +79,17 @@ export class MasterFormComponent implements OnInit {
     return this.submitted && c && c.invalid;
   }
 
-  toDateInput(d: Date) {
-    return d.toISOString().substring(0, 10);
+  toDateInput(d: Date | string) {
+    if (!d) { return ''; }
+    const dt = typeof d === 'string' ? new Date(d) : d;
+    return dt.toISOString().substring(0, 10);
+  }
+
+  patchItem(item: any) {
+    const patch: any = Object.assign({}, item);
+    if (patch.effectiveStart) { patch.effectiveStart = this.toDateInput(patch.effectiveStart); }
+    if (patch.effectiveEnd) { patch.effectiveEnd = this.toDateInput(patch.effectiveEnd); }
+    this.form.patchValue(patch);
   }
 
   onSubmit() {
@@ -87,6 +99,12 @@ export class MasterFormComponent implements OnInit {
     const item = Object.assign({}, this.form.value);
     if (item.effectiveStart) { item.effectiveStart = new Date(item.effectiveStart); }
     if (item.effectiveEnd) { item.effectiveEnd = new Date(item.effectiveEnd); }
+    if (this.apiName === 'TestRate') {
+      const rt = +item.rateType;
+      if (rt !== 1) { item.corporateId = null; }
+      if (rt !== 2) { item.referralDoctorId = null; }
+      if (rt !== 3) { item.testProfileId = null; }
+    }
     if (this.id) {
       if (this.apiName === 'Department') {
         item.code = this.id;

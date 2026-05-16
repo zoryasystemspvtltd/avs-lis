@@ -1,3 +1,7 @@
+.print-invoice h3 {
+  color: #155f69;
+}
+
 .print-invoice .no-print {
   display: none;
 }

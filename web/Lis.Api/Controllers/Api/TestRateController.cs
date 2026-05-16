@@ -117,6 +117,7 @@ namespace Lis.Api.Controllers.Api
 
         [QAuthorize(ModuleName = "TestRates", ModulePermissionTypes = ModulePermissionType.CanEdit)]
         [HttpPost]
+        [ActionName("Put")]
         public HttpResponseMessage Put(TestRateMaster item)
         {
             try
@@ -133,7 +134,8 @@ namespace Lis.Api.Controllers.Api
         }
 
         [QAuthorize(ModuleName = "TestRates", ModulePermissionTypes = ModulePermissionType.CanDelete)]
-        [HttpPut]
+        [HttpPost]
+        [ActionName("Delete")]
         public HttpResponseMessage Delete(TestRateMaster item)
         {
             try

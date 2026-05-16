@@ -63,7 +63,7 @@
           <td>
             <select class="form-control" formControlName="testId" (change)="onTestChange(i)">
               <option value="">-- Test --</option>
-              <option *ngFor="let t of tests" [value]="t.id">{{t.hisTestCodeDescription}}</option>
+              <option *ngFor="let t of tests" [value]="t.id">{{t.hisTestCode}} - {{t.hisTestCodeDescription}}</option>
             </select>
           </td>
           <td><input type="number" class="form-control" formControlName="rate" (change)="recalcLine(i)" /></td>
@@ -99,7 +99,7 @@
       <thead><tr><th>Test</th><th>Rate</th><th>Qty</th><th>Net</th></tr></thead>
       <tbody>
         <tr *ngFor="let d of invoiceDto.details">
-          <td>{{d.testId}}</td>
+          <td>{{getTestName(d.testId)}}</td>
           <td>{{d.rate}}</td>
           <td>{{d.quantity}}</td>
           <td>{{d.netAmount}}</td>

@@ -123,11 +123,7 @@ export class TestProfileFormComponent implements OnInit {
     };
 
     this.loading = true;
-    const req = this.id
-      ? this.masterService.editItem('TestProfile', profile)
-      : this.masterService.addItem('TestProfile', profile);
-
-    req.subscribe(
+    this.masterService.addItem('TestProfile', profile).subscribe(
       () => {
         this.loading = false;
         this.alertService.success('Profile saved successfully');

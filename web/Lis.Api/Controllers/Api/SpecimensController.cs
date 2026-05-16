@@ -66,6 +66,7 @@ namespace Lis.Api.Controllers.Api
 
         [QAuthorize(ModuleName = "Masters", ModulePermissionTypes = ModulePermissionType.CanEdit)]
         [HttpPost]
+        [ActionName("Put")]
         public HttpResponseMessage Put(HISSpecimenMaster specimen)
         {
             try
@@ -101,7 +102,8 @@ namespace Lis.Api.Controllers.Api
         }
 
         [QAuthorize(ModuleName = "Masters", ModulePermissionTypes = ModulePermissionType.CanDelete)]
-        [HttpPut]
+        [HttpPost]
+        [ActionName("Delete")]
         public HttpResponseMessage Delete(HISSpecimenMaster specimen)
         {
             try

@@ -44,7 +44,13 @@ namespace LIS.BusinessLogic
 
         public void Delete(TestRateMaster item)
         {
-            rateRepo.Delete(item);
+            var existing = rateRepo.Get(item.Id);
+            if (existing != null)
+            {
+                existing.IsActive = false;
+                Stamp(existing, false);
+                rateRepo.Update(existing);
+            }
         }
 
         public TestRateMaster GetById(int id)
@@ -123,7 +129,13 @@ namespace LIS.BusinessLogic
                 query = query.Where(r => r.TestProfileId == profileId);
             }
 
-            return Enrich(query.OrderByDescending(r => r.EffectiveStart).FirstOrDefault());
+            var match = Enrich(query.OrderByDescending(r => r.EffectiveStart).FirstOrDefault());
+            if (match != null && rateType == (int)RateType.Emergency && match.EmergencyRate > 0)
+            {
+                match.Rate = match.EmergencyRate;
+            }
+
+            return match;
         }
 
         private TestRateMaster Enrich(TestRateMaster rate)

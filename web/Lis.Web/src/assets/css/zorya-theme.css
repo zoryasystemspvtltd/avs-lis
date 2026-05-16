@@ -1,0 +1,208 @@
+/* ZORYA LIS theme — aligned with logo teal / gold palette */
+:root {
+  --zorya-primary: #1a7f8c;
+  --zorya-primary-dark: #155f69;
+  --zorya-primary-light: #36b1c1;
+  --zorya-accent: #f9c80e;
+  --zorya-bg: #f4f8f9;
+  --zorya-surface: #ffffff;
+  --zorya-sidebar: #1e6570;
+  --zorya-sidebar-text: #e8f4f6;
+  --zorya-border: #d4e8ec;
+  --zorya-text: #2c3e50;
+}
+
+body {
+  background-color: var(--zorya-bg);
+  color: var(--zorya-text);
+}
+
+/* Top navbar */
+.qnavbar.navbar-inverse,
+.navbar-inverse.qnavbar {
+  background: linear-gradient(90deg, var(--zorya-primary-dark) 0%, var(--zorya-primary) 55%, var(--zorya-primary-light) 100%);
+  border-color: var(--zorya-primary-dark);
+}
+
+.qnavbar .navbar-nav > li > a,
+.qnavbar .navbar-nav.qnav > li > a {
+  color: #f0fafb !important;
+}
+
+.qnavbar .navbar-nav > li > a:hover,
+.qnavbar .navbar-nav > li > a:focus {
+  background-color: rgba(255, 255, 255, 0.12) !important;
+  color: #fff !important;
+}
+
+.main-nav,
+.navbar-inverse {
+  background: transparent;
+}
+
+/* Sidebar */
+.sidenav {
+  background-color: var(--zorya-sidebar) !important;
+  border-right: 1px solid var(--zorya-primary-dark);
+}
+
+.sidenav .nav-button {
+  background-color: var(--zorya-primary-dark) !important;
+  color: var(--zorya-sidebar-text) !important;
+}
+
+.sidenav .panel-default > .panel-heading {
+  background: linear-gradient(90deg, var(--zorya-primary-dark), var(--zorya-primary));
+  border-color: var(--zorya-primary-dark);
+}
+
+.sidenav .panel-default > .panel-heading a {
+  color: #fff !important;
+  text-decoration: none;
+}
+
+.sidenav .panel-body a {
+  color: var(--zorya-sidebar-text);
+}
+
+.sidenav .panel-body a:hover,
+.sidenav .active-menu-link {
+  color: var(--zorya-accent) !important;
+  font-weight: 600;
+}
+
+.sidenav .text-primary {
+  color: var(--zorya-primary-light) !important;
+}
+
+.sidenav .text-success {
+  color: #7dcea0 !important;
+}
+
+/* Tables */
+.qtable .table > thead > tr > th,
+.table > thead > tr > th {
+  background-color: var(--zorya-primary);
+  color: #fff;
+  border-color: var(--zorya-primary-dark) !important;
+}
+
+.qtable .table-striped > tbody > tr:nth-of-type(odd) {
+  background-color: rgba(26, 127, 140, 0.04);
+}
+
+.qtable .table > tbody > tr:hover {
+  background-color: rgba(54, 177, 193, 0.08);
+}
+
+/* Buttons */
+.btn-primary {
+  background-color: var(--zorya-primary);
+  border-color: var(--zorya-primary-dark);
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+  background-color: var(--zorya-primary-dark);
+  border-color: var(--zorya-primary-dark);
+}
+
+.btn-success {
+  background-color: #2e9d6b;
+  border-color: #268a5c;
+}
+
+.btn-default-alternet,
+.btn-default.btn-default-alternet {
+  background-color: var(--zorya-surface);
+  border: 1px solid var(--zorya-primary);
+  color: var(--zorya-primary);
+}
+
+.btn-default-alternet:hover {
+  background-color: var(--zorya-primary);
+  color: #fff;
+}
+
+.btn-warning {
+  background-color: #e8a317;
+  border-color: #c98b0f;
+}
+
+/* Forms */
+.form-control:focus {
+  border-color: var(--zorya-primary-light);
+  box-shadow: 0 0 0 2px rgba(54, 177, 193, 0.25);
+}
+
+/* Panels / cards */
+.panel-head-area {
+  background-color: rgba(26, 127, 140, 0.08);
+  border: 1px solid var(--zorya-border);
+}
+
+.panel-default {
+  border-color: var(--zorya-border);
+}
+
+/* Links */
+a {
+  color: var(--zorya-primary);
+}
+
+a:hover {
+  color: var(--zorya-primary-dark);
+}
+
+/* Loader */
+.loader {
+  border-top-color: var(--zorya-primary-light) !important;
+}
+
+/* Pagination (list-module) */
+.pagination > .active > a,
+.pagination > .active > span {
+  background-color: var(--zorya-primary);
+  border-color: var(--zorya-primary-dark);
+}
+
+.pagination > li > a {
+  color: var(--zorya-primary);
+}
+
+/* Nav tabs filter */
+.nav-tabs > li.active > a,
+.nav-tabs > li.active > a:hover,
+.nav-tabs > li.active > a:focus {
+  color: var(--zorya-primary-dark);
+  border-top: 3px solid var(--zorya-primary);
+}
+
+/* Invoice print */
+.print-invoice .print-body {
+  background: var(--zorya-surface);
+  padding: 20px;
+}
+
+.print-invoice .table > thead > tr > th {
+  background-color: var(--zorya-primary);
+  color: #fff;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
+
+/* Master / invoice content area */
+.content h1,
+.content h3 {
+  color: var(--zorya-primary-dark);
+}
+
+.input-group-addon {
+  background-color: rgba(26, 127, 140, 0.1);
+  border-color: var(--zorya-border);
+  color: var(--zorya-primary-dark);
+}

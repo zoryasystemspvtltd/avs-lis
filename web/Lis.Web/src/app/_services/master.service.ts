@@ -23,11 +23,11 @@ export class MasterService {
   }
 
   editItem(apiName: string, item: any): Observable<any> {
-    return this.http.post<any>(`${this.baseUrl}/api/${apiName}/`, item);
+    return this.http.post<any>(`${this.baseUrl}/api/${apiName}/Put`, item);
   }
 
   deleteItem(apiName: string, item: any): Observable<any> {
-    return this.http.put<any>(`${this.baseUrl}/api/${apiName}/`, item);
+    return this.http.post<any>(`${this.baseUrl}/api/${apiName}/Delete`, item);
   }
 
   getAll(apiName: string): Observable<any> {
