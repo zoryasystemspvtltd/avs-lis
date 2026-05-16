@@ -114,10 +114,11 @@ const LOOKUP_FIELDS = {
     { name: 'isActive', label: 'Active', type: 'checkbox' }
   ],
   testParameter: [
-    { name: 'hisParamCode', label: 'Param Code', type: 'text', required: true },
-    { name: 'hisParamName', label: 'Param Name', type: 'text', required: true },
-    { name: 'hisTestCode', label: 'Test Code', type: 'text', readonly: true },
-    { name: 'testRequestDetailsId', label: 'Sample Line Id', type: 'number', readonly: true }
+    { name: 'hisParamCode', label: 'Parameter Code', type: 'text', required: true },
+    { name: 'hisParamDescription', label: 'Parameter Name', type: 'text', required: true },
+    { name: 'hisParamUnit', label: 'Unit', type: 'text' },
+    { name: 'hisParamMethod', label: 'Method', type: 'text' },
+    { name: 'lisParamCode', label: 'LIS Param Code', type: 'text' }
   ]
 };
 
@@ -246,7 +247,8 @@ const appRoutes: Routes = [
     { path: 'test-mappings/:id', component: MasterFormComponent, data: { apiName: 'TestMappingMaster', returnUrl: '/test-mappings', title: 'Test Mapping', fields: LOOKUP_FIELDS.testMapping }, canActivate: [AuthGuard] },
 
     { path: 'test-parameters', component: MasterListComponent, data: { masterKey: 'testParameter' }, canActivate: [AuthGuard] },
-    { path: 'test-parameters/:id', component: MasterFormComponent, data: { apiName: 'TestParameterCatalog', returnUrl: '/test-parameters', title: 'Test Parameter', fields: LOOKUP_FIELDS.testParameter }, canActivate: [AuthGuard] },
+    { path: 'test-parameters/create', component: MasterFormComponent, data: { apiName: 'HisParameterMaster', returnUrl: '/test-parameters', title: 'Test Parameter Mapping', fields: LOOKUP_FIELDS.testParameter }, canActivate: [AuthGuard] },
+    { path: 'test-parameters/:id', component: MasterFormComponent, data: { apiName: 'HisParameterMaster', returnUrl: '/test-parameters', title: 'Test Parameter Mapping', fields: LOOKUP_FIELDS.testParameter }, canActivate: [AuthGuard] },
 
     { path: 'patient-master', component: MasterListComponent, data: { masterKey: 'patientMaster' }, canActivate: [AuthGuard] },
     { path: 'patient-master/create', component: MasterFormComponent, data: { apiName: 'PatientMaster', returnUrl: '/patient-master', title: 'Patient', fields: LOOKUP_FIELDS.patient }, canActivate: [AuthGuard] },

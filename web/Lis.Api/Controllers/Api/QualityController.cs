@@ -13,6 +13,7 @@ using System.Web.Http;
 
 namespace Lis.Api.Controllers.Api
 {
+    [RoutePrefix("api/Quality")]
     public class QualityController : ApiController
     {
         private IQualityControlManager manager;
@@ -26,59 +27,60 @@ namespace Lis.Api.Controllers.Api
         {
             get
             {
-                var apiOption = System.Web.HttpContext.Current.Request.Headers.GetValues("ApiOption");
-                if (apiOption == null || apiOption.Count() == 0)
+                var defaultOption = new ListOptions
                 {
-                    throw new KeyNotFoundException("Invalid Option specified");
+                    RecordPerPage = 10,
+                    CurrentPage = 1,
+                    SortColumnName = "SampleNo",
+                    SortDirection = true
+                };
+
+                var headers = System.Web.HttpContext.Current?.Request?.Headers;
+                if (headers == null)
+                {
+                    return defaultOption;
                 }
 
-                var option = JsonConvert.DeserializeObject<ListOptions>(apiOption.FirstOrDefault(),
-                new JsonSerializerSettings()
+                var apiOption = headers.GetValues("ApiOption");
+                if (apiOption == null || !apiOption.Any())
                 {
-                    ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
-                });
-                return option;
+                    return defaultOption;
+                }
+
+                return JsonConvert.DeserializeObject<ListOptions>(apiOption.FirstOrDefault(),
+                    new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore }) ?? defaultOption;
             }
         }
-        /// <summary>
-        /// Get All Quality Control results
-        /// </summary>
-        /// <returns>List of all quality control results</returns>
+
         [AllowAnonymous]
         [HttpGet]
-        public ItemList<dynamic> Get()
+        [Route("")]
+        public ItemList<dynamic> GetList()
         {
-            var controlResults = manager.Get(ApiOption);
-
-            return controlResults;
+            try
+            {
+                return manager.Get(ApiOption) ?? new ItemList<dynamic> { TotalRecord = 0, Items = new List<dynamic>() };
+            }
+            catch (Exception e)
+            {
+                return new ItemList<dynamic> { TotalRecord = 0, Items = new List<dynamic>() };
+            }
         }
 
-        /// <summary>
-        /// Get Quality Control result by result id
-        /// </summary>
-        /// <param name="Id">control result Id</param>
-        /// <returns>Quality control result</returns>
         [AllowAnonymous]
         [HttpGet]
-        public dynamic Get(string Id)
+        [Route("{id}")]
+        public dynamic GetById(string id)
         {
-            var controlResult = manager.Get(Id);
-
-            return controlResult;
+            return manager.Get(id);
         }
 
-        /// <summary>
-        /// Get Quality Control result by result id
-        /// </summary>
-        /// <param name="Id">control result Id</param>
-        /// <returns>Quality control result</returns>
         [AllowAnonymous]
         [HttpGet]
-        public List<ControlResultDetails> Get(string paramCode, bool flag = true)
+        [Route("Monthwise")]
+        public List<ControlResultDetails> GetMonthwise(string paramCode)
         {
-            var controlResultList = manager.GetQualityMonthwiseData(paramCode);
-
-            return controlResultList;
+            return manager.GetQualityMonthwiseData(paramCode);
         }
     }
 }

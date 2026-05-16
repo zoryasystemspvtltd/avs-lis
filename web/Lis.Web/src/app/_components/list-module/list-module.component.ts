@@ -83,6 +83,13 @@ export class ListModuleComponent implements OnInit, OnChanges {
     if (this.schemma.module === 'PatientMaster') {
       this.option.SortColumnName = 'Name';
     }
+    if (this.schemma.module === 'Patients') {
+      this.option.SortColumnName = 'SampleCollectionDate';
+      this.option.SortDirection = false;
+    }
+    if (this.schemma.module === 'Quality') {
+      this.option.SortColumnName = 'SampleNo';
+    }
     if (this.schemma.filterStatus != null) {
       this.filterStatus = this.schemma.filterStatus;
     }
@@ -120,7 +127,7 @@ export class ListModuleComponent implements OnInit, OnChanges {
 
     const masterApiModules = [
       'HisTest', 'TestRate', 'SaleInvoice', 'HisParameterMaster', 'HisParameterRangeMaster',
-      'TestMappingMaster', 'TestParameterCatalog', 'PatientMaster', 'EquipmentHeartbeat'
+      'TestMappingMaster', 'PatientMaster', 'EquipmentHeartbeat'
     ];
     const source$ = this.shouldUseGetAll()
       ? this.masterService.getAll(this.schemma.module)
@@ -348,7 +355,7 @@ export class ListModuleComponent implements OnInit, OnChanges {
     if (acc == null) {
       const setupApiModules = ['Department', 'Specimens', 'ReferralDoctor', 'Corporate', 'TestGroup',
         'TestCategory', 'Unit', 'Method', 'SampleType', 'Container', 'TestProfile',
-        'HisParameterMaster', 'HisParameterRangeMaster', 'TestMappingMaster', 'PatientMaster', 'TestParameterCatalog'];
+        'HisParameterMaster', 'HisParameterRangeMaster', 'TestMappingMaster', 'PatientMaster'];
       if (setupApiModules.indexOf(module) >= 0) {
         acc = this.user.access.find(element => element.name == 'Masters');
       } else if (module === 'TestRate') {

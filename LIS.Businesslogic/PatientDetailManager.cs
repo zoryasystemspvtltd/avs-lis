@@ -139,7 +139,7 @@ namespace LIS.BusinessLogic
               dept => dept.Code,
               (test, dept) => new { dept.Name }).FirstOrDefault();
 
-                item.Department = departmentname.Name;
+                item.Department = departmentname != null ? departmentname.Name : (item.Department ?? string.Empty);
 
                 var testResult = testResultRepo.Get(t => t.SampleNo.Equals(item.SampleNo, StringComparison.OrdinalIgnoreCase)
                                                         && t.HISTestCode.Equals(item.HISTestCode, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();

@@ -137,12 +137,13 @@ export const MASTER_LIST_SCHEMAS: { [key: string]: any } = {
     ]
   },
   testParameter: {
-    url: 'test-parameters', heading: 'Test Parameter (Sample Lines)', module: 'TestParameterCatalog', hideAction: true, hideCreate: true,
+    url: 'test-parameters', heading: 'Test Parameter Mapping', module: 'HisParameterMaster', hideAction: true, hideCreate: false,
     elements: [
-      { heading: 'Param Code', fieldName: 'hisParamCode', sortable: false, width: '20%', type: 'link' },
-      { heading: 'Param Name', fieldName: 'hisParamName', sortable: false, width: '30%', type: 'label' },
-      { heading: 'Test Code', fieldName: 'hisTestCode', sortable: false, width: '20%', type: 'label' },
-      { heading: 'Created', fieldName: 'createdOn', sortable: false, width: '20%', type: 'date', format: 'dd/MM/yyyy' }
+      { heading: 'Test Code', fieldName: 'hisTestCode', sortable: true, width: '18%', type: 'link' },
+      { heading: 'Parameter Code', fieldName: 'hisParamCode', sortable: true, width: '18%', type: 'label' },
+      { heading: 'Parameter Name', fieldName: 'hisParamDescription', sortable: true, width: '34%', type: 'label' },
+      { heading: 'Unit', fieldName: 'hisParamUnit', sortable: false, width: '12%', type: 'label' },
+      { heading: 'LIS Param', fieldName: 'lisParamCode', sortable: false, width: '12%', type: 'label' }
     ]
   },
   patientMaster: {

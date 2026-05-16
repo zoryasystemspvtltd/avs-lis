@@ -13,6 +13,7 @@ using System.Web.Http;
 
 namespace Lis.Api.Controllers.Api
 {
+    [RoutePrefix("api/Patients")]
     public class PatientsController : ApiController
     {
         private ITestRequestDetailsManager testmanager;
@@ -31,23 +32,34 @@ namespace Lis.Api.Controllers.Api
         {
             get
             {
-                var apiOption = System.Web.HttpContext.Current.Request.Headers.GetValues("ApiOption");
-                if (apiOption == null || apiOption.Count() == 0)
+                var defaultOption = new ListOptions
                 {
-                    throw new KeyNotFoundException("Invalid Option specified");
+                    RecordPerPage = 10,
+                    CurrentPage = 1,
+                    SortColumnName = "SampleCollectionDate",
+                    SortDirection = false,
+                    Status = ReportStatusType.New
+                };
+
+                var headers = System.Web.HttpContext.Current?.Request?.Headers;
+                if (headers == null)
+                {
+                    return defaultOption;
                 }
 
-                var option = JsonConvert.DeserializeObject<ListOptions>(apiOption.FirstOrDefault(),
-                new JsonSerializerSettings()
+                var apiOption = headers.GetValues("ApiOption");
+                if (apiOption == null || !apiOption.Any())
                 {
-                    ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
-                });
-                return option;
+                    return defaultOption;
+                }
+
+                return JsonConvert.DeserializeObject<ListOptions>(apiOption.FirstOrDefault(),
+                    new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore }) ?? defaultOption;
             }
         }
 
         [HttpGet]
-        [ActionName("Billing")]
+        [Route("Billing")]
         public ItemList<PatientDetail> GetBilling()
         {
             try
@@ -57,36 +69,34 @@ namespace Lis.Api.Controllers.Api
             catch (Exception e)
             {
                 logger.LogException(e);
-                return null;
+                return new ItemList<PatientDetail> { TotalRecord = 0, Items = new List<PatientDetail>() };
             }
         }
 
         [AllowAnonymous]
         [HttpGet]
-        public ItemList<TestRequestDetail> Get()
+        [Route("")]
+        public ItemList<TestRequestDetail> GetList()
         {
             try
             {
-                var patients = manager.Get(ApiOption);
-
-                return patients;
+                return manager.Get(ApiOption) ?? new ItemList<TestRequestDetail> { TotalRecord = 0, Items = new List<TestRequestDetail>() };
             }
             catch (Exception e)
             {
                 logger.LogException(e);
-                return null;
+                return new ItemList<TestRequestDetail> { TotalRecord = 0, Items = new List<TestRequestDetail>() };
             }
         }
 
         [AllowAnonymous]
         [HttpGet]
-        public PatientDetail Get(long Id)
+        [Route("{id:long}")]
+        public PatientDetail GetById(long id)
         {
             try
             {
-                var patient = manager.Get(Id);
-
-                return patient;
+                return manager.Get(id);
             }
             catch (Exception e)
             {
@@ -97,6 +107,7 @@ namespace Lis.Api.Controllers.Api
 
         [AllowAnonymous]
         [HttpPut]
+        [Route("")]
         public HttpResponseMessage Put(List<AuthorizeRequest> request)
         {
             try
@@ -105,9 +116,9 @@ namespace Lis.Api.Controllers.Api
                 {
                     return Request.CreateResponse(HttpStatusCode.PreconditionFailed, ModelState.Keys);
                 }
-                foreach(var sample in request)
+                foreach (var sample in request)
                 {
-                    if (sample.Status == ReportStatusType.DoctorApproved 
+                    if (sample.Status == ReportStatusType.DoctorApproved
                         || sample.Status == ReportStatusType.DoctorRejected)
                     {
                         testmanager.DoctorReview(sample.Id, sample.Status, sample.Note, sample.RunIndex);
@@ -118,7 +129,7 @@ namespace Lis.Api.Controllers.Api
                     {
                         testmanager.TechnicianReview(sample.Id, sample.Status, sample.Note, sample.RunIndex);
                     }
-                    
+
                 }
 
                 return Request.CreateResponse(HttpStatusCode.OK);
@@ -126,7 +137,7 @@ namespace Lis.Api.Controllers.Api
             catch (Exception e)
             {
                 logger.LogException(e);
-                return null;
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, e.Message);
             }
         }
     }

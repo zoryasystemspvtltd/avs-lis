@@ -140,6 +140,6 @@
 
     <button type="submit" class="btn btn-primary" [disabled]="loading">Save</button>
     <button type="button" class="btn btn-default" (click)="cancel()">Cancel</button>
-    <button type="button" class="btn btn-warning" *ngIf="id && apiName !== 'Department' && apiName !== 'TestParameterCatalog'" (click)="deactivate()">Deactivate</button>
+    <button type="button" class="btn btn-warning" *ngIf="id && apiName !== 'Department'" (click)="deactivate()">{{apiName === 'HisParameterMaster' ? 'Delete' : 'Deactivate'}}</button>
   </form>
 </div>

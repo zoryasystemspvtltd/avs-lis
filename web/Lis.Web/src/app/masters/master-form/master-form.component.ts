@@ -62,11 +62,6 @@ export class MasterFormComponent implements OnInit {
       group['equipmentId'] = [null, Validators.required];
       group['hisTestPicker'] = [null];
     }
-    if (this.apiName === 'TestParameterCatalog' && this.id) {
-      this.masterService.getItem(this.apiName, this.id).subscribe(item => {
-        if (item) { this.patchItem(item); }
-      });
-    }
     if (this.fields.find(f => f.name === 'isActive')) {
       group['isActive'] = [true];
     }
@@ -76,8 +71,6 @@ export class MasterFormComponent implements OnInit {
       this.loadTestRateLookups();
     } else if (this.apiName === 'HisParameterMaster' || this.apiName === 'HisParameterRangeMaster' || this.apiName === 'TestMappingMaster') {
       this.loadSetupLookups();
-    } else if (this.apiName === 'TestParameterCatalog') {
-      // load handled above when id present
     } else if (this.id) {
       this.masterService.getItem(this.apiName, this.id).subscribe(item => {
         if (item) {
@@ -247,13 +240,6 @@ export class MasterFormComponent implements OnInit {
     if (this.apiName === 'TestMappingMaster') {
       delete item.hisTestPicker;
     }
-    if (this.apiName === 'TestParameterCatalog') {
-      item = {
-        id: this.id || item.id,
-        hisParamCode: item.hisParamCode,
-        hisParamName: item.hisParamName
-      };
-    }
     if (this.apiName === 'TestRate') {
       const rt = +item.rateType;
       if (rt !== 1) { item.corporateId = null; }
@@ -263,8 +249,6 @@ export class MasterFormComponent implements OnInit {
     if (this.id) {
       if (this.apiName === 'Department') {
         item.code = this.id;
-      } else if (this.apiName === 'TestParameterCatalog') {
-        item.id = this.id;
       } else {
         item.id = +this.id;
       }
@@ -309,19 +293,24 @@ export class MasterFormComponent implements OnInit {
 
   deactivate() {
     if (!this.id) { return; }
-    if (!confirm('Deactivate this record?')) { return; }
+    const isDelete = this.apiName === 'HisParameterMaster';
+    const msg = isDelete
+      ? 'Delete this test-parameter mapping? Remove parameter ranges first if delete is blocked.'
+      : 'Deactivate this record?';
+    if (!confirm(msg)) { return; }
 
     const payload = this.apiName === 'Department' ? { code: this.id } : { id: +this.id };
     this.loading = true;
     this.masterService.deleteItem(this.apiName, payload).subscribe(
       () => {
         this.loading = false;
-        this.alertService.success('Record deactivated');
+        this.alertService.success(isDelete ? 'Mapping deleted' : 'Record deactivated');
         this.router.navigate([this.returnUrl]);
       },
-      () => {
+      err => {
         this.loading = false;
-        this.alertService.error('Deactivate failed');
+        const apiMsg = typeof err?.error === 'string' ? err.error : err?.error?.message;
+        this.alertService.error(apiMsg || (isDelete ? 'Delete failed' : 'Deactivate failed'));
       }
     );
   }
