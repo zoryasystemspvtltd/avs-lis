@@ -1,83 +1,32 @@
-
-.closebtn-area {
-  margin-top: 32px;
+#sidenav .sidenav-header-bar {
+  position: relative;
+  padding: 10px 36px 8px 10px;
 }
 
-.closebtn {
+#sidenav .closebtn-area {
+  margin: 0;
+}
+
+#sidenav .closebtn {
   position: absolute;
-  top: 0;
-  right: 12px;
-  font-size: 18px;
-  margin-top: 4px;
-  color: rgba(255, 255, 255, 0.85);
+  top: 6px;
+  right: 8px;  font-size: 20px;
+  margin-top: 0;
+  color: #6b7c85;
   background: transparent;
   border: none;
+  line-height: 1;
+  padding: 4px 8px;
+  border-radius: 4px;
 }
 
 .closebtn:hover {
-  color: #fff;
-}
-
-#sidenav.sidenav .panel-default {
-  border: none;
-  box-shadow: none;
-  background: transparent;
-  margin-bottom: 2px;
-}
-
-#sidenav.sidenav .panel-heading a {
-  padding: 8px 10px;
-  font-size: 12px;
-}
-
-#sidenav.sidenav .panel-body {
-  background-color: #ffffff;
-  padding: 4px 0 8px 4px;
-}
-
-#sidenav.sidenav .panel-body a,
-#sidenav.sidenav .panel-body td,
-#sidenav.sidenav .panel-body .nav-icon {
-  color: #846a1d !important;
-  opacity: 1 !important;
-  font-size: 13px;
-}
-
-#sidenav.sidenav .panel-body a {
-  display: inline-block;
-  padding: 4px 8px;
-  text-decoration: none;
-}
-
-#sidenav.sidenav .panel-body a:hover,
-#sidenav.sidenav .panel-body a:focus,
-#sidenav.sidenav .panel-body a.active-menu-link {
-  color: #846a1d !important;
-}
-
-#sidenav.sidenav .panel-body a:hover {
-  background-color: rgba(255, 255, 255, 0.08);
-}
-
-#sidenav.sidenav .panel-body a.active-menu-link {
-  font-weight: 600;
-  background-color: rgba(255, 255, 255, 0.12);
-}
-
-#sidenav.sidenav .panel-body td {
-  padding: 3px 8px;
-  border: none;
-}
-
-#sidenav.sidenav .nav-placeholder {
-  color: #846a1d !important;
-  opacity: 0.85;
-  font-size: 12px;
-  margin: 6px 10px;
+  color: #1a7f8c;
+  background: #e8f4f6;
 }
 
 @media screen and (max-width: 600px) {
   .closebtn {
-    margin-top: -40px;
+    margin-top: 0;
   }
 }

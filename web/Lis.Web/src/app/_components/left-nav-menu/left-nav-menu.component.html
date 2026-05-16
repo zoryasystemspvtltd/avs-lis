@@ -1,10 +1,11 @@
 <div *ngIf="authenticationService.isAuthenticated" id="sidenav" class="sidenav" [ngClass]="{'hidden': authenticationService.hideSideNav }">
-    <div class="col-md-12">
-        <app-equipment-alert></app-equipment-alert>
+    <div class="sidenav-header-bar">
+        <app-available-app></app-available-app>
         <div class="closebtn-area">
             <button (click)="authenticationService.toggleSideNav()" class="closebtn" type="button" title="Close">&times;</button>
         </div>
-        <app-available-app></app-available-app>
+    </div>
+    <div class="sidenav-menu-scroll">
         <div class="panel-group" id="accordion">
             <div class="panel panel-default" *ngIf="hasGroupAccess('Reports,Samples,DoctorsApprovals')">
                 <div class="panel-heading">
@@ -149,5 +150,9 @@
                 </div>
             </div>
         </div>
+    </div>
+    <div class="equipment-status-strip">
+        <span class="equipment-status-label">Equipment</span>
+        <app-equipment-alert></app-equipment-alert>
     </div>
 </div>

@@ -1,5 +1,4 @@
-<br>
-<div class="col-md-10 col-md-offset-1 sale-invoice-page" [class.print-invoice]="isPrintView">
+<div class="avilis-form-page sale-invoice-page" [class.print-invoice]="isPrintView">
   <div class="invoice-header-row" *ngIf="!isPrintView">
     <h3 class="invoice-title">Sale Invoice {{form?.value?.invoiceNo}}</h3>
     <div class="invoice-status-badges" *ngIf="form?.value?.id">

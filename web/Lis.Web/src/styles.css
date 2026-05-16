@@ -5,39 +5,38 @@ body {
     font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
 }
 
+.wrapper {
+    min-height: 100vh;
+    background: #f0f4f6;
+}
+
 
 /* Set padding to keep content from hitting the edges */
 
 .body-content {
-    padding-left: 15px;
-    padding-right: 15px;
+    padding-left: 0;
+    padding-right: 0;
 }
 
 
 /* The side navigation menu */
 
 .sidenav {
-    height: 100%;
-    /* 100% Full-height */
-    width: 250px;
-    /* 0 width - change this with JavaScript */
+    height: calc(100vh - 56px);
+    width: 248px;
     position: fixed;
-    /* Stay in place */
-    z-index: 1;
-    /* Stay on top */
+    z-index: 1000;
     top: 56px;
     left: 0;
-    background-color: #1e6570;
+    background-color: #ffffff;
     overflow-x: hidden;
-    /* Disable horizontal scroll */
-    padding-top: 15px;
-    /* Place content 60px from the top */
-    transition: 0.5s;
-    /* 0.5 second transition effect to slide in the sidenav */
+    overflow-y: auto;
+    padding: 0;
+    transition: margin-left 0.28s ease;
 }
 
 .maincontainer {
-    margin-left: 250px;
+    margin-left: 248px;
 }
 
 .nav-button {
@@ -55,12 +54,30 @@ body {
     margin-right: 10px;
 }
 
+#sidenav.sidenav .glyphicon.nav-icon {
+    margin-right: 0;
+    width: 20px;
+    min-width: 20px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+#sidenav.sidenav .panel-body table tr td {
+    display: flex;
+    align-items: center;
+}
+
 .panel-body {
     padding: 0px;
 }
 
 .panel-body table tr td {
     padding-left: 15px;
+}
+
+#sidenav.sidenav .panel-body table tr td {
+    padding-left: 0;
+    padding-right: 0;
 }
 
 .panel-body .table {
@@ -247,11 +264,11 @@ body {
 }
 
 #sidenav.hidden {
-    margin-left: -250px;
+    margin-left: -248px;
 }
 
 .shift-right {
-    margin-left: 250px;
+    margin-left: 248px;
 }
 
 .shift-down {
@@ -261,7 +278,9 @@ body {
 }
 
 .footer {
-    text-align: right;
+    text-align: center;
+    clear: both;
+    width: 100%;
 }
 
 .alert {
@@ -311,23 +330,9 @@ a {
     font-weight: bold;
 }
 
-/* Sidebar menu color — must match zorya-theme; #sidenav beats Bootstrap .panel-body a */
-#sidenav.sidenav .panel-body a,
-#sidenav.sidenav .panel-body td,
-#sidenav.sidenav .panel-body .nav-icon,
-#sidenav.sidenav .active-menu-link {
-    color: #846a1d !important;
-    opacity: 1 !important;
-}
-
-#sidenav.sidenav .panel-body a:hover,
-#sidenav.sidenav .panel-body a:focus,
-#sidenav.sidenav .panel-body a.active-menu-link {
-    color: #846a1d !important;
-}
-
 .panel-head-area {
-    background-color: #eee;
-    border: 1px solid #ccc;
-    margin-top: 5px;
+    background-color: #e8f4f6;
+    border: 1px solid #d8e6ea;
+    margin-top: 8px;
+    border-radius: 6px;
 }

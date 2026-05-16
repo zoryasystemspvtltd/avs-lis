@@ -24,9 +24,6 @@
             </ul>
             <app-loading></app-loading>
             <ul class="nav navbar-nav navbar-right">
-                <li class="zorya-copyright-item hidden-xs">
-                    <span class="zorya-copyright-text">&copy; {{copyrightYear}} - <a href="https://www.zorya.co.in/" target="_blank" rel="noopener">Zorya LIS</a></span>
-                </li>
                 <li *ngIf="!isAuthenticated"><a [routerLink]='["/register"]' title="Register" (click)='collapse()'>Register</a></li>
                 <li *ngIf="isAuthenticated">
                     <a [routerLink]='["/profile"]'>Welcome {{displayName}}</a>
