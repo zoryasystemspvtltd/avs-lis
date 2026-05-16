@@ -7,7 +7,8 @@
   --zorya-bg: #f4f8f9;
   --zorya-surface: #ffffff;
   --zorya-sidebar: #1e6570;
-  --zorya-sidebar-text: #e8f4f6;
+  --zorya-sidebar-menu: #846a1d;
+  --zorya-sidebar-text: #846a1d;
   --zorya-border: #d4e8ec;
   --zorya-text: #2c3e50;
 }
@@ -61,14 +62,34 @@ body {
   text-decoration: none;
 }
 
-.sidenav .panel-body a {
-  color: var(--zorya-sidebar-text);
+/* Sidebar menu items — permanent readable color (#846a1d), not hover-only */
+#sidenav.sidenav .panel-body a,
+#sidenav.sidenav .panel-body td,
+#sidenav.sidenav .panel-body .nav-icon,
+#sidenav.sidenav .panel-body .glyphicon.nav-icon,
+#sidenav.sidenav .nav-placeholder {
+  color: var(--zorya-sidebar-menu) !important;
+  opacity: 1 !important;
 }
 
-.sidenav .panel-body a:hover,
-.sidenav .active-menu-link {
-  color: var(--zorya-accent) !important;
+#sidenav.sidenav .panel-body a:hover,
+#sidenav.sidenav .panel-body a:focus,
+#sidenav.sidenav .panel-body a:visited,
+#sidenav.sidenav .panel-body a.active-menu-link,
+#sidenav.sidenav .active-menu-link {
+  color: var(--zorya-sidebar-menu) !important;
+  opacity: 1 !important;
+}
+
+#sidenav.sidenav .panel-body a:hover,
+#sidenav.sidenav .panel-body a:focus {
+  background-color: rgba(132, 106, 29, 0.12);
+  text-decoration: none;
+}
+
+#sidenav.sidenav .panel-body a.active-menu-link {
   font-weight: 600;
+  background-color: rgba(132, 106, 29, 0.18);
 }
 
 .sidenav .text-primary {
@@ -76,7 +97,7 @@ body {
 }
 
 .sidenav .text-success {
-  color: #7dcea0 !important;
+  color: var(--zorya-sidebar-menu) !important;
 }
 
 /* Tables */

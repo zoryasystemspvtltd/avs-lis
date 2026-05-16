@@ -133,35 +133,43 @@ export class LoginComponent implements OnInit {
         //window.open(externalProviderUrl, "Authenticate Account", "location=0,status=0,width=600,height=750");
     }
     getUserRole() {
-        this.authenticationService.getRole().subscribe(role => {
-            //console.log(this.authenticationService.currentUserValue);
-            //this.router.navigate([this.returnUrl]);
-            this.getUserAccess();
-        })
-
+        this.authenticationService.getRole().subscribe(
+            () => this.getUserAccess(),
+            () => this.onLoginSetupFailed('Unable to load user roles. Please try again.')
+        );
     }
 
     getUserAccess() {
-        this.authenticationService.getUserAccess().subscribe(access => {
-            //console.log(this.authenticationService.currentUserValue);
-            if (this.isRemember) {
-                localStorage.setItem('rememberUser', "1");
-                const currentUser = this.authenticationService.currentUserValue;
-                if (currentUser && currentUser.userName != null) {
-                    localStorage.setItem('rememberUserName', currentUser.userName);
-                }
-                else{
-                    localStorage.setItem('rememberUser', "0");
-                    localStorage.setItem('rememberUserName', '');
-                }
-            }
-            else {
-                localStorage.setItem('rememberUser', "0");
+        this.authenticationService.getUserAccess().subscribe(
+            () => this.finishLoginRedirect(),
+            () => this.onLoginSetupFailed('Unable to load menu permissions. Please try again.')
+        );
+    }
+
+    private finishLoginRedirect() {
+        if (this.isRemember) {
+            localStorage.setItem('rememberUser', '1');
+            const currentUser = this.authenticationService.currentUserValue;
+            if (currentUser && currentUser.userName != null) {
+                localStorage.setItem('rememberUserName', currentUser.userName);
+            } else {
+                localStorage.setItem('rememberUser', '0');
                 localStorage.setItem('rememberUserName', '');
             }
-            this.router.navigate([this.returnUrl]);
-        })
+        } else {
+            localStorage.setItem('rememberUser', '0');
+            localStorage.setItem('rememberUserName', '');
+        }
+        this.loading = false;
+        this.authenticationService.isAuthenticated = true;
+        this.authenticationService.hideSideNav = false;
+        this.authenticationService.userChangeEvent.emit(true);
+        this.router.navigate([this.returnUrl]);
+    }
 
+    private onLoginSetupFailed(message: string) {
+        this.loading = false;
+        this.alertService.error(message);
     }
 
     getFragment() {

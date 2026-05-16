@@ -246,11 +246,11 @@ body {
 }
 
 #sidenav.hidden {
-    margin-left: -200px;
+    margin-left: -250px;
 }
 
 .shift-right {
-    padding-left: 200px !Important;
+    margin-left: 250px;
 }
 
 .shift-down {
@@ -308,7 +308,21 @@ a {
 
 .active-menu-link {
     font-weight: bold;
-    color: #f9c80e !important;
+}
+
+/* Sidebar menu color — must match zorya-theme; #sidenav beats Bootstrap .panel-body a */
+#sidenav.sidenav .panel-body a,
+#sidenav.sidenav .panel-body td,
+#sidenav.sidenav .panel-body .nav-icon,
+#sidenav.sidenav .active-menu-link {
+    color: #846a1d !important;
+    opacity: 1 !important;
+}
+
+#sidenav.sidenav .panel-body a:hover,
+#sidenav.sidenav .panel-body a:focus,
+#sidenav.sidenav .panel-body a.active-menu-link {
+    color: #846a1d !important;
 }
 
 .panel-head-area {

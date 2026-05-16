@@ -1,16 +1,100 @@
 
-.closebtn-area{
-    margin-top:40px;
+.closebtn-area {
+  margin-top: 40px;
 }
-.closebtn{
-    position: absolute;
-    top: 0;
-    right: 15px;
-    font-size: 18px;
-    margin-top: 4px;
+
+.closebtn {
+  position: absolute;
+  top: 0;
+  right: 15px;
+  font-size: 18px;
+  margin-top: 4px;
+  color: #ffffff;
 }
+
+.sidenav .panel-group {
+  margin-bottom: 0;
+}
+
+.sidenav .panel {
+  margin-bottom: 4px;
+  border: none;
+  box-shadow: none;
+}
+
+.sidenav .panel-title {
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.sidenav .panel-heading {
+  padding: 8px 12px;
+}
+
+.sidenav .panel-heading a {
+  color: #ffffff !important;
+  text-decoration: none;
+  display: block;
+}
+
+.sidenav .panel-body {
+  padding: 4px 0 8px;
+}
+
+.sidenav .panel-body .table {
+  margin-bottom: 0;
+}
+
+/* Menu links — always #846a1d (matches zorya-theme #sidenav rules) */
+#sidenav.sidenav .panel-body a,
+#sidenav.sidenav .panel-body td,
+#sidenav.sidenav .panel-body .nav-icon,
+#sidenav.sidenav .panel-body .glyphicon.nav-icon {
+  color: #846a1d !important;
+  opacity: 1 !important;
+  text-decoration: none;
+  display: inline-block;
+  padding: 4px 8px;
+  font-size: 13px;
+}
+
+#sidenav.sidenav .panel-body a:hover,
+#sidenav.sidenav .panel-body a:focus,
+#sidenav.sidenav .panel-body a:visited,
+#sidenav.sidenav .panel-body a.active-menu-link {
+  color: #846a1d !important;
+  opacity: 1 !important;
+}
+
+#sidenav.sidenav .panel-body a:hover,
+#sidenav.sidenav .panel-body a:focus {
+  background-color: rgba(132, 106, 29, 0.12);
+  border-radius: 3px;
+}
+
+#sidenav.sidenav .panel-body a.active-menu-link {
+  font-weight: 600;
+  background-color: rgba(132, 106, 29, 0.18);
+  border-radius: 3px;
+}
+
+#sidenav.sidenav .panel-body td {
+  padding: 4px 8px;
+  vertical-align: middle;
+  border: none;
+}
+
+#sidenav.sidenav .nav-placeholder {
+  color: #846a1d !important;
+  font-style: italic;
+  margin: 8px 16px;
+  font-size: 13px;
+  opacity: 1 !important;
+}
+
 @media screen and (max-width: 600px) {
-    .closebtn{
-        margin-top:-40px;
-    }
+  .closebtn {
+    margin-top: -40px;
+  }
 }

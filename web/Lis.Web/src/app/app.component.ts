@@ -15,6 +15,11 @@ export class AppComponent {
     private router: Router,
     public authenticationService: AuthenticationService
   ) {
+    const user = this.authenticationService.currentUserValue;
+    if (user && user.accessToken) {
+      this.authenticationService.isAuthenticated = true;
+      this.authenticationService.hideSideNav = false;
+    }
     this.authenticationService.getResources().subscribe(() => { });
   }
 

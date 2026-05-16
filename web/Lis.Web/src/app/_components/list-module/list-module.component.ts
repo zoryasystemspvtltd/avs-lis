@@ -1,29 +1,34 @@
-import { Component, OnInit, Input } from '@angular/core';
-import { ModuleService, AlertService, AuthenticationService, SampleService } from '../../_services';
+import { Component, OnInit, OnChanges, SimpleChanges, Input } from '@angular/core';
+import { ModuleService, AlertService, AuthenticationService, SampleService, MasterService } from '../../_services';
 import { OperatorType } from '../../_constants';
 import { AuthenticationToken } from '../../_models';
-import { map, switchMap } from 'rxjs/operators';
-import { Observable, Subscription, timer } from 'rxjs';
-import { MapOperator } from 'rxjs/internal/operators/map';
+import { map, switchMap, catchError } from 'rxjs/operators';
+import { Subscription, timer, of } from 'rxjs';
 
 @Component({
   selector: 'app-list-module',
   templateUrl: './list-module.component.html',
   styleUrls: ['./list-module.component.css']
 })
-export class ListModuleComponent implements OnInit {
+export class ListModuleComponent implements OnInit, OnChanges {
   private user: AuthenticationToken;
   @Input() schemma: any;
 
-  constructor(private moduleService: ModuleService,
+  private readonly getAllApiModules = [
+    'ReferralDoctor', 'Corporate', 'TestGroup', 'TestCategory', 'Unit', 'Method',
+    'SampleType', 'Container', 'TestProfile'
+  ];
+
+  constructor(
+    private moduleService: ModuleService,
+    private masterService: MasterService,
     private alertService: AlertService,
     private authenticationService: AuthenticationService,
-    private sampleService: SampleService) {
-
-  }
+    private sampleService: SampleService) { }
 
   public items: any[];
   public isLoaded: Boolean;
+  public loadError: string;
 
   public option = {
     'RecordPerPage': this.authenticationService.RecordPerPage,
@@ -41,17 +46,34 @@ export class ListModuleComponent implements OnInit {
 
   ngOnInit() {
     this.user = this.authenticationService.currentUserValue;
+    this.initList();
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes.schemma && !changes.schemma.firstChange && this.schemma) {
+      this.initList();
+    }
+  }
+
+  private initList() {
+    if (!this.schemma) {
+      return;
+    }
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+    }
+    this.items = [];
+    this.isLoaded = false;
+    this.loadError = null;
     if (this.schemma.filterStatus != null) {
       this.filterStatus = this.schemma.filterStatus;
     }
-
     if (this.schemma.allowedFilter) {
-      let filter = this.schemma.allowedFilter.find(e => e === this.authenticationService.selectedStatus)
+      const filter = this.schemma.allowedFilter.find(e => e === this.authenticationService.selectedStatus);
       if (filter != null) {
         this.filterStatus = this.authenticationService.selectedStatus;
       }
     }
-
     this.getItems();
   }
 
@@ -69,38 +91,95 @@ export class ListModuleComponent implements OnInit {
   }
 
   ngOnDestroy() {
-    this.subscription.unsubscribe();
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+    }
   }
 
   refreshItems() {
-
     this.setFilter();
     this.authenticationService.CurrentPage = this.option.CurrentPage;
 
-    return this.moduleService.getItems(this.schemma.module, this.option)
-      .pipe(map(response => {
-        if(!this.items){
+    const source$ = this.shouldUseGetAll()
+      ? this.masterService.getAll(this.schemma.module)
+      : this.moduleService.getItems(this.schemma.module, this.option);
+
+    return source$.pipe(
+      map(response => this.normalizeListResponse(response)),
+      map(response => {
+        if (!this.items) {
           this.items = [];
         }
 
-        let oldItems = this.items.map(x => x);
-        this.items = response.items;
+        const oldItems = this.items.map(x => x);
+        this.items = response.items || [];
         this.items.forEach(i => {
-          let oldItem = oldItems.filter(o => o.id === i.id);
-
+          const oldItem = oldItems.filter(o => o.id === i.id);
           if (oldItem && oldItem.length > 0) {
             i.IsSelected = oldItem[0].IsSelected;
           }
-        })
+        });
         this.totalRecord = response.totalRecord;
         this.recordFrom = this.option.RecordPerPage * (this.option.CurrentPage - 1) + 1;
         this.recordTo = this.option.RecordPerPage * this.option.CurrentPage;
         this.recordTo = (this.recordTo < this.totalRecord) ? this.recordTo : this.totalRecord;
-        this.recordFrom = (this.totalRecord == 0) ? 0 : this.recordFrom;
-
+        this.recordFrom = (this.totalRecord === 0) ? 0 : this.recordFrom;
         this.isLoaded = true;
+        if (this.items.length === 0 && !this.loadError) {
+          this.loadError = null;
+        }
         return response;
-      }));
+      }),
+      catchError(() => {
+        this.items = [];
+        this.totalRecord = 0;
+        this.recordFrom = 0;
+        this.recordTo = 0;
+        this.isLoaded = true;
+        this.loadError = 'Unable to load records. Check API connection and permissions.';
+        return of(null);
+      })
+    );
+  }
+
+  private shouldUseGetAll(): boolean {
+    return this.schemma.useGetAll === true
+      || this.getAllApiModules.indexOf(this.schemma.module) >= 0;
+  }
+
+  private normalizeListResponse(response: any): { items: any[], totalRecord: number } {
+    if (response == null) {
+      this.loadError = 'No data returned from server.';
+      return { items: [], totalRecord: 0 };
+    }
+
+    if (Array.isArray(response)) {
+      return this.paginateClientList(response);
+    }
+
+    const items = response.items || response.Items || [];
+    const totalRecord = response.totalRecord != null
+      ? response.totalRecord
+      : (response.TotalRecord != null ? response.TotalRecord : items.length);
+
+    return { items, totalRecord };
+  }
+
+  private paginateClientList(allItems: any[]): { items: any[], totalRecord: number } {
+    let filtered = allItems.slice();
+    if (this.searchText) {
+      const q = this.searchText.toLowerCase();
+      filtered = filtered.filter(item => {
+        const name = (item.name || item.Name || '').toString().toLowerCase();
+        const code = (item.code || item.Code || '').toString().toLowerCase();
+        return name.indexOf(q) >= 0 || code.indexOf(q) >= 0;
+      });
+    }
+
+    const totalRecord = filtered.length;
+    const start = this.option.RecordPerPage * (this.option.CurrentPage - 1);
+    const items = filtered.slice(start, start + this.option.RecordPerPage);
+    return { items, totalRecord };
   }
 
   sort = function (columnName: string) {
@@ -232,22 +311,28 @@ export class ListModuleComponent implements OnInit {
       });
   }
 
-  hasAccess = function (type: number) { 
+  hasAccess = function (type: number) {
 
-    let _hasAccess: boolean = false;
     let module = this.schemma.module;
-    if(this.schemma.module == 'Patients'){
-      module = 'Samples'
+    if (this.schemma.module == 'Patients') {
+      module = 'Samples';
     }
     let acc = this.user.access.find(element => element.name == module);
-
+    if (acc == null) {
+      const setupApiModules = ['Department', 'Specimens', 'ReferralDoctor', 'Corporate', 'TestGroup',
+        'TestCategory', 'Unit', 'Method', 'SampleType', 'Container', 'TestProfile'];
+      if (setupApiModules.indexOf(module) >= 0) {
+        acc = this.user.access.find(element => element.name == 'Masters');
+      } else if (module === 'TestRate') {
+        acc = this.user.access.find(element => element.name == 'TestRates');
+      } else if (module === 'SaleInvoice') {
+        acc = this.user.access.find(element => element.name == 'SaleInvoices');
+      }
+    }
     if (acc == null) {
       return false;
     }
-
-    _hasAccess = ((parseInt(acc.access) & type) == type);
-
-    return _hasAccess;
+    return ((parseInt(acc.access, 10) & type) === type);
   }
 
   allowFilter(filter: number) {

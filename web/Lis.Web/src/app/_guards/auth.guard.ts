@@ -15,7 +15,9 @@ export class AuthGuard implements CanActivate {
         //console.log(currentUse);
         if (currentUser && currentUser.userName != null) {
             // authorised so return true
-            if(!currentUser.emailConfirmed){
+            const confirmed = currentUser.emailConfirmed;
+            const emailConfirmed = confirmed === 'true' || (confirmed as any) === true;
+            if (!emailConfirmed) {
                 this.router.navigate(['/change-password']);
                 return false;
             }

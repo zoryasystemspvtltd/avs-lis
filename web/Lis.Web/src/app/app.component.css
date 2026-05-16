@@ -1,6 +1,18 @@
-@media (max-width: 767px) {
-  /* On small screens, the nav menu spans the full width of the screen. Leave a space for it. */
-  .body-content {
-    padding-top: 50px;
-  }
+.container-main.qcontent {
+  min-height: calc(100vh - 50px);
+  padding: 16px 20px 24px;
+  background-color: #ffffff;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.container-main.qcontent.content-with-sidebar {
+  margin-left: 250px;
+  width: calc(100% - 250px);
+}
+
+.body-content {
+  padding-left: 0;
+  padding-right: 0;
+  background-color: var(--zorya-bg, #f4f8f9);
 }

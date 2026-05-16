@@ -84,11 +84,14 @@ export class AuthenticationService {
                 if (user && user.access_token) {
                     // store user details and jwt token in local storage to keep user logged in between page refreshes
                     user.accessToken = user.access_token;
+                    user.userName = user.userName || user.username;
+                    user.emailConfirmed = user.emailConfirmed;
                     user.expires = user.expires;
                     user.issued = user.issued;
                     user.refreshToken = user.refresh_token;
                     localStorage.setItem('currentUser', JSON.stringify(user));
                     localStorage.setItem('applicationServae', environment.ApplicationServer);
+                    this.isAuthenticated = true;
                     this.currentUserSubject.next(user);
                 }
 
@@ -200,6 +203,7 @@ export class AuthenticationService {
                 }
 
                 localStorage.setItem('currentUser', JSON.stringify(user));
+                this.isAuthenticated = true;
                 this.currentUserSubject.next(user);
 
                 return user.access;

@@ -1,21 +1,61 @@
-import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { ActivatedRoute, Router, NavigationEnd } from '@angular/router';
+import { Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators';
 import { MASTER_LIST_SCHEMAS } from '../master-schemas';
 
 @Component({
   selector: 'app-master-list',
-  template: '<br><app-list-module [schemma]="moduleJson"></app-list-module><br>'
+  template: `
+    <br>
+    <app-list-module *ngIf="showList && moduleJson" [schemma]="moduleJson"></app-list-module>
+    <br>
+  `
 })
-export class MasterListComponent implements OnInit {
+export class MasterListComponent implements OnInit, OnDestroy {
   moduleJson: any;
+  showList = false;
+  private currentKey: string;
+  private routeSub: Subscription;
+  private routerSub: Subscription;
 
-  constructor(private route: ActivatedRoute) { }
+  constructor(private route: ActivatedRoute, private router: Router) { }
 
   ngOnInit() {
-    const key = this.route.snapshot.data['masterKey'];
-    this.moduleJson = Object.assign({}, MASTER_LIST_SCHEMAS[key]);
-    if (this.moduleJson.hideCreate === undefined) {
-      this.moduleJson.hideCreate = false;
+    this.routeSub = this.route.data.subscribe(data => {
+      this.loadSchema(data['masterKey']);
+    });
+    this.routerSub = this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe(() => {
+      const key = this.route.snapshot.data['masterKey'];
+      if (key) {
+        this.loadSchema(key);
+      }
+    });
+  }
+
+  ngOnDestroy() {
+    if (this.routeSub) {
+      this.routeSub.unsubscribe();
     }
+    if (this.routerSub) {
+      this.routerSub.unsubscribe();
+    }
+  }
+
+  private loadSchema(key: string) {
+    if (!key || !MASTER_LIST_SCHEMAS[key]) {
+      return;
+    }
+    if (key === this.currentKey && this.showList) {
+      return;
+    }
+    this.currentKey = key;
+    this.showList = false;
+    this.moduleJson = Object.assign({}, MASTER_LIST_SCHEMAS[key]);
+    setTimeout(() => {
+      this.showList = true;
+    }, 0);
   }
 }
