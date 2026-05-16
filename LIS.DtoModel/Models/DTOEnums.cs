@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace LIS.DtoModel.Models
+﻿namespace LIS.DtoModel.Models
 {
     public enum ReportStatusType
     {
@@ -16,5 +10,29 @@ namespace LIS.DtoModel.Models
         DoctorApproved = 5,
         DoctorRejected = 6,
         FinallyRejected = 7
+    }
+
+    public enum InvoiceStatusType
+    {
+        Draft = 0,
+        Confirmed = 1,
+        Paid = 2,
+        Cancelled = 3
+    }
+
+    public enum PaymentStatusType
+    {
+        Unpaid = 0,
+        Partial = 1,
+        Paid = 2
+    }
+
+    public enum RateType
+    {
+        Standard = 0,
+        Corporate = 1,
+        ReferralDoctor = 2,
+        Profile = 3,
+        Emergency = 4
     }
 }

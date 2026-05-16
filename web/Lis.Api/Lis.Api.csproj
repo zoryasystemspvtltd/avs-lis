@@ -213,6 +213,10 @@
     <Compile Include="Controllers\Api\HospitalsController.cs" />
     <Compile Include="Controllers\Api\LisController.cs" />
     <Compile Include="Controllers\Api\HisTestController.cs" />
+    <Compile Include="Controllers\Api\MasterApiControllerBase.cs" />
+    <Compile Include="Controllers\Api\LookupMasterControllers.cs" />
+    <Compile Include="Controllers\Api\TestRateController.cs" />
+    <Compile Include="Controllers\Api\SaleInvoiceController.cs" />
     <Compile Include="Controllers\Api\PatientsController.cs" />
     <Compile Include="Controllers\Api\RawParametersController.cs" />
     <Compile Include="Controllers\Api\RawSampleController.cs" />

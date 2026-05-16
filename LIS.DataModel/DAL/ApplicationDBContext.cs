@@ -51,6 +51,19 @@ namespace LIS.DataAccess
         //SaleInvoice
         public virtual DbSet<SaleInvoice> SaleInvoices { get; set; }
         public virtual DbSet<SaleInvoiceDetail> SaleInvoiceDetails { get; set; }
+        public virtual DbSet<TestRateMaster> TestRateMaster { get; set; }
+
+        // Billing / lookup masters
+        public virtual DbSet<ReferralDoctorMaster> ReferralDoctorMaster { get; set; }
+        public virtual DbSet<CorporateMaster> CorporateMaster { get; set; }
+        public virtual DbSet<TestGroupMaster> TestGroupMaster { get; set; }
+        public virtual DbSet<TestCategoryMaster> TestCategoryMaster { get; set; }
+        public virtual DbSet<TestProfileMaster> TestProfileMaster { get; set; }
+        public virtual DbSet<TestProfileDetail> TestProfileDetail { get; set; }
+        public virtual DbSet<UnitMaster> UnitMaster { get; set; }
+        public virtual DbSet<MethodMaster> MethodMaster { get; set; }
+        public virtual DbSet<SampleTypeMaster> SampleTypeMaster { get; set; }
+        public virtual DbSet<ContainerMaster> ContainerMaster { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {

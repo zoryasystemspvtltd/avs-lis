@@ -7,6 +7,7 @@ using LIS.DataAccess;
 using LIS.DataAccess.Repo;
 using LIS.DtoModel;
 using LIS.DtoModel.Interfaces;
+using LIS.DtoModel.Models;
 using LIS.Logger;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
@@ -110,6 +111,25 @@ namespace Lis.Api
             container.Register<IExternalApiManager, ExternalApiManager>(Lifestyle.Scoped);
             container.Register<IQualityControlManager, QualityControlManager>(Lifestyle.Scoped);
             container.Register<IEquipmentHeartBeatManager, EquipmentHeartBeatManager>(Lifestyle.Scoped);
+            container.Register<ITestRateMasterManager, TestRateMasterManager>(Lifestyle.Scoped);
+            container.Register<ISaleInvoiceManager, SaleInvoiceManager>(Lifestyle.Scoped);
+            container.Register<IMasterCrudManager<ReferralDoctorMaster>, ReferralDoctorManager>(Lifestyle.Scoped);
+            container.Register<IMasterCrudManager<CorporateMaster>, CorporateManager>(Lifestyle.Scoped);
+            container.Register<IMasterCrudManager<TestGroupMaster>, TestGroupManager>(Lifestyle.Scoped);
+            container.Register<IMasterCrudManager<TestCategoryMaster>, TestCategoryManager>(Lifestyle.Scoped);
+            container.Register<IMasterCrudManager<UnitMaster>, UnitManager>(Lifestyle.Scoped);
+            container.Register<IMasterCrudManager<MethodMaster>, MethodManager>(Lifestyle.Scoped);
+            container.Register<IMasterCrudManager<SampleTypeMaster>, SampleTypeManager>(Lifestyle.Scoped);
+            container.Register<IMasterCrudManager<ContainerMaster>, ContainerManager>(Lifestyle.Scoped);
+            container.Register<ITestProfileMasterManager, TestProfileMasterManager>(Lifestyle.Scoped);
+            container.Register<ReferralDoctorManager, ReferralDoctorManager>(Lifestyle.Scoped);
+            container.Register<CorporateManager, CorporateManager>(Lifestyle.Scoped);
+            container.Register<TestGroupManager, TestGroupManager>(Lifestyle.Scoped);
+            container.Register<TestCategoryManager, TestCategoryManager>(Lifestyle.Scoped);
+            container.Register<UnitManager, UnitManager>(Lifestyle.Scoped);
+            container.Register<MethodManager, MethodManager>(Lifestyle.Scoped);
+            container.Register<SampleTypeManager, SampleTypeManager>(Lifestyle.Scoped);
+            container.Register<ContainerManager, ContainerManager>(Lifestyle.Scoped);
             container.Register<IHubContext<ILisClient>>(() =>
             {
                 return GlobalHost.ConnectionManager.GetHubContext<LisHub, ILisClient>();

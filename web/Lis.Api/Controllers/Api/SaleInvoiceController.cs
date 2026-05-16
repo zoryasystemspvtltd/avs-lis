@@ -1,0 +1,146 @@
+using Lis.Api.Providers;
+using LIS.DtoModel;
+using LIS.DtoModel.Interfaces;
+using LIS.DtoModel.Models;
+using LIS.Logger;
+using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Web.Http;
+
+namespace Lis.Api.Controllers.Api
+{
+    public class SaleInvoiceController : ApiController
+    {
+        private readonly ISaleInvoiceManager manager;
+        private readonly IResponseManager responseMgr;
+        private readonly ILogger logger;
+
+        public SaleInvoiceController(ISaleInvoiceManager manager, IResponseManager responseManager, ILogger logger)
+        {
+            this.manager = manager;
+            responseMgr = responseManager;
+            this.logger = logger;
+        }
+
+        private ListOptions ApiOption
+        {
+            get
+            {
+                var apiOption = System.Web.HttpContext.Current.Request.Headers.GetValues("ApiOption");
+                if (apiOption == null || !apiOption.Any())
+                {
+                    throw new KeyNotFoundException("Invalid Option specified");
+                }
+
+                return JsonConvert.DeserializeObject<ListOptions>(apiOption.FirstOrDefault(),
+                    new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
+            }
+        }
+
+        [HttpGet]
+        public ItemList<SaleInvoice> Get()
+        {
+            try
+            {
+                return manager.Get(ApiOption);
+            }
+            catch (Exception e)
+            {
+                logger.LogException(e);
+                return null;
+            }
+        }
+
+        [HttpGet]
+        public SaleInvoiceDto Get(long Id)
+        {
+            try
+            {
+                return manager.GetById(Id);
+            }
+            catch (Exception e)
+            {
+                logger.LogException(e);
+                return null;
+            }
+        }
+
+        [HttpGet]
+        [ActionName("NextInvoiceNo")]
+        public string GetNextInvoiceNo()
+        {
+            try
+            {
+                return manager.GenerateInvoiceNo();
+            }
+            catch (Exception e)
+            {
+                logger.LogException(e);
+                return null;
+            }
+        }
+
+        [QAuthorize(ModuleName = "SaleInvoices", ModulePermissionTypes = ModulePermissionType.CanAdd | ModulePermissionType.CanEdit)]
+        public HttpResponseMessage Post(SaleInvoiceDto dto)
+        {
+            try
+            {
+                var id = manager.Save(dto);
+                var response = responseMgr.CreateResponse(HttpStatusCode.OK, "Invoice saved successfully", null, id);
+                return Request.CreateResponse(HttpStatusCode.OK, response);
+            }
+            catch (Exception e)
+            {
+                logger.LogException(e);
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, e.Message);
+            }
+        }
+
+        [QAuthorize(ModuleName = "SaleInvoices", ModulePermissionTypes = ModulePermissionType.CanEdit)]
+        [HttpPost]
+        [ActionName("Status")]
+        public HttpResponseMessage PutStatus(StatusUpdateRequest request)
+        {
+            try
+            {
+                manager.UpdateStatus(request.Id, request.InvoiceStatus, request.PaymentStatus);
+                var response = responseMgr.CreateResponse(HttpStatusCode.OK, "Status updated successfully", null, null);
+                return Request.CreateResponse(HttpStatusCode.OK, response);
+            }
+            catch (Exception e)
+            {
+                logger.LogException(e);
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, e.Message);
+            }
+        }
+
+        [QAuthorize(ModuleName = "SaleInvoices", ModulePermissionTypes = ModulePermissionType.CanDelete)]
+        [HttpPut]
+        [ActionName("Cancel")]
+        public HttpResponseMessage Cancel(long Id)
+        {
+            try
+            {
+                manager.Cancel(Id);
+                var response = responseMgr.CreateResponse(HttpStatusCode.OK, "Invoice cancelled successfully", null, null);
+                return Request.CreateResponse(HttpStatusCode.OK, response);
+            }
+            catch (Exception e)
+            {
+                logger.LogException(e);
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, e.Message);
+            }
+        }
+    }
+
+    public class StatusUpdateRequest
+    {
+        public long Id { get; set; }
+        public int InvoiceStatus { get; set; }
+        public int PaymentStatus { get; set; }
+    }
+}

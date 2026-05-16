@@ -53,7 +53,7 @@
                     </div>
                 </div>
             </div>
-            <div class="panel panel-default" *ngIf="hasGroupAccess('Equipments')">
+            <div class="panel panel-default" *ngIf="hasGroupAccess('Equipments,Masters,TestRates,SaleInvoices,HisTest')">
                 <div class="panel-heading">
                     <h4 class="panel-title">
                         <a data-toggle="collapse" data-parent="#accordion" target="_self" href="#collapseSettings">
@@ -75,6 +75,19 @@
                                     <span class="glyphicon glyphicon-blackboard text-success"></span><a [routerLinkActive]="'active-menu-link'" [routerLink]='["/test-master"]'>Test Master</a>
                                 </td>
                             </tr>
+                            <tr *ngIf="hasAccess('Masters',63)"><td><a [routerLink]='["/departments"]'>Departments</a></td></tr>
+                            <tr *ngIf="hasAccess('Masters',63)"><td><a [routerLink]='["/specimens"]'>Specimens</a></td></tr>
+                            <tr *ngIf="hasAccess('Masters',63)"><td><a [routerLink]='["/referral-doctors"]'>Referral Doctors</a></td></tr>
+                            <tr *ngIf="hasAccess('Masters',63)"><td><a [routerLink]='["/corporates"]'>Corporates</a></td></tr>
+                            <tr *ngIf="hasAccess('Masters',63)"><td><a [routerLink]='["/test-groups"]'>Test Groups</a></td></tr>
+                            <tr *ngIf="hasAccess('Masters',63)"><td><a [routerLink]='["/test-categories"]'>Test Categories</a></td></tr>
+                            <tr *ngIf="hasAccess('Masters',63)"><td><a [routerLink]='["/test-profiles"]'>Test Profiles</a></td></tr>
+                            <tr *ngIf="hasAccess('Masters',63)"><td><a [routerLink]='["/units"]'>Units</a></td></tr>
+                            <tr *ngIf="hasAccess('Masters',63)"><td><a [routerLink]='["/methods"]'>Methods</a></td></tr>
+                            <tr *ngIf="hasAccess('Masters',63)"><td><a [routerLink]='["/sample-types"]'>Sample Types</a></td></tr>
+                            <tr *ngIf="hasAccess('Masters',63)"><td><a [routerLink]='["/containers"]'>Containers</a></td></tr>
+                            <tr *ngIf="hasAccess('TestRates',63)"><td><a [routerLink]='["/test-rates"]'>Test Rates</a></td></tr>
+                            <tr *ngIf="hasAccess('SaleInvoices',63)"><td><a [routerLink]='["/sale-invoices"]'>Sale Invoices</a></td></tr>
                         </table>
                     </div>
                 </div>

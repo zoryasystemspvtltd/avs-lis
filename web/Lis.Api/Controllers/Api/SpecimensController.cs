@@ -1,7 +1,9 @@
-﻿using LIS.DtoModel;
+﻿using Lis.Api.Providers;
+using LIS.DtoModel;
 using LIS.DtoModel.Interfaces;
 using LIS.DtoModel.Models;
 using LIS.Logger;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,7 +29,7 @@ namespace Lis.Api.Controllers.Api
         /// </summary>
         /// <param name="specimen"> Specimen object of type LIS.DtoModel</param>
         /// <returns>HttpResponseMessage</returns>
-        [AllowAnonymous]
+        [QAuthorize(ModuleName = "Masters", ModulePermissionTypes = ModulePermissionType.CanAdd)]
         public HttpResponseMessage Post(HISSpecimenMaster specimen)
         {
             try
@@ -62,7 +64,7 @@ namespace Lis.Api.Controllers.Api
             }
         }
 
-        [AllowAnonymous]
+        [QAuthorize(ModuleName = "Masters", ModulePermissionTypes = ModulePermissionType.CanEdit)]
         [HttpPost]
         public HttpResponseMessage Put(HISSpecimenMaster specimen)
         {
@@ -98,7 +100,7 @@ namespace Lis.Api.Controllers.Api
             }
         }
 
-        [AllowAnonymous]
+        [QAuthorize(ModuleName = "Masters", ModulePermissionTypes = ModulePermissionType.CanDelete)]
         [HttpPut]
         public HttpResponseMessage Delete(HISSpecimenMaster specimen)
         {
@@ -134,21 +136,35 @@ namespace Lis.Api.Controllers.Api
             }
         }
 
-        [AllowAnonymous]
-        public IEnumerable<HISSpecimenMaster> Get()
+        private ListOptions ApiOption
+        {
+            get
+            {
+                var apiOption = System.Web.HttpContext.Current.Request.Headers.GetValues("ApiOption");
+                if (apiOption == null || apiOption.Count() == 0)
+                {
+                    return null;
+                }
+
+                return JsonConvert.DeserializeObject<ListOptions>(apiOption.FirstOrDefault(),
+                new JsonSerializerSettings()
+                {
+                    ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
+                });
+            }
+        }
+
+        [HttpGet]
+        public object Get()
         {
             try
             {
-                var specimens = new List<HISSpecimenMaster>();
-                try
+                if (ApiOption != null)
                 {
-                    specimens = manager.Get().ToList();
+                    return manager.Get(ApiOption);
                 }
-                catch (Exception ex)
-                {
-                    logger.LogError(ex.Message);
-                }
-                return specimens;
+
+                return manager.Get().ToList();
             }
             catch (Exception e)
             {

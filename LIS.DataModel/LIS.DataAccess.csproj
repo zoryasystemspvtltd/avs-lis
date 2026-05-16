@@ -90,6 +90,7 @@
     <Compile Include="Migrations\202605161125375_sale.Designer.cs">
       <DependentUpon>202605161125375_sale.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202605161300000_masters_and_rates.cs" />
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repo\IGenericRepository.cs" />

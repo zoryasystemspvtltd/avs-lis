@@ -46,6 +46,21 @@ namespace Lis.Api.Controllers.Api
             }
         }
 
+        [HttpGet]
+        [ActionName("Billing")]
+        public ItemList<PatientDetail> GetBilling()
+        {
+            try
+            {
+                return manager.GetForBilling(ApiOption);
+            }
+            catch (Exception e)
+            {
+                logger.LogException(e);
+                return null;
+            }
+        }
+
         [AllowAnonymous]
         [HttpGet]
         public ItemList<TestRequestDetail> Get()

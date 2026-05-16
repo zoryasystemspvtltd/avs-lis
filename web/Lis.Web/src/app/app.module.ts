@@ -47,6 +47,7 @@ import { TestListComponent } from './LIS/testMaster/test-list/test-list.componen
 import { TestDetailsComponent } from './LIS/testMaster/test-details/test-details.component';
 import { TestCreateComponent } from './LIS/testMaster/test-create/test-create.component';
 import { TestEditComponent } from './LIS/testMaster/test-edit/test-edit.component';
+import { MasterListComponent, MasterFormComponent, SaleInvoiceFormComponent, TestProfileFormComponent } from './masters';
 
 export const options: Partial<IConfig> | (() => Partial<IConfig>) = null;
 
@@ -133,7 +134,11 @@ export const options: Partial<IConfig> | (() => Partial<IConfig>) = null;
     TestListComponent,
     TestEditComponent,
     TestCreateComponent,
-    TestDetailsComponent
+    TestDetailsComponent,
+    MasterListComponent,
+    MasterFormComponent,
+    SaleInvoiceFormComponent,
+    TestProfileFormComponent
   ],
   imports: [
     BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),

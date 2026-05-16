@@ -14,7 +14,7 @@ export class TestListComponent implements OnInit {
   public moduleJson: any = {
     url: 'test-master',
     heading: 'Test Master',
-    module: 'histest',
+    module: 'HisTest',
     hideCreate: false,
     hideAction: true,
     hideSearch: false,

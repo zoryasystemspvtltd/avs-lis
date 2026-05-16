@@ -181,7 +181,34 @@ namespace Lis.Api
 
                 dbContext.Modules.Add(perDocApproval);
 
+                dbContext.Modules.Add(new UserModule() { Name = "Masters", Url = "/masters", Order = 8, Application = clientAdmin, IsSyatem = false });
+                dbContext.Modules.Add(new UserModule() { Name = "TestRates", Url = "/test-rates", Order = 9, Application = clientAdmin, IsSyatem = false });
+                dbContext.Modules.Add(new UserModule() { Name = "SaleInvoices", Url = "/sale-invoices", Order = 10, Application = clientAdmin, IsSyatem = false });
+                dbContext.Modules.Add(new UserModule() { Name = "HisTest", Url = "/test-master", Order = 11, Application = clientAdmin, IsSyatem = false });
+
                 dbContext.SaveChanges();
+
+                var adminRole = roleManager.FindByName("Administrator");
+                if (adminRole != null)
+                {
+                    foreach (var module in dbContext.Modules.Where(m => m.ApplicationId == clientAdmin.Id).ToList())
+                    {
+                        dbContext.RoleModuleMappings.Add(new RoleModuleMappings()
+                        {
+                            CanAdd = true,
+                            CanEdit = true,
+                            CanAuthorize = true,
+                            CanDelete = true,
+                            CanView = true,
+                            CanReject = true,
+                            RoleId = adminRole.Id,
+                            ModuleId = module.Id,
+                            ApplicationId = clientAdmin.Id
+                        });
+                    }
+
+                    dbContext.SaveChanges();
+                }
             }
 
 

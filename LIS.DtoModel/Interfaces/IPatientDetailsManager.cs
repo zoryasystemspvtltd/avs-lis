@@ -12,6 +12,7 @@ namespace LIS.DtoModel.Interfaces
         PatientDetail Get(string Code);
         void Delete(PatientDetail patientDetail);
         ItemList<TestRequestDetail> Get(ListOptions options);
+        ItemList<PatientDetail> GetForBilling(ListOptions options);
         long CreateNewOrder(NewOrder newOrder);
     }
 }

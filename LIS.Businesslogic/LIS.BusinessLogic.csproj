@@ -79,6 +79,11 @@
     <Compile Include="TestMappingMasterManager.cs" />
     <Compile Include="TestParameterManager.cs" />
     <Compile Include="TestRequestDetailsManager.cs" />
+    <Compile Include="MasterCrudManager.cs" />
+    <Compile Include="TestRateMasterManager.cs" />
+    <Compile Include="SaleInvoiceManager.cs" />
+    <Compile Include="LookupMasterManagers.cs" />
+    <Compile Include="TestProfileMasterManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\LIS.DataModel\LIS.DataAccess.csproj">

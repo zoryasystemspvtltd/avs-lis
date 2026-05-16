@@ -155,6 +155,46 @@ namespace LIS.BusinessLogic
 
         }
 
+        public ItemList<PatientDetail> GetForBilling(ListOptions option)
+        {
+            if (option == null)
+            {
+                return null;
+            }
+
+            var result = new ItemList<PatientDetail>();
+            var query = patientRepo.Get(p => p.IsActive).AsEnumerable();
+
+            if (!string.IsNullOrEmpty(option.SearchText))
+            {
+                var search = option.SearchText.Trim();
+                query = query.Where(p =>
+                    (p.Name != null && p.Name.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                    (p.Phone != null && p.Phone.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                    (p.HisPatientId != null && p.HisPatientId.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0));
+            }
+
+            var list = query.OrderBy(p => p.Name).ToList();
+            result.TotalRecord = list.Count;
+
+            var sortColumn = string.IsNullOrEmpty(option.SortColumnName) ? "Name" : option.SortColumnName;
+            if (sortColumn != "Name" && sortColumn != "Phone" && sortColumn != "Id")
+            {
+                sortColumn = "Name";
+            }
+
+            int minRow = (option.CurrentPage - 1) * option.RecordPerPage;
+            int pageSize = option.RecordPerPage == 0 ? result.TotalRecord : option.RecordPerPage;
+
+            result.Items = list
+                .OrderBy(sortColumn, option.SortDirection)
+                .Skip(minRow)
+                .Take(pageSize)
+                .ToList();
+
+            return result;
+        }
+
         public void Update(PatientDetail patientDetail)
         {
             patientRepo.Update(patientDetail);

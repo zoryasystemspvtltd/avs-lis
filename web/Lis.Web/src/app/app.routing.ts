@@ -21,6 +21,64 @@ import { TestListComponent } from './LIS/testMaster/test-list/test-list.componen
 import { TestDetailsComponent } from './LIS/testMaster/test-details/test-details.component';
 import { TestCreateComponent } from './LIS/testMaster/test-create/test-create.component';
 import { TestEditComponent } from './LIS/testMaster/test-edit/test-edit.component';
+import { MasterListComponent, MasterFormComponent, SaleInvoiceFormComponent, TestProfileFormComponent } from './masters';
+
+const LOOKUP_FIELDS = {
+  codeName: [
+    { name: 'code', label: 'Code', type: 'text', required: true },
+    { name: 'name', label: 'Name', type: 'text', required: true },
+    { name: 'isActive', label: 'Active', type: 'checkbox' }
+  ],
+  referral: [
+    { name: 'code', label: 'Code', type: 'text', required: true },
+    { name: 'name', label: 'Name', type: 'text', required: true },
+    { name: 'phone', label: 'Phone', type: 'text' },
+    { name: 'email', label: 'Email', type: 'text' },
+    { name: 'isActive', label: 'Active', type: 'checkbox' }
+  ],
+  corporate: [
+    { name: 'code', label: 'Code', type: 'text', required: true },
+    { name: 'name', label: 'Name', type: 'text', required: true },
+    { name: 'defaultDiscountPercent', label: 'Default Discount %', type: 'number' },
+    { name: 'isActive', label: 'Active', type: 'checkbox' }
+  ],
+  testGroup: [
+    { name: 'code', label: 'Code', type: 'text', required: true },
+    { name: 'name', label: 'Name', type: 'text', required: true },
+    { name: 'specimenTag', label: 'Specimen Tag', type: 'text' },
+    { name: 'isActive', label: 'Active', type: 'checkbox' }
+  ],
+  department: [
+    { name: 'code', label: 'Code', type: 'text', required: true },
+    { name: 'name', label: 'Name', type: 'text', required: true }
+  ],
+  specimen: [
+    { name: 'code', label: 'Code', type: 'text', required: true },
+    { name: 'name', label: 'Name', type: 'text', required: true },
+    { name: 'isActive', label: 'Active', type: 'checkbox' }
+  ],
+  container: [
+    { name: 'code', label: 'Code', type: 'text', required: true },
+    { name: 'name', label: 'Name', type: 'text', required: true },
+    { name: 'color', label: 'Color', type: 'text' },
+    { name: 'isActive', label: 'Active', type: 'checkbox' }
+  ],
+  testProfile: [
+    { name: 'code', label: 'Code', type: 'text', required: true },
+    { name: 'name', label: 'Name', type: 'text', required: true },
+    { name: 'packageRate', label: 'Package Rate', type: 'number' },
+    { name: 'isActive', label: 'Active', type: 'checkbox' }
+  ],
+  testRate: [
+    { name: 'rate', label: 'Rate', type: 'number', required: true },
+    { name: 'emergencyRate', label: 'Emergency Rate', type: 'number' },
+    { name: 'discountPercent', label: 'Discount %', type: 'number' },
+    { name: 'taxPercent', label: 'Tax %', type: 'number' },
+    { name: 'effectiveStart', label: 'Effective From', type: 'date', required: true },
+    { name: 'effectiveEnd', label: 'Effective To', type: 'date', required: true },
+    { name: 'isActive', label: 'Active', type: 'checkbox' }
+  ]
+};
 
 const appRoutes: Routes = [
     // Default
@@ -84,6 +142,60 @@ const appRoutes: Routes = [
     { path: 'test-master/create', component: TestCreateComponent, canActivate: [AuthGuard] },
     { path: 'test-master/:id', component: TestDetailsComponent, canActivate: [AuthGuard] },
     { path: 'test-master/edit/:id', component: TestEditComponent, canActivate: [AuthGuard] },
+
+    { path: 'departments', component: MasterListComponent, data: { masterKey: 'department' }, canActivate: [AuthGuard] },
+    { path: 'departments/create', component: MasterFormComponent, data: { apiName: 'Department', returnUrl: '/departments', title: 'Department', fields: LOOKUP_FIELDS.department }, canActivate: [AuthGuard] },
+    { path: 'departments/:id', component: MasterFormComponent, data: { apiName: 'Department', returnUrl: '/departments', title: 'Department', fields: LOOKUP_FIELDS.department }, canActivate: [AuthGuard] },
+
+    { path: 'specimens', component: MasterListComponent, data: { masterKey: 'specimen' }, canActivate: [AuthGuard] },
+    { path: 'specimens/create', component: MasterFormComponent, data: { apiName: 'Specimens', returnUrl: '/specimens', title: 'Specimen', fields: LOOKUP_FIELDS.specimen }, canActivate: [AuthGuard] },
+    { path: 'specimens/:id', component: MasterFormComponent, data: { apiName: 'Specimens', returnUrl: '/specimens', title: 'Specimen', fields: LOOKUP_FIELDS.specimen }, canActivate: [AuthGuard] },
+
+    { path: 'referral-doctors', component: MasterListComponent, data: { masterKey: 'referralDoctor' }, canActivate: [AuthGuard] },
+    { path: 'referral-doctors/create', component: MasterFormComponent, data: { apiName: 'ReferralDoctor', returnUrl: '/referral-doctors', title: 'Referral Doctor', fields: LOOKUP_FIELDS.referral }, canActivate: [AuthGuard] },
+    { path: 'referral-doctors/:id', component: MasterFormComponent, data: { apiName: 'ReferralDoctor', returnUrl: '/referral-doctors', title: 'Referral Doctor', fields: LOOKUP_FIELDS.referral }, canActivate: [AuthGuard] },
+
+    { path: 'corporates', component: MasterListComponent, data: { masterKey: 'corporate' }, canActivate: [AuthGuard] },
+    { path: 'corporates/create', component: MasterFormComponent, data: { apiName: 'Corporate', returnUrl: '/corporates', title: 'Corporate', fields: LOOKUP_FIELDS.corporate }, canActivate: [AuthGuard] },
+    { path: 'corporates/:id', component: MasterFormComponent, data: { apiName: 'Corporate', returnUrl: '/corporates', title: 'Corporate', fields: LOOKUP_FIELDS.corporate }, canActivate: [AuthGuard] },
+
+    { path: 'test-groups', component: MasterListComponent, data: { masterKey: 'testGroup' }, canActivate: [AuthGuard] },
+    { path: 'test-groups/create', component: MasterFormComponent, data: { apiName: 'TestGroup', returnUrl: '/test-groups', title: 'Test Group', fields: LOOKUP_FIELDS.testGroup }, canActivate: [AuthGuard] },
+    { path: 'test-groups/:id', component: MasterFormComponent, data: { apiName: 'TestGroup', returnUrl: '/test-groups', title: 'Test Group', fields: LOOKUP_FIELDS.testGroup }, canActivate: [AuthGuard] },
+
+    { path: 'test-categories', component: MasterListComponent, data: { masterKey: 'testCategory' }, canActivate: [AuthGuard] },
+    { path: 'test-categories/create', component: MasterFormComponent, data: { apiName: 'TestCategory', returnUrl: '/test-categories', title: 'Test Category', fields: LOOKUP_FIELDS.codeName }, canActivate: [AuthGuard] },
+    { path: 'test-categories/:id', component: MasterFormComponent, data: { apiName: 'TestCategory', returnUrl: '/test-categories', title: 'Test Category', fields: LOOKUP_FIELDS.codeName }, canActivate: [AuthGuard] },
+
+    { path: 'units', component: MasterListComponent, data: { masterKey: 'unit' }, canActivate: [AuthGuard] },
+    { path: 'units/create', component: MasterFormComponent, data: { apiName: 'Unit', returnUrl: '/units', title: 'Unit', fields: LOOKUP_FIELDS.codeName }, canActivate: [AuthGuard] },
+    { path: 'units/:id', component: MasterFormComponent, data: { apiName: 'Unit', returnUrl: '/units', title: 'Unit', fields: LOOKUP_FIELDS.codeName }, canActivate: [AuthGuard] },
+
+    { path: 'methods', component: MasterListComponent, data: { masterKey: 'method' }, canActivate: [AuthGuard] },
+    { path: 'methods/create', component: MasterFormComponent, data: { apiName: 'Method', returnUrl: '/methods', title: 'Method', fields: LOOKUP_FIELDS.codeName }, canActivate: [AuthGuard] },
+    { path: 'methods/:id', component: MasterFormComponent, data: { apiName: 'Method', returnUrl: '/methods', title: 'Method', fields: LOOKUP_FIELDS.codeName }, canActivate: [AuthGuard] },
+
+    { path: 'sample-types', component: MasterListComponent, data: { masterKey: 'sampleType' }, canActivate: [AuthGuard] },
+    { path: 'sample-types/create', component: MasterFormComponent, data: { apiName: 'SampleType', returnUrl: '/sample-types', title: 'Sample Type', fields: LOOKUP_FIELDS.codeName }, canActivate: [AuthGuard] },
+    { path: 'sample-types/:id', component: MasterFormComponent, data: { apiName: 'SampleType', returnUrl: '/sample-types', title: 'Sample Type', fields: LOOKUP_FIELDS.codeName }, canActivate: [AuthGuard] },
+
+    { path: 'containers', component: MasterListComponent, data: { masterKey: 'container' }, canActivate: [AuthGuard] },
+    { path: 'containers/create', component: MasterFormComponent, data: { apiName: 'Container', returnUrl: '/containers', title: 'Container', fields: LOOKUP_FIELDS.container }, canActivate: [AuthGuard] },
+    { path: 'containers/:id', component: MasterFormComponent, data: { apiName: 'Container', returnUrl: '/containers', title: 'Container', fields: LOOKUP_FIELDS.container }, canActivate: [AuthGuard] },
+
+    { path: 'test-profiles', component: MasterListComponent, data: { masterKey: 'testProfile' }, canActivate: [AuthGuard] },
+    { path: 'test-profiles/create', component: TestProfileFormComponent, canActivate: [AuthGuard] },
+    { path: 'test-profiles/:id', component: TestProfileFormComponent, canActivate: [AuthGuard] },
+
+    { path: 'test-rates', component: MasterListComponent, data: { masterKey: 'testRate' }, canActivate: [AuthGuard] },
+    { path: 'test-rates/create', component: MasterFormComponent, data: { apiName: 'TestRate', returnUrl: '/test-rates', title: 'Test Rate', fields: LOOKUP_FIELDS.testRate }, canActivate: [AuthGuard] },
+    { path: 'test-rates/:id', component: MasterFormComponent, data: { apiName: 'TestRate', returnUrl: '/test-rates', title: 'Test Rate', fields: LOOKUP_FIELDS.testRate }, canActivate: [AuthGuard] },
+
+    { path: 'sale-invoices', component: MasterListComponent, data: { masterKey: 'saleInvoice' }, canActivate: [AuthGuard] },
+    { path: 'sale-invoices/create', component: SaleInvoiceFormComponent, canActivate: [AuthGuard] },
+    { path: 'sale-invoices/print/:id', component: SaleInvoiceFormComponent, canActivate: [AuthGuard] },
+    { path: 'sale-invoices/:id', component: SaleInvoiceFormComponent, canActivate: [AuthGuard] },
+
     // otherwise redirect to home
     { path: '**', redirectTo: '' }
 ];
