@@ -78,6 +78,7 @@
     <Compile Include="SpecimenManager.cs" />
     <Compile Include="TestMappingMasterManager.cs" />
     <Compile Include="TestParameterManager.cs" />
+    <Compile Include="TestRateMasterManager.cs" />
     <Compile Include="TestRequestDetailsManager.cs" />
   </ItemGroup>
   <ItemGroup>

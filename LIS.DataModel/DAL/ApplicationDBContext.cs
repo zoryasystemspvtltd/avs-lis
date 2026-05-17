@@ -52,6 +52,9 @@ namespace LIS.DataAccess
         public virtual DbSet<SaleInvoice> SaleInvoices { get; set; }
         public virtual DbSet<SaleInvoiceDetail> SaleInvoiceDetails { get; set; }
 
+        //Test Rate
+        public virtual DbSet<TestRateMaster> TestRateMaster { get; set; }
+
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             if (modelBuilder != null)

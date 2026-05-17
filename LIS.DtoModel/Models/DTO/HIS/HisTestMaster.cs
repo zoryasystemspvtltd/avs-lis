@@ -16,9 +16,9 @@ namespace LIS.DtoModel.Models
         public string HISTestCodeDescription { get; set; }
         public string HISSpecimenCode { get; set; }
         public string HISSpecimenName { get; set; }
-        public DateTime CreatedOn { get; set; }
+        public DateTime CreatedOn { get; set; } = DateTime.Now;
         public string CreatedBy { get; set; }
-        public bool IsActive { get; set; }
+        public bool IsActive { get; set; } = true;
         [ForeignKey("Departments")]
         public string DepartmentCode { get; set; }
 

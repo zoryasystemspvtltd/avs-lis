@@ -1,0 +1,32 @@
+<div class="row" *ngIf="isLoaded">
+  <div class="col-sm-12">
+    <h3>Rate Master Details</h3>
+    <hr />
+    <div class="row">
+      <div class="col-sm-3"><strong>Rate</strong></div>
+      <div class="col-sm-9">{{item.rate}}</div>
+    </div>
+    <div class="row">
+      <div class="col-sm-3"><strong>Effective Start</strong></div>
+      <div class="col-sm-9">{{item.effectiveStart | date:'mediumDate'}}</div>
+    </div>
+    <div class="row">
+      <div class="col-sm-3"><strong>Effective End</strong></div>
+      <div class="col-sm-9">{{item.effectiveEnd | date:'mediumDate'}}</div>
+    </div>
+    <div class="row">
+      <div class="col-sm-3"><strong>Test</strong></div>
+      <div class="col-sm-9">{{item.testName || item.test?.hisTestCodeDescription || item.test?.name}}</div>
+    </div>
+    <div class="row">
+      <div class="col-sm-3"><strong>Status</strong></div>
+      <div class="col-sm-9">{{item.isActive ? 'Active' : 'Inactive'}}</div>
+    </div>
+    <hr />
+    <button class="btn btn-warning" (click)="router.navigate(['/rate-master/edit', item.id])">Edit</button>
+    &nbsp;
+    <button class="btn btn-danger" (click)="deleteItem()">Delete</button>
+    &nbsp;
+    <button class="btn btn-default" (click)="router.navigate(['/rate-master'])">Back</button>
+  </div>
+</div>

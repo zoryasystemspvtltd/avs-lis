@@ -70,6 +70,7 @@
     <Compile Include="Interfaces\ISpecimenManager.cs" />
     <Compile Include="Interfaces\ITestMappingMasterManager.cs" />
     <Compile Include="Interfaces\ITestParameterManager.cs" />
+    <Compile Include="Interfaces\ITestRateMasterManager.cs" />
     <Compile Include="Interfaces\ITestRequestDetailsManager.cs" />
     <Compile Include="Interfaces\IValidationError.cs" />
     <Compile Include="Models\ApiError.cs" />

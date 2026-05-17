@@ -10,7 +10,7 @@ export class TestMasterService {
      constructor(private http: HttpClient, private authenticationService: AuthenticationService) { }
 
     getAll() {
-        return this.http.get<any[]>(`${environment.ApplicationServer}/api/hisParameterRange/`)
+        return this.http.get<any[]>(`${environment.ApplicationServer}/api/hisParameter/`)
             .pipe(map(response => {
                 return response;
             }));

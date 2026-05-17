@@ -102,12 +102,6 @@ namespace LIS.BusinessLogic
         public IEnumerable<HisTestMaster> GetTests()
         {
             var tests = testRepo.Get(p => p.IsActive)
-                .Join(repo.Get(r => r.IsActive),
-                test => test.HISTestCode,
-                mapp => mapp.HISTestCode,
-                 (test, mapp) => test)
-                .OrderBy(p => p.HISTestCodeDescription)
-                .Distinct()
                 .ToList();
             return tests;
 

@@ -47,6 +47,10 @@ import { TestListComponent } from './LIS/testMaster/test-list/test-list.componen
 import { TestDetailsComponent } from './LIS/testMaster/test-details/test-details.component';
 import { TestCreateComponent } from './LIS/testMaster/test-create/test-create.component';
 import { TestEditComponent } from './LIS/testMaster/test-edit/test-edit.component';
+import { RateMasterListComponent } from './LIS/rateMaster/rate-master-list/rate-master-list.component';
+import { RateMasterDetailsComponent } from './LIS/rateMaster/rate-master-details/rate-master-details.component';
+import { RateMasterCreateComponent } from './LIS/rateMaster/rate-master-create/rate-master-create.component';
+import { RateMasterEditComponent } from './LIS/rateMaster/rate-master-edit/rate-master-edit.component';
 
 export const options: Partial<IConfig> | (() => Partial<IConfig>) = null;
 
@@ -133,7 +137,11 @@ export const options: Partial<IConfig> | (() => Partial<IConfig>) = null;
     TestListComponent,
     TestEditComponent,
     TestCreateComponent,
-    TestDetailsComponent
+    TestDetailsComponent,
+    RateMasterListComponent,
+    RateMasterCreateComponent,
+    RateMasterEditComponent,
+    RateMasterDetailsComponent
   ],
   imports: [
     BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),

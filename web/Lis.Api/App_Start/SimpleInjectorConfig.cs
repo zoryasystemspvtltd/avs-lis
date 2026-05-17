@@ -101,6 +101,7 @@ namespace Lis.Api
             container.Register<ISpecimenManager, SpecimenManager>(Lifestyle.Scoped);
             container.Register<IHisMasterManager, HISParameterRangeMasterManager>(Lifestyle.Scoped);
             container.Register<IHisTestMasterManager, HISTestMasterManager>(Lifestyle.Scoped);
+            container.Register<ITestRateMasterManager, TestRateMasterManager>(Lifestyle.Scoped);
             container.Register<IPatientDetailsManager, PatientDetailManager>(Lifestyle.Scoped);
             container.Register<ITestParameterManager, TestParameterManager>(Lifestyle.Scoped);
             container.Register<ITestRequestDetailsManager, TestRequestDetailsManager>(Lifestyle.Scoped);

@@ -21,6 +21,10 @@ import { TestListComponent } from './LIS/testMaster/test-list/test-list.componen
 import { TestDetailsComponent } from './LIS/testMaster/test-details/test-details.component';
 import { TestCreateComponent } from './LIS/testMaster/test-create/test-create.component';
 import { TestEditComponent } from './LIS/testMaster/test-edit/test-edit.component';
+import { RateMasterListComponent } from './LIS/rateMaster/rate-master-list/rate-master-list.component';
+import { RateMasterDetailsComponent } from './LIS/rateMaster/rate-master-details/rate-master-details.component';
+import { RateMasterCreateComponent } from './LIS/rateMaster/rate-master-create/rate-master-create.component';
+import { RateMasterEditComponent } from './LIS/rateMaster/rate-master-edit/rate-master-edit.component';
 
 const appRoutes: Routes = [
     // Default
@@ -84,6 +88,10 @@ const appRoutes: Routes = [
     { path: 'test-master/create', component: TestCreateComponent, canActivate: [AuthGuard] },
     { path: 'test-master/:id', component: TestDetailsComponent, canActivate: [AuthGuard] },
     { path: 'test-master/edit/:id', component: TestEditComponent, canActivate: [AuthGuard] },
+    { path: 'rate-master', component: RateMasterListComponent, canActivate: [AuthGuard] },
+    { path: 'rate-master/create', component: RateMasterCreateComponent, canActivate: [AuthGuard] },
+    { path: 'rate-master/:id', component: RateMasterDetailsComponent, canActivate: [AuthGuard] },
+    { path: 'rate-master/edit/:id', component: RateMasterEditComponent, canActivate: [AuthGuard] },
     // otherwise redirect to home
     { path: '**', redirectTo: '' }
 ];

@@ -1,0 +1,57 @@
+<div class="row" *ngIf="isLoaded">
+  <div class="col-sm-12">
+    <form [formGroup]="rateMasterForm" (ngSubmit)="onSubmit()">
+      <h3>Add Rate Master</h3>
+      <hr />
+      <div class="row">
+        <div class="col-sm-6">
+          <div class="form-group">
+            <label>Rate<span class="error">*</span></label>
+            <input type="number" class="form-control" formControlName="rate" placeholder="Enter rate" step="0.01" />
+            <span *ngIf="submitted && f.rate.errors?.required" class="error">Rate is required.</span>
+          </div>
+        </div>
+        <div class="col-sm-6">
+          <div class="form-group">
+            <label>Test<span class="error">*</span></label>
+            <select class="form-control" formControlName="testId">
+              <option value="">Select test</option>
+              <option *ngFor="let test of tests" [value]="test.id || test.hisTestId || test.hisTestCode">{{test.hisTestCodeDescription || test.name || test.hisTestCode}}</option>
+            </select>
+            <span *ngIf="submitted && f.testId.errors?.required" class="error">Test is required.</span>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-sm-6">
+          <div class="form-group">
+            <label>Effective Start<span class="error">*</span></label>
+            <input type="date" class="form-control" formControlName="effectiveStart" />
+            <span *ngIf="submitted && f.effectiveStart.errors?.required" class="error">Start date is required.</span>
+          </div>
+        </div>
+        <div class="col-sm-6">
+          <div class="form-group">
+            <label>Effective End<span class="error">*</span></label>
+            <input type="date" class="form-control" formControlName="effectiveEnd" />
+            <span *ngIf="submitted && f.effectiveEnd.errors?.required" class="error">End date is required.</span>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-sm-6">
+          <div class="form-group">
+            <label>
+              <input type="checkbox" formControlName="isActive" /> Active
+            </label>
+          </div>
+        </div>
+      </div>
+      <hr />
+      <alert></alert>
+      <button class="btn btn-primary" [disabled]="loading">Submit</button>
+      &nbsp;
+      <button class="btn btn-default" type="button" (click)="router.navigate(['/rate-master'])">Cancel</button>
+    </form>
+  </div>
+</div>

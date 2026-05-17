@@ -15,11 +15,17 @@ namespace LIS.DtoModel.Models
         public decimal Rate { get; set; }
         public DateTime EffectiveStart { get; set; }
         public DateTime EffectiveEnd { get; set; }
-        public DateTime CreatedOn { get; set; }
-        public DateTime ModifiedOn { get; set; }
-        public bool IsActive { get; set; }
+        public DateTime CreatedOn { get; set; }= DateTime.Now;
+        public DateTime? ModifiedOn { get; set; }
+        public bool IsActive { get; set; } = true;
         public string CreatedBy { get; set; }
         [ForeignKey("HisTestMaster")]
         public int TestId { get; set; }
+       
+        [JsonIgnore]
+        public virtual HisTestMaster HisTestMaster { get; set; }
+
+        [NotMapped]
+        public string TestName { get; set; }
     }
 }

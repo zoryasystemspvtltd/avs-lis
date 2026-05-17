@@ -224,6 +224,7 @@
     <Compile Include="Controllers\Api\SpecimensController.cs" />
     <Compile Include="Controllers\Api\EquipmentTestMappingsController.cs" />
     <Compile Include="Controllers\Api\SampleController.cs" />
+    <Compile Include="Controllers\Api\TestRateController.cs" />
     <Compile Include="Controllers\Api\User\UsersController.cs" />
     <Compile Include="Migrations\202604270642026_fresh.cs" />
     <Compile Include="Migrations\202604270642026_fresh.Designer.cs">
