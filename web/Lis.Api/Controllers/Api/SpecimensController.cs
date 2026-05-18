@@ -13,6 +13,7 @@ using System.Web.Http;
 
 namespace Lis.Api.Controllers.Api
 {
+    [RoutePrefix("api/Specimens")]
     public class SpecimensController : ApiController
     {
         private ISpecimenManager manager;
@@ -142,43 +143,59 @@ namespace Lis.Api.Controllers.Api
         {
             get
             {
-                var apiOption = System.Web.HttpContext.Current.Request.Headers.GetValues("ApiOption");
-                if (apiOption == null || apiOption.Count() == 0)
+                var defaultOption = new ListOptions
                 {
-                    return null;
+                    RecordPerPage = 10,
+                    CurrentPage = 1,
+                    SortColumnName = "Name",
+                    SortDirection = true
+                };
+
+                var headers = System.Web.HttpContext.Current?.Request?.Headers;
+                if (headers == null)
+                {
+                    return defaultOption;
+                }
+
+                var apiOption = headers.GetValues("ApiOption");
+                if (apiOption == null || !apiOption.Any())
+                {
+                    return defaultOption;
                 }
 
                 return JsonConvert.DeserializeObject<ListOptions>(apiOption.FirstOrDefault(),
                 new JsonSerializerSettings()
                 {
                     ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
-                });
+                }) ?? defaultOption;
             }
         }
 
         [HttpGet]
-        public object Get()
+        [Route("")]
+        [Route("{id:int}")]
+        public IHttpActionResult Get(int? id = null)
         {
             try
             {
-                if (ApiOption != null)
+                if (id.HasValue)
                 {
-                    return manager.Get(ApiOption);
+                    return Ok(manager.Get(id.Value));
                 }
 
-                return manager.Get().ToList();
+                return Ok(manager.Get(ApiOption) ?? new ItemList<HISSpecimenMaster> { TotalRecord = 0, Items = new List<HISSpecimenMaster>() });
             }
             catch (Exception e)
             {
                 logger.LogException(e);
-                return null;
+                return Ok(new ItemList<HISSpecimenMaster> { TotalRecord = 0, Items = new List<HISSpecimenMaster>() });
             }
         }
 
         [AllowAnonymous]
         [HttpGet]
-        [ActionName("GetById")]
-        public HISSpecimenMaster Get(int Id)
+        [Route("GetById/{id:int}")]
+        public HISSpecimenMaster GetById(int Id)
         {
             try
             {

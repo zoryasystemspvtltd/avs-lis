@@ -129,6 +129,18 @@ namespace LIS.BusinessLogic
         {
             var test = testRepo.Get(p => p.Id == id)
                 .FirstOrDefault();
+            if (test == null)
+            {
+                return null;
+            }
+
+            if (!string.IsNullOrEmpty(test.DepartmentCode))
+            {
+                var dept = departmentRepo.Get(d => d.Code != null)
+                    .FirstOrDefault(d => d.Code.Equals(test.DepartmentCode, StringComparison.OrdinalIgnoreCase));
+                test.DepartmentName = dept != null ? dept.Name : test.DepartmentCode;
+            }
+
             return test;
         }
 

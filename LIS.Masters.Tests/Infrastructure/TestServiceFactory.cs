@@ -34,6 +34,12 @@ namespace LIS.Masters.Tests.Infrastructure
         public HISTestMasterManager HisTest { get; }
         public TestRateMasterManager TestRate { get; }
         public SaleInvoiceManager SaleInvoice { get; }
+        public PatientMasterManager PatientMaster { get; }
+        public PatientDetailManager PatientWorkflow { get; }
+        public HisParameterMasterManager HisParameter { get; }
+        public HisParameterRangeCrudManager HisParameterRange { get; }
+        public TestMappingCrudManager TestMapping { get; }
+        public EquipmentManager Equipment { get; }
 
         private TestServiceFactory(ApplicationDBContext db)
         {
@@ -56,6 +62,12 @@ namespace LIS.Masters.Tests.Infrastructure
             HisTest = new HISTestMasterManager(Logger, Identity, Uow);
             TestRate = new TestRateMasterManager(Logger, Identity, Uow);
             SaleInvoice = new SaleInvoiceManager(Logger, Identity, Uow, TestRate);
+            PatientMaster = new PatientMasterManager(Logger, Identity, Uow);
+            PatientWorkflow = new PatientDetailManager(Logger, Identity, Uow, db);
+            HisParameter = new HisParameterMasterManager(Logger, Identity, Uow);
+            HisParameterRange = new HisParameterRangeCrudManager(Logger, Identity, Uow);
+            TestMapping = new TestMappingCrudManager(Logger, Identity, Uow);
+            Equipment = new EquipmentManager(Logger, Identity, Uow);
         }
 
         public static bool TryCreate(out TestServiceFactory factory, out string error)

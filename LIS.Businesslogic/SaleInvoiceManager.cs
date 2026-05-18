@@ -15,6 +15,8 @@ namespace LIS.BusinessLogic
         private readonly ModuleRepo<SaleInvoice> invoiceRepo;
         private readonly ModuleRepo<SaleInvoiceDetail> detailRepo;
         private readonly ModuleRepo<PatientDetail> patientRepo;
+        private readonly ModuleRepo<TestRequestDetail> testRequestRepo;
+        private readonly ModuleRepo<HisTestMaster> testRepo;
         private readonly ITestRateMasterManager rateManager;
         private readonly IModuleIdentity identity;
         private readonly ILogger logger;
@@ -31,6 +33,8 @@ namespace LIS.BusinessLogic
             invoiceRepo = new ModuleRepo<SaleInvoice>(logger, identity, unitOfWork);
             detailRepo = new ModuleRepo<SaleInvoiceDetail>(logger, identity, unitOfWork);
             patientRepo = new ModuleRepo<PatientDetail>(logger, identity, unitOfWork);
+            testRequestRepo = new ModuleRepo<TestRequestDetail>(logger, identity, unitOfWork);
+            testRepo = new ModuleRepo<HisTestMaster>(logger, identity, unitOfWork);
         }
 
         public SaleInvoiceDto GetById(long id)
@@ -147,6 +151,8 @@ namespace LIS.BusinessLogic
                 var id = invoiceRepo.Add(header);
                 header.Id = id;
 
+                LinkTestRequestsToLines(header, lines, header.InvoiceNo);
+
                 foreach (var line in lines)
                 {
                     line.SaleInvoiceId = id;
@@ -154,6 +160,12 @@ namespace LIS.BusinessLogic
                     line.CreatedBy = identity?.ActivityMember;
                     line.IsActive = true;
                     detailRepo.Add(line);
+                }
+
+                if ((!header.RequestDetailId.HasValue || header.RequestDetailId <= 0) && lines.Any(l => l.RequestDetailId > 0))
+                {
+                    header.RequestDetailId = lines.First(l => l.RequestDetailId > 0).RequestDetailId;
+                    invoiceRepo.Update(header);
                 }
 
                 return id;
@@ -169,6 +181,8 @@ namespace LIS.BusinessLogic
                 detailRepo.Delete(old);
             }
 
+            LinkTestRequestsToLines(header, lines, header.InvoiceNo);
+
             foreach (var line in lines)
             {
                 line.SaleInvoiceId = header.Id;
@@ -176,6 +190,12 @@ namespace LIS.BusinessLogic
                 line.CreatedBy = identity?.ActivityMember;
                 line.IsActive = true;
                 detailRepo.Add(line);
+            }
+
+            if ((!header.RequestDetailId.HasValue || header.RequestDetailId <= 0) && lines.Any(l => l.RequestDetailId > 0))
+            {
+                header.RequestDetailId = lines.First(l => l.RequestDetailId > 0).RequestDetailId;
+                invoiceRepo.Update(header);
             }
 
             return header.Id;
@@ -214,6 +234,67 @@ namespace LIS.BusinessLogic
             var invoice = invoiceRepo.Get(id);
             invoice.IsActive = false;
             invoiceRepo.Update(invoice);
+        }
+
+        /// <summary>
+        /// Ensures each invoice line has a valid TestRequestDetail FK before persistence.
+        /// </summary>
+        private void LinkTestRequestsToLines(SaleInvoice invoice, List<SaleInvoiceDetail> lines, string requestNo)
+        {
+            if (invoice == null || invoice.PatientId <= 0 || lines == null)
+            {
+                return;
+            }
+
+            var reqNo = string.IsNullOrWhiteSpace(requestNo) ? $"INV{invoice.Id}" : requestNo;
+            var now = DateTime.Now;
+
+            foreach (var line in lines.Where(l => l.TestId > 0))
+            {
+                if (line.RequestDetailId > 0 && testRequestRepo.Get(line.RequestDetailId) != null)
+                {
+                    continue;
+                }
+
+                var test = testRepo.Get(line.TestId);
+                if (test == null)
+                {
+                    continue;
+                }
+
+                var request = testRequestRepo.Get(t =>
+                    t.PatientId == invoice.PatientId &&
+                    t.HISTestCode == test.HISTestCode &&
+                    t.HISRequestNo == reqNo).FirstOrDefault();
+
+                if (request == null)
+                {
+                    var sampleNo = !string.IsNullOrWhiteSpace(line.SampleNo)
+                        ? line.SampleNo
+                        : $"{reqNo}-{test.HISTestCode}";
+
+                    request = new TestRequestDetail
+                    {
+                        PatientId = invoice.PatientId,
+                        HISTestCode = test.HISTestCode,
+                        HISTestName = test.HISTestCodeDescription,
+                        HISRequestNo = reqNo,
+                        HISRequestId = reqNo,
+                        SampleNo = sampleNo,
+                        SampleCollectionDate = now,
+                        SampleReceivedDate = now,
+                        SpecimenCode = test.HISSpecimenCode,
+                        SpecimenName = test.HISSpecimenName,
+                        ReportStatus = ReportStatusType.New,
+                        CreatedOn = now,
+                        CreatedBy = identity?.ActivityMember
+                    };
+
+                    request.Id = testRequestRepo.Add(request);
+                }
+
+                line.RequestDetailId = request.Id;
+            }
         }
 
         public string GenerateInvoiceNo()

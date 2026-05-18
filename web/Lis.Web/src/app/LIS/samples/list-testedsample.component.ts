@@ -12,7 +12,7 @@ export class ListTestedSampleComponent implements OnInit {
   ngOnInit() {
   }
   public moduleJson: any = {
-    url: 'technician-samples',
+    url: 'technicianapprovals',
     heading: 'Samples to be reviewed by technician',
     module: 'Patients',
     hideAction: false,

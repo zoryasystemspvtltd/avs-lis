@@ -77,6 +77,7 @@ namespace Lis.Api.Controllers.Api
         public IEnumerable<TestMappingMaster> GetAllRecords() => FetchAllActiveCore();
     }
 
+    [RoutePrefix("api/PatientMaster")]
     public class PatientMasterController : ApiController
     {
         private readonly PatientMasterManager manager;
@@ -120,7 +121,7 @@ namespace Lis.Api.Controllers.Api
         }
 
         [HttpGet]
-        [Route("api/PatientMaster")]
+        [Route("")]
         public ItemList<PatientDetail> Get()
         {
             try { return manager.Get(ApiOption) ?? new ItemList<PatientDetail> { TotalRecord = 0, Items = new List<PatientDetail>() }; }
@@ -128,7 +129,7 @@ namespace Lis.Api.Controllers.Api
         }
 
         [HttpGet]
-        [Route("api/PatientMaster/{id:long}")]
+        [Route("{id:long}")]
         public PatientDetail Get(long id)
         {
             try { return manager.GetById(id); }
@@ -136,13 +137,23 @@ namespace Lis.Api.Controllers.Api
         }
 
         [HttpGet]
-        [ActionName("GetAll")]
+        [Route("NextPatientId")]
+        public IHttpActionResult NextPatientId()
+        {
+            try { return Ok(new { patientId = manager.GenerateNextPatientId() }); }
+            catch (Exception e) { logger.LogException(e); return Ok(new { patientId = "" }); }
+        }
+
+        [HttpGet]
+        [Route("GetAll")]
         public IEnumerable<PatientDetail> GetAll()
         {
             try { return manager.GetAllActive(); }
             catch (Exception e) { logger.LogException(e); return null; }
         }
 
+        [HttpPost]
+        [Route("")]
         [QAuthorize(ModuleName = "Masters", ModulePermissionTypes = ModulePermissionType.CanAdd)]
         public HttpResponseMessage Post(PatientDetail item)
         {

@@ -134,7 +134,8 @@ namespace Lis.Api.Controllers.Api
         }
 
         [AllowAnonymous]
-        [HttpPut]
+        [HttpPost]
+        [ActionName("Delete")]
         public HttpResponseMessage Delete(HisTestMaster test)
         {
             try

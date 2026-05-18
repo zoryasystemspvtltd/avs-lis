@@ -75,7 +75,7 @@ export class TestEditComponent implements OnInit {
       hisTestCodeDescription: [this.item.hisTestCodeDescription, Validators.required],
       hisSpecimenCode: [this.item.hisSpecimenCode, Validators.required],
       departmentCode: [this.item.departmentCode, Validators.required],
-      isActive: [this.item.isActive]
+      isActive: [!!this.item.isActive]
     });
   }
 

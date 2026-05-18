@@ -21,7 +21,14 @@ export class MasterService {
   }
 
   getItem(apiName: string, id: any): Observable<any> {
-    return this.http.get<any>(`${this.baseUrl}/api/${apiName}/${id}`);
+    if (apiName === 'Specimens') {
+      return this.http.get<any>(`${this.baseUrl}/api/Specimens/${id}`).pipe(
+        catchError(() => of(null))
+      );
+    }
+    return this.http.get<any>(`${this.baseUrl}/api/${apiName}/${id}`).pipe(
+      catchError(() => of(null))
+    );
   }
 
   addItem(apiName: string, item: any): Observable<any> {
@@ -41,6 +48,32 @@ export class MasterService {
       return this.getLookupList('HisTest');
     }
     return this.http.get<any>(`${this.baseUrl}/api/${apiName}/GetAll`);
+  }
+
+  getEquipments(): Observable<any[]> {
+    return this.http.get<any>(`${this.baseUrl}/api/Equipments`).pipe(
+      map(response => {
+        if (Array.isArray(response)) {
+          return response;
+        }
+        return response?.items || response?.Items || [];
+      }),
+      catchError(() => of([]))
+    );
+  }
+
+  getNextPatientId(): Observable<string> {
+    return this.http.get<any>(`${this.baseUrl}/api/PatientMaster/NextPatientId`).pipe(
+      map(r => (typeof r === 'string' ? r : r?.patientId || r?.PatientId || '')),
+      catchError(() => of(''))
+    );
+  }
+
+  getNextRequestNo(): Observable<string> {
+    return this.http.get<any>(`${this.baseUrl}/api/NewSample/NextRequestNo`).pipe(
+      map(r => (typeof r === 'string' ? r : r?.requestNo || r?.RequestNo || '')),
+      catchError(() => of(''))
+    );
   }
 
   /** Master lookup lists for dropdowns (GetAll or paginated Get). */

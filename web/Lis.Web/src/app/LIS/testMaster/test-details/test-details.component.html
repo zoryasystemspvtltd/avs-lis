@@ -23,7 +23,7 @@
                         </div>
                         <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Department</label></div>
                         <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
-                            <p>{{item.department?.name}}</p>
+                            <p>{{item.departmentName || item.department?.name || item.departmentCode}}</p>
                         </div>
                     </div>
                     <div class="row">

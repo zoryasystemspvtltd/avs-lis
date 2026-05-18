@@ -385,11 +385,22 @@ namespace LIS.BusinessLogic
             return repo.Get(id);
         }
 
+        public string GenerateNextPatientId()
+        {
+            var count = repo.Get().Count() + 1;
+            return $"PAT{count:D5}";
+        }
+
         public long Add(PatientDetail item)
         {
+            if (string.IsNullOrWhiteSpace(item.HisPatientId))
+            {
+                item.HisPatientId = GenerateNextPatientId();
+            }
+
             if (ExistsDuplicatePatient(item, null))
             {
-                throw new InvalidOperationException("A patient with this external ID already exists.");
+                throw new InvalidOperationException("A patient with this patient ID already exists.");
             }
 
             item.IsActive = true;
@@ -397,6 +408,11 @@ namespace LIS.BusinessLogic
             if (item.DateOfBirth == default(DateTime))
             {
                 item.DateOfBirth = DateTime.Today;
+            }
+
+            if (item.Age <= 0 && item.DateOfBirth != default(DateTime))
+            {
+                item.Age = (decimal)item.DateOfBirth.Age();
             }
 
             return repo.Add(item);

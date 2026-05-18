@@ -64,6 +64,20 @@ namespace LIS.Masters.Tests.Infrastructure
             };
         }
 
+        public static PatientDetail Patient(string nameSuffix, string hisPatientId = null)
+        {
+            return new PatientDetail
+            {
+                HisPatientId = hisPatientId,
+                Name = $"Patient {nameSuffix}",
+                Gender = "M",
+                Phone = "9876543210",
+                Age = 30,
+                DateOfBirth = DateTime.Today.AddYears(-30),
+                IsActive = true
+            };
+        }
+
         public static TestProfileMaster Profile(string code, params int[] testIds)
         {
             var profile = new TestProfileMaster

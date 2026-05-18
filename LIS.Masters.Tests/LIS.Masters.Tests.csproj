@@ -69,6 +69,13 @@
     <Compile Include="Transactions\TestProfileMasterManagerTests.cs" />
     <Compile Include="Transactions\TestRateMasterManagerTests.cs" />
     <Compile Include="Transactions\TestRateReferralDoctorTests.cs" />
+    <Compile Include="Transactions\TestRateEffectiveDateExtendedTests.cs" />
+    <Compile Include="Transactions\SaleInvoiceEditWorkflowTests.cs" />
+    <Compile Include="Workflows\PatientInvoiceSampleWorkflowTests.cs" />
+    <Compile Include="Masters\PatientMasterManagerTests.cs" />
+    <Compile Include="Masters\HisParameterAndMappingTests.cs" />
+    <Compile Include="Masters\EquipmentManagerTests.cs" />
+    <Compile Include="Database\RelationIntegrityTests.cs" />
     <Compile Include="Validation\NegativeValidationTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -13,6 +13,7 @@ using System.Web.Http;
 
 namespace Lis.Api.Controllers.Api
 {
+    [RoutePrefix("api/NewSample")]
     public class NewSampleController : ApiController
     {
         private IPatientDetailsManager manager;
@@ -34,6 +35,23 @@ namespace Lis.Api.Controllers.Api
         /// </summary>
         /// <param name="newOrder"></param>
         /// <returns></returns>
+        [HttpGet]
+        [Route("NextRequestNo")]
+        public IHttpActionResult NextRequestNo()
+        {
+            try
+            {
+                return Ok(new { requestNo = testRequestManager.GenerateNextRequestNo() });
+            }
+            catch (Exception e)
+            {
+                logger.LogException(e);
+                return Ok(new { requestNo = $"REQ{DateTime.Now:yyyyMMdd}001" });
+            }
+        }
+
+        [HttpPost]
+        [Route("")]
         [QAuthorize(ModuleName = "Samples"
         , ModulePermissionTypes = ModulePermissionType.CanAdd
         )]

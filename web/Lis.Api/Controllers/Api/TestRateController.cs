@@ -13,6 +13,7 @@ using System.Web.Http;
 
 namespace Lis.Api.Controllers.Api
 {
+    [RoutePrefix("api/TestRate")]
     public class TestRateController : ApiController
     {
         private readonly ITestRateMasterManager manager;
@@ -56,30 +57,23 @@ namespace Lis.Api.Controllers.Api
         }
 
         [HttpGet]
-        public ItemList<TestRateMaster> Get()
+        [Route("")]
+        [Route("{id:int}")]
+        public IHttpActionResult Get(int? id = null)
         {
             try
             {
-                return manager.Get(ApiOption);
-            }
-            catch (Exception e)
-            {
-                logger.LogException(e);
-                return null;
-            }
-        }
+                if (id.HasValue)
+                {
+                    return Ok(manager.GetById(id.Value));
+                }
 
-        [HttpGet]
-        public TestRateMaster Get(int Id)
-        {
-            try
-            {
-                return manager.GetById(Id);
+                return Ok(manager.Get(ApiOption) ?? new ItemList<TestRateMaster> { TotalRecord = 0, Items = new List<TestRateMaster>() });
             }
             catch (Exception e)
             {
                 logger.LogException(e);
-                return null;
+                return id.HasValue ? (IHttpActionResult)Ok() : Ok(new ItemList<TestRateMaster> { TotalRecord = 0, Items = new List<TestRateMaster>() });
             }
         }
 

@@ -6,6 +6,7 @@ using LIS.Logger;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace LIS.BusinessLogic
 {
@@ -128,15 +129,24 @@ namespace LIS.BusinessLogic
                 col.Equals("Name", StringComparison.OrdinalIgnoreCase) ||
                 col.Equals("Id", StringComparison.OrdinalIgnoreCase))
             {
-                return char.ToUpper(col[0]) + col.Substring(1);
+                var resolved = char.ToUpper(col[0]) + col.Substring(1);
+                if (HasSortProperty(resolved))
+                {
+                    return resolved;
+                }
             }
 
-            if (col.Equals(DefaultSortColumn, StringComparison.OrdinalIgnoreCase))
+            if (HasSortProperty(col))
             {
-                return DefaultSortColumn;
+                return col;
             }
 
             return DefaultSortColumn;
+        }
+
+        private bool HasSortProperty(string propertyName)
+        {
+            return typeof(T).GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase) != null;
         }
     }
 }

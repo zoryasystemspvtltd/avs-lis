@@ -204,9 +204,15 @@ export class ListModuleComponent implements OnInit, OnChanges {
     if (this.searchText) {
       const q = this.searchText.toLowerCase();
       filtered = filtered.filter(item => {
-        const name = (item.name || item.Name || '').toString().toLowerCase();
-        const code = (item.code || item.Code || '').toString().toLowerCase();
-        return name.indexOf(q) >= 0 || code.indexOf(q) >= 0;
+        const haystack = [
+          item.name, item.Name, item.code, item.Code,
+          item.hisTestCode, item.hisTestCodeDescription,
+          item.hisParamCode, item.hisParamDescription,
+          item.hisSpecimenName, item.departmentName,
+          item.invoiceNo, item.patientName, item.phone,
+          item.hisPatientId, item.lisTestCode
+        ].filter(v => v != null).join(' ').toLowerCase();
+        return haystack.indexOf(q) >= 0;
       });
     }
 

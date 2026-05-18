@@ -97,7 +97,7 @@ const LOOKUP_FIELDS = {
     { name: 'maxValue', label: 'Max Value', type: 'number' }
   ],
   testMapping: [
-    { name: 'hisTestCode', label: 'Test Code', type: 'text', required: true },
+    { name: 'hisTestCode', label: 'Test Code', type: 'text' },
     { name: 'hisTestCodeDescription', label: 'Test Description', type: 'text' },
     { name: 'lisTestCode', label: 'LIS Test Code', type: 'text', required: true },
     { name: 'lisTestCodeDescription', label: 'LIS Test Description', type: 'text' },
@@ -106,9 +106,14 @@ const LOOKUP_FIELDS = {
   ],
   patient: [
     { name: 'name', label: 'Patient Name', type: 'text', required: true },
-    { name: 'hisPatientId', label: 'External Patient ID', type: 'text' },
+    { name: 'hisPatientId', label: 'Patient ID', type: 'text', readonly: true },
     { name: 'phone', label: 'Phone', type: 'text' },
-    { name: 'gender', label: 'Gender', type: 'text' },
+    { name: 'gender', label: 'Gender', type: 'select', required: true, options: [
+      { value: '', label: '-- Select Gender --' },
+      { value: 'M', label: 'Male' },
+      { value: 'F', label: 'Female' },
+      { value: 'O', label: 'Other' }
+    ]},
     { name: 'age', label: 'Age', type: 'number' },
     { name: 'dateOfBirth', label: 'Date of Birth', type: 'date' },
     { name: 'isActive', label: 'Active', type: 'checkbox' }
@@ -176,6 +181,7 @@ const appRoutes: Routes = [
     { path: 'rejected-samples/:id', component: RejectedSampleDetailsComponent, canActivate: [AuthGuard] },
 
     { path: 'technicianapprovals', component: ListTestedSampleComponent, canActivate: [AuthGuard] },
+    { path: 'technicianapprovals/:id', component: TechnicianSampleDetailsComponent, canActivate: [AuthGuard] },
     { path: 'technician-samples/:id', component: TechnicianSampleDetailsComponent, canActivate: [AuthGuard] },
 
     { path: 'quality-controls', component: ListQualitySampleComponent, canActivate: [AuthGuard] },

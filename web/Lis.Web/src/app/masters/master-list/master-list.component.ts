@@ -53,7 +53,10 @@ export class MasterListComponent implements OnInit, OnDestroy {
     }
     this.currentKey = key;
     this.showList = false;
-    this.moduleJson = Object.assign({}, MASTER_LIST_SCHEMAS[key]);
+    this.moduleJson = Object.assign({
+      allowPaging: true,
+      hideSearch: false
+    }, MASTER_LIST_SCHEMAS[key]);
     setTimeout(() => {
       this.showList = true;
     }, 0);

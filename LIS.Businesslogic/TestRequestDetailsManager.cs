@@ -699,6 +699,11 @@ namespace LIS.Businesslogic
             return testsList.ToArray();
         }
 
+        public string GenerateNextRequestNo()
+        {
+            var count = testRequestDetailsRepo.Get().Count() + 1;
+            return $"REQ{count:D4}";
+        }
 
     }
 

@@ -34,5 +34,7 @@ namespace LIS.DtoModel.Interfaces
         IEnumerable<TestRequestDetail> GetTestRequestsBySampleNo(string SampleNo);
 
         IEnumerable<TestParameter> GetTestParametersByRequestId(long RequestId);
+
+        string GenerateNextRequestNo();
     }
 }

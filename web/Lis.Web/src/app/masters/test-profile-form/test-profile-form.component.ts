@@ -37,10 +37,24 @@ export class TestProfileFormComponent implements OnInit {
     if (this.id) {
       this.masterService.getItem('TestProfile', this.id).subscribe(profile => {
         if (profile) {
-          this.form.patchValue(profile);
+          this.form.patchValue({
+            id: profile.id,
+            code: profile.code,
+            name: profile.name,
+            packageRate: profile.packageRate,
+            isActive: profile.isActive !== false
+          });
           const details = profile.profileDetails || profile.ProfileDetails || [];
           details.forEach(line => this.addLine(line));
         }
+      });
+    } else {
+      this.masterService.getItems('TestProfile', {
+        RecordPerPage: 1, CurrentPage: 1, SortColumnName: 'Code', SortDirection: false
+      }).subscribe(list => {
+        const total = list?.totalRecord || list?.TotalRecord || 0;
+        const next = total + 1;
+        this.form.patchValue({ code: `PKG${String(next).padStart(4, '0')}` });
       });
     }
   }
@@ -114,7 +128,12 @@ export class TestProfileFormComponent implements OnInit {
       code: val.code,
       name: val.name,
       packageRate: val.packageRate,
-      isActive: val.isActive,
+      isActive: val.isActive !== false,
+      profileDetails: val.lines.map(l => ({
+        id: l.id || 0,
+        testId: +l.testId,
+        quantity: +l.quantity
+      })),
       ProfileDetails: val.lines.map(l => ({
         id: l.id || 0,
         testId: +l.testId,

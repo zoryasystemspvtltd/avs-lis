@@ -60,7 +60,9 @@ export class MasterFormComponent implements OnInit {
     }
     if (this.apiName === 'TestMappingMaster') {
       group['equipmentId'] = [null, Validators.required];
-      group['hisTestPicker'] = [null];
+      group['hisTestPicker'] = [null, Validators.required];
+      group['hisTestCode'] = [''];
+      group['hisTestCodeDescription'] = [''];
     }
     if (this.fields.find(f => f.name === 'isActive')) {
       group['isActive'] = [true];
@@ -71,6 +73,12 @@ export class MasterFormComponent implements OnInit {
       this.loadTestRateLookups();
     } else if (this.apiName === 'HisParameterMaster' || this.apiName === 'HisParameterRangeMaster' || this.apiName === 'TestMappingMaster') {
       this.loadSetupLookups();
+    } else if (!this.id && this.apiName === 'PatientMaster') {
+      this.masterService.getNextPatientId().subscribe(pid => {
+        if (pid) {
+          this.form.patchValue({ hisPatientId: pid });
+        }
+      });
     } else if (this.id) {
       this.masterService.getItem(this.apiName, this.id).subscribe(item => {
         if (item) {
@@ -78,6 +86,20 @@ export class MasterFormComponent implements OnInit {
         }
       });
     }
+  }
+
+  isCodeReadonly(field: any): boolean {
+    if (!field || field.name !== 'code' || !this.id) {
+      return false;
+    }
+    return true;
+  }
+
+  visibleFields() {
+    if (this.apiName === 'TestMappingMaster') {
+      return this.fields.filter(f => f.name !== 'hisTestCode' && f.name !== 'hisTestCodeDescription');
+    }
+    return this.fields;
   }
 
   get f() { return this.form.controls; }
@@ -156,9 +178,7 @@ export class MasterFormComponent implements OnInit {
   }
 
   private httpEquipmentList(): Observable<any[]> {
-    return this.masterService.getItems('EquipmentHeartbeat', {}).pipe(
-      map((list: any) => Array.isArray(list) ? list : [])
-    );
+    return this.masterService.getEquipments();
   }
 
   private loadTestRateLookups() {
@@ -223,6 +243,7 @@ export class MasterFormComponent implements OnInit {
     if (patch.hisTestId != null) { patch.hisTestId = +patch.hisTestId; }
     if (patch.hisParameterId != null) { patch.hisParameterId = +patch.hisParameterId; }
     if (patch.equipmentId != null) { patch.equipmentId = +patch.equipmentId; }
+    if (patch.isActive != null) { patch.isActive = !!patch.isActive; }
     this.form.patchValue(patch);
   }
 
@@ -231,6 +252,14 @@ export class MasterFormComponent implements OnInit {
     if (this.apiName === 'TestRate') {
       this.applyTestRateValidators();
     }
+    if (this.apiName === 'TestMappingMaster') {
+      this.onHisTestSelected();
+      const picker = this.form.get('hisTestPicker');
+      if (!picker?.value) {
+        picker?.setErrors({ required: true });
+        return;
+      }
+    }
     if (this.form.invalid) { return; }
 
     let item = Object.assign({}, this.form.value);
@@ -238,7 +267,15 @@ export class MasterFormComponent implements OnInit {
     if (item.effectiveEnd) { item.effectiveEnd = new Date(item.effectiveEnd); }
     if (item.dateOfBirth) { item.dateOfBirth = new Date(item.dateOfBirth); }
     if (this.apiName === 'TestMappingMaster') {
+      const eq = this.equipments.find(e => +e.id === +item.equipmentId);
+      if (eq) {
+        item.groupName = eq.name || eq.groupName;
+      }
       delete item.hisTestPicker;
+    }
+    if (this.apiName === 'PatientMaster' && !item.hisPatientId) {
+      this.alertService.error('Patient ID is required.');
+      return;
     }
     if (this.apiName === 'TestRate') {
       const rt = +item.rateType;
@@ -252,6 +289,8 @@ export class MasterFormComponent implements OnInit {
       } else {
         item.id = +this.id;
       }
+    } else if (item.isActive === undefined || item.isActive === null) {
+      item.isActive = true;
     }
 
     this.loading = true;
@@ -267,7 +306,9 @@ export class MasterFormComponent implements OnInit {
       },
       err => {
         this.loading = false;
-        this.alertService.error(err?.error?.message || 'Save failed');
+        const body = err?.error;
+        const msg = typeof body === 'string' ? body : (body?.message || body?.Message || body?.error || 'Save failed');
+        this.alertService.error(msg);
       }
     );
   }
