@@ -993,9 +993,14 @@ footer .avilis-footer-brand {
 }
 
 .avilis-auth-wrap .page-wrapper {
-  max-width: 960px;
+  max-width: 520px;
   width: 100%;
   margin: 0 auto;
+}
+
+.avilis-auth-wrap .avilis-login-row {
+  margin-left: 0;
+  margin-right: 0;
 }
 
 .avilis-auth-wrap > .page-wrapper > h2 {
