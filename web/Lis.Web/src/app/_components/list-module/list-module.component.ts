@@ -71,6 +71,9 @@ export class ListModuleComponent implements OnInit, OnChanges {
     if (this.schemma.module === 'TestRate') {
       this.option.SortColumnName = 'EffectiveStart';
     }
+    if (this.schemma.module === 'TestProfile') {
+      this.option.SortColumnName = 'Code';
+    }
     if (this.schemma.module === 'SaleInvoice') {
       this.option.SortColumnName = 'InvoiceDate';
     }

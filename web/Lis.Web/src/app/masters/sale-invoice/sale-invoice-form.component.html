@@ -15,13 +15,13 @@
       </div>
       <div class="col-md-3 form-group">
         <label>Date</label>
-        <input type="date" class="form-control" formControlName="invoiceDate" />
+        <input type="date" class="form-control" formControlName="invoiceDate" (change)="onInvoiceDateChange()" />
       </div>
       <div class="col-md-6 form-group">
         <label>Patient *</label>
-        <select class="form-control" formControlName="patientId">
-          <option value="">-- Select Patient --</option>
-          <option *ngFor="let p of patients" [value]="p.id">{{p.name}} ({{p.phone || 'N/A'}})</option>
+        <select class="form-control" formControlName="patientId" [class.has-error]="submitted && form.get('patientId')?.invalid">
+          <option [ngValue]="null">-- Select Patient --</option>
+          <option *ngFor="let p of patients" [ngValue]="p.id">{{p.name}} ({{p.phone || 'N/A'}})</option>
         </select>
         <span *ngIf="submitted && form.get('patientId')?.invalid" class="error">Patient is required.</span>
       </div>

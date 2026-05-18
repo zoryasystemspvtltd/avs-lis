@@ -70,6 +70,8 @@
     <Compile Include="Transactions\TestRateMasterManagerTests.cs" />
     <Compile Include="Transactions\TestRateReferralDoctorTests.cs" />
     <Compile Include="Transactions\TestRateEffectiveDateExtendedTests.cs" />
+    <Compile Include="Transactions\TestRateInvoicePriorityTests.cs" />
+    <Compile Include="Transactions\SaleInvoicePatientValidationTests.cs" />
     <Compile Include="Transactions\SaleInvoiceEditWorkflowTests.cs" />
     <Compile Include="Workflows\PatientInvoiceSampleWorkflowTests.cs" />
     <Compile Include="Masters\PatientMasterManagerTests.cs" />

@@ -130,6 +130,31 @@ namespace LIS.BusinessLogic
                 throw new ArgumentException("At least one test line is required");
             }
 
+            if (header.PatientId <= 0)
+            {
+                throw new ArgumentException("Patient is required.");
+            }
+
+            var patient = patientRepo.Get(header.PatientId);
+            if (patient == null)
+            {
+                throw new ArgumentException("Selected patient was not found.");
+            }
+
+            foreach (var line in lines)
+            {
+                var test = testRepo.Get(line.TestId);
+                if (test == null)
+                {
+                    throw new InvalidOperationException($"Test id {line.TestId} was not found.");
+                }
+
+                if (!test.IsActive)
+                {
+                    throw new InvalidOperationException($"Test '{test.HISTestCode}' is inactive and cannot be invoiced.");
+                }
+            }
+
             Recalculate(header, lines);
 
             var now = DateTime.Now;
@@ -340,17 +365,20 @@ namespace LIS.BusinessLogic
             {
                 if (line.Rate <= 0 && line.TestId > 0)
                 {
-                    var rate = rateManager.GetEffectiveRate(
+                    var invoiceDate = header.InvoiceDate == default(DateTime) ? DateTime.Today : header.InvoiceDate;
+                    var rate = rateManager.GetEffectiveRateForInvoice(
                         line.TestId,
-                        header.CorporateId.HasValue ? (int)RateType.Corporate :
-                        header.ReferralDoctorId.HasValue ? (int)RateType.ReferralDoctor : (int)RateType.Standard,
+                        invoiceDate,
                         header.CorporateId,
-                        header.ReferralDoctorId,
-                        null);
+                        header.ReferralDoctorId);
 
                     if (rate != null)
                     {
                         line.Rate = rate.Rate;
+                        if (line.DiscountAmount == 0 && rate.DiscountPercent > 0)
+                        {
+                            line.DiscountAmount = Math.Round(line.Rate * line.Quantity * rate.DiscountPercent / 100m, 2);
+                        }
                         if (line.TaxAmount == 0 && rate.TaxPercent > 0)
                         {
                             line.TaxAmount = Math.Round(line.Rate * line.Quantity * rate.TaxPercent / 100m, 2);

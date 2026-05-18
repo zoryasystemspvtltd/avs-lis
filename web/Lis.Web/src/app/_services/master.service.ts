@@ -104,11 +104,22 @@ export class MasterService {
     );
   }
 
-  getEffectiveRate(testId: number, rateType: number, corporateId?: number, referralDoctorId?: number, profileId?: number): Observable<any> {
+  getEffectiveRate(testId: number, rateType: number, corporateId?: number, referralDoctorId?: number, profileId?: number, invoiceDate?: string): Observable<any> {
     let url = `${this.baseUrl}/api/TestRate/GetEffective?testId=${testId}&rateType=${rateType}`;
     if (corporateId) { url += `&corporateId=${corporateId}`; }
     if (referralDoctorId) { url += `&referralDoctorId=${referralDoctorId}`; }
     if (profileId) { url += `&profileId=${profileId}`; }
+    if (invoiceDate) { url += `&invoiceDate=${invoiceDate}`; }
+    return this.http.get<any>(url);
+  }
+
+  /** Invoice rate: Corporate → Doctor → Profile → Standard; uses invoice date for effective range. */
+  getEffectiveRateForInvoice(testId: number, invoiceDate: string, corporateId?: number, referralDoctorId?: number, profileId?: number, emergency = false): Observable<any> {
+    let url = `${this.baseUrl}/api/TestRate/GetEffectiveForInvoice?testId=${testId}&invoiceDate=${invoiceDate}`;
+    if (corporateId) { url += `&corporateId=${corporateId}`; }
+    if (referralDoctorId) { url += `&referralDoctorId=${referralDoctorId}`; }
+    if (profileId) { url += `&profileId=${profileId}`; }
+    if (emergency) { url += `&emergency=true`; }
     return this.http.get<any>(url);
   }
 

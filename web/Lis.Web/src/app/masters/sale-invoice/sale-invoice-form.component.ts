@@ -39,7 +39,7 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
       id: [0],
       invoiceNo: [''],
       invoiceDate: [new Date().toISOString().substring(0, 10), Validators.required],
-      patientId: ['', Validators.required],
+      patientId: [null, Validators.required],
       invoiceStatus: [0],
       paymentStatus: [0],
       grossAmount: [0],
@@ -55,9 +55,15 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
       lines: this.fb.array([])
     });
 
-    this.masterService.getLookupList('HisTest').subscribe(t => this.tests = t || []);
-    this.masterService.getAll('Corporate').subscribe(c => this.corporates = c || []);
-    this.masterService.getAll('ReferralDoctor').subscribe(d => this.doctors = d || []);
+    this.masterService.getLookupList('HisTest').subscribe(t => {
+      this.tests = (t || []).filter(x => x.isActive !== false && x.IsActive !== false);
+    });
+    this.masterService.getAll('Corporate').subscribe(c => {
+      this.corporates = (c || []).filter(x => x.isActive !== false && x.IsActive !== false);
+    });
+    this.masterService.getAll('ReferralDoctor').subscribe(d => {
+      this.doctors = (d || []).filter(x => x.isActive !== false && x.IsActive !== false);
+    });
     this.masterService.getBillingPatients({
       RecordPerPage: 500, CurrentPage: 1, SearchText: '', SortColumnName: 'Name', SortDirection: false, Status: 0
     }).subscribe(p => {
@@ -112,11 +118,9 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
     this.recalc();
   }
 
-  getRateType(): number {
+  getInvoiceDate(): string {
     const v = this.form.getRawValue ? this.form.getRawValue() : this.form.value;
-    if (v.corporateId) { return 1; }
-    if (v.referralDoctorId) { return 2; }
-    return 0;
+    return v.invoiceDate || new Date().toISOString().substring(0, 10);
   }
 
   getTestName(testId: number): string {
@@ -147,6 +151,13 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
     const testId = line.get('testId').value;
     if (!testId) { return; }
 
+    const test = this.tests.find(t => +t.id === +testId);
+    if (!test) {
+      this.alertService.error('Selected test is inactive or unavailable');
+      line.patchValue({ testId: '' });
+      return;
+    }
+
     const duplicate = this.lines.controls.some((c, idx) => idx !== i && +c.value.testId === +testId);
     if (duplicate) {
       this.alertService.error('Test already added to invoice');
@@ -154,33 +165,58 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.masterService.getEffectiveRate(
-      +testId,
-      this.getRateType(),
-      this.form.value.corporateId,
-      this.form.value.referralDoctorId
+    this.loadLineRate(i, +testId);
+  }
+
+  private loadLineRate(i: number, testId: number) {
+    const line = this.lines.at(i);
+    const v = this.form.getRawValue();
+    this.masterService.getEffectiveRateForInvoice(
+      testId,
+      this.getInvoiceDate(),
+      v.corporateId || null,
+      v.referralDoctorId || null
     ).subscribe(rate => {
-      if (rate) {
-        const qty = line.value.quantity || 1;
-        const amount = (rate.rate || 0) * qty;
-        const tax = rate.taxPercent ? Math.round(amount * rate.taxPercent) / 100 : 0;
-        const disc = rate.discountPercent ? Math.round(amount * rate.discountPercent) / 100 : 0;
-        line.patchValue({
-          rate: rate.rate,
-          taxAmount: tax,
-          discountAmount: disc
-        });
-        this.recalcLine(i);
+      if (!rate || rate.rate == null) {
+        this.alertService.error('No active rate found for this test on the invoice date.');
+        line.patchValue({ testId: '', rate: 0, taxAmount: 0, discountAmount: 0, amount: 0, netAmount: 0 });
+        this.recalc();
+        return;
       }
+
+      const qty = line.value.quantity || 1;
+      const amount = (rate.rate || 0) * qty;
+      const tax = rate.taxPercent ? Math.round(amount * rate.taxPercent) / 100 : 0;
+      const disc = rate.discountPercent ? Math.round(amount * rate.discountPercent) / 100 : 0;
+      line.patchValue({
+        rate: rate.rate,
+        taxAmount: tax,
+        discountAmount: disc
+      });
+      this.recalcLine(i);
     });
+  }
+
+  onInvoiceDateChange() {
+    this.onRateContextChange();
   }
 
   onRateContextChange() {
     this.lines.controls.forEach((_, i) => {
-      if (this.lines.at(i).get('testId').value) {
-        this.onTestChange(i);
+      const testId = this.lines.at(i).get('testId').value;
+      if (testId) {
+        this.loadLineRate(i, +testId);
       }
     });
+  }
+
+  private validatePatient(): boolean {
+    const patientId = this.form.get('patientId')?.value;
+    if (!patientId || +patientId <= 0) {
+      this.alertService.error('Please select a patient');
+      return false;
+    }
+    return true;
   }
 
   recalcLine(i: number) {
@@ -222,6 +258,10 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
   onSubmit(confirm = false) {
     this.submitted = true;
     if (this.saving) { return; }
+
+    if (!this.validatePatient()) {
+      return;
+    }
 
     if (this.form.invalid) {
       if (!this.form.get('patientId')?.valid) {

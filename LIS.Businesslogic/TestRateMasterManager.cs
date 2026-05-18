@@ -104,15 +104,15 @@ namespace LIS.BusinessLogic
             return rateRepo.Get(r => r.TestId == testId && r.IsActive).Select(Enrich).ToList();
         }
 
-        public TestRateMaster GetEffectiveRate(int testId, int rateType, int? corporateId, int? referralDoctorId, int? profileId)
+        public TestRateMaster GetEffectiveRate(int testId, int rateType, int? corporateId, int? referralDoctorId, int? profileId, DateTime? effectiveOn = null)
         {
-            var today = DateTime.Today;
+            var asOf = (effectiveOn ?? DateTime.Today).Date;
             var query = rateRepo.Get(r =>
                 r.TestId == testId &&
                 r.IsActive &&
                 r.RateType == rateType &&
-                r.EffectiveStart <= today &&
-                r.EffectiveEnd >= today);
+                r.EffectiveStart <= asOf &&
+                r.EffectiveEnd >= asOf);
 
             if (corporateId.HasValue)
             {
@@ -136,6 +136,49 @@ namespace LIS.BusinessLogic
             }
 
             return match;
+        }
+
+        public TestRateMaster GetEffectiveRateForInvoice(int testId, DateTime invoiceDate, int? corporateId, int? referralDoctorId, int? profileId = null, bool useEmergency = false)
+        {
+            var asOf = invoiceDate.Date;
+
+            if (useEmergency)
+            {
+                var emergency = GetEffectiveRate(testId, (int)RateType.Emergency, null, null, null, asOf);
+                if (emergency != null)
+                {
+                    return emergency;
+                }
+            }
+
+            if (corporateId.HasValue)
+            {
+                var corporate = GetEffectiveRate(testId, (int)RateType.Corporate, corporateId, null, null, asOf);
+                if (corporate != null)
+                {
+                    return corporate;
+                }
+            }
+
+            if (referralDoctorId.HasValue)
+            {
+                var doctor = GetEffectiveRate(testId, (int)RateType.ReferralDoctor, null, referralDoctorId, null, asOf);
+                if (doctor != null)
+                {
+                    return doctor;
+                }
+            }
+
+            if (profileId.HasValue)
+            {
+                var profile = GetEffectiveRate(testId, (int)RateType.Profile, null, null, profileId, asOf);
+                if (profile != null)
+                {
+                    return profile;
+                }
+            }
+
+            return GetEffectiveRate(testId, (int)RateType.Standard, null, null, null, asOf);
         }
 
         private TestRateMaster Enrich(TestRateMaster rate)

@@ -94,11 +94,27 @@ namespace Lis.Api.Controllers.Api
 
         [HttpGet]
         [ActionName("GetEffective")]
-        public TestRateMaster GetEffective(int testId, int rateType, int? corporateId = null, int? referralDoctorId = null, int? profileId = null)
+        public TestRateMaster GetEffective(int testId, int rateType, int? corporateId = null, int? referralDoctorId = null, int? profileId = null, DateTime? invoiceDate = null)
         {
             try
             {
-                return manager.GetEffectiveRate(testId, rateType, corporateId, referralDoctorId, profileId);
+                return manager.GetEffectiveRate(testId, rateType, corporateId, referralDoctorId, profileId, invoiceDate);
+            }
+            catch (Exception e)
+            {
+                logger.LogException(e);
+                return null;
+            }
+        }
+
+        [HttpGet]
+        [Route("GetEffectiveForInvoice")]
+        public TestRateMaster GetEffectiveForInvoice(int testId, DateTime? invoiceDate = null, int? corporateId = null, int? referralDoctorId = null, int? profileId = null, bool emergency = false)
+        {
+            try
+            {
+                var asOf = invoiceDate ?? DateTime.Today;
+                return manager.GetEffectiveRateForInvoice(testId, asOf, corporateId, referralDoctorId, profileId, emergency);
             }
             catch (Exception e)
             {
