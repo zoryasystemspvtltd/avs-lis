@@ -4,6 +4,9 @@ import { AlertService } from '../_services/alert.service';
 
 /** Shared filter, pagination, and lookup logic for operational reports. */
 export abstract class ReportPageBase {
+  /** Maximum inclusive date range length for report searches. */
+  readonly maxReportRangeMonths = 2;
+
   fromDate = '';
   toDate = '';
   patientId: number = null;
@@ -68,6 +71,39 @@ export abstract class ReportPageBase {
     });
   }
 
+  clearFilterError(): void {
+    this.filterError = '';
+  }
+
+  /** Latest allowed To Date (yyyy-MM-dd) for HTML date input max attribute. */
+  get maxToDate(): string {
+    if (!this.fromDate) {
+      return '';
+    }
+    const from = this.parseLocalDate(this.fromDate);
+    if (!from) {
+      return '';
+    }
+    return this.formatDate(this.getMaxToDate(from));
+  }
+
+  onFromDateChange(): void {
+    this.clearFilterError();
+    if (this.fromDate && this.toDate && this.maxToDate && this.toDate > this.maxToDate) {
+      this.toDate = this.maxToDate;
+    }
+  }
+
+  search(page = 1): void {
+    if (!this.validateFilters()) {
+      if (this.filterError) {
+        this.alertService.error(this.filterError);
+      }
+      return;
+    }
+    this.runSearch(page, this.recordPerPage);
+  }
+
   validateFilters(): boolean {
     this.filterError = '';
     if (!this.fromDate || !this.toDate) {
@@ -78,6 +114,22 @@ export abstract class ReportPageBase {
       this.filterError = 'From Date cannot be after To Date.';
       return false;
     }
+
+    const from = this.parseLocalDate(this.fromDate);
+    const to = this.parseLocalDate(this.toDate);
+    if (!from || !to) {
+      this.filterError = 'Invalid date format.';
+      return false;
+    }
+
+    const maxTo = this.getMaxToDate(from);
+    if (this.calendarMonthsInRange(from, to) > this.maxReportRangeMonths || to > maxTo) {
+      this.filterError =
+        `Date range cannot span more than ${this.maxReportRangeMonths} months. ` +
+        `Latest allowed To Date is ${this.formatDisplayDate(maxTo)}.`;
+      return false;
+    }
+
     return true;
   }
 
@@ -114,13 +166,13 @@ export abstract class ReportPageBase {
     if (!this.searched) {
       return;
     }
-    this.runSearch(page, this.recordPerPage);
+    this.search(page);
   }
 
   onPageSizeChange(size: string | number): void {
     this.recordPerPage = +size;
     if (this.searched) {
-      this.runSearch(1, this.recordPerPage);
+      this.search(1);
     }
   }
 
@@ -143,6 +195,39 @@ export abstract class ReportPageBase {
     const m = (d.getMonth() + 1).toString().padStart(2, '0');
     const day = d.getDate().toString().padStart(2, '0');
     return `${d.getFullYear()}-${m}-${day}`;
+  }
+
+  protected formatDisplayDate(d: Date): string {
+    const m = (d.getMonth() + 1).toString().padStart(2, '0');
+    const day = d.getDate().toString().padStart(2, '0');
+    return `${day}/${m}/${d.getFullYear()}`;
+  }
+
+  protected parseLocalDate(dateStr: string): Date {
+    if (!dateStr) {
+      return null;
+    }
+    const value = String(dateStr).trim();
+    if (/^\d{4}-\d{2}-\d{2}/.test(value)) {
+      const [y, m, d] = value.substring(0, 10).split('-').map(Number);
+      const parsed = new Date(y, m - 1, d);
+      return isNaN(parsed.getTime()) ? null : parsed;
+    }
+    const parsed = new Date(value);
+    if (isNaN(parsed.getTime())) {
+      return null;
+    }
+    return new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate());
+  }
+
+  /** Calendar months touched by the range (inclusive). Jan–Feb = 2. */
+  protected calendarMonthsInRange(from: Date, to: Date): number {
+    return (to.getFullYear() - from.getFullYear()) * 12 + (to.getMonth() - from.getMonth()) + 1;
+  }
+
+  /** Last day of the Nth month starting from From (N = maxReportRangeMonths). */
+  protected getMaxToDate(from: Date): Date {
+    return new Date(from.getFullYear(), from.getMonth() + this.maxReportRangeMonths, 0);
   }
 
   protected abstract runSearch(page: number, pageSize: number): void;

@@ -103,6 +103,8 @@ namespace Lis.Api.Controllers.Api
             }
         }
 
+        [HttpPost]
+        [Route("")]
         [QAuthorize(ModuleName = "SaleInvoices", ModulePermissionTypes = ModulePermissionType.CanAdd | ModulePermissionType.CanEdit)]
         public HttpResponseMessage Post(SaleInvoiceDto dto)
         {
@@ -121,7 +123,7 @@ namespace Lis.Api.Controllers.Api
 
         [QAuthorize(ModuleName = "SaleInvoices", ModulePermissionTypes = ModulePermissionType.CanEdit)]
         [HttpPost]
-        [ActionName("Status")]
+        [Route("Status")]
         public HttpResponseMessage PutStatus(StatusUpdateRequest request)
         {
             try
@@ -139,12 +141,12 @@ namespace Lis.Api.Controllers.Api
 
         [QAuthorize(ModuleName = "SaleInvoices", ModulePermissionTypes = ModulePermissionType.CanDelete)]
         [HttpPut]
-        [ActionName("Cancel")]
-        public HttpResponseMessage Cancel(long Id)
+        [Route("Cancel/{id:long}")]
+        public HttpResponseMessage Cancel(long id)
         {
             try
             {
-                manager.Cancel(Id);
+                manager.Cancel(id);
                 var response = responseMgr.CreateResponse(HttpStatusCode.OK, "Invoice cancelled successfully", null, null);
                 return Request.CreateResponse(HttpStatusCode.OK, response);
             }

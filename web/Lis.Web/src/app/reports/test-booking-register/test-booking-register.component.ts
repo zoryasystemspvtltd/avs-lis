@@ -30,13 +30,6 @@ export class TestBookingRegisterComponent extends ReportPageBase implements OnIn
     this.initReportPage();
   }
 
-  search(page = 1) {
-    if (!this.validateFilters()) {
-      return;
-    }
-    this.runSearch(page, this.recordPerPage);
-  }
-
   reset() {
     this.resetFilters();
   }

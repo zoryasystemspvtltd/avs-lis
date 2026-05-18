@@ -121,7 +121,15 @@ namespace LIS.BusinessLogic
             }
 
             var header = dto.Invoice;
-            var lines = dto.Details ?? new List<SaleInvoiceDetail>();
+            var lines = (dto.Details ?? new List<SaleInvoiceDetail>())
+                .Where(l => l.TestId > 0)
+                .ToList();
+
+            if (!lines.Any())
+            {
+                throw new ArgumentException("At least one test line is required");
+            }
+
             Recalculate(header, lines);
 
             var now = DateTime.Now;
@@ -259,7 +267,8 @@ namespace LIS.BusinessLogic
                 var test = testRepo.Get(line.TestId);
                 if (test == null)
                 {
-                    continue;
+                    throw new InvalidOperationException(
+                        $"Test id {line.TestId} was not found in HIS Test master.");
                 }
 
                 var request = testRequestRepo.Get(t =>
@@ -294,6 +303,12 @@ namespace LIS.BusinessLogic
                 }
 
                 line.RequestDetailId = request.Id;
+
+                if (line.RequestDetailId <= 0)
+                {
+                    throw new InvalidOperationException(
+                        $"Could not link test request for test id {line.TestId}.");
+                }
             }
         }
 

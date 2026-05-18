@@ -14,14 +14,17 @@
 
   <div class="zorya-report-filters">
     <div class="zorya-report-filters-title">Search criteria</div>
+    <p class="filter-hint">Date range is limited to 2 months maximum per search.</p>
     <div class="filter-row">
       <div class="filter-field">
         <label>From Date <span class="req">*</span></label>
-        <input type="date" class="form-control input-sm" [(ngModel)]="fromDate" />
+        <input type="date" class="form-control input-sm" [(ngModel)]="fromDate"
+          (ngModelChange)="onFromDateChange()" />
       </div>
       <div class="filter-field">
         <label>To Date <span class="req">*</span></label>
-        <input type="date" class="form-control input-sm" [(ngModel)]="toDate" />
+        <input type="date" class="form-control input-sm" [(ngModel)]="toDate"
+          [min]="fromDate" [max]="maxToDate" (change)="clearFilterError()" />
       </div>
       <div class="filter-field filter-wide">
         <label>Patient</label>

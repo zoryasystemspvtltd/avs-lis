@@ -262,6 +262,12 @@
   display: inline-block;
 }
 
+.filter-hint {
+  color: #666;
+  font-size: 12px;
+  margin: 0 0 10px;
+}
+
 .filter-error {
   color: #c0392b;
   font-size: 12px;

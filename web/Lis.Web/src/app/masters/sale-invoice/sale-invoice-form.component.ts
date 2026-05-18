@@ -210,19 +210,34 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
     }, { emitEvent: false });
   }
 
+  private readApiError(err: any): string {
+    if (!err) { return 'Save failed'; }
+    if (typeof err === 'string') { return err; }
+    if (typeof err.message === 'string') { return err.message; }
+    if (typeof err.error === 'string') { return err.error; }
+    if (err.error?.message) { return err.error.message; }
+    return 'Save failed';
+  }
+
   onSubmit(confirm = false) {
     this.submitted = true;
-    if (this.form.invalid || this.saving) { return; }
+    if (this.saving) { return; }
+
+    if (this.form.invalid) {
+      if (!this.form.get('patientId')?.valid) {
+        this.alertService.error('Please select a patient');
+      } else if (!this.form.get('invoiceDate')?.valid) {
+        this.alertService.error('Invoice date is required');
+      } else {
+        this.alertService.error('Please select a test on each line');
+      }
+      return;
+    }
 
     const val = this.form.getRawValue();
-    const dto = {
-      invoice: Object.assign({}, val, {
-        id: val.id || (this.id ? +this.id : 0),
-        invoiceDate: new Date(val.invoiceDate),
-        invoiceStatus: confirm ? 1 : (val.invoiceStatus || 0),
-        patientId: +val.patientId
-      }),
-      details: val.lines.map(l => ({
+    const lineItems = (val.lines || [])
+      .filter(l => l.testId)
+      .map(l => ({
         id: l.id || 0,
         testId: +l.testId,
         rate: +l.rate,
@@ -232,7 +247,21 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
         taxAmount: +l.taxAmount,
         netAmount: +l.netAmount,
         sampleNo: l.sampleNo
-      }))
+      }));
+
+    if (!lineItems.length) {
+      this.alertService.error('Add at least one test line');
+      return;
+    }
+
+    const dto = {
+      invoice: Object.assign({}, val, {
+        id: val.id || (this.id ? +this.id : 0),
+        invoiceDate: new Date(val.invoiceDate),
+        invoiceStatus: confirm ? 1 : (val.invoiceStatus || 0),
+        patientId: +val.patientId
+      }),
+      details: lineItems
     };
 
     this.loading = true;
@@ -242,7 +271,7 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
         this.loading = false;
         this.saving = false;
         this.alertService.success(confirm ? 'Invoice confirmed' : 'Invoice saved');
-        const newId = data?.result || val.id;
+        const newId = data?.result ?? data?.Result ?? val.id;
         if (newId) {
           this.router.navigate(['/sale-invoices', newId]);
         } else {
@@ -252,7 +281,7 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
       err => {
         this.loading = false;
         this.saving = false;
-        this.alertService.error(err?.error?.message || 'Save failed');
+        this.alertService.error(this.readApiError(err));
       }
     );
   }
@@ -267,9 +296,9 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
         this.alertService.success('Marked as paid');
         this.loadInvoice(id);
       },
-      () => {
+      err => {
         this.loading = false;
-        this.alertService.error('Update failed');
+        this.alertService.error(this.readApiError(err) || 'Update failed');
       }
     );
   }
@@ -284,13 +313,18 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
         this.alertService.success('Invoice cancelled');
         this.router.navigate(['/sale-invoices']);
       },
-      () => {
+      err => {
         this.loading = false;
-        this.alertService.error('Cancel failed');
+        this.alertService.error(this.readApiError(err) || 'Cancel failed');
       }
     );
   }
 
-  print() { window.print(); }
+  print() {
+    const prevTitle = document.title;
+    document.title = '\u00A0';
+    window.print();
+    setTimeout(() => { document.title = prevTitle; }, 500);
+  }
   back() { this.router.navigate(['/sale-invoices']); }
 }

@@ -107,6 +107,8 @@ namespace Lis.Api.Controllers.Api
             }
         }
 
+        [HttpPost]
+        [Route("")]
         [QAuthorize(ModuleName = "TestRates", ModulePermissionTypes = ModulePermissionType.CanAdd)]
         public HttpResponseMessage Post(TestRateMaster item)
         {
