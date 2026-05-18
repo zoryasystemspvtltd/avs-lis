@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 
 export interface ReportFilter {
@@ -47,11 +47,7 @@ export class ReportService {
       map(r => ({
         items: (r?.items || r?.Items || []).map(normalizeRow),
         totalRecord: r?.totalRecord ?? r?.TotalRecord ?? 0
-      })),
-      catchError(err => {
-        console.error(`Report API error (${endpoint}):`, err);
-        return of({ items: [], totalRecord: 0 });
-      })
+      }))
     );
   }
 }

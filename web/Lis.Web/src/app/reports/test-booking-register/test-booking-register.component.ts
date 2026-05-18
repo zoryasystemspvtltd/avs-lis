@@ -44,9 +44,9 @@ export class TestBookingRegisterComponent extends ReportPageBase implements OnIn
         this.searched = true;
         this.loading = false;
       },
-      () => {
+      err => {
         this.loading = false;
-        this.alertService.error('Failed to load report');
+        this.alertService.error(this.readReportError(err));
       }
     );
   }

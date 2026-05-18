@@ -28,13 +28,23 @@ namespace Lis.Api.Providers
 
             //TODO
 
+            if (HttpContext.Current?.User?.Identity?.IsAuthenticated != true)
+            {
+                InvalidResponse(actionContext);
+                return;
+            }
+
             if (HttpContext.Current.User.IsInRole("Administrator"))
             {
                 return;
             }
 
-            var identity = (ClaimsIdentity)HttpContext.Current.User.Identity;
-
+            var identity = HttpContext.Current.User.Identity as ClaimsIdentity;
+            if (identity == null)
+            {
+                InvalidResponse(actionContext);
+                return;
+            }
 
             var modulePermisionsClaim = identity.Claims.FirstOrDefault(p => p.Type.Equals("modulePermisions", StringComparison.OrdinalIgnoreCase));
 

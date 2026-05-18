@@ -261,7 +261,7 @@ namespace LIS.BusinessLogic
             }
 
             result.TotalRecord = list.Count;
-            var sortColumn = string.IsNullOrEmpty(option.SortColumnName) ? "HISTestCode" : option.SortColumnName;
+            var sortColumn = ResolveMappingSortColumn(option.SortColumnName);
             int minRow = (option.CurrentPage - 1) * option.RecordPerPage;
             int pageSize = option.RecordPerPage == 0 ? result.TotalRecord : option.RecordPerPage;
 
@@ -272,6 +272,21 @@ namespace LIS.BusinessLogic
                 .ToList();
 
             return result;
+        }
+
+        private static string ResolveMappingSortColumn(string sortColumnName)
+        {
+            const string fallback = "HISTestCode";
+            if (string.IsNullOrWhiteSpace(sortColumnName))
+            {
+                return fallback;
+            }
+
+            var col = sortColumnName.Trim();
+            var prop = typeof(TestMappingMaster).GetProperty(
+                col,
+                System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.IgnoreCase);
+            return prop != null ? prop.Name : fallback;
         }
 
         private bool ExistsDuplicate(TestMappingMaster item, int? excludeId)

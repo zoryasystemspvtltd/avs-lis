@@ -77,6 +77,9 @@ export class ListModuleComponent implements OnInit, OnChanges {
     if (this.schemma.module === 'HisParameterMaster') {
       this.option.SortColumnName = 'HISParamCode';
     }
+    if (this.schemma.module === 'HisParameterRangeMaster') {
+      this.option.SortColumnName = 'HISRangeCode';
+    }
     if (this.schemma.module === 'TestMappingMaster') {
       this.option.SortColumnName = 'HISTestCode';
     }

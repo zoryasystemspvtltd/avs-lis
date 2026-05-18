@@ -230,6 +230,25 @@ export abstract class ReportPageBase {
     return new Date(from.getFullYear(), from.getMonth() + this.maxReportRangeMonths, 0);
   }
 
+  protected readReportError(err: any): string {
+    if (!err) {
+      return 'Failed to load report';
+    }
+    if (typeof err === 'string') {
+      return err;
+    }
+    if (typeof err.message === 'string') {
+      return err.message;
+    }
+    if (typeof err.error === 'string') {
+      return err.error;
+    }
+    if (err.error?.message) {
+      return err.error.message;
+    }
+    return 'Failed to load report';
+  }
+
   protected abstract runSearch(page: number, pageSize: number): void;
   protected abstract fetchAllForExport(): import('rxjs').Observable<{ items: any[]; totalRecord: number }>;
   protected abstract exportRows(rows: any[]): void;
