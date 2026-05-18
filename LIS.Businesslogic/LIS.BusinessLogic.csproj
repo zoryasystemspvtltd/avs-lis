@@ -86,6 +86,8 @@
     <Compile Include="TestProfileMasterManager.cs" />
     <Compile Include="SetupDomainManagers.cs" />
     <Compile Include="ReportManager.cs" />
+    <Compile Include="TestReportManager.cs" />
+    <Compile Include="TestReportValidationException.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\LIS.DataModel\LIS.DataAccess.csproj">

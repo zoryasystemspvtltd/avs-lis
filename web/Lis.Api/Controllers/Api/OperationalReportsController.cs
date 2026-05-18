@@ -1,4 +1,5 @@
 using Lis.Api.Providers;
+using LIS.BusinessLogic;
 using LIS.DtoModel;
 using LIS.DtoModel.Interfaces;
 using LIS.DtoModel.Models;
@@ -17,11 +18,13 @@ namespace Lis.Api.Controllers.Api
     public class OperationalReportsController : ApiController
     {
         private readonly IReportManager reportManager;
+        private readonly ITestReportManager testReportManager;
         private readonly ILogger logger;
 
-        public OperationalReportsController(IReportManager reportManager, ILogger logger)
+        public OperationalReportsController(IReportManager reportManager, ITestReportManager testReportManager, ILogger logger)
         {
             this.reportManager = reportManager;
+            this.testReportManager = testReportManager;
             this.logger = logger;
         }
 
@@ -102,6 +105,44 @@ namespace Lis.Api.Controllers.Api
             {
                 logger.LogException(ex);
                 return new ItemList<TestBookingRegisterRow> { TotalRecord = 0, Items = new List<TestBookingRegisterRow>() };
+            }
+        }
+
+        [HttpGet]
+        [Route("TestReportLabNumbers")]
+        [QAuthorize(ModuleName = "Reports", ModulePermissionTypes = ModulePermissionType.CanView)]
+        public IHttpActionResult GetTestReportLabNumbers()
+        {
+            try
+            {
+                return Ok(testReportManager.GetPrintableLabNumbers());
+            }
+            catch (Exception ex)
+            {
+                logger.LogException(ex);
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "Unable to load lab numbers."));
+            }
+        }
+
+        [HttpGet]
+        [Route("TestReport")]
+        [QAuthorize(ModuleName = "Reports", ModulePermissionTypes = ModulePermissionType.CanView)]
+        public IHttpActionResult GetTestReport(string labNo = null, string invoiceNo = null)
+        {
+            try
+            {
+                var report = testReportManager.GetDiagnosticTestReport(labNo, invoiceNo);
+                return Ok(report);
+            }
+            catch (TestReportValidationException ex)
+            {
+                logger.LogError(ex.Message);
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ex.Message));
+            }
+            catch (Exception ex)
+            {
+                logger.LogException(ex);
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "Unable to load test report."));
             }
         }
     }

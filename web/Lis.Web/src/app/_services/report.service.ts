@@ -30,6 +30,14 @@ export class ReportService {
     return this.fetchReport('TestBookingRegister', filter, 'BookingDate');
   }
 
+  getTestReportLabNumbers(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/api/Reports/TestReportLabNumbers`);
+  }
+
+  getTestReport(labNo: string): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/api/Reports/TestReport?labNo=${encodeURIComponent(labNo)}`);
+  }
+
   private fetchReport(endpoint: string, filter: ReportFilter, defaultSort: string): Observable<{ items: any[]; totalRecord: number }> {
     const option = {
       FromDate: filter.fromDate,

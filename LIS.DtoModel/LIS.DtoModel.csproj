@@ -95,6 +95,8 @@
     <Compile Include="Interfaces\IReportManager.cs" />
     <Compile Include="Models\ReportFilterOptions.cs" />
     <Compile Include="Models\Reports\SaleInvoiceRegisterRow.cs" />
+    <Compile Include="Models\Reports\DiagnosticTestReportDto.cs" />
+    <Compile Include="Interfaces\ITestReportManager.cs" />
     <Compile Include="Models\Reports\TestBookingRegisterRow.cs" />
     <Compile Include="Interfaces\ITestProfileMasterManager.cs" />
     <Compile Include="Models\DTO\Mapping\Department.cs" />

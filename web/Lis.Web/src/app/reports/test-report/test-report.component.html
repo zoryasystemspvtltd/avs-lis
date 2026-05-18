@@ -1,0 +1,117 @@
+<div class="zorya-report-page test-report-page" [class.print-report]="isPrintView">
+  <div class="zorya-report-header no-print" *ngIf="!isPrintView">
+    <div class="zorya-report-title">
+      <h3><span class="glyphicon glyphicon-print"></span> {{ pageTitle }}</h3>
+      <p class="zorya-report-subtitle">Final diagnostic report — paid invoices with approved results only</p>
+    </div>
+  </div>
+
+  <div class="zorya-report-filters no-print" *ngIf="!isPrintView">
+    <div class="zorya-report-filters-title">Search</div>
+    <p class="filter-hint">Select a Lab No with completed, approved results ready for printing.</p>
+    <div class="filter-row">
+      <div class="filter-field filter-wide">
+        <label>Lab No</label>
+        <ng-select [items]="labNumbers" bindLabel="displayLabel" bindValue="labNo" [(ngModel)]="labNo"
+          placeholder="Select lab number" [clearable]="true" [searchable]="true" [loading]="labNumbersLoading"
+          class="zorya-report-select" (keyup.enter)="search()">
+        </ng-select>
+      </div>
+      <div class="filter-actions">
+        <button type="button" class="btn btn-default btn-sm" (click)="loadLabNumbers()" [disabled]="labNumbersLoading"
+          title="Refresh list">
+          <span class="glyphicon glyphicon-refresh" [class.glyphicon-spin]="labNumbersLoading"></span>
+        </button>
+        <button type="button" class="btn btn-primary btn-sm" (click)="search()" [disabled]="loading || !labNo">
+          <span class="glyphicon glyphicon-search"></span> Search
+        </button>
+        <button type="button" class="btn btn-default btn-sm" (click)="clear()" [disabled]="loading">Reset</button>
+        <button type="button" class="btn btn-success btn-sm" (click)="print()" [disabled]="!report || loading">
+          <span class="glyphicon glyphicon-print"></span> Print Report
+        </button>
+      </div>
+    </div>
+    <p class="filter-error" *ngIf="filterError">{{ filterError }}</p>
+  </div>
+
+  <div class="zorya-report-loading no-print" *ngIf="loading">
+    <span class="glyphicon glyphicon-refresh glyphicon-spin"></span> Loading report...
+  </div>
+
+  <div id="diagnostic-test-report-print" class="diagnostic-report" *ngIf="report && !loading">
+    <section class="report-meta" *ngIf="report.header">
+      <table class="report-meta-table">
+        <tbody>
+          <tr>
+            <td class="meta-label">Lab No</td>
+            <td class="meta-value">{{ report.header.labNo || '—' }}</td>
+            <td class="meta-label">Invoice No</td>
+            <td class="meta-value">{{ report.header.invoiceNo || '—' }}</td>
+          </tr>
+          <tr>
+            <td class="meta-label">Patient</td>
+            <td class="meta-value" colspan="3">
+              {{ report.header.patientName || '—' }}
+              <span *ngIf="report.header.patientId"> ({{ report.header.patientId }})</span>
+            </td>
+          </tr>
+          <tr>
+            <td class="meta-label">Age / Gender</td>
+            <td class="meta-value">{{ report.header.age }} / {{ report.header.gender || '—' }}</td>
+            <td class="meta-label">Referral Doctor</td>
+            <td class="meta-value">{{ report.header.referralDoctor || '—' }}</td>
+          </tr>
+          <tr *ngIf="report.header.corporate">
+            <td class="meta-label">Corporate</td>
+            <td class="meta-value" colspan="3">{{ report.header.corporate }}</td>
+          </tr>
+          <tr>
+            <td class="meta-label">Collection Date</td>
+            <td class="meta-value">{{ report.header.collectionDate | date:'dd/MM/yyyy' }}</td>
+            <td class="meta-label">Report Date</td>
+            <td class="meta-value">{{ report.header.reportDate | date:'dd/MM/yyyy' }}</td>
+          </tr>
+          <tr *ngIf="report.header.approvedBy">
+            <td class="meta-label">Approved By</td>
+            <td class="meta-value" colspan="3">{{ report.header.approvedBy }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="report-test-block" *ngFor="let section of report.sections">
+      <div class="test-block-header">
+        <strong>{{ section.testName }}</strong>
+        <span class="test-meta" *ngIf="section.testCode"> ({{ section.testCode }})</span>
+        <span class="test-meta" *ngIf="section.specimen"> — {{ section.specimen }}</span>
+        <span class="test-meta" *ngIf="section.sampleNo"> — Sample: {{ section.sampleNo }}</span>
+      </div>
+      <table class="table table-bordered table-condensed report-results-table">
+        <thead>
+          <tr>
+            <th>Parameter</th>
+            <th class="text-right">Result</th>
+            <th>Unit</th>
+            <th>Reference Range</th>
+            <th class="text-center">Flag</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let p of section.parameters" [class.abnormal-row]="p.isAbnormal">
+            <td>{{ p.parameterName }}</td>
+            <td class="text-right result-value" [class.abnormal-value]="p.isAbnormal">{{ p.resultValue }}</td>
+            <td>{{ p.unit || '—' }}</td>
+            <td>{{ p.referenceRange || '—' }}</td>
+            <td class="text-center flag-cell">{{ p.flag || '' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <p class="report-footer-note">This is a computer-generated diagnostic report. Abnormal flags: H = High, L = Low.</p>
+  </div>
+
+  <div class="zorya-report-empty no-print" *ngIf="searched && !report && !loading && !filterError">
+    <p>No report data to display.</p>
+  </div>
+</div>
