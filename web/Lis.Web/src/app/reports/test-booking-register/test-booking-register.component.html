@@ -1,0 +1,117 @@
+﻿<div class="zorya-report-page">
+  <div class="zorya-report-header">
+    <div class="zorya-report-title">
+      <h3><span class="glyphicon glyphicon-book"></span> {{ pageTitle }}</h3>
+      <p class="zorya-report-subtitle">Test booking and sample request listing for the selected period</p>
+    </div>
+    <div class="zorya-report-header-actions">
+      <button type="button" class="btn btn-success btn-sm" (click)="exportExcel()" [disabled]="!canExport">
+        <span class="glyphicon glyphicon-export"></span>
+        {{ exporting ? 'Exporting...' : 'Export to Excel' }}
+      </button>
+    </div>
+  </div>
+
+  <div class="zorya-report-filters">
+    <div class="zorya-report-filters-title">Search criteria</div>
+    <div class="filter-row">
+      <div class="filter-field">
+        <label>From Date <span class="req">*</span></label>
+        <input type="date" class="form-control input-sm" [(ngModel)]="fromDate" />
+      </div>
+      <div class="filter-field">
+        <label>To Date <span class="req">*</span></label>
+        <input type="date" class="form-control input-sm" [(ngModel)]="toDate" />
+      </div>
+      <div class="filter-field filter-wide">
+        <label>Patient</label>
+        <ng-select [items]="patients" bindLabel="name" bindValue="id" [(ngModel)]="patientId"
+          placeholder="All patients" [clearable]="true" [searchable]="true" class="zorya-report-select">
+          <ng-template ng-label-tmp let-item="item">{{ item.name }} ({{ item.hisPatientId }})</ng-template>
+          <ng-template ng-option-tmp let-item="item">{{ item.name }} ({{ item.hisPatientId }})</ng-template>
+        </ng-select>
+      </div>
+      <div class="filter-field filter-wide">
+        <label>Referral Doctor</label>
+        <ng-select [items]="doctors" bindLabel="name" bindValue="id" [(ngModel)]="referralDoctorId"
+          placeholder="All doctors" [clearable]="true" [searchable]="true" class="zorya-report-select"></ng-select>
+      </div>
+      <div class="filter-actions">
+        <button type="button" class="btn btn-primary btn-sm" (click)="search(1)" [disabled]="loading || exporting">
+          <span class="glyphicon glyphicon-search"></span> Search
+        </button>
+        <button type="button" class="btn btn-default btn-sm" (click)="reset()" [disabled]="loading || exporting">Reset</button>
+      </div>
+    </div>
+    <p class="filter-error" *ngIf="filterError">{{ filterError }}</p>
+  </div>
+
+  <div class="zorya-report-toolbar" *ngIf="searched">
+    <span class="zorya-report-summary"><strong>{{ totalRecord }}</strong> record(s) found</span>
+  </div>
+
+  <div class="zorya-report-grid-wrap" [class.is-loading]="loading">
+    <div class="zorya-report-loading" *ngIf="loading">
+      <span class="glyphicon glyphicon-refresh glyphicon-spin"></span> Loading report...
+    </div>
+
+    <div class="table-responsive zorya-report-table-scroll" *ngIf="!loading && rows.length">
+      <table class="table table-hover zorya-report-table">
+        <thead>
+          <tr>
+            <th>Booking Date</th>
+            <th>Request No.</th>
+            <th>Invoice No.</th>
+            <th>Patient ID</th>
+            <th>Patient Name</th>
+            <th>Test Name</th>
+            <th>Department</th>
+            <th>Specimen</th>
+            <th>Referral Doctor</th>
+            <th>Status</th>
+            <th>Sample No.</th>
+            <th>Created By</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of rows">
+            <td>{{ row.bookingDate | date:'dd/MM/yyyy' }}</td>
+            <td class="cell-strong">{{ row.requestNumber || '—' }}</td>
+            <td>{{ row.invoiceNumber || '—' }}</td>
+            <td>{{ row.patientId || '—' }}</td>
+            <td>{{ row.patientName || '—' }}</td>
+            <td>{{ row.testName || '—' }}</td>
+            <td>{{ row.department || '—' }}</td>
+            <td>{{ row.specimen || '—' }}</td>
+            <td>{{ row.referralDoctor || '—' }}</td>
+            <td><span class="zorya-report-badge zorya-badge-default">{{ row.status || '—' }}</span></td>
+            <td>{{ row.sampleNo || '—' }}</td>
+            <td class="text-muted">{{ row.createdBy || '—' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="zorya-report-empty" *ngIf="!loading && searched && !rows.length">
+      <span class="glyphicon glyphicon-info-sign"></span>
+      <p>No bookings found for the selected criteria.</p>
+      <p class="hint">Adjust the date range or filters and search again.</p>
+    </div>
+
+    <div class="zorya-report-pager" *ngIf="searched && totalRecord > 0 && !loading">
+      <div class="pager-left">
+        <span class="pager-info">Showing {{ recordFrom }}–{{ recordTo }} of {{ totalRecord }}</span>
+        <label class="pager-size-label">Page size</label>
+        <select class="form-control input-sm pager-size-select" [ngModel]="recordPerPage" (change)="onPageSizeChange($event.target.value)">
+          <option [ngValue]="10">10</option>
+          <option [ngValue]="25">25</option>
+          <option [ngValue]="50">50</option>
+          <option [ngValue]="100">100</option>
+        </select>
+      </div>
+      <ngb-pagination class="zorya-report-pagination" [(page)]="currentPage" [pageSize]="recordPerPage"
+        [collectionSize]="totalRecord" [maxSize]="5" [rotate]="true" [boundaryLinks]="true"
+        (pageChange)="onPageChange($event)"></ngb-pagination>
+    </div>
+  </div>
+</div>

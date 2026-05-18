@@ -22,6 +22,7 @@ import { TestDetailsComponent } from './LIS/testMaster/test-details/test-details
 import { TestCreateComponent } from './LIS/testMaster/test-create/test-create.component';
 import { TestEditComponent } from './LIS/testMaster/test-edit/test-edit.component';
 import { MasterListComponent, MasterFormComponent, SaleInvoiceFormComponent, TestProfileFormComponent } from './masters';
+import { SaleInvoiceRegisterComponent, TestBookingRegisterComponent } from './reports';
 import { ListEquipmentHeartbeatComponent } from './LIS';
 
 const LOOKUP_FIELDS = {
@@ -264,6 +265,9 @@ const appRoutes: Routes = [
     { path: 'sale-invoices/create', component: SaleInvoiceFormComponent, canActivate: [AuthGuard] },
     { path: 'sale-invoices/print/:id', component: SaleInvoiceFormComponent, canActivate: [AuthGuard] },
     { path: 'sale-invoices/:id', component: SaleInvoiceFormComponent, canActivate: [AuthGuard] },
+
+    { path: 'reports/sale-invoice-register', component: SaleInvoiceRegisterComponent, canActivate: [AuthGuard] },
+    { path: 'reports/test-booking-register', component: TestBookingRegisterComponent, canActivate: [AuthGuard] },
 
     // otherwise redirect to home
     { path: '**', redirectTo: '' }

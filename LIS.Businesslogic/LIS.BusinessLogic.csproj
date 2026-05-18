@@ -85,6 +85,7 @@
     <Compile Include="LookupMasterManagers.cs" />
     <Compile Include="TestProfileMasterManager.cs" />
     <Compile Include="SetupDomainManagers.cs" />
+    <Compile Include="ReportManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\LIS.DataModel\LIS.DataAccess.csproj">

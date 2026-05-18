@@ -113,6 +113,7 @@ namespace Lis.Api
             container.Register<IEquipmentHeartBeatManager, EquipmentHeartBeatManager>(Lifestyle.Scoped);
             container.Register<ITestRateMasterManager, TestRateMasterManager>(Lifestyle.Scoped);
             container.Register<ISaleInvoiceManager, SaleInvoiceManager>(Lifestyle.Scoped);
+            container.Register<IReportManager, ReportManager>(Lifestyle.Scoped);
             container.Register<IMasterCrudManager<ReferralDoctorMaster>, ReferralDoctorManager>(Lifestyle.Scoped);
             container.Register<IMasterCrudManager<CorporateMaster>, CorporateManager>(Lifestyle.Scoped);
             container.Register<IMasterCrudManager<TestGroupMaster>, TestGroupManager>(Lifestyle.Scoped);

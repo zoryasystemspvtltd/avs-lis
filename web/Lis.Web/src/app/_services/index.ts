@@ -10,3 +10,4 @@ export * from './sample.service';
 export * from './quality.service';
 export * from './testmaster.service';
 export * from './master.service';
+export * from './report.service';
