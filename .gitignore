@@ -51,3 +51,5 @@
 /BarcodePrint/log
 /web/Lis.Web/dist/DxI800
 /.vs/CopilotSnapshots/55C54FB76C18AE46858C3A2A94329F18
+/LIS.Masters.Tests/bin/Debug
+/LIS.Masters.Tests/obj/Debug

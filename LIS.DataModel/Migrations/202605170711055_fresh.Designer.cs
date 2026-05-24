@@ -13,7 +13,7 @@ namespace LIS.DataAccess.Migrations
         
         string IMigrationMetadata.Id
         {
-            get { return "202604270644490_fresh"; }
+            get { return "202605170711055_fresh"; }
         }
         
         string IMigrationMetadata.Source

@@ -82,15 +82,10 @@
     <Compile Include="DAL\SoftDeleteInterceptor.cs" />
     <Compile Include="DAL\SoftDeleteQueryVisitor.cs" />
     <Compile Include="Enums\RoleType.cs" />
-    <Compile Include="Migrations\202604270644490_fresh.cs" />
-    <Compile Include="Migrations\202604270644490_fresh.Designer.cs">
-      <DependentUpon>202604270644490_fresh.cs</DependentUpon>
+    <Compile Include="Migrations\202605170711055_fresh.cs" />
+    <Compile Include="Migrations\202605170711055_fresh.Designer.cs">
+      <DependentUpon>202605170711055_fresh.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202605161125375_sale.cs" />
-    <Compile Include="Migrations\202605161125375_sale.Designer.cs">
-      <DependentUpon>202605161125375_sale.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\202605161300000_masters_and_rates.cs" />
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repo\IGenericRepository.cs" />
@@ -134,11 +129,8 @@
     <Content Include="Scripts\jquery-3.7.1.slim.min.js" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\202604270644490_fresh.resx">
-      <DependentUpon>202604270644490_fresh.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202605161125375_sale.resx">
-      <DependentUpon>202605161125375_sale.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\202605170711055_fresh.resx">
+      <DependentUpon>202605170711055_fresh.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
