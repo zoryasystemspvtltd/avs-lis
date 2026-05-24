@@ -25,6 +25,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LIS.BusinessLogic", "LIS.Bu
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documents", "Documents", "{231BE0CD-47A2-479A-8EFC-E7D91BE75583}"
 	ProjectSection(SolutionItems) = preProject
+		Documents\EM200 ASTM HOST Manual.pdf = Documents\EM200 ASTM HOST Manual.pdf
+		Documents\H560 interface.pdf = Documents\H560 interface.pdf
 		Documents\HL7 Communication Protocol - Metis 6000.pdf = Documents\HL7 Communication Protocol - Metis 6000.pdf
 		README.md = README.md
 	EndProjectSection
