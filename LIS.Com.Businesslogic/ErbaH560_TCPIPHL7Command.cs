@@ -8,15 +8,15 @@ using System.Threading.Tasks;
 
 namespace LIS.Com.Businesslogic
 {
-    public class Metis6000TCPIPCommand : TCPIPHL7Command
+    public class ErbaH560_TCPIPHL7Command : TCPIPHL7Command
     {
-        public Metis6000TCPIPCommand(TCPIPSettings _settings) : base(_settings)
+        public ErbaH560_TCPIPHL7Command(TCPIPSettings _settings) : base(_settings)
         { }
 
         public override async Task ResultProcess(string message, string messageControlId)
         {
             Logger.Logger.LogInstance.LogDebug("Result process method excuted.");
-
+          
             string[] resultMesgSegments = message.TrimEnd((char)13).Split((char)13); // vbCr<CR>
             if (resultMesgSegments.Length > 1)
             {
@@ -24,7 +24,6 @@ namespace LIS.Com.Businesslogic
                 if (field[0].Trim() == "OBR")
                 {
                     string sampleNo = field[2];
-
                     if (resultMesgSegments.Length > 2)
                     {
                         await SaveResult(sampleNo, resultMesgSegments);
@@ -37,11 +36,7 @@ namespace LIS.Com.Businesslogic
         {
             Result result = new Result();
             List<TestResultDetails> lsResult = new List<TestResultDetails>();
-            TestResult testResult = new TestResult
-            {
-                ResultDate = DateAndTime.Now,
-                SampleNo = sampleNo
-            };
+
             string lisTestCode = string.Empty;
             for (int i = 0; i < resultMesgSegments.Length; i++)
             {
@@ -59,19 +54,25 @@ namespace LIS.Com.Businesslogic
                     lsResult.Add(resultDetails);
                 }
             }
-            testResult.LISTestCode = lisTestCode;
+            TestResult testResult = new TestResult
+            {
+                ResultDate = DateAndTime.Now,
+                SampleNo = sampleNo,
+                LISTestCode = lisTestCode
+            };
+          
             result.TestResult = testResult;
             result.ResultDetails = lsResult;
-            Logger.Logger.LogInstance.LogDebug("CL1200i Result posted to API for SampleNo: " + testResult.SampleNo);
+            Logger.Logger.LogInstance.LogDebug("ErabH560 Result posted to API for SampleNo: " + testResult.SampleNo);
             await LisContext.LisDOM.SaveTestResult(result);
         }
 
         public override async Task<OrderHL7Response> SendOrderData(string sampleNo, string messageControlId)
         {
-            Logger.Logger.LogInstance.LogDebug("CL1200i generateORMField method started for SampleNo: " + sampleNo);
+            Logger.Logger.LogInstance.LogDebug("ErabH560 generateORMField method started for SampleNo: " + sampleNo);
             string datetime = DateTime.Now.ToString("yyyyMMddhhmmss");
             string specialchar = @"^~\&";
-            string message_MSH = $"MSH|{specialchar}|||||{datetime}||DSR^Q03|{messageControlId}|P|2.3.1||||||UTF8|||{(char)13}";
+            string message_MSH = $"MSH|{specialchar}|||||{datetime}||DSR^Q03|{messageControlId}|P|2.3.1||||||ASCII|||{(char)13}";
             string message_MSA = $"MSA|AA|{messageControlId}|Message accepted|||0|{(char)13}";
             string message_err = $"ERR|0|{(char)13}";
             string message_qak = string.Empty;
@@ -87,20 +88,7 @@ namespace LIS.Com.Businesslogic
                 var specimen = firstTest.SpecimenName.ToLower();
                 var name = firstTest.Patient?.Name;
                 string gender = "";
-                switch (firstTest.Patient.Gender.ToUpperInvariant())
-                {
-                    case "MALE":
-                        gender = "M";
-                        break;
-                    case "FEMALE":
-                        gender = "F";
-                        break;
-                    default:
-                        gender = "O";
-                        break;
-                }
                 var dob = firstTest.Patient.DateOfBirth.ToString("yyyyMMddhhmmss");
-
                 if (name.Length > 40)
                 {
                     name = name.Substring(0, 39);
@@ -141,12 +129,11 @@ namespace LIS.Com.Businesslogic
                     message_DSP += $"DSP|{j}||{testname}|||{(char)13}";
                 }
                 message_qak = $"QAK|SR|OK|{(char)13}";
-                string message_QRD = $"QRD|{datetime}|R|D|2|||RD|{sampleNo}|OTH|||T|{(char)13}";
+                string message_QRD = $"QRD|{datetime}|R|D|54|||RD|{sampleNo}|OTH|||T|{(char)13}";
                 string message_QRF = $"QRF||{datetime}|{datetime}|||RCT|COR|ALL||{(char)13}";
                 string message_DSC = $"DSC||{(char)13}";
 
-                DSRMessage = message_MSH + message_MSA + message_err + message_qak + message_QRD + message_QRF +
-                    message_DSP + message_DSC;
+                DSRMessage = message_MSH + message_MSA + message_err + message_qak + message_QRD + message_QRF + message_DSP + message_DSC;
 
                 QRYMessage = SendResponse("OK", messageControlId);
                 response.QRYResponse = QRYMessage;
@@ -166,11 +153,10 @@ namespace LIS.Com.Businesslogic
         {
             string datetime = DateTime.Now.ToString("yyyyMMddhhmmss");
             string specialchar = @"^~\&";
-            string message_MSH = $"MSH|{specialchar}|||||{datetime}||QCK^Q02|{messageControlId}|P|2.3.1||||||UTF8|||{(char)13}";
+            string message_MSH = $"MSH|{specialchar}|||Mindray|BS430|{datetime}||QCK^Q02|{messageControlId}|P|2.3.1||||||ASCII|||{(char)13}";
             string message_MSA = $"MSA|AA|{messageControlId}|Message accepted|||0|{(char)13}";
-            string message_err = $"ERR|0|{(char)13}";
             string message_qak = $"QAK|SR|{qak}|{(char)13}";
-
+            string message_err = $"ERR|0|{(char)13}";
             var response = message_MSH + message_MSA + message_err + message_qak;
             return response;
         }

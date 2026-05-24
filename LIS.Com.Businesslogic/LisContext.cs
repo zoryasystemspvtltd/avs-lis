@@ -86,6 +86,9 @@ namespace LIS.Com.Businesslogic
             {
                 switch (type)
                 {
+                    case EquipmentType.EMA200:
+                        this.TcpIpASTMCommand = new EMA200_TCPIPASTMCommand(settings);
+                        break;
                     default:
                         throw new NotImplementedException();
                 }
@@ -95,8 +98,11 @@ namespace LIS.Com.Businesslogic
                 switch (type)
                 {
                     case EquipmentType.Metis6000:
-                        this.TcpIpHL7Command = new Metis6000TCPIPCommand(settings);
-                        break;                    
+                        this.TcpIpHL7Command = new Metis6000_TCPIPHL7Command(settings);
+                        break;
+                    case EquipmentType.ErbaH560:
+                        this.TcpIpHL7Command = new ErbaH560_TCPIPHL7Command(settings);
+                        break;
                     default:
                         throw new NotImplementedException();
                 }

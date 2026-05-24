@@ -248,6 +248,7 @@ namespace LIS.Com.Businesslogic
                                         break;
 
                                     default:
+                                        //(char)4 means end of transmission
                                         WriteResponseSafe("" + (char)4, false);
                                         index = 0;
 
@@ -309,7 +310,7 @@ namespace LIS.Com.Businesslogic
             }
         }
 
-        private void WriteResponseSafe(string response,bool isHeartBeat)
+        public void WriteResponseSafe(string response,bool isHeartBeat)
         {
             lock (_lockObject)
             {
@@ -494,5 +495,4 @@ namespace LIS.Com.Businesslogic
         }
 
     }
-
 }
