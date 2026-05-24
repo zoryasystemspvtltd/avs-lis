@@ -55,6 +55,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BarcodePrintCommand.cs" />
+    <Compile Include="BS430TCPIPHL7Command.cs" />
     <Compile Include="Metis6000TCPIPCommand.cs" />
     <Compile Include="TCPIPASTMCommand.cs" />
     <Compile Include="EquipmentType.cs" />
