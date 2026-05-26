@@ -76,13 +76,19 @@ namespace LIS.BusinessLogic
 
             ItemList<TestRequestDetail> result = new ItemList<TestRequestDetail>();
 
-            var query = testRequestRepo.Get(p => p.ReportStatus == option.Status);
+            var patientsById = patientRepo.Get().ToDictionary(p => p.Id, p => p);
 
-            if (!string.IsNullOrEmpty(option.SearchText))
+            // Materialize in memory — avoids EF enum/navigation issues that returned empty lists in UI.
+            IEnumerable<TestRequestDetail> query = testRequestRepo.Get()
+                .Where(p => p.ReportStatus == option.Status)
+                .ToList();
+
+            if (!string.IsNullOrWhiteSpace(option.SearchText))
             {
+                var search = option.SearchText.Trim();
                 DateTime searchDate;
-                bool isValidSearchDate = DateTime.TryParseExact(option.SearchText, "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out searchDate);
-                if (option.SearchText.Contains("/") && isValidSearchDate)
+                bool isValidSearchDate = DateTime.TryParseExact(search, "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out searchDate);
+                if (search.Contains("/") && isValidSearchDate)
                 {
                     query = query.Where(p => p.SampleCollectionDate.Year == searchDate.Year
                                                 && p.SampleCollectionDate.Month == searchDate.Month
@@ -90,15 +96,18 @@ namespace LIS.BusinessLogic
                 }
                 else
                 {
-                    query = query.Where(p => p.SampleNo.Contains(option.SearchText)
-                                || p.HISTestName.Contains(option.SearchText)
-                                || p.HISRequestNo.Contains(option.SearchText)
-                                || p.IPNo.Contains(option.SearchText)
-                                || p.Patient.Name.Contains(option.SearchText));
+                    query = query.Where(p =>
+                        (p.SampleNo != null && p.SampleNo.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0)
+                        || (p.HISTestName != null && p.HISTestName.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0)
+                        || (p.HISRequestNo != null && p.HISRequestNo.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0)
+                        || (p.IPNo != null && p.IPNo.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0)
+                        || (patientsById.TryGetValue(p.PatientId, out var pat) && pat.Name != null
+                            && pat.Name.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0));
                 }
             }
 
-            result.TotalRecord = query.Count();
+            var queryList = query.ToList();
+            result.TotalRecord = queryList.Count;
 
             int minRow = (option.CurrentPage - 1) * option.RecordPerPage;
             int maxRow = (option.CurrentPage) * option.RecordPerPage;
@@ -124,7 +133,7 @@ namespace LIS.BusinessLogic
                 totalRecordToBeSelected = result.TotalRecord;
             }
 
-            result.Items = query
+            result.Items = queryList
                     .OrderBy(option.SortColumnName, option.SortDirection)
                     .Skip(minRow)
                     .Take(totalRecordToBeSelected)
@@ -133,23 +142,36 @@ namespace LIS.BusinessLogic
             //Fetch department name and Doctor openion status
             foreach (var item in result.Items)
             {
-                var departmentname = testRepo.Get(t => t.HISTestCode.Equals(item.HISTestCode, StringComparison.OrdinalIgnoreCase))
-              .Join(departmentRepo.Get(d => d.Code != null),
-              test => test.DepartmentCode,
-              dept => dept.Code,
-              (test, dept) => new { dept.Name }).FirstOrDefault();
+                if (item.Patient == null && patientsById.TryGetValue(item.PatientId, out var patient))
+                {
+                    item.Patient = patient;
+                }
+
+                var testCode = item.HISTestCode ?? string.Empty;
+                var departmentname = testRepo.Get()
+                    .Where(t => t.HISTestCode != null && t.HISTestCode.Equals(testCode, StringComparison.OrdinalIgnoreCase))
+                    .Join(departmentRepo.Get().Where(d => d.Code != null),
+                        test => test.DepartmentCode,
+                        dept => dept.Code,
+                        (test, dept) => new { dept.Name })
+                    .FirstOrDefault();
 
                 item.Department = departmentname != null ? departmentname.Name : (item.Department ?? string.Empty);
 
                 var paramNames = parameterRepo.Get(p => p.TestRequestDetailsId == item.Id)
+                    .ToList()
                     .Select(p => !string.IsNullOrWhiteSpace(p.HISParamName) ? p.HISParamName : p.HISParamCode)
                     .Where(n => !string.IsNullOrWhiteSpace(n))
                     .Distinct()
                     .ToList();
                 item.TestParameterNames = paramNames.Any() ? string.Join(", ", paramNames) : string.Empty;
 
-                var testResult = testResultRepo.Get(t => t.SampleNo.Equals(item.SampleNo, StringComparison.OrdinalIgnoreCase)
-                                                        && t.HISTestCode.Equals(item.HISTestCode, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+                var sampleNo = item.SampleNo ?? string.Empty;
+                var testResult = testResultRepo.Get()
+                    .ToList()
+                    .FirstOrDefault(t =>
+                        t.SampleNo != null && t.SampleNo.Equals(sampleNo, StringComparison.OrdinalIgnoreCase) &&
+                        t.HISTestCode != null && t.HISTestCode.Equals(testCode, StringComparison.OrdinalIgnoreCase));
 
                 if (testResult != null && !string.IsNullOrEmpty(testResult.TechnicianNote))
                 {

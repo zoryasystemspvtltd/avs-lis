@@ -22,7 +22,7 @@ export class ListRawSampleComponent implements OnInit {
     hideCreate: true,
     allowPaging: true,
     //filterStatus:0,
-    allowedFilter: [0, 1],
+    allowedFilter: [0, 1, 2],
     auto_refresh:false,
     isNew:true,
     elements: [

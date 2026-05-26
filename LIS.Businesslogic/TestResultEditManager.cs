@@ -53,7 +53,9 @@ namespace LIS.BusinessLogic
             {
                 var sn = options.SampleNo.Trim();
                 query = query.Where(r =>
-                    (r.SampleNo != null && r.SampleNo.IndexOf(sn, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                    (r.SampleNo != null && (
+                        r.SampleNo.Equals(sn, StringComparison.OrdinalIgnoreCase) ||
+                        r.SampleNo.IndexOf(sn, StringComparison.OrdinalIgnoreCase) >= 0)) ||
                     (r.HISRequestNo != null && r.HISRequestNo.IndexOf(sn, StringComparison.OrdinalIgnoreCase) >= 0));
             }
 
@@ -103,8 +105,12 @@ namespace LIS.BusinessLogic
                         HasResults = hasResults
                     };
                 })
-                .OrderByDescending(r => r.CollectionDate)
-                .Take(50)
+                .OrderByDescending(r =>
+                    !string.IsNullOrWhiteSpace(options.SampleNo) &&
+                    r.SampleNo != null &&
+                    r.SampleNo.Equals(options.SampleNo.Trim(), StringComparison.OrdinalIgnoreCase))
+                .ThenByDescending(r => r.CollectionDate)
+                .Take(100)
                 .ToList();
 
             return rows;
