@@ -1201,6 +1201,53 @@ body.sale-invoice-print-mode .container-main.qcontent {
 
 @media print {
   .no-print, .no-print * { display: none !important; }
+
+  /* Diagnostic test report — hide portal chrome (sidebar was printing on page 2) */
+  body.test-report-print-mode {
+    background: #fff !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  body.test-report-print-mode app-header,
+  body.test-report-print-mode app-nav-menu,
+  body.test-report-print-mode app-left-nav-menu,
+  body.test-report-print-mode app-footer,
+  body.test-report-print-mode #sidenav,
+  body.test-report-print-mode .sidenav,
+  body.test-report-print-mode .nav-button,
+  body.test-report-print-mode .shift-down {
+    display: none !important;
+    visibility: hidden !important;
+  }
+  body.test-report-print-mode .wrapper,
+  body.test-report-print-mode .avilis-portal,
+  body.test-report-print-mode .avilis-body,
+  body.test-report-print-mode .container-main,
+  body.test-report-print-mode .container-main.qcontent,
+  body.test-report-print-mode .avilis-page-body,
+  body.test-report-print-mode app-root {
+    margin: 0 !important;
+    padding: 0 !important;
+    min-height: 0 !important;
+    height: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  body.test-report-print-mode .container-main.qcontent.content-with-sidebar {
+    margin-left: 0 !important;
+    padding-left: 0 !important;
+  }
+  body.test-report-print-mode .test-report-page {
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  body.test-report-print-mode #diagnostic-test-report-print,
+  body.test-report-print-mode .diagnostic-report {
+    display: block !important;
+    visibility: visible !important;
+  }
+
   body.sale-invoice-print-mode {
     background: #fff !important;
     padding-top: 0 !important;

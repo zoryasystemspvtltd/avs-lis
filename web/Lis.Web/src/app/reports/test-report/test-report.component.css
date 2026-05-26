@@ -1,6 +1,81 @@
+/* Letterhead + fixed header/footer dimensions (A4 portrait) */
+:root {
+  --diag-letterhead-height: 32mm;
+  --diag-title-bar-height: 8mm;
+  --diag-header-total: calc(var(--diag-letterhead-height) + var(--diag-title-bar-height));
+  --diag-footer-height: 16mm;
+  --diag-side-margin: 10mm;
+}
+
 .test-report-page .diagnostic-report {
   font-size: 12px;
   color: #222;
+  position: relative;
+}
+
+/* Screen preview of letterhead reserved area */
+.test-report-page .report-letterhead-zone {
+  min-height: var(--diag-letterhead-height);
+  border: 1px dashed #c5d5d8;
+  background: #f8fbfc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.test-report-page .letterhead-screen-hint {
+  font-size: 11px;
+  color: #7a9aa3;
+  font-style: italic;
+}
+
+.test-report-page .report-print-title-bar {
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 4px 0;
+  border-bottom: 2px solid #1a7f8c;
+  margin-bottom: 8px;
+}
+
+.test-report-page .report-print-body {
+  padding: 0;
+}
+
+.test-report-page .report-print-footer {
+  margin-top: 16px;
+  padding-top: 8px;
+  border-top: 1px solid #ccc;
+  font-size: 10px;
+  color: #555;
+}
+
+/* On screen, header/footer are in document flow (not fixed) */
+.test-report-page .report-print-header,
+.test-report-page .report-print-footer {
+  position: static;
+}
+
+.test-report-page .report-footer-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.test-report-page .report-footer-disclaimer {
+  flex: 1;
+}
+
+.test-report-page .report-footer-sign {
+  margin-top: 6px;
+}
+
+.test-report-page .report-footer-sign-line {
+  white-space: nowrap;
 }
 
 .test-report-page .report-meta-table {
@@ -66,46 +141,205 @@
   width: 48px;
 }
 
-.test-report-page .report-footer-note {
-  font-size: 10px;
-  color: #666;
-  margin-top: 12px;
+/* Shared print layout (screen print preview + iframe document) */
+.diagnostic-report-print-doc,
+body.test-report-print-mode .diagnostic-report {
+  font-family: "Segoe UI", Arial, sans-serif;
+  font-size: 11px;
+  color: #222;
+}
+
+.diagnostic-report-print-doc .report-print-header,
+body.test-report-print-mode .report-print-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--diag-header-total);
+  z-index: 1000;
+  background: #fff;
+}
+
+.diagnostic-report-print-doc .report-letterhead-zone,
+body.test-report-print-mode .report-letterhead-zone {
+  height: var(--diag-letterhead-height);
+  background: transparent;
+  border: none;
+}
+
+.diagnostic-report-print-doc .letterhead-screen-hint,
+body.test-report-print-mode .letterhead-screen-hint {
+  display: none;
+}
+
+.diagnostic-report-print-doc .report-print-title-bar,
+body.test-report-print-mode .report-print-title-bar {
+  height: var(--diag-title-bar-height);
+  line-height: var(--diag-title-bar-height);
+  padding: 0 var(--diag-side-margin);
+  margin: 0;
+  text-align: center;
+  font-size: 11pt;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border-bottom: 1.5pt solid #1a7f8c;
+  box-sizing: border-box;
+}
+
+.diagnostic-report-print-doc .report-print-footer,
+body.test-report-print-mode .report-print-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: var(--diag-footer-height);
+  padding: 2mm var(--diag-side-margin) 0;
+  border-top: 0.5pt solid #888;
+  font-size: 8pt;
+  color: #333;
+  background: #fff;
+  z-index: 1000;
+  box-sizing: border-box;
+}
+
+.diagnostic-report-print-doc .report-footer-row,
+body.test-report-print-mode .report-footer-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8mm;
+}
+
+.diagnostic-report-print-doc .report-footer-disclaimer,
+body.test-report-print-mode .report-footer-disclaimer {
+  flex: 1;
+  line-height: 1.25;
+}
+
+.diagnostic-report-print-doc .report-footer-pagenum::after,
+body.test-report-print-mode .report-footer-pagenum::after {
+  content: "Page " counter(page) " of " counter(pages);
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.diagnostic-report-print-doc .report-footer-sign,
+body.test-report-print-mode .report-footer-sign {
+  margin-top: 1.5mm;
+  font-size: 7.5pt;
+}
+
+.diagnostic-report-print-doc .report-footer-approved,
+body.test-report-print-mode .report-footer-approved {
+  flex: 1;
+}
+
+.diagnostic-report-print-doc .report-print-body,
+body.test-report-print-mode .report-print-body {
+  padding: calc(var(--diag-header-total) + 2mm) var(--diag-side-margin)
+    calc(var(--diag-footer-height) + 3mm) var(--diag-side-margin);
+}
+
+.diagnostic-report-print-doc .report-meta-table,
+body.test-report-print-mode .report-meta-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 8px;
+}
+
+.diagnostic-report-print-doc .report-meta-table td,
+body.test-report-print-mode .report-meta-table td {
+  border: 1px solid #ccc;
+  padding: 3px 6px;
+}
+
+.diagnostic-report-print-doc .meta-label,
+body.test-report-print-mode .meta-label {
+  font-weight: 600;
+  background: #f5f5f5;
+  width: 14%;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.diagnostic-report-print-doc .test-block-header,
+body.test-report-print-mode .test-block-header {
+  background: #e8f4f6;
+  border: 1px solid #b8d4da;
+  padding: 4px 6px;
+  margin: 10px 0 3px;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.diagnostic-report-print-doc .report-results-table,
+body.test-report-print-mode .report-results-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 6px;
+}
+
+.diagnostic-report-print-doc .report-results-table th,
+body.test-report-print-mode .report-results-table th {
+  background: #1a7f8c;
+  color: #fff;
+  padding: 3px 5px;
+  text-align: left;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.diagnostic-report-print-doc .report-results-table td,
+body.test-report-print-mode .report-results-table td {
+  border: 1px solid #ddd;
+  padding: 2px 5px;
+}
+
+.diagnostic-report-print-doc .report-test-block,
+body.test-report-print-mode .report-test-block {
+  page-break-inside: avoid;
+}
+
+.diagnostic-report-print-doc .abnormal-value,
+body.test-report-print-mode .abnormal-value {
+  font-weight: 700;
 }
 
 @media print {
   @page {
     size: A4 portrait;
-    margin: 32mm 8mm 12mm 8mm;
+    margin: 0;
   }
 
   body.test-report-print-mode app-header,
-  body.test-report-print-mode .left-nav,
+  body.test-report-print-mode app-nav-menu,
+  body.test-report-print-mode app-left-nav-menu,
+  body.test-report-print-mode app-footer,
+  body.test-report-print-mode #sidenav,
+  body.test-report-print-mode .sidenav,
   body.test-report-print-mode .navbar,
-  body.test-report-print-mode footer,
-  body.test-report-print-mode .no-print {
+  body.test-report-print-mode .nav-button,
+  body.test-report-print-mode .no-print,
+  body.test-report-print-mode .no-print * {
     display: none !important;
+    visibility: hidden !important;
   }
 
   body.test-report-print-mode .wrapper,
-  body.test-report-print-mode .content-wrapper,
+  body.test-report-print-mode .avilis-portal,
+  body.test-report-print-mode .avilis-body,
+  body.test-report-print-mode .container-main,
+  body.test-report-print-mode .avilis-page-body,
   body.test-report-print-mode .test-report-page {
     margin: 0 !important;
     padding: 0 !important;
     min-height: 0 !important;
+    width: 100% !important;
   }
 
-  body.test-report-print-mode .diagnostic-report {
-    font-size: 10pt;
-  }
-
-  body.test-report-print-mode .report-test-block {
-    page-break-inside: avoid;
-  }
-
-  body.test-report-print-mode .report-results-table th {
-    background: #1a7f8c !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
+  body.test-report-print-mode .container-main.qcontent.content-with-sidebar {
+    margin-left: 0 !important;
   }
 
   body.test-report-print-mode .abnormal-value {

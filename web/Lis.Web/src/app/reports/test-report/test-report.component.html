@@ -39,76 +39,95 @@
   </div>
 
   <div id="diagnostic-test-report-print" class="diagnostic-report" *ngIf="report && !loading">
-    <section class="report-meta" *ngIf="report.header">
-      <table class="report-meta-table">
-        <tbody>
-          <tr>
-            <td class="meta-label">Lab No</td>
-            <td class="meta-value">{{ report.header.labNo || '—' }}</td>
-            <td class="meta-label">Invoice No</td>
-            <td class="meta-value">{{ report.header.invoiceNo || '—' }}</td>
-          </tr>
-          <tr>
-            <td class="meta-label">Patient</td>
-            <td class="meta-value" colspan="3">
-              {{ report.header.patientName || '—' }}
-              <span *ngIf="report.header.patientId"> ({{ report.header.patientId }})</span>
-            </td>
-          </tr>
-          <tr>
-            <td class="meta-label">Age / Gender</td>
-            <td class="meta-value">{{ report.header.age }} / {{ report.header.gender || '—' }}</td>
-            <td class="meta-label">Referral Doctor</td>
-            <td class="meta-value">{{ report.header.referralDoctor || '—' }}</td>
-          </tr>
-          <tr *ngIf="report.header.corporate">
-            <td class="meta-label">Corporate</td>
-            <td class="meta-value" colspan="3">{{ report.header.corporate }}</td>
-          </tr>
-          <tr>
-            <td class="meta-label">Collection Date</td>
-            <td class="meta-value">{{ report.header.collectionDate | date:'dd/MM/yyyy' }}</td>
-            <td class="meta-label">Report Date</td>
-            <td class="meta-value">{{ report.header.reportDate | date:'dd/MM/yyyy' }}</td>
-          </tr>
-          <tr *ngIf="report.header.approvedBy">
-            <td class="meta-label">Approved By</td>
-            <td class="meta-value" colspan="3">{{ report.header.approvedBy }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </section>
-
-    <section class="report-test-block" *ngFor="let section of report.sections">
-      <div class="test-block-header">
-        <strong>{{ section.testName }}</strong>
-        <span class="test-meta" *ngIf="section.testCode"> ({{ section.testCode }})</span>
-        <span class="test-meta" *ngIf="section.specimen"> — {{ section.specimen }}</span>
-        <span class="test-meta" *ngIf="section.sampleNo"> — Sample: {{ section.sampleNo }}</span>
+    <!-- Fixed on every printed page: reserved letterhead + report title -->
+    <header class="report-print-header">
+      <div class="report-letterhead-zone" aria-hidden="true">
+        <span class="letterhead-screen-hint">Pre-printed letterhead</span>
       </div>
-      <table class="table table-bordered table-condensed report-results-table">
-        <thead>
-          <tr>
-            <th>Parameter</th>
-            <th class="text-right">Result</th>
-            <th>Unit</th>
-            <th>Reference Range</th>
-            <th class="text-center">Flag</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let p of section.parameters" [class.abnormal-row]="p.isAbnormal">
-            <td>{{ p.parameterName }}</td>
-            <td class="text-right result-value" [class.abnormal-value]="p.isAbnormal">{{ p.resultValue }}</td>
-            <td>{{ p.unit || '—' }}</td>
-            <td>{{ p.referenceRange || '—' }}</td>
-            <td class="text-center flag-cell">{{ p.flag || '' }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </section>
+      <div class="report-print-title-bar">Laboratory Diagnostic Report</div>
+    </header>
 
-    <p class="report-footer-note">This is a computer-generated diagnostic report. Abnormal flags: H = High, L = Low.</p>
+    <div class="report-print-body">
+      <section class="report-meta" *ngIf="report.header">
+        <table class="report-meta-table">
+          <tbody>
+            <tr>
+              <td class="meta-label">Lab No</td>
+              <td class="meta-value">{{ report.header.labNo || '—' }}</td>
+              <td class="meta-label">Invoice No</td>
+              <td class="meta-value">{{ report.header.invoiceNo || '—' }}</td>
+            </tr>
+            <tr>
+              <td class="meta-label">Patient</td>
+              <td class="meta-value" colspan="3">
+                {{ report.header.patientName || '—' }}
+                <span *ngIf="report.header.patientId"> ({{ report.header.patientId }})</span>
+              </td>
+            </tr>
+            <tr>
+              <td class="meta-label">Age / Gender</td>
+              <td class="meta-value">{{ report.header.age }} / {{ report.header.gender || '—' }}</td>
+              <td class="meta-label">Referral Doctor</td>
+              <td class="meta-value">{{ report.header.referralDoctor || '—' }}</td>
+            </tr>
+            <tr *ngIf="report.header.corporate">
+              <td class="meta-label">Corporate</td>
+              <td class="meta-value" colspan="3">{{ report.header.corporate }}</td>
+            </tr>
+            <tr>
+              <td class="meta-label">Collection Date</td>
+              <td class="meta-value">{{ report.header.collectionDate | date:'dd/MM/yyyy' }}</td>
+              <td class="meta-label">Report Date</td>
+              <td class="meta-value">{{ report.header.reportDate | date:'dd/MM/yyyy' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="report-test-block" *ngFor="let section of report.sections">
+        <div class="test-block-header">
+          <strong>{{ section.testName }}</strong>
+          <span class="test-meta" *ngIf="section.testCode"> ({{ section.testCode }})</span>
+          <span class="test-meta" *ngIf="section.specimen"> — {{ section.specimen }}</span>
+          <span class="test-meta" *ngIf="section.sampleNo"> — Sample: {{ section.sampleNo }}</span>
+        </div>
+        <table class="table table-bordered table-condensed report-results-table">
+          <thead>
+            <tr>
+              <th>Parameter</th>
+              <th class="text-right">Result</th>
+              <th>Unit</th>
+              <th>Reference Range</th>
+              <th class="text-center">Flag</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let p of section.parameters" [class.abnormal-row]="p.isAbnormal">
+              <td>{{ p.parameterName }}</td>
+              <td class="text-right result-value" [class.abnormal-value]="p.isAbnormal">{{ p.resultValue }}</td>
+              <td>{{ p.unit || '—' }}</td>
+              <td>{{ p.referenceRange || '—' }}</td>
+              <td class="text-center flag-cell">{{ p.flag || '' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </div>
+
+    <!-- Fixed on every printed page: disclaimer, approval, page number -->
+    <footer class="report-print-footer">
+      <div class="report-footer-row report-footer-main">
+        <span class="report-footer-disclaimer">
+          Computer-generated report. Results relate only to the specimen received.
+          Abnormal flags: H = High, L = Low.
+        </span>
+        <span class="report-footer-pagenum" aria-label="Page number"></span>
+      </div>
+      <div class="report-footer-row report-footer-sign" *ngIf="report.header?.approvedBy">
+        <span class="report-footer-approved">Approved by: {{ report.header.approvedBy }}</span>
+        <span class="report-footer-sign-line">Authorized signatory: _________________________</span>
+      </div>
+    </footer>
   </div>
 
   <div class="zorya-report-empty no-print" *ngIf="searched && !report && !loading && !filterError">
