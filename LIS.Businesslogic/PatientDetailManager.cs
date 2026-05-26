@@ -141,6 +141,13 @@ namespace LIS.BusinessLogic
 
                 item.Department = departmentname != null ? departmentname.Name : (item.Department ?? string.Empty);
 
+                var paramNames = parameterRepo.Get(p => p.TestRequestDetailsId == item.Id)
+                    .Select(p => !string.IsNullOrWhiteSpace(p.HISParamName) ? p.HISParamName : p.HISParamCode)
+                    .Where(n => !string.IsNullOrWhiteSpace(n))
+                    .Distinct()
+                    .ToList();
+                item.TestParameterNames = paramNames.Any() ? string.Join(", ", paramNames) : string.Empty;
+
                 var testResult = testResultRepo.Get(t => t.SampleNo.Equals(item.SampleNo, StringComparison.OrdinalIgnoreCase)
                                                         && t.HISTestCode.Equals(item.HISTestCode, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
 

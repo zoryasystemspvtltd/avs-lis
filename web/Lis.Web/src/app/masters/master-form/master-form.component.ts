@@ -24,6 +24,8 @@ export class MasterFormComponent implements OnInit {
   profiles: any[] = [];
   hisParameters: any[] = [];
   equipments: any[] = [];
+  methods: any[] = [];
+  parameterOptions: any[] = [];
   lookupsLoaded = false;
 
   constructor(
@@ -63,6 +65,11 @@ export class MasterFormComponent implements OnInit {
       group['hisTestPicker'] = [null, Validators.required];
       group['hisTestCode'] = [''];
       group['hisTestCodeDescription'] = [''];
+      group['specimenCode'] = [''];
+      group['specimenName'] = [''];
+    }
+    if (this.isTestParameterScreen) {
+      group['hisParameterPicker'] = [null];
     }
     if (this.fields.find(f => f.name === 'isActive')) {
       group['isActive'] = [true];
@@ -71,8 +78,16 @@ export class MasterFormComponent implements OnInit {
 
     if (this.apiName === 'TestRate') {
       this.loadTestRateLookups();
-    } else if (this.apiName === 'HisParameterMaster' || this.apiName === 'HisParameterRangeMaster' || this.apiName === 'TestMappingMaster') {
+    } else     if (this.apiName === 'HisParameterMaster' || this.apiName === 'HisParameterRangeMaster' || this.apiName === 'TestMappingMaster') {
       this.loadSetupLookups();
+    } else if (this.apiName === 'Department' || this.apiName === 'Unit' || this.apiName === 'Method' || this.apiName === 'Specimens') {
+      if (this.id) {
+        this.masterService.getItem(this.apiName, this.id).subscribe(item => {
+          if (item) {
+            this.patchItem(item);
+          }
+        });
+      }
     } else if (!this.id && this.apiName === 'PatientMaster') {
       this.masterService.getNextPatientId().subscribe(pid => {
         if (pid) {
@@ -88,6 +103,10 @@ export class MasterFormComponent implements OnInit {
     }
   }
 
+  get isTestParameterScreen(): boolean {
+    return this.apiName === 'HisParameterMaster' && (this.returnUrl || '').indexOf('test-parameters') >= 0;
+  }
+
   isCodeReadonly(field: any): boolean {
     if (!field || field.name !== 'code' || !this.id) {
       return false;
@@ -95,9 +114,29 @@ export class MasterFormComponent implements OnInit {
     return true;
   }
 
+  isFieldReadonly(field: any): boolean {
+    if (!field) {
+      return false;
+    }
+    if (this.apiName === 'TestMappingMaster' &&
+      (field.name === 'hisTestCode' || field.name === 'hisTestCodeDescription' ||
+        field.name === 'specimenCode' || field.name === 'specimenName')) {
+      return true;
+    }
+    if (this.isTestParameterScreen &&
+      (field.name === 'hisParamCode' || field.name === 'hisParamUnit')) {
+      return true;
+    }
+    return !!field.readonly || this.isCodeReadonly(field);
+  }
+
   visibleFields() {
     if (this.apiName === 'TestMappingMaster') {
-      return this.fields.filter(f => f.name !== 'hisTestCode' && f.name !== 'hisTestCodeDescription');
+      return this.fields.filter(f =>
+        f.name !== 'hisTestCode' && f.name !== 'hisTestCodeDescription' && f.name !== 'specimenCode');
+    }
+    if (this.isTestParameterScreen) {
+      return this.fields.filter(f => f.name !== 'hisParamMethod');
     }
     return this.fields;
   }
@@ -131,6 +170,9 @@ export class MasterFormComponent implements OnInit {
     if (this.apiName === 'TestMappingMaster') {
       requests.equipments = this.httpEquipmentList();
     }
+    if (this.isTestParameterScreen) {
+      requests.methods = this.masterService.getAll('Method');
+    }
 
     forkJoin(requests).subscribe(
       (data: any) => {
@@ -141,12 +183,18 @@ export class MasterFormComponent implements OnInit {
         if (data.equipments) {
           this.equipments = data.equipments || [];
         }
+        if (data.methods) {
+          this.methods = (data.methods || []).filter((m: any) => m.isActive !== false && m.IsActive !== false);
+        }
         this.lookupsLoaded = true;
         if (this.id) {
           this.masterService.getItem(this.apiName, this.id).subscribe(item => {
             if (item) {
               this.patchItem(item);
               this.syncHisTestPicker(item);
+              if (this.isTestParameterScreen) {
+                this.loadParametersForTest(item.hisTestId || item.HisTestId, () => this.syncParameterPicker(item));
+              }
             }
           });
         }
@@ -156,14 +204,58 @@ export class MasterFormComponent implements OnInit {
   }
 
   onHisTestSelected() {
-    const testId = this.form.get('hisTestPicker').value;
-    const test = this.tests.find(t => t.id === testId);
+    const testId = this.form.get('hisTestPicker')?.value ?? this.form.get('hisTestId')?.value;
+    const test = this.tests.find(t => +t.id === +testId);
     if (test) {
       this.form.patchValue({
-        hisTestCode: test.hisTestCode,
-        hisTestCodeDescription: test.hisTestCodeDescription
+        hisTestCode: test.hisTestCode || test.HISTestCode,
+        hisTestCodeDescription: test.hisTestCodeDescription || test.HISTestCodeDescription,
+        specimenCode: test.hisSpecimenCode || test.HISSpecimenCode || '',
+        specimenName: test.hisSpecimenName || test.HISSpecimenName || ''
       });
     }
+    if (this.isTestParameterScreen) {
+      this.loadParametersForTest(testId);
+    }
+  }
+
+  onHisTestIdChanged() {
+    if (this.isTestParameterScreen) {
+      this.onHisTestSelected();
+    }
+  }
+
+  loadParametersForTest(testId: number, afterLoad?: () => void) {
+    this.parameterOptions = [];
+    if (!testId) {
+      if (afterLoad) { afterLoad(); }
+      return;
+    }
+    this.masterService.getItems('HisParameterMaster', {
+      RecordPerPage: 500,
+      CurrentPage: 1,
+      SortColumnName: 'HISParamCode',
+      SortDirection: true
+    }).subscribe(r => {
+      const items = r?.items || r?.Items || [];
+      this.parameterOptions = items.filter((p: any) => +p.hisTestId === +testId);
+      if (afterLoad) { afterLoad(); }
+    });
+  }
+
+  onParameterTemplateSelected() {
+    const pickerId = this.form.get('hisParameterPicker')?.value;
+    const param = this.parameterOptions.find((p: any) => +p.id === +pickerId);
+    if (!param) {
+      return;
+    }
+    this.form.patchValue({
+      hisParamCode: param.hisParamCode || param.HISParamCode,
+      hisParamDescription: param.hisParamDescription || param.HISParamDescription,
+      hisParamUnit: param.hisParamUnit || param.HISParamUnit,
+      hisParamMethod: param.hisParamMethod || param.HISParamMethod,
+      lisParamCode: param.lisParamCode || param.LISParamCode || param.hisParamCode
+    });
   }
 
   private syncHisTestPicker(item: any) {
@@ -171,9 +263,22 @@ export class MasterFormComponent implements OnInit {
       return;
     }
 
-    const test = this.tests.find(t => t.hisTestCode === item.hisTestCode);
+    const test = this.tests.find(t =>
+      (t.hisTestCode || t.HISTestCode) === item.hisTestCode);
     if (test) {
       this.form.patchValue({ hisTestPicker: test.id });
+      this.onHisTestSelected();
+    }
+  }
+
+  private syncParameterPicker(item: any) {
+    if (!this.isTestParameterScreen || !item?.hisParamCode) {
+      return;
+    }
+    const match = this.parameterOptions.find(p =>
+      (p.hisParamCode || p.HISParamCode) === item.hisParamCode);
+    if (match) {
+      this.form.patchValue({ hisParameterPicker: match.id });
     }
   }
 
@@ -232,6 +337,8 @@ export class MasterFormComponent implements OnInit {
 
   patchItem(item: any) {
     const patch: any = Object.assign({}, item);
+    if (patch.Code != null && patch.code == null) { patch.code = patch.Code; }
+    if (patch.Name != null && patch.name == null) { patch.name = patch.Name; }
     if (patch.effectiveStart) { patch.effectiveStart = this.toDateInput(patch.effectiveStart); }
     if (patch.effectiveEnd) { patch.effectiveEnd = this.toDateInput(patch.effectiveEnd); }
     if (patch.dateOfBirth) { patch.dateOfBirth = this.toDateInput(patch.dateOfBirth); }
@@ -243,8 +350,13 @@ export class MasterFormComponent implements OnInit {
     if (patch.hisTestId != null) { patch.hisTestId = +patch.hisTestId; }
     if (patch.hisParameterId != null) { patch.hisParameterId = +patch.hisParameterId; }
     if (patch.equipmentId != null) { patch.equipmentId = +patch.equipmentId; }
-    if (patch.isActive != null) { patch.isActive = !!patch.isActive; }
+    if (patch.isActive != null) { patch.isActive = this.coerceBool(patch.isActive); }
+    if (patch.IsActive != null) { patch.isActive = this.coerceBool(patch.IsActive); }
     this.form.patchValue(patch);
+  }
+
+  private coerceBool(value: any): boolean {
+    return value === true || value === 'true' || value === 1 || value === '1';
   }
 
   onSubmit() {
@@ -262,7 +374,10 @@ export class MasterFormComponent implements OnInit {
     }
     if (this.form.invalid) { return; }
 
-    let item = Object.assign({}, this.form.value);
+    let item = Object.assign({}, this.form.getRawValue());
+    if (item.code) { item.code = ('' + item.code).trim(); }
+    if (item.name) { item.name = ('' + item.name).trim(); }
+    if (item.hisParamCode) { item.hisParamCode = ('' + item.hisParamCode).trim(); }
     if (item.effectiveStart) { item.effectiveStart = new Date(item.effectiveStart); }
     if (item.effectiveEnd) { item.effectiveEnd = new Date(item.effectiveEnd); }
     if (item.dateOfBirth) { item.dateOfBirth = new Date(item.dateOfBirth); }
@@ -272,6 +387,9 @@ export class MasterFormComponent implements OnInit {
         item.groupName = eq.name || eq.groupName;
       }
       delete item.hisTestPicker;
+    }
+    if (this.isTestParameterScreen) {
+      delete item.hisParameterPicker;
     }
     if (this.apiName === 'PatientMaster' && !item.hisPatientId) {
       this.alertService.error('Patient ID is required.');
@@ -334,10 +452,12 @@ export class MasterFormComponent implements OnInit {
 
   deactivate() {
     if (!this.id) { return; }
-    const isDelete = this.apiName === 'HisParameterMaster';
-    const msg = isDelete
-      ? 'Delete this test-parameter mapping? Remove parameter ranges first if delete is blocked.'
-      : 'Deactivate this record?';
+    const isDelete = this.apiName === 'HisParameterMaster' || this.apiName === 'Department';
+    const msg = this.apiName === 'Department'
+      ? 'Delete this department permanently?'
+      : (isDelete
+        ? 'Delete this test-parameter mapping? Remove parameter ranges first if delete is blocked.'
+        : 'Deactivate this record?');
     if (!confirm(msg)) { return; }
 
     const payload = this.apiName === 'Department' ? { code: this.id } : { id: +this.id };

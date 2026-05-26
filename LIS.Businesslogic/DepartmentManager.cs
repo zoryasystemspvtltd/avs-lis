@@ -43,18 +43,14 @@ namespace LIS.Businesslogic
             {
                 var search = option.SearchText.Trim();
                 query = query.Where(d =>
-                    d.Code.Contains(search) ||
-                    d.Name.Contains(search));
+                    (d.Code != null && d.Code.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                    (d.Name != null && d.Name.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0));
             }
 
             var list = query.ToList();
             result.TotalRecord = list.Count;
 
-            var sortColumn = string.IsNullOrEmpty(option.SortColumnName) ? "Name" : option.SortColumnName;
-            if (sortColumn != "Code" && sortColumn != "Name")
-            {
-                sortColumn = "Name";
-            }
+            var sortColumn = ResolveSortColumn(option.SortColumnName);
 
             int minRow = (option.CurrentPage - 1) * option.RecordPerPage;
             int pageSize = option.RecordPerPage == 0 ? result.TotalRecord : option.RecordPerPage;
@@ -70,6 +66,18 @@ namespace LIS.Businesslogic
 
         public void Add(Departments department)
         {
+            if (department == null)
+            {
+                throw new ArgumentNullException(nameof(department));
+            }
+
+            department.Code = department.Code?.Trim();
+            department.Name = department.Name?.Trim();
+            if (string.IsNullOrWhiteSpace(department.Code) || string.IsNullOrWhiteSpace(department.Name))
+            {
+                throw new InvalidOperationException("Department code and name are required.");
+            }
+
             departmentRepo.Add(department);
         }
 
@@ -86,6 +94,27 @@ namespace LIS.Businesslogic
         public Departments Get(string code)
         {
             return departmentRepo.Get(code);
+        }
+
+        private static string ResolveSortColumn(string sortColumnName)
+        {
+            if (string.IsNullOrWhiteSpace(sortColumnName))
+            {
+                return "Name";
+            }
+
+            var col = sortColumnName.Trim();
+            if (col.Equals("code", StringComparison.OrdinalIgnoreCase))
+            {
+                return "Code";
+            }
+
+            if (col.Equals("name", StringComparison.OrdinalIgnoreCase))
+            {
+                return "Name";
+            }
+
+            return "Name";
         }
     }
 }

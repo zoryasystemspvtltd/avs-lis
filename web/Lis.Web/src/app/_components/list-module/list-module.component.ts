@@ -89,6 +89,12 @@ export class ListModuleComponent implements OnInit, OnChanges {
     if (this.schemma.module === 'PatientMaster') {
       this.option.SortColumnName = 'Name';
     }
+    if (this.schemma.module === 'Department') {
+      this.option.SortColumnName = 'Code';
+    }
+    if (this.schemma.module === 'Specimens') {
+      this.option.SortColumnName = 'Code';
+    }
     if (this.schemma.module === 'Patients') {
       this.option.SortColumnName = 'SampleCollectionDate';
       this.option.SortDirection = false;
@@ -133,7 +139,7 @@ export class ListModuleComponent implements OnInit, OnChanges {
 
     const masterApiModules = [
       'HisTest', 'TestRate', 'SaleInvoice', 'HisParameterMaster', 'HisParameterRangeMaster',
-      'TestMappingMaster', 'PatientMaster', 'EquipmentHeartbeat'
+      'TestMappingMaster', 'PatientMaster', 'EquipmentHeartbeat', 'Department', 'Specimens'
     ];
     const source$ = this.shouldUseGetAll()
       ? this.masterService.getAll(this.schemma.module)

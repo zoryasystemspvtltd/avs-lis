@@ -58,11 +58,16 @@ export class TestCreateComponent implements OnInit {
 
   initForms() {
     this.createTestForm = this.formBuilder.group({
-      hisTestCode: ['', Validators.required],
+      hisTestCode: [{ value: '', disabled: true }, Validators.required],
       hisTestCodeDescription: ['', Validators.required],
       hisSpecimenCode: ['', Validators.required],
       departmentCode: ['', Validators.required],
       isActive: [true]
+    });
+    this.testMasterService.getNextTestCode().subscribe(code => {
+      if (code) {
+        this.createTestForm.patchValue({ hisTestCode: code });
+      }
     });
   }
 
@@ -83,8 +88,9 @@ export class TestCreateComponent implements OnInit {
     }
 
     this.loading = true;
-    const formValue = this.createTestForm.value;
-    const selectedSpecimen = this.specimens.find(s => s.code === formValue.hisSpecimenCode);
+    const formValue = this.createTestForm.getRawValue();
+    const selectedSpecimen = this.specimens.find(s =>
+      (s.code || s.Code) === formValue.hisSpecimenCode);
     const test: any = {
       hisTestCode: formValue.hisTestCode,
       hisTestCodeDescription: formValue.hisTestCodeDescription,
@@ -96,6 +102,7 @@ export class TestCreateComponent implements OnInit {
 
     this.testMasterService.create(test)
       .subscribe(data => {
+        this.loading = false;
         this.alertService.success('Test added successfully');
         this.router.navigate(['/test-master']);
       },

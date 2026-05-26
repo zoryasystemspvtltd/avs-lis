@@ -23,6 +23,16 @@ namespace LIS.BusinessLogic
 
         public new long Add(HISParameterMaster item)
         {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
+            if (item.HisTestId <= 0)
+            {
+                throw new InvalidOperationException("Test is required.");
+            }
+
             if (ExistsDuplicate(item, null))
             {
                 throw new InvalidOperationException("A parameter with this code already exists for the selected test.");
@@ -137,6 +147,21 @@ namespace LIS.BusinessLogic
 
         public new long Add(HISParameterRangMaster item)
         {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
+            if (item.HisParameterId <= 0)
+            {
+                throw new InvalidOperationException("Parameter is required.");
+            }
+
+            if (string.IsNullOrWhiteSpace(item.HISRangeCode))
+            {
+                throw new InvalidOperationException("Range code is required.");
+            }
+
             item.CreatedOn = DateTime.Now;
             return base.Add(item);
         }

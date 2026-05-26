@@ -75,7 +75,7 @@ export class TestEditComponent implements OnInit {
       hisTestCodeDescription: [this.item.hisTestCodeDescription, Validators.required],
       hisSpecimenCode: [this.item.hisSpecimenCode, Validators.required],
       departmentCode: [this.item.departmentCode, Validators.required],
-      isActive: [!!this.item.isActive]
+      isActive: [this.coerceBool(this.item.isActive ?? this.item.IsActive)]
     });
   }
 
@@ -118,6 +118,10 @@ export class TestEditComponent implements OnInit {
           this.loading = false;
           this.alertService.error(error?.error?.message || 'Failed to update test');
         });
+  }
+
+  private coerceBool(value: any): boolean {
+    return value === true || value === 'true' || value === 1 || value === '1';
   }
 
   ngOnDestroy() {

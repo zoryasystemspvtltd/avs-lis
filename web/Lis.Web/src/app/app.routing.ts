@@ -103,6 +103,7 @@ const LOOKUP_FIELDS = {
     { name: 'lisTestCode', label: 'LIS Test Code', type: 'text', required: true },
     { name: 'lisTestCodeDescription', label: 'LIS Test Description', type: 'text' },
     { name: 'specimenCode', label: 'Specimen Code', type: 'text' },
+    { name: 'specimenName', label: 'Specimen', type: 'text' },
     { name: 'isActive', label: 'Active', type: 'checkbox' }
   ],
   patient: [

@@ -55,9 +55,7 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
       lines: this.fb.array([])
     });
 
-    this.masterService.getLookupList('HisTest').subscribe(t => {
-      this.tests = (t || []).filter(x => x.isActive !== false && x.IsActive !== false);
-    });
+    this.loadBillableTests();
     this.masterService.getAll('Corporate').subscribe(c => {
       this.corporates = (c || []).filter(x => x.isActive !== false && x.IsActive !== false);
     });
@@ -198,7 +196,41 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
   }
 
   onInvoiceDateChange() {
+    this.loadBillableTests();
     this.onRateContextChange();
+  }
+
+  private loadBillableTests() {
+    const invoiceDate = this.getInvoiceDate();
+    this.masterService.getLookupList('HisTest').subscribe(allTests => {
+      const activeTests = (allTests || []).filter(x => x.isActive !== false && x.IsActive !== false);
+      this.masterService.getItems('TestRate', {
+        RecordPerPage: 5000,
+        CurrentPage: 1,
+        SortColumnName: 'EffectiveStart',
+        SortDirection: false
+      }).subscribe(rateResponse => {
+        const rates = rateResponse?.items || rateResponse?.Items || [];
+        const asOf = new Date(invoiceDate);
+        asOf.setHours(0, 0, 0, 0);
+        const testIdsWithRate = new Set<number>();
+        rates.forEach((r: any) => {
+          if (r.isActive === false || r.IsActive === false) {
+            return;
+          }
+          const from = new Date(r.effectiveStart || r.EffectiveStart);
+          const to = new Date(r.effectiveEnd || r.EffectiveEnd);
+          from.setHours(0, 0, 0, 0);
+          to.setHours(23, 59, 59, 999);
+          if (asOf >= from && asOf <= to) {
+            testIdsWithRate.add(+(r.testId || r.TestId));
+          }
+        });
+        this.tests = activeTests.filter(t => testIdsWithRate.has(+t.id));
+      }, () => {
+        this.tests = [];
+      });
+    });
   }
 
   onRateContextChange() {

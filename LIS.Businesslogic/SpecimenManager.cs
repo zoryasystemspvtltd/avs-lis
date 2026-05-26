@@ -26,6 +26,19 @@ namespace LIS.Businesslogic
 
         public long Add(HISSpecimenMaster specimen)
         {
+            if (specimen == null)
+            {
+                throw new ArgumentNullException(nameof(specimen));
+            }
+
+            specimen.Code = specimen.Code?.Trim();
+            specimen.Name = specimen.Name?.Trim();
+            if (string.IsNullOrWhiteSpace(specimen.Code) || string.IsNullOrWhiteSpace(specimen.Name))
+            {
+                throw new InvalidOperationException("Specimen code and name are required.");
+            }
+
+            specimen.IsActive = true;
             specimen.CreatedOn = DateTime.Now;
             specimen.CreatedBy = identity?.ActivityMember;
             return specimenRepo.Add(specimen);
@@ -62,7 +75,7 @@ namespace LIS.Businesslogic
             var list = query.ToList();
             result.TotalRecord = list.Count;
 
-            var sortColumn = string.IsNullOrEmpty(option.SortColumnName) ? "Name" : option.SortColumnName;
+            var sortColumn = ResolveSortColumn(option.SortColumnName);
             int minRow = (option.CurrentPage - 1) * option.RecordPerPage;
             int pageSize = option.RecordPerPage == 0 ? result.TotalRecord : option.RecordPerPage;
 
@@ -88,6 +101,32 @@ namespace LIS.Businesslogic
         public void Update(HISSpecimenMaster specimen)
         {
             specimenRepo.Update(specimen);
+        }
+
+        private static string ResolveSortColumn(string sortColumnName)
+        {
+            if (string.IsNullOrWhiteSpace(sortColumnName))
+            {
+                return "Name";
+            }
+
+            var col = sortColumnName.Trim();
+            if (col.Equals("code", StringComparison.OrdinalIgnoreCase))
+            {
+                return "Code";
+            }
+
+            if (col.Equals("name", StringComparison.OrdinalIgnoreCase))
+            {
+                return "Name";
+            }
+
+            if (col.Equals("isactive", StringComparison.OrdinalIgnoreCase))
+            {
+                return "IsActive";
+            }
+
+            return "Name";
         }
     }
 }

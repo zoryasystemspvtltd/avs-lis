@@ -57,6 +57,21 @@ namespace Lis.Api.Controllers.Api
             }
         }
 
+        [HttpGet]
+        [Route("NextTestCode")]
+        public IHttpActionResult GetNextTestCode()
+        {
+            try
+            {
+                return Ok(new { testCode = hisManager.GenerateNextTestCode() });
+            }
+            catch (Exception e)
+            {
+                logger.LogException(e);
+                return Ok(new { testCode = string.Empty });
+            }
+        }
+
         /// <summary>
         /// Add Test Master details to database
         /// </summary>

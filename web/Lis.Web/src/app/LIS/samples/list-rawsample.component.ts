@@ -36,7 +36,10 @@ export class ListRawSampleComponent implements OnInit {
         heading: 'IP No', fieldName: 'ipNo', sortable: false, width: '10%', type: 'label'
       },
       {
-        heading: 'Test Name', fieldName: 'hisTestName',chieldFieldName:'name', sortable: false, width: '16%', type: 'label'
+        heading: 'Test Name', fieldName: 'hisTestName',chieldFieldName:'name', sortable: false, width: '14%', type: 'label'
+      },
+      {
+        heading: 'Test Parameter', fieldName: 'testParameterNames', sortable: false, width: '14%', type: 'label'
       },
       {
         heading: 'Department', fieldName: 'department',chieldFieldName:'name', sortable: false, width: '14%', type: 'label'

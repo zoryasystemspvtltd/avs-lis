@@ -68,4 +68,12 @@ export class TestMasterService {
         catchError(() => of([]))
       );
   }
+
+  getNextTestCode(): Observable<string> {
+    return this.http.get<any>(`${environment.ApplicationServer}/api/HisTest/NextTestCode`)
+      .pipe(
+        map(r => r?.testCode || r?.TestCode || ''),
+        catchError(() => of(''))
+      );
+  }
 }

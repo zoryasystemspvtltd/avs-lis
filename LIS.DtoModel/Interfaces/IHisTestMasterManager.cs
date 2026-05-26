@@ -13,5 +13,6 @@ namespace LIS.DtoModel.Interfaces
         IEnumerable<HISParameterRangMaster> GetRangesByParameterId(int ParameterId);
         IEnumerable<HisTestMaster> GetTests();
         ItemList<HisTestMaster> Get(ListOptions options);
+        string GenerateNextTestCode();
     }
 }

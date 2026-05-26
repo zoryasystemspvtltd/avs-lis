@@ -15,7 +15,7 @@
                                     <div class="input-group">
                                         <span class="input-group-addon"><i class="glyphicon glyphicon-barcode"></i></span>
                                         <input [type]="'text'" class="form-control" formControlName="hisTestCode"
-                                            placeholder="Enter Test Code" maxlength="50">
+                                            placeholder="Auto-generated" maxlength="50" readonly>
                                     </div>
                                     <span *ngIf="isInValid('hisTestCode')" class="error">Test Code is required.</span>
                                 </div>
@@ -39,8 +39,8 @@
                                         <span class="input-group-addon"><i class="glyphicon glyphicon-list"></i></span>
                                         <select class="form-control" formControlName="hisSpecimenCode">
                                             <option value="">Select Specimen</option>
-                                            <option *ngFor="let specimen of specimens" [ngValue]="specimen.code">
-                                                {{specimen.name}}
+                                            <option *ngFor="let specimen of specimens" [ngValue]="specimen.code || specimen.Code">
+                                                {{specimen.name || specimen.Name}}
                                             </option>
                                         </select>
                                     </div>
@@ -53,8 +53,8 @@
                                         <span class="input-group-addon"><i class="glyphicon glyphicon-list"></i></span>
                                         <select class="form-control" formControlName="departmentCode">
                                             <option value="">Select Department</option>
-                                            <option *ngFor="let department of departments" [ngValue]="department.code">
-                                                {{department.name}}
+                                            <option *ngFor="let department of departments" [ngValue]="department.code || department.Code">
+                                                {{department.name || department.Name}}
                                             </option>
                                         </select>
                                     </div>

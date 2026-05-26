@@ -144,8 +144,49 @@ namespace LIS.BusinessLogic
             return test;
         }
 
+        public string GenerateNextTestCode()
+        {
+            var codes = testRepo.Get().Select(t => t.HISTestCode).Where(c => !string.IsNullOrWhiteSpace(c)).ToList();
+            var max = 0;
+            foreach (var code in codes)
+            {
+                var trimmed = code.Trim();
+                if (trimmed.Length > 1 && trimmed[0] == 'T' && int.TryParse(trimmed.Substring(1), out var num))
+                {
+                    if (num > max)
+                    {
+                        max = num;
+                    }
+                }
+            }
+
+            return $"T{(max + 1).ToString("D7", CultureInfo.InvariantCulture)}";
+        }
+
         public long Add(HisTestMaster test)
         {
+            if (test == null)
+            {
+                throw new ArgumentNullException(nameof(test));
+            }
+
+            if (string.IsNullOrWhiteSpace(test.HISTestCode))
+            {
+                test.HISTestCode = GenerateNextTestCode();
+            }
+
+            test.HISTestCode = test.HISTestCode.Trim();
+            test.IsActive = true;
+            if (test.CreatedOn == default(DateTime))
+            {
+                test.CreatedOn = DateTime.Now;
+            }
+
+            if (string.IsNullOrWhiteSpace(test.CreatedBy))
+            {
+                test.CreatedBy = identity?.ActivityMember;
+            }
+
             return testRepo.Add(test);
         }
 

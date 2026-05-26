@@ -46,6 +46,8 @@ namespace LIS.DtoModel.Models
         public bool RequireReOpenion { get; set; }
         [NotMapped]
         public string LISTestCode { get; set; }
+        [NotMapped]
+        public string TestParameterNames { get; set; }
 
         /* DTO Relations*/
         [ForeignKey("Patient")]
