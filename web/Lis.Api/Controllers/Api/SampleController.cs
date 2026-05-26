@@ -49,7 +49,7 @@ namespace Lis.Api.Controllers.Api
             catch (Exception e)
             {
                 logger.LogException(e);
-                return null;
+                return Request.CreateErrorResponse(HttpStatusCode.BadRequest, e.Message);
             }
         }
 
@@ -78,7 +78,7 @@ namespace Lis.Api.Controllers.Api
             catch (Exception e)
             {
                 logger.LogException(e);
-                return null;
+                return Request.CreateErrorResponse(HttpStatusCode.BadRequest, e.Message);
             }
         }
 

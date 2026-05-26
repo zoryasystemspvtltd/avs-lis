@@ -57,12 +57,12 @@ namespace LIS.Businesslogic
 
         public void TechnicianReview(long Id, ReportStatusType reportStatusType, string note, long recentTestRequestId)
         {
-            ReviewProcess(Id, reportStatusType, note, recentTestRequestId);
+            ReviewProcess(Id, reportStatusType, note, recentTestRequestId, isDoctorReview: false);
         }
 
         public void DoctorReview(long Id, ReportStatusType reportStatusType, string note, long recentTestRequestId)
         {
-            var requestDetail = ReviewProcess(Id, reportStatusType, note, recentTestRequestId);
+            var requestDetail = ReviewProcess(Id, reportStatusType, note, recentTestRequestId, isDoctorReview: true);
 
             /* //Submit Test Result to HIS is changed through SQL job
             if (requestDetail.ReportStatus == ReportStatusType.DoctorApproved)
@@ -77,7 +77,7 @@ namespace LIS.Businesslogic
             */
         }
 
-        private TestRequestDetail ReviewProcess(long Id, ReportStatusType reportStatusType, string note, long recentTestRequestId)
+        private TestRequestDetail ReviewProcess(long Id, ReportStatusType reportStatusType, string note, long recentTestRequestId, bool isDoctorReview)
         {
             if (reportStatusType == ReportStatusType.New)
             {
@@ -87,6 +87,11 @@ namespace LIS.Businesslogic
             else
             {
                 var testRequestDetail = testRequestDetailsRepo.Get(Id);
+                if (testRequestDetail == null)
+                {
+                    throw new InvalidOperationException("Test request not found.");
+                }
+
                 var testRequestDetails = testRequestDetailsRepo.Get(p => p.SampleNo.Equals(testRequestDetail.SampleNo, StringComparison.OrdinalIgnoreCase)
                                         && p.HISTestCode.Equals(testRequestDetail.HISTestCode, StringComparison.OrdinalIgnoreCase)).ToList();
 
@@ -101,6 +106,7 @@ namespace LIS.Businesslogic
 
                         if (testRequest.Id == recentTestRequestId || recentTestRequestId == 0)
                         {
+                            ValidateStatusTransition(testRequest.ReportStatus, reportStatusType, isDoctorReview);
                             testRequest.ReportStatus = reportStatusType;
                             UpdateTestResulDetails(testResultList, reportStatusType, note);
 
@@ -147,11 +153,78 @@ namespace LIS.Businesslogic
                     {
                         testResult.AuthorizedBy = identity.ActivityMember;
                         testResult.AuthorizationDate = reviewDate;
-                        testResult.TechnicianNote = $"{testResult.TechnicianNote}[{DateTime.Now.ToString("dd/MM/yyyy hh:mm:ss")}] {this.identity.ActivityMember} : {note}<br>";
+                        var doctorEntry = $"[{DateTime.Now:dd/MM/yyyy HH:mm:ss}] {identity.ActivityMember} : {note}<br>";
+                        testResult.DoctorNote = (testResult.DoctorNote ?? string.Empty) + doctorEntry;
                     }
                     resultRepo.Update(testResult);
 
                 }
+            }
+        }
+
+        private static void ValidateStatusTransition(ReportStatusType current, ReportStatusType requested, bool isDoctorReview)
+        {
+            if (current == requested
+                && requested != ReportStatusType.TechnicianApproved)
+            {
+                throw new InvalidOperationException($"Sample is already in status {FormatStatus(requested)}.");
+            }
+
+            switch (requested)
+            {
+                case ReportStatusType.TechnicianApproved:
+                    if (current == ReportStatusType.TechnicianApproved)
+                    {
+                        if (!isDoctorReview)
+                        {
+                            throw new InvalidOperationException("Technician approval already recorded for this sample.");
+                        }
+                        return;
+                    }
+                    if (current != ReportStatusType.ReportGenerated && current != ReportStatusType.SentToEquipment)
+                    {
+                        throw new InvalidOperationException(
+                            $"Technician approval requires Report Generated status. Current status: {FormatStatus(current)}.");
+                    }
+                    break;
+
+                case ReportStatusType.TechnicianRejected:
+                    if (current != ReportStatusType.ReportGenerated
+                        && current != ReportStatusType.SentToEquipment
+                        && current != ReportStatusType.TechnicianApproved)
+                    {
+                        throw new InvalidOperationException(
+                            $"Technician rejection is not allowed from status {FormatStatus(current)}.");
+                    }
+                    break;
+
+                case ReportStatusType.DoctorApproved:
+                case ReportStatusType.DoctorRejected:
+                    if (current != ReportStatusType.TechnicianApproved)
+                    {
+                        throw new InvalidOperationException(
+                            $"Doctor review requires Technician Approved status. Current status: {FormatStatus(current)}.");
+                    }
+                    break;
+
+                default:
+                    break;
+            }
+        }
+
+        private static string FormatStatus(ReportStatusType status)
+        {
+            switch (status)
+            {
+                case ReportStatusType.New: return "New";
+                case ReportStatusType.SentToEquipment: return "Sent To Equipment";
+                case ReportStatusType.ReportGenerated: return "Report Generated";
+                case ReportStatusType.TechnicianApproved: return "Technician Approved";
+                case ReportStatusType.TechnicianRejected: return "Technician Rejected";
+                case ReportStatusType.DoctorApproved: return "Doctor Approved";
+                case ReportStatusType.DoctorRejected: return "Doctor Rejected";
+                case ReportStatusType.FinallyRejected: return "Finally Rejected";
+                default: return status.ToString();
             }
         }
 
@@ -273,8 +346,12 @@ namespace LIS.Businesslogic
                     eq => eq.Id,
                      (rsl, eq) => new { eq.Model }).FirstOrDefault();
 
-            //Get Equipment testname
-            var availableTest = file.GetJsonMappings(code.Model);
+            //Get Equipment testname (optional JSON mapping per analyzer model)
+            var availableTest = file.GetJsonMappings(code?.Model);
+            if (availableTest == null)
+            {
+                availableTest = new List<TestNameItem>();
+            }
 
             foreach (var run in testRuns)
             {
@@ -319,8 +396,8 @@ namespace LIS.Businesslogic
                     {
                         if (string.IsNullOrEmpty(item.HISParamName))
                         {
-                            var eqptest = availableTest.Where(t => t.Code.Equals(item.LISParamCode, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
-                            item.HISParamName = eqptest.Description;
+                            var eqptest = availableTest.FirstOrDefault(t => t.Code != null && t.Code.Equals(item.LISParamCode, StringComparison.OrdinalIgnoreCase));
+                            item.HISParamName = eqptest?.Description ?? item.LISParamCode;
                         }
                     }
                 }
@@ -357,7 +434,7 @@ namespace LIS.Businesslogic
                 {
                     Age = testResult.Patient.Age,
                     Gender = testResult.Patient.Gender,
-                    Department = departmentname.Name,
+                    Department = departmentname != null ? departmentname.Name : string.Empty,
                     PatientId = testResult.Patient.Id,
                     PatientName = testResult.Patient.Name,
                     SampleNo = testResult.SampleNo,

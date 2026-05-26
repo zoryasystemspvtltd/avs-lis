@@ -14,14 +14,21 @@ namespace Lis.Api
     {
         public List<TestNameItem> GetJsonMappings(string model)
         {
-            List<TestNameItem> testnames = new List<TestNameItem>();
-            var path = HostingEnvironment.MapPath($"~/App_Data/Models/{model}.json");
-            using (StreamReader sr = new StreamReader(path))
+            if (string.IsNullOrWhiteSpace(model))
             {
-                testnames = JsonConvert.DeserializeObject<List<TestNameItem>>(sr.ReadToEnd());
+                return new List<TestNameItem>();
             }
 
-            return testnames;
+            var path = HostingEnvironment.MapPath($"~/App_Data/Models/{model}.json");
+            if (string.IsNullOrEmpty(path) || !File.Exists(path))
+            {
+                return new List<TestNameItem>();
+            }
+
+            using (var sr = new StreamReader(path))
+            {
+                return JsonConvert.DeserializeObject<List<TestNameItem>>(sr.ReadToEnd()) ?? new List<TestNameItem>();
+            }
         }
 
         public string[] GetModels()

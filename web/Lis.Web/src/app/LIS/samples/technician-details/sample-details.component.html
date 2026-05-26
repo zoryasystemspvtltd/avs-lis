@@ -150,14 +150,14 @@
             <div class="col-sm-12 col-md-12 col-lg-12 ">
                 <div style="float:left; margin-right: 5px; ">
                     <!--TODO Remove Doctor's approval : review(5) and change text 'Approve & Send'-->
-                    <button type="button " class="btn btn-primary " (click)="review(3) " *ngIf="hasAccess() ">Verified and ready for doctor's approval </button>
+                    <button type="button " class="btn btn-primary " (click)="review(3) " *ngIf="hasAccess(4) ">Verified and ready for doctor's approval </button>
                 </div>
                 <div style="float:left; margin-right: 5px; ">
                     <button type="button " class="btn btn-default " (click)="review(4) "
-                        *ngIf="hasAccess() ">Reject</button>
+                        *ngIf="hasAccess(8) ">Reject</button>
                 </div>
                 <div style="padding-left:6px; float:left">
-                    <button type="button" class="btn btn-primary" (click)="rerunSample(0)" *ngIf="hasAccess()">Reject & Re-Run
+                    <button type="button" class="btn btn-primary" (click)="rerunSample(0)" *ngIf="hasAccess(8)">Reject & Re-Run
                         Sample</button>
                 </div>
                 <div style="padding-left:6px; float:left; ">

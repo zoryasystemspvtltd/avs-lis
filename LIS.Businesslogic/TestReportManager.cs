@@ -120,7 +120,9 @@ namespace LIS.BusinessLogic
 
         private SaleInvoice FindInvoiceByNumber(string number)
         {
-            var invoice = invoiceRepo.Get(i => i.IsActive && i.InvoiceNo.Equals(number, StringComparison.OrdinalIgnoreCase))
+            var key = (number ?? string.Empty).Trim();
+            var invoice = invoiceRepo.Get()
+                .Where(i => i.IsActive && i.InvoiceNo != null && i.InvoiceNo.Equals(key, StringComparison.OrdinalIgnoreCase))
                 .OrderByDescending(i => i.Id)
                 .FirstOrDefault();
 
@@ -129,7 +131,8 @@ namespace LIS.BusinessLogic
                 return invoice;
             }
 
-            var request = requestRepo.Get(r => r.HISRequestNo.Equals(number, StringComparison.OrdinalIgnoreCase))
+            var request = requestRepo.Get()
+                .Where(r => r.HISRequestNo != null && r.HISRequestNo.Equals(key, StringComparison.OrdinalIgnoreCase))
                 .OrderByDescending(r => r.Id)
                 .FirstOrDefault();
 
@@ -138,27 +141,31 @@ namespace LIS.BusinessLogic
                 return null;
             }
 
-            return invoiceRepo.Get(i => i.IsActive && i.InvoiceNo.Equals(request.HISRequestNo, StringComparison.OrdinalIgnoreCase))
+            return invoiceRepo.Get()
+                .Where(i => i.IsActive && i.InvoiceNo != null && i.InvoiceNo.Equals(request.HISRequestNo, StringComparison.OrdinalIgnoreCase))
                 .OrderByDescending(i => i.Id)
                 .FirstOrDefault();
         }
 
         private List<TestRequestDetail> ResolveTestRequests(SaleInvoice invoice)
         {
-            var fromLines = detailRepo.Get(d => d.SaleInvoiceId == invoice.Id && d.IsActive)
-                .Where(d => d.RequestDetailId > 0)
+            var requestIds = detailRepo.Get()
+                .Where(d => d.SaleInvoiceId == invoice.Id && d.IsActive && d.RequestDetailId > 0)
                 .Select(d => d.RequestDetailId)
                 .Distinct()
-                .Select(id => requestRepo.Get(id))
-                .Where(r => r != null)
                 .ToList();
 
-            if (fromLines.Any())
+            if (requestIds.Any())
             {
-                return fromLines;
+                return requestRepo.Get()
+                    .Where(r => requestIds.Contains(r.Id))
+                    .ToList();
             }
 
-            return requestRepo.Get(r => r.HISRequestNo.Equals(invoice.InvoiceNo, StringComparison.OrdinalIgnoreCase)).ToList();
+            var invNo = invoice.InvoiceNo ?? string.Empty;
+            return requestRepo.Get()
+                .Where(r => r.HISRequestNo != null && r.HISRequestNo.Equals(invNo, StringComparison.OrdinalIgnoreCase))
+                .ToList();
         }
 
         private void ValidateWorkflow(List<TestRequestDetail> requests)
@@ -172,13 +179,15 @@ namespace LIS.BusinessLogic
 
             foreach (var request in requests)
             {
-                var result = resultRepo.Get(r => r.TestRequestId == request.Id).FirstOrDefault();
+                var result = resultRepo.Get()
+                    .FirstOrDefault(r => r.TestRequestId == request.Id);
                 if (result == null)
                 {
                     throw new TestReportValidationException($"Results not ready for test: {request.HISTestName ?? request.HISTestCode}.");
                 }
 
-                var hasValues = resultDetailsRepo.Get(d => d.TestResultId == result.Id).Any();
+                var hasValues = resultDetailsRepo.Get()
+                    .Any(d => d.TestResultId == result.Id);
                 if (!hasValues)
                 {
                     throw new TestReportValidationException($"Results not ready for test: {request.HISTestName ?? request.HISTestCode}.");
@@ -244,7 +253,9 @@ namespace LIS.BusinessLogic
                 return null;
             }
 
-            var testEntity = testRepo.Get(t => t.HISTestCode.Equals(request.HISTestCode, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+            var testCode = request.HISTestCode ?? string.Empty;
+            var testEntity = testRepo.Get()
+                .FirstOrDefault(t => t.HISTestCode != null && t.HISTestCode.Equals(testCode, StringComparison.OrdinalIgnoreCase));
             var department = request.Department;
             if (string.IsNullOrWhiteSpace(department) && testEntity != null)
             {

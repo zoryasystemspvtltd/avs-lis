@@ -61,9 +61,16 @@ export class TechnicianSampleDetailsComponent implements OnInit {
     }
   }
 
-  hasAccess(): boolean {
-
-    return true;
+  hasAccess(access: number): boolean {
+    if (!this.authenticationService.currentUserValue?.access) {
+      return false;
+    }
+    const acc = this.authenticationService.currentUserValue.access.find(a => a.name === 'Reports');
+    if (!acc) {
+      return false;
+    }
+    const bits = typeof acc.access === 'number' ? acc.access : parseInt(acc.access, 10);
+    return (bits & access) === access;
   }
 
   getUserApps() {

@@ -367,7 +367,13 @@ export class ListModuleComponent implements OnInit, OnChanges {
 
     let module = this.schemma.module;
     if (this.schemma.module == 'Patients') {
-      module = 'Samples';
+      if (this.schemma.isTechnician) {
+        module = 'Reports';
+      } else if (this.schemma.isDoctor) {
+        module = 'DoctorsApprovals';
+      } else {
+        module = 'Samples';
+      }
     }
     let acc = this.user.access.find(element => element.name == module);
     if (acc == null) {
