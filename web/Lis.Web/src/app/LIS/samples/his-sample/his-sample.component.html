@@ -5,8 +5,8 @@
                 available
                 orders from external system.</button>
         </div> -->
-        <div style="padding-left:6px; float:left;">
-            <a class="btn btn-default" [routerLink]="['/samples/create']" *ngIf="hasAccess()">Create Sample</a>
+        <div style="padding-left:6px; float:left;" *ngIf="!hideCreateButton && hasAccess()">
+            <a class="btn btn-default" [routerLink]="['/samples/create']">Create Sample</a>
         </div>
     </div>
     <div class="col-md-6">

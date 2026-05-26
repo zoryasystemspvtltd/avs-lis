@@ -14,6 +14,7 @@ using static System.Net.Mime.MediaTypeNames;
 
 namespace Lis.Api.Controllers.Api
 {
+    [RoutePrefix("api/HisTest")]
     public class HisTestController : ApiController
     {
         private IHisTestMasterManager hisManager;
@@ -187,6 +188,7 @@ namespace Lis.Api.Controllers.Api
 
         [AllowAnonymous]
         [HttpGet]
+        [Route("")]
         public ItemList<HisTestMaster> Get()
         {
             try
@@ -209,6 +211,7 @@ namespace Lis.Api.Controllers.Api
         /// <returns></returns>
         [AllowAnonymous]
         [HttpGet]
+        [Route("{id}")]
         public HisTestMaster Get(string Id)
         {
             try

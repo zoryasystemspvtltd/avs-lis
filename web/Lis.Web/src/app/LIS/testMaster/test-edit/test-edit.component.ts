@@ -71,10 +71,10 @@ export class TestEditComponent implements OnInit {
 
   initForms() {
     this.editTestForm = this.formBuilder.group({
-      hisTestCode: [this.item.hisTestCode, Validators.required],
-      hisTestCodeDescription: [this.item.hisTestCodeDescription, Validators.required],
-      hisSpecimenCode: [this.item.hisSpecimenCode, Validators.required],
-      departmentCode: [this.item.departmentCode, Validators.required],
+      hisTestCode: [this.item.hisTestCode || this.item.HISTestCode, Validators.required],
+      hisTestCodeDescription: [this.item.hisTestCodeDescription || this.item.HISTestCodeDescription, Validators.required],
+      hisSpecimenCode: [this.item.hisSpecimenCode || this.item.HISSpecimenCode, Validators.required],
+      departmentCode: [this.item.departmentCode || this.item.DepartmentCode, Validators.required],
       isActive: [this.coerceBool(this.item.isActive ?? this.item.IsActive)]
     });
   }
@@ -96,13 +96,15 @@ export class TestEditComponent implements OnInit {
     }
 
     this.loading = true;
-    const formValue = this.editTestForm.value;
+    const formValue = this.editTestForm.getRawValue();
+    const selectedSpecimen = this.specimens.find(s =>
+      (s.code || s.Code) === formValue.hisSpecimenCode);
     const test: any = {
       id: this.id,
       hisTestCode: formValue.hisTestCode,
-      hisTestCodeDescription  : formValue.hisTestCodeDescription,
+      hisTestCodeDescription: formValue.hisTestCodeDescription,
       hisSpecimenCode: formValue.hisSpecimenCode,
-      hisSpecimenName: this.item.hisSpecimenName,
+      hisSpecimenName: selectedSpecimen ? (selectedSpecimen.name || selectedSpecimen.Name) : (this.item.hisSpecimenName || this.item.HISSpecimenName),
       departmentCode: formValue.departmentCode,
       createdOn: this.item.createdOn,
       isActive: formValue.isActive
@@ -111,6 +113,7 @@ export class TestEditComponent implements OnInit {
     this.testMasterService.update(test)
       .subscribe(
         data => {
+          this.loading = false;
           this.alertService.success('Test updated successfully');
           this.router.navigate(['/test-master']);
         },

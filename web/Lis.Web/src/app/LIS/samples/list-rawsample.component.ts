@@ -3,7 +3,7 @@ import { ListModuleComponent } from '../../_components';
 
 @Component({
   selector: 'app-equipment',
-  template: '<br><app-his-sample (onGetOrder)="refreshOrder($event)"></app-his-sample><br><app-list-module [schemma]="moduleJson"></app-list-module>'
+  template: '<br><app-his-sample [hideCreateButton]="true" (onGetOrder)="refreshOrder($event)"></app-his-sample><br><app-list-module [schemma]="moduleJson"></app-list-module>'
 })
 
 export class ListRawSampleComponent implements OnInit {

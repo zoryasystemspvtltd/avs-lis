@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthenticationToken } from '../../../_models';
@@ -18,6 +18,7 @@ export class HisSampleComponent implements OnInit {
   sampleForm: FormGroup;
   message: string;
   @Output() onGetOrder = new EventEmitter<boolean>();
+  @Input() hideCreateButton = false;
   isInProgress: boolean = false;
 
   constructor(private authenticationService: AuthenticationService,

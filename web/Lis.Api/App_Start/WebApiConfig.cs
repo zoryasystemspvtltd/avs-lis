@@ -25,7 +25,7 @@ namespace Lis.Api
                 name: "ActionApi",
                 routeTemplate: "api/{controller}/{action}/{id}",
                 defaults: new { id = RouteParameter.Optional },
-                constraints: new { action = @"^(GetAll|Put|Delete|NextInvoiceNo|GetEffective|Status|Cancel|Billing|GetByTest|GetById|GetByString)$" }
+                constraints: new { action = @"^(GetAll|Put|Delete|NextInvoiceNo|NextTestCode|GetEffective|Status|Cancel|Billing|GetByTest|GetById|GetByString)$" }
             );
             config.Routes.MapHttpRoute(
                 name: "DefaultApi",
