@@ -26,7 +26,7 @@ import { ApplicationListComponent, ApplicationCreateComponent, ApplicationEditCo
 import { UsersListComponent, UsersDetailsComponent, UsersCreateComponent, UsersEditComponent } from './administration/users';
 import { RolesListComponent, RolesCreateComponent, RolesEditComponent, RolesDetailsComponent } from './administration/roles';
 import { environment } from '../environments/environment';
-import { ListEquipmentComponent, ListEquipmentHeartbeatComponent, CreateEquipmentComponent, EditEquipmentComponent,  EditTestMappingComponent,  DetailsEquipmentComponent, ListRawSampleComponent, ListApprovedSampleComponent, ListDoctorSampleComponent, ListRejectedSampleComponent, ListTestedSampleComponent, TechnicianSampleDetailsComponent, RawSampleChartComponent, ProcessedSampleChartComponent, DoctorSampleChartComponent, HisSampleComponent,RawSampleDetailsComponent, HisTestDetailsComponent, TechnicianSampleSearchComponent, ListQualitySampleComponent, QualityDetailsComponent } from './LIS';
+import { ListEquipmentComponent, ListEquipmentHeartbeatComponent, CreateEquipmentComponent, EditEquipmentComponent,  EditTestMappingComponent,  DetailsEquipmentComponent, ListRawSampleComponent, ListApprovedSampleComponent, ListDoctorSampleComponent, ListRejectedSampleComponent, ListTestedSampleComponent, TechnicianSampleDetailsComponent, RawSampleChartComponent, ProcessedSampleChartComponent, DoctorSampleChartComponent, HisSampleComponent,RawSampleDetailsComponent, HisTestDetailsComponent, TechnicianSampleSearchComponent, ListQualitySampleComponent, QualityDetailsComponent, EditTestResultsComponent } from './LIS';
 import { CreateParameterComponent} from './LIS/EquipmentParamMapping/create-parameter/create-parameter.component';
 import { EditParammeterComponent } from './LIS/EquipmentParamMapping/edit-parameter/edit-parameter.component';
 import { DetailsParameterComponent } from './LIS/EquipmentParamMapping/details-parameter/details-parameter.component';
@@ -137,6 +137,7 @@ export const options: Partial<IConfig> | (() => Partial<IConfig>) = null;
     BarcodeComponent,
     LeveyJenningChartComponent,
     EditSampleComponent,
+    EditTestResultsComponent,
     TestListComponent,
     TestEditComponent,
     TestCreateComponent,

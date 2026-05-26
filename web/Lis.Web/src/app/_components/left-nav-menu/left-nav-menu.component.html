@@ -21,6 +21,9 @@
                             <tr *ngIf="hasAccess('Samples',63)">
                                 <td><span class="glyphicon glyphicon-blackboard nav-icon"></span><a routerLink="/samples" routerLinkActive="active-menu-link">Recent Samples</a></td>
                             </tr>
+                            <tr *ngIf="hasAccess('Reports',2) || hasAccess('Reports',63)">
+                                <td><span class="glyphicon glyphicon-edit nav-icon"></span><a routerLink="/edit-test-results" routerLinkActive="active-menu-link">Edit Test Results</a></td>
+                            </tr>
                             <tr *ngIf="hasAccess('Reports',63)">
                                 <td><span class="glyphicon glyphicon-filter nav-icon"></span><a routerLink="/technicianapprovals" routerLinkActive="active-menu-link">Technician's Approval</a></td>
                             </tr>

@@ -11,3 +11,4 @@ export * from './quality.service';
 export * from './testmaster.service';
 export * from './master.service';
 export * from './report.service';
+export * from './test-result-edit.service';

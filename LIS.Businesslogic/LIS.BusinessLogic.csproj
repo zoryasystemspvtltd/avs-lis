@@ -88,6 +88,8 @@
     <Compile Include="ReportManager.cs" />
     <Compile Include="TestReportManager.cs" />
     <Compile Include="TestReportValidationException.cs" />
+    <Compile Include="TestResultRangeEvaluator.cs" />
+    <Compile Include="TestResultEditManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\LIS.DataModel\LIS.DataAccess.csproj">

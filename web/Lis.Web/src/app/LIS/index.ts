@@ -19,6 +19,7 @@ export * from './samples/technician-details/sample-details.component';
 export * from './samples/sample-search/sample-search.component';
 export * from './samples/quality-details/quality-details.component';
 export * from './samples/his-sample/his-sample.component';
+export * from './samples/edit-test-results/edit-test-results.component';
 
 // Chart Components
 export * from './chart/raw-sample.component';

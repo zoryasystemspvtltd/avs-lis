@@ -9,7 +9,7 @@ import { ApplicationCreateComponent, ApplicationEditComponent, ApplicationDetail
 import { UsersListComponent, UsersCreateComponent, UsersEditComponent, UsersDetailsComponent } from './administration/users';
 import { RolesListComponent, RolesCreateComponent, RolesEditComponent, RolesDetailsComponent } from './administration/roles';
 import { MediaFileListComponent } from './_components';
-import { CreateEquipmentComponent, EditEquipmentComponent, ListEquipmentComponent, DetailsEquipmentComponent, ListRawSampleComponent, ListApprovedSampleComponent, ListDoctorSampleComponent, ListRejectedSampleComponent, ListTestedSampleComponent, TechnicianSampleDetailsComponent, RawSampleDetailsComponent, TechnicianSampleSearchComponent, ListQualitySampleComponent, QualityDetailsComponent } from './LIS';
+import { CreateEquipmentComponent, EditEquipmentComponent, ListEquipmentComponent, DetailsEquipmentComponent, ListRawSampleComponent, ListApprovedSampleComponent, ListDoctorSampleComponent, ListRejectedSampleComponent, ListTestedSampleComponent, TechnicianSampleDetailsComponent, RawSampleDetailsComponent, TechnicianSampleSearchComponent, ListQualitySampleComponent, QualityDetailsComponent, EditTestResultsComponent } from './LIS';
 import { DetailsParameterComponent } from './LIS/EquipmentParamMapping/details-parameter/details-parameter.component';
 import { DoctorSampleDetailsComponent } from './LIS/samples/doctor-details/sample-details.component';
 import { HelpComponent } from './annonimious/help/help.component';
@@ -169,6 +169,7 @@ const appRoutes: Routes = [
     { path: 'roles', component: RolesListComponent, canActivate: [AuthGuard] },
 
     { path: 'samples', component: ListRawSampleComponent, canActivate: [AuthGuard] },
+    { path: 'edit-test-results', component: EditTestResultsComponent, canActivate: [AuthGuard] },
     { path: 'samples/create', component: CreateSampleComponent, canActivate: [AuthGuard] },
     { path: 'samples/edit/:id', component: EditSampleComponent, canActivate: [AuthGuard] },
     { path: 'samples/:id', component: RawSampleDetailsComponent, canActivate: [AuthGuard] },
