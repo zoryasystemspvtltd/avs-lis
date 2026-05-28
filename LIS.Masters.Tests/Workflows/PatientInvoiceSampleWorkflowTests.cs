@@ -15,7 +15,8 @@ namespace LIS.Masters.Tests.Workflows
     {
         private int EnsureTestWithRate(decimal rateAmount, out int rateId)
         {
-            var test = Services.HisTest.Get(ListOptionsFactory.ForHisTest()).Items?.FirstOrDefault();
+            var tests = Services.HisTest.Get(ListOptionsFactory.ForHisTest()).Items;
+            var test = tests?.FirstOrDefault(t => t != null && t.IsActive);
             if (test == null)
             {
                 var dept = Services.Department.Get().First();
