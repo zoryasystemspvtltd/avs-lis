@@ -78,6 +78,7 @@ namespace LIS.BusinessLogic
                 {
                     foreach (TestResultDetails resultDetail in result.ResultDetails)
                     {
+                        resultDetail.CreatedBy = "LIS";
                         resultDetail.TestResultId = existResultId;
                         resultDetailsRepo.Add(resultDetail);
                     }
@@ -110,13 +111,15 @@ namespace LIS.BusinessLogic
                         EquipmentId = equpment.Id,
                         ResultDate = result.TestResult.ResultDate,
                         SampleNo = result.TestResult.SampleNo,
-                        LISTestCode = result.TestResult.LISTestCode
+                        LISTestCode = result.TestResult.LISTestCode,
+                        CreatedBy = "LIS"
                     };
 
                     resultId = testResultRepo.Add(testResult);
 
                     foreach (TestResultDetails resultDetail in result.ResultDetails)
                     {
+                        resultDetail.CreatedBy = "LIS";
                         resultDetail.TestResultId = resultId;
                         resultDetailsRepo.Add(resultDetail);
                     }
@@ -165,7 +168,8 @@ namespace LIS.BusinessLogic
             foreach (var entityResultDeatil in result.ResultDetails)
             {
                 resultDetailsRepo.Delete(entityResultDeatil); // TODO This may cause error 
-            };
+            }
+            ;
 
             testResultRepo.Delete(result.TestResult);
         }
@@ -212,12 +216,14 @@ namespace LIS.BusinessLogic
             foreach (var entityResultDeatil in entityResultDetails)
             {
                 resultDetailsRepo.Delete(entityResultDeatil);
-            };
+            }
+            ;
 
             foreach (var entityResultDeatil in result.ResultDetails)
             {
                 resultDetailsRepo.Add(entityResultDeatil);
-            };
+            }
+            ;
 
             testResultRepo.Update(result.TestResult);
         }

@@ -88,9 +88,11 @@ namespace LIS.Com.Businesslogic
                 string gender = "";
                 switch (firstTest.Patient.Gender.ToUpperInvariant())
                 {
+                    case "M":
                     case "MALE":
                         gender = "M";
                         break;
+                    case "F":
                     case "FEMALE":
                         gender = "F";
                         break;

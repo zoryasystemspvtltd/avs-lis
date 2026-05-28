@@ -34,7 +34,7 @@ namespace LIS.Com.Businesslogic
             this._settings = settings;
 
             // Initialize heartbeat timer (60 seconds)
-            timer = new System.Timers.Timer(_settings.HeartbitTimeout*1000);
+            timer = new System.Timers.Timer(_settings.HeartbitTimeout * 1000);
             timer.Elapsed += OnHeartbeatTimerElapsed;
             timer.AutoReset = true;
 
@@ -207,7 +207,7 @@ namespace LIS.Com.Businesslogic
                 {
                     string completeMsg = bufferContent.Substring(0, fsIndex + 1);
                     messageBuffer.Remove(0, fsIndex + 1);
-
+                    bool isQRC = false;
                     string hl7Content = completeMsg.Length > 2 ? completeMsg.Substring(1, completeMsg.Length - 2) : "";
                     if (string.IsNullOrEmpty(hl7Content)) continue;
 
@@ -227,7 +227,7 @@ namespace LIS.Com.Businesslogic
                         {
                             case "MSH":
                                 sInputMsg.Clear();
-                                orderRequest = input.Length > 8 && input[8] == "QRY^Q02";
+                                orderRequest = input.Length > 8 && input[8] == "QRY^Q02" || input[8] == "ORM^O01";
                                 messageControlId = input.Length > 9 ? input[9] : "";
                                 if (!orderRequest)
                                 {
@@ -235,6 +235,7 @@ namespace LIS.Com.Businesslogic
                                 }
                                 break;
                             case "QRD":
+
                                 if (orderRequest && input.Length > 8)
                                 {
                                     var sampleId = input[8];
@@ -245,6 +246,19 @@ namespace LIS.Com.Businesslogic
                                             WriteResponseSafe(response.QRYResponse, false);
                                         if (!string.IsNullOrEmpty(response.DSRResponse))
                                             WriteResponseSafe(response.DSRResponse, false);
+                                    }
+                                }
+                                break;
+                            case "ORC":
+                                isQRC = true;
+                                if (orderRequest && input.Length > 2)
+                                {
+                                    var sampleId = input[3];
+                                    var response = SendOrderData(sampleId, messageControlId).Result;
+                                    if (response != null)
+                                    {
+                                        if (!string.IsNullOrEmpty(response.QRYResponse))
+                                            WriteResponseSafe(response.QRYResponse, false);
                                     }
                                 }
                                 break;
@@ -259,7 +273,9 @@ namespace LIS.Com.Businesslogic
                     {
                         ResultProcess(sInputMsg.ToString(), messageControlId).Wait();
                         sInputMsg.Clear();
-                        string ackResponse = $@"MSH|^~\&|||||{DateTime.Now:yyyyMMddHHmmss}||ACK^R01|{messageControlId}|P|2.3.1||||2||ASCII{(char)13}MSA|AA|{messageControlId}|Message accepted|||0{(char)13}";
+                        string value = isQRC == true ? "UNICODE" : "ASCII";
+                        string ackResponse = $@"MSH|^~\&|LIS||||{DateTime.Now:yyyyMMddHHmmss}||ACK^R01|{messageControlId}|P|2.3.1||||2||{value}{(char)13}MSA|AA|{messageControlId}|Message accepted|||0{(char)13}";
+                        
                         WriteResponseSafe(ackResponse, false);
                     }
                 }
