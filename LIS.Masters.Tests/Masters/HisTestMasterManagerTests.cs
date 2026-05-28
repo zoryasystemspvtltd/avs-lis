@@ -19,7 +19,7 @@ namespace LIS.Masters.Tests.Masters
             var id = Services.HisTest.Add(test);
             Assert.IsTrue(id > 0);
 
-            var list = Services.HisTest.Get(ListOptionsFactory.ForHisTest());
+            var list = Services.HisTest.Get(ListOptionsFactory.Create(sortColumn: "HISTestCode", page: 1, pageSize: 50, search: code));
             Assert.IsTrue(list.Items.Any(t => t.HISTestCode == code));
 
             var loaded = Services.HisTest.GetTestById(id);

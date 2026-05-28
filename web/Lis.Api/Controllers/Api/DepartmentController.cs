@@ -13,6 +13,7 @@ using System.Web.Http;
 
 namespace Lis.Api.Controllers.Api
 {
+    [RoutePrefix("api/Department")]
     public class DepartmentController : ApiController
     {
         private readonly IDepartmentManager manager;
@@ -42,6 +43,7 @@ namespace Lis.Api.Controllers.Api
         }
 
         [HttpGet]
+        [Route("")]
         public object Get()
         {
             try
@@ -61,11 +63,12 @@ namespace Lis.Api.Controllers.Api
         }
 
         [HttpGet]
-        public Departments Get(string Id)
+        [Route("{id}")]
+        public Departments Get(string id)
         {
             try
             {
-                return manager.Get(Id);
+                return manager.Get(id);
             }
             catch (Exception e)
             {
@@ -75,6 +78,8 @@ namespace Lis.Api.Controllers.Api
         }
 
         [QAuthorize(ModuleName = "Masters", ModulePermissionTypes = ModulePermissionType.CanAdd)]
+        [HttpPost]
+        [Route("")]
         public HttpResponseMessage Post(Departments department)
         {
             try
@@ -93,6 +98,7 @@ namespace Lis.Api.Controllers.Api
         [QAuthorize(ModuleName = "Masters", ModulePermissionTypes = ModulePermissionType.CanEdit)]
         [HttpPost]
         [ActionName("Put")]
+        [Route("Put")]
         public HttpResponseMessage Put(Departments department)
         {
             try
@@ -111,6 +117,7 @@ namespace Lis.Api.Controllers.Api
         [QAuthorize(ModuleName = "Masters", ModulePermissionTypes = ModulePermissionType.CanDelete)]
         [HttpPost]
         [ActionName("Delete")]
+        [Route("Delete")]
         public HttpResponseMessage Delete(Departments department)
         {
             try

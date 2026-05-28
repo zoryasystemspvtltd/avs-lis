@@ -79,6 +79,8 @@ namespace Lis.Api.Controllers.Api
         /// <param name="specimen"> Test object of type LIS.DtoModel</param>
         /// <returns>HttpResponseMessage</returns>
         [AllowAnonymous]
+        [HttpPost]
+        [Route("")]
         public HttpResponseMessage Post(HisTestMaster test)
         {
             try
@@ -115,6 +117,7 @@ namespace Lis.Api.Controllers.Api
 
         [AllowAnonymous]
         [HttpPost]
+        [Route("Put")]
         public HttpResponseMessage Put(HisTestMaster test)
         {
             try
@@ -152,6 +155,7 @@ namespace Lis.Api.Controllers.Api
         [AllowAnonymous]
         [HttpPost]
         [ActionName("Delete")]
+        [Route("Delete")]
         public HttpResponseMessage Delete(HisTestMaster test)
         {
             try

@@ -76,13 +76,13 @@ namespace LIS.BusinessLogic
         public UnitManager(ILogger logger, IModuleIdentity identity, GenericUnitOfWork uow)
             : base(logger, identity, uow, x => x.Code, x => x.Name, x => x.IsActive) { }
 
-        public new long Add(UnitMaster item)
+        public override long Add(UnitMaster item)
         {
             item.IsActive = true;
             Stamp(item, true);
             return base.Add(item);
         }
-        public new void Update(UnitMaster item) { Stamp(item, false); base.Update(item); }
+        public override void Update(UnitMaster item) { Stamp(item, false); base.Update(item); }
 
         private void Stamp(UnitMaster item, bool isNew)
         {
@@ -97,13 +97,13 @@ namespace LIS.BusinessLogic
         public MethodManager(ILogger logger, IModuleIdentity identity, GenericUnitOfWork uow)
             : base(logger, identity, uow, x => x.Code, x => x.Name, x => x.IsActive) { }
 
-        public new long Add(MethodMaster item)
+        public override long Add(MethodMaster item)
         {
             item.IsActive = true;
             Stamp(item, true);
             return base.Add(item);
         }
-        public new void Update(MethodMaster item) { Stamp(item, false); base.Update(item); }
+        public override void Update(MethodMaster item) { Stamp(item, false); base.Update(item); }
 
         private void Stamp(MethodMaster item, bool isNew)
         {

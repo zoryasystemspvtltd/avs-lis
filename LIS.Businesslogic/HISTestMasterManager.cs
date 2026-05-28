@@ -69,11 +69,12 @@ namespace LIS.BusinessLogic
 
             if (!string.IsNullOrEmpty(option.SearchText))
             {
+                var search = option.SearchText;
                 query = query.Where(p =>
-                    p.HISTestCode.Contains(option.SearchText) ||
-                    p.HISTestCodeDescription.Contains(option.SearchText) ||
-                    p.HISSpecimenName.Contains(option.SearchText) ||
-                    p.DepartmentCode.Contains(option.SearchText));
+                    (p.HISTestCode ?? string.Empty).Contains(search) ||
+                    (p.HISTestCodeDescription ?? string.Empty).Contains(search) ||
+                    (p.HISSpecimenName ?? string.Empty).Contains(search) ||
+                    (p.DepartmentCode ?? string.Empty).Contains(search));
             }
 
             result.TotalRecord = query.Count();

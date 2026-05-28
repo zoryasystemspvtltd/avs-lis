@@ -98,6 +98,8 @@ namespace Lis.Api.Controllers.Api
         }
 
         [QAuthorize(ModuleName = "Masters", ModulePermissionTypes = ModulePermissionType.CanAdd)]
+        [HttpPost]
+        [Route("")]
         public virtual HttpResponseMessage Post(T item)
         {
             try
@@ -121,6 +123,7 @@ namespace Lis.Api.Controllers.Api
         [QAuthorize(ModuleName = "Masters", ModulePermissionTypes = ModulePermissionType.CanEdit)]
         [HttpPost]
         [ActionName("Put")]
+        [Route("Put")]
         public virtual HttpResponseMessage Put(T item)
         {
             try
@@ -144,6 +147,7 @@ namespace Lis.Api.Controllers.Api
         [QAuthorize(ModuleName = "Masters", ModulePermissionTypes = ModulePermissionType.CanDelete)]
         [HttpPost]
         [ActionName("Delete")]
+        [Route("Delete")]
         public virtual HttpResponseMessage Delete(T item)
         {
             try
