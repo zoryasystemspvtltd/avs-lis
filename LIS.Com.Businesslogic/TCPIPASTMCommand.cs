@@ -251,7 +251,6 @@ namespace LIS.Com.Businesslogic
                                         //(char)4 means end of transmission
                                         WriteResponseSafe("" + (char)4, false);
                                         index = 0;
-
                                         break;
                                 }
                                 break;

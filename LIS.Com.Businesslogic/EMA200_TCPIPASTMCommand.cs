@@ -1,6 +1,5 @@
 ﻿using LIS.DtoModel;
 using LIS.DtoModel.Models;
-using Microsoft.VisualBasic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,12 +24,12 @@ namespace LIS.Com.Businesslogic
             string[] segments;
             try
             {
-                segments = message.Split(Strings.Chr(10));  // Chr(10)
+                segments = message.Split((char)10);  // Chr(10)
                 for (int i = 0; i <= segments.Length - 1; i++)
                 {
                     for (int j = 2; j <= segments[i].Length - 5; j++)
                     {
-                        if (j != segments[i].Length - 5 | segments[i].ToString()[j + 1] != Strings.Chr(23))
+                        if (j != segments[i].Length - 5 | segments[i].ToString()[j + 1] != (char)23)
                             formattedmessage += segments[i][j];
                     }
                 }
@@ -47,8 +46,8 @@ namespace LIS.Com.Businesslogic
             Logger.Logger.LogInstance.LogDebug("EMA200 Identify method started");
             Logger.Logger.LogInstance.LogDebug("EMA200 Identify method Data:" + message);
             List<string> sampleList = new List<string>();
-           
-            string[] segments = message.Split(Strings.Chr(13)); // Chr(13)
+
+            string[] segments = message.Split((char)13); // <CR>
             try
             {
                 if (segments.Length > 1)
@@ -56,8 +55,7 @@ namespace LIS.Com.Businesslogic
                     if (segments[1].Substring(0, 1).ToUpper() == "Q")
                     {
                         string[] queryFields = segments[1].Split('|');
-                        string[] sampleField = queryFields[2].Split('^');
-                        string sampleID = sampleField[1];
+                        string sampleID = queryFields[2];
                         await SendOrderData(sampleID);
                     }
                     else if (segments[1].Substring(0, 1).ToUpper() == "P")
@@ -90,36 +88,36 @@ namespace LIS.Com.Businesslogic
 
                 string datetime = DateTime.Now.AddMinutes(-30).ToString("yyyyMMddhhmmss");
                 string specialchar = @"\^&";
-                string headerSegment = $"1H|{specialchar}|||ZoryaLIS|||||||E-1394-97|{datetime}{Constants.vbCr}";
+                string headerSegment = $"1H|{specialchar}|||ZoryaLIS|||||||E-1394-97|{datetime}{(char)13}";
                 string orderSegment = $"3O|1|{sampleId}||";
                 var trailerSegment = "";
                 IEnumerable<TestRequestDetail> testlist = await LisContext.LisDOM.GetTestRequestDetails(sampleId);
 
                 if (testlist.Count() > 0)
                 {
-                    string patientFirstName = "";
-                    string patientLastName = "";
-                    string patientMiddleName = "";
-
-                    var specimen = string.Empty;
-                    var patientName = string.Empty;
-                    var patientId = string.Empty;
-                    var testname = "";
-                    trailerSegment = $"4L|1|F{Constants.vbCr}";
+                    string firstName;
+                    string lastName;
+                    string middleName;
+                    string collectiondate;
+                    string specimen;
+                    string dob;
+                    string sex;
+                    string patientId;
+                    var testname = string.Empty;
+                    trailerSegment = $"4L|1|N{(char)13}";
 
                     var firstTest = testlist.First();
 
                     specimen = firstTest.SpecimenName.ToUpper();
-                    patientId = firstTest.Patient?.Name;
-                    patientFirstName = firstTest.Patient?.Name;
-
-                    if (patientId.Length > 15)
+                    patientId = firstTest.Patient?.Id.ToString();
+                    collectiondate = firstTest.SampleCollectionDate.ToString("yyyyMMddhhmmss");
+                    dob = firstTest.Patient.DateOfBirth.ToString("yyyyMMddhhmmss");
+                    sex = firstTest.Patient.Gender;
+                    var fullName = firstTest.Patient?.Name;
+                    (firstName, lastName, middleName) = GetName(fullName);
+                    if (firstName.Length > 20)
                     {
-                        patientId = patientId.Substring(0, 14);
-                    }
-                    if (patientFirstName.Length > 20)
-                    {
-                        patientFirstName = patientFirstName.Substring(0, 19);
+                        firstName = firstName.Substring(0, 19);
                     }
 
                     for (int i = 0; i < testlist.Count();)
@@ -134,10 +132,10 @@ namespace LIS.Com.Businesslogic
                             testname += @"`";
                     }
 
-                    string patientSegment = $"2P|1|{patientId}|||{patientLastName}^{patientFirstName}^{patientMiddleName}|{Constants.vbCr}";
-                    orderSegment += $"{testname}|R||||||A||||{specimen}|{Constants.vbCr}";
+                    string patientSegment = $"2P|1|{patientId}|||{lastName}^{firstName}^{middleName}||{dob}|{sex}|{(char)13}";
+                    orderSegment += $"{testname}|R||{collectiondate}||||N||||{specimen}||||||||||O|{(char)13}";
 
-                    output[0] = Strings.Chr(5).ToString();
+                    output[0] = ((char)5).ToString();
                     output[1] = headerSegment;
                     Logger.Logger.LogInstance.LogDebug("EMA200 Header Segment {0}", headerSegment);
                     output[2] = patientSegment;
@@ -151,10 +149,10 @@ namespace LIS.Com.Businesslogic
                 }
                 else//no test order
                 {
-                    output[2] = Strings.Chr(5).ToString();
+                    output[2] = ((char)5).ToString();
                     output[3] = headerSegment;
                     Logger.Logger.LogInstance.LogDebug("EMA200 Header Segment {0}", headerSegment);
-                    trailerSegment = $"2L|1|F{Constants.vbCr}";
+                    trailerSegment = $"2L|1|N{(char)13}";
                     output[4] = trailerSegment;
                     Logger.Logger.LogInstance.LogDebug("EMA200 Trailer Segment {0}", trailerSegment);
 
@@ -170,7 +168,65 @@ namespace LIS.Com.Businesslogic
             }
         }
 
+        private (string, string, string) GetName(string fullName)
+        {
+            string firstName = string.Empty;
+            string lastName = string.Empty;
+            string middleName = string.Empty;
 
+            if (string.IsNullOrWhiteSpace(fullName))
+                return (string.Empty, string.Empty, string.Empty);
+
+            var nameParts = fullName.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
+            if (nameParts.Length == 4)
+            {
+                firstName = nameParts[1];
+                middleName = nameParts[2];
+                lastName = nameParts[3];
+            }
+            else if (nameParts.Length == 3)
+            {
+                firstName = nameParts[0];
+                middleName = nameParts[1];
+                lastName = nameParts[2];
+            }
+            else if (nameParts.Length == 2)
+            {
+                firstName = nameParts[0];
+                lastName = nameParts[1];
+            }
+            else if (nameParts.Length > 0)
+            {
+                firstName = nameParts[0];
+
+                if (nameParts.Length > 1)
+                    middleName = nameParts[1];
+
+                if (nameParts.Length > 2)
+                    lastName = nameParts[2];
+            }
+            else
+            {
+                firstName = string.Empty;
+            }
+
+            // Truncate to max 20 chars
+            firstName = Truncate(firstName, 20);
+            middleName = Truncate(middleName, 20);
+            lastName = Truncate(lastName, 20);
+
+            return (firstName, lastName, middleName);
+        }
+        static string Truncate(string value, int maxLength)
+        {
+            if (string.IsNullOrEmpty(value))
+                return string.Empty;
+
+            return value.Length > maxLength
+                ? value.Substring(0, maxLength)
+                : value;
+        }
         private async Task ParseMessageAsync(string message)
         {
             try
@@ -178,8 +234,8 @@ namespace LIS.Com.Businesslogic
                 Logger.Logger.LogInstance.LogDebug("EMA200 ParseMessage method started");
                 Result result = new Result();
                 List<TestResultDetails> lsResult = new List<TestResultDetails>();
-                
-                string[] record = message.Split(Strings.Chr(13)); // Chr(13)
+
+                string[] record = message.Split((char)13); // <CR>
                 string sampleNo = string.Empty, listTestCode = string.Empty;
                 for (int index = 0; index <= record.Length - 1; index++)
                 {
@@ -190,15 +246,15 @@ namespace LIS.Com.Businesslogic
                     {
                         case "O":
                             {
-                                string[] sampleField = field[3].Split('^');
-                                sampleNo = sampleField[2].Trim();
+                                string sampleField = field[3];
+                                sampleNo = sampleField.Trim();
                                 break;
                             }
 
                         case "R":
                             {
                                 string[] parameter = field[2].Split('^');
-                                string paramCode = parameter[4];
+                                string paramCode = parameter[3];
                                 if (paramCode != "")
                                 {
                                     listTestCode = paramCode;
@@ -206,7 +262,7 @@ namespace LIS.Com.Businesslogic
                                     {
                                         LISParamCode = paramCode,
                                         LISParamValue = field[3],
-                                        LISParamUnit = field[6]
+                                        LISParamUnit = field[4]
                                     };
                                     Logger.Logger.LogInstance.LogDebug("EMA200 Result processed for SampleNo " + sampleNo + " and Parameter " + paramCode);
                                     lsResult.Add(resultDetails);
@@ -220,7 +276,7 @@ namespace LIS.Com.Businesslogic
                 }
                 TestResult testResult = new TestResult
                 {
-                    ResultDate = DateAndTime.Now,
+                    ResultDate = DateTime.Now,
                     SampleNo = sampleNo,
                     LISTestCode = listTestCode
                 };
