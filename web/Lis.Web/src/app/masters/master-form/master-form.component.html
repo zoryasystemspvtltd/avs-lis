@@ -99,23 +99,13 @@
         </div>
       </div>
       <br />
-      <ng-container *ngIf="isTestParameterScreen">
+      <ng-container *ngIf="isParameterPickerScreen">
         <div class="row">
-          <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Parameter</label></div>
+          <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Parameter<span class="error">*</span></label></div>
           <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
             <select class="form-control" formControlName="hisParameterPicker" [disabled]="!lookupsLoaded" (change)="onParameterTemplateSelected()">
               <option [ngValue]="null">-- Select Parameter --</option>
               <option *ngFor="let p of parameterOptions" [ngValue]="p.id">{{p.hisParamCode}} - {{p.hisParamDescription}}</option>
-            </select>
-          </div>
-        </div>
-        <br />
-        <div class="row">
-          <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Method</label></div>
-          <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
-            <select class="form-control" formControlName="hisParamMethod" [disabled]="!lookupsLoaded">
-              <option value="">-- Select Method --</option>
-              <option *ngFor="let m of methods" [value]="m.code || m.Code">{{m.name || m.Name}}</option>
             </select>
           </div>
         </div>

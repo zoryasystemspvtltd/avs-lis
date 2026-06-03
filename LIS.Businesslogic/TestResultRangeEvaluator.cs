@@ -70,6 +70,7 @@ namespace LIS.BusinessLogic
 
             if (!string.IsNullOrWhiteSpace(range.Gender) &&
                 !string.IsNullOrWhiteSpace(patient.Gender) &&
+                !IsBothGender(range.Gender) &&
                 !GenderMatches(range.Gender, patient.Gender))
             {
                 return false;
@@ -85,6 +86,17 @@ namespace LIS.BusinessLogic
             }
 
             return true;
+        }
+
+        private static bool IsBothGender(string rangeGender)
+        {
+            if (string.IsNullOrWhiteSpace(rangeGender))
+            {
+                return false;
+            }
+
+            var rg = rangeGender.Trim().ToUpperInvariant();
+            return rg == "BOTH" || rg == "B" || rg.StartsWith("BOTH");
         }
 
         private static bool GenderMatches(string rangeGender, string patientGender)

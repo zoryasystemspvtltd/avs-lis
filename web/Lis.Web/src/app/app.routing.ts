@@ -88,9 +88,14 @@ const LOOKUP_FIELDS = {
     { name: 'lisParamCode', label: 'LIS Param Code', type: 'text' }
   ],
   hisParameterRange: [
-    { name: 'hisRangeCode', label: 'Range Code', type: 'text', required: true },
+    { name: 'hisRangeCode', label: 'Range Code', type: 'text', readonly: true },
     { name: 'hisRangeValue', label: 'Range Value', type: 'text' },
-    { name: 'gender', label: 'Gender', type: 'text' },
+    { name: 'gender', label: 'Gender', type: 'select', required: true, options: [
+      { value: '', label: '-- Select Gender --' },
+      { value: 'Male', label: 'Male' },
+      { value: 'Female', label: 'Female' },
+      { value: 'Both', label: 'Both' }
+    ]},
     { name: 'ageFrom', label: 'Age From', type: 'number' },
     { name: 'ageTo', label: 'Age To', type: 'number' },
     { name: 'ageType', label: 'Age Type', type: 'text' },

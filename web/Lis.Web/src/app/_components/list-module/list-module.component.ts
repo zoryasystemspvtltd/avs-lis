@@ -316,6 +316,8 @@ export class ListModuleComponent implements OnInit, OnChanges {
   }
 
   doSearch = function () {
+    this.option.CurrentPage = 1;
+    this.authenticationService.CurrentPage = 1;
     this.getItems();
   }
 

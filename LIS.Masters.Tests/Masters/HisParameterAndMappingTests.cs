@@ -55,14 +55,18 @@ namespace LIS.Masters.Tests.Masters
 
             var loaded = Services.HisParameter.GetById(paramId);
             Assert.AreEqual(test.HISTestCode, loaded.HISTestCode);
+            Assert.AreEqual("mg/dL", loaded.HISParamUnit);
 
-            var rangeCode = UniqueCode("RNG");
+            loaded.HISParamMethod = "Photometry";
+            Services.HisParameter.Update(loaded);
+            var reloaded = Services.HisParameter.GetById(paramId);
+            Assert.AreEqual("Photometry", reloaded.HISParamMethod);
+
             var rangeId = (int)Services.HisParameterRange.Add(new HISParameterRangMaster
             {
                 HisParameterId = paramId,
-                HISRangeCode = rangeCode,
                 HISRangeValue = "Normal",
-                Gender = "M",
+                Gender = "Male",
                 AgeFrom = 0,
                 AgeTo = 120,
                 MinValue = 0,
@@ -70,8 +74,27 @@ namespace LIS.Masters.Tests.Masters
             });
             Assert.IsTrue(rangeId > 0);
 
+            var loadedRange = Services.HisParameterRange.GetById(rangeId);
+            Assert.IsFalse(string.IsNullOrWhiteSpace(loadedRange.HISRangeCode));
+            Assert.AreEqual("Male", loadedRange.Gender);
+
+            var duplicate = new HISParameterRangMaster
+            {
+                HisParameterId = paramId,
+                HISRangeCode = loadedRange.HISRangeCode,
+                HISRangeValue = "Dup",
+                Gender = "Female"
+            };
+            Assert.ThrowsException<InvalidOperationException>(() => Services.HisParameterRange.Add(duplicate));
+
             var ranges = Services.HisParameterRange.Get(ListOptionsFactory.Create());
             Assert.IsTrue(ranges.Items.Any(r => r.Id == rangeId));
+
+            loadedRange.Gender = "Female";
+            Services.HisParameterRange.Update(loadedRange);
+            var updatedRange = Services.HisParameterRange.GetById(rangeId);
+            Assert.AreEqual("Female", updatedRange.Gender);
+            Assert.AreEqual(loadedRange.HISRangeCode, updatedRange.HISRangeCode);
 
             Services.HisParameterRange.Delete(new HISParameterRangMaster { Id = rangeId });
             Services.HisParameter.Delete(new HISParameterMaster { Id = paramId });

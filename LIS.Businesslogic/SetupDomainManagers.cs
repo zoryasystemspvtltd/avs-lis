@@ -145,6 +145,25 @@ namespace LIS.BusinessLogic
             parameterRepo = new ModuleRepo<HISParameterMaster>(logger, identity, uow);
         }
 
+        public string GenerateNextRangeCode()
+        {
+            var codes = Repo.Get().Select(r => r.HISRangeCode).Where(c => !string.IsNullOrWhiteSpace(c)).ToList();
+            var max = 0;
+            foreach (var code in codes)
+            {
+                var trimmed = code.Trim();
+                if (trimmed.Length > 1 && trimmed[0] == 'R' && int.TryParse(trimmed.Substring(1), out var num))
+                {
+                    if (num > max)
+                    {
+                        max = num;
+                    }
+                }
+            }
+
+            return $"R{(max + 1).ToString("D7", System.Globalization.CultureInfo.InvariantCulture)}";
+        }
+
         public new long Add(HISParameterRangMaster item)
         {
             if (item == null)
@@ -159,11 +178,38 @@ namespace LIS.BusinessLogic
 
             if (string.IsNullOrWhiteSpace(item.HISRangeCode))
             {
-                throw new InvalidOperationException("Range code is required.");
+                item.HISRangeCode = GenerateNextRangeCode();
+            }
+
+            item.HISRangeCode = item.HISRangeCode.Trim();
+            if (Repo.Get(r => r.HISRangeCode == item.HISRangeCode).Any())
+            {
+                throw new InvalidOperationException("A parameter range with this code already exists.");
             }
 
             item.CreatedOn = DateTime.Now;
             return base.Add(item);
+        }
+
+        public new void Update(HISParameterRangMaster item)
+        {
+            if (item == null || item.Id <= 0)
+            {
+                throw new ArgumentException("Invalid parameter range record.");
+            }
+
+            var existing = Repo.Get(item.Id);
+            if (existing == null)
+            {
+                throw new InvalidOperationException("Parameter range record not found.");
+            }
+
+            if (!string.IsNullOrWhiteSpace(existing.HISRangeCode))
+            {
+                item.HISRangeCode = existing.HISRangeCode;
+            }
+
+            base.Update(item);
         }
 
         public override ItemList<HISParameterRangMaster> Get(ListOptions option)

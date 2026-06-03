@@ -69,28 +69,20 @@ namespace LIS.BusinessLogic
 
             if (!string.IsNullOrEmpty(option.SearchText))
             {
-                var search = option.SearchText;
+                var search = option.SearchText.Trim();
                 query = query.Where(p =>
-                    (p.HISTestCode ?? string.Empty).Contains(search) ||
-                    (p.HISTestCodeDescription ?? string.Empty).Contains(search) ||
-                    (p.HISSpecimenName ?? string.Empty).Contains(search) ||
-                    (p.DepartmentCode ?? string.Empty).Contains(search));
+                    (p.HISTestCode != null && p.HISTestCode.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                    (p.HISTestCodeDescription != null && p.HISTestCodeDescription.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                    (p.HISSpecimenName != null && p.HISSpecimenName.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                    (p.DepartmentCode != null && p.DepartmentCode.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                    (p.DepartmentName != null && p.DepartmentName.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0));
             }
 
             result.TotalRecord = query.Count();
 
             int minRow = (option.CurrentPage - 1) * option.RecordPerPage;
 
-            option.SortColumnName = string.IsNullOrEmpty(option.SortColumnName)
-                ? "HISTestCodeDescription"
-                : option.SortColumnName;
-
-            if (!option.SortColumnName.Equals("HISTestCode", StringComparison.OrdinalIgnoreCase)
-                && !option.SortColumnName.Equals("HISTestCodeDescription", StringComparison.OrdinalIgnoreCase))
-            {
-                option.SortColumnName = "HISTestCodeDescription";
-                option.SortDirection = false;
-            }
+            option.SortColumnName = ResolveSortColumn(option.SortColumnName);
 
             if (option.RecordPerPage == 0)
             {
@@ -105,6 +97,40 @@ namespace LIS.BusinessLogic
 
             return result;
         }
+        private static string ResolveSortColumn(string sortColumnName)
+        {
+            if (string.IsNullOrWhiteSpace(sortColumnName))
+            {
+                return "HISTestCode";
+            }
+
+            if (sortColumnName.Equals("hisTestCode", StringComparison.OrdinalIgnoreCase)
+                || sortColumnName.Equals("HISTestCode", StringComparison.OrdinalIgnoreCase))
+            {
+                return "HISTestCode";
+            }
+
+            if (sortColumnName.Equals("hisTestCodeDescription", StringComparison.OrdinalIgnoreCase)
+                || sortColumnName.Equals("HISTestCodeDescription", StringComparison.OrdinalIgnoreCase))
+            {
+                return "HISTestCodeDescription";
+            }
+
+            if (sortColumnName.Equals("hisSpecimenName", StringComparison.OrdinalIgnoreCase)
+                || sortColumnName.Equals("HISSpecimenName", StringComparison.OrdinalIgnoreCase))
+            {
+                return "HISSpecimenName";
+            }
+
+            if (sortColumnName.Equals("departmentName", StringComparison.OrdinalIgnoreCase)
+                || sortColumnName.Equals("DepartmentName", StringComparison.OrdinalIgnoreCase))
+            {
+                return "DepartmentName";
+            }
+
+            return "HISTestCodeDescription";
+        }
+
         public IEnumerable<HisTestMaster> GetTests()
         {
             var tests = testRepo.Get(p => p.IsActive)

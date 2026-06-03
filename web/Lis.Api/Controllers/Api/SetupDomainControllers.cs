@@ -58,6 +58,23 @@ namespace Lis.Api.Controllers.Api
         public IEnumerable<HISParameterRangMaster> GetAllRecords() => FetchAllActiveCore();
 
         [HttpGet]
+        [Route("NextRangeCode")]
+        public IHttpActionResult GetNextRangeCode()
+        {
+            try
+            {
+                var mgr = Manager as HisParameterRangeCrudManager;
+                var code = mgr != null ? mgr.GenerateNextRangeCode() : string.Empty;
+                return Ok(new { rangeCode = code });
+            }
+            catch (Exception e)
+            {
+                Logger.LogException(e);
+                return Ok(new { rangeCode = string.Empty });
+            }
+        }
+
+        [HttpGet]
         [Route("ByParameter")]
         public IEnumerable<HISParameterRangMaster> GetByParameter(int parameterId)
         {

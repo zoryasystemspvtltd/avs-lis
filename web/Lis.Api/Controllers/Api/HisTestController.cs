@@ -204,7 +204,7 @@ namespace Lis.Api.Controllers.Api
             catch (Exception e)
             {
                 logger.LogException(e);
-                return null;
+                return new ItemList<HisTestMaster> { TotalRecord = 0, Items = new List<HisTestMaster>() };
             }
         }
 

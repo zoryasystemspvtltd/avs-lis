@@ -52,5 +52,24 @@ namespace LIS.Masters.Tests.Masters
             var filtered = Services.HisTest.Get(ListOptionsFactory.Create(sortColumn: "HISTestCode", search: search));
             Assert.IsTrue(filtered.Items.Any(i => i.HISTestCode.Contains(search)));
         }
+
+        [TestMethod]
+        public void HisTest_List_Search_Is_Case_Insensitive()
+        {
+            var existing = Services.HisTest.Get(ListOptionsFactory.ForHisTest());
+            if (existing.Items == null || !existing.Items.Any())
+            {
+                Assert.Inconclusive("No HIS tests in database to search");
+            }
+
+            var sample = existing.Items.First(i => !string.IsNullOrEmpty(i.HISTestCode));
+            var filtered = Services.HisTest.Get(ListOptionsFactory.Create(
+                sortColumn: "HISTestCode",
+                page: 1,
+                pageSize: 10,
+                search: sample.HISTestCode.ToLowerInvariant()));
+            Assert.IsTrue(filtered.Items.Any(i => i.HISTestCode == sample.HISTestCode));
+        }
+
     }
 }

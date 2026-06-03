@@ -68,7 +68,7 @@ export class MasterFormComponent implements OnInit {
       group['specimenCode'] = [''];
       group['specimenName'] = [''];
     }
-    if (this.isTestParameterScreen) {
+    if (this.isParameterPickerScreen) {
       group['hisParameterPicker'] = [null];
     }
     if (this.fields.find(f => f.name === 'isActive')) {
@@ -107,6 +107,14 @@ export class MasterFormComponent implements OnInit {
     return this.apiName === 'HisParameterMaster' && (this.returnUrl || '').indexOf('test-parameters') >= 0;
   }
 
+  get isParameterMasterScreen(): boolean {
+    return this.apiName === 'HisParameterMaster' && (this.returnUrl || '').indexOf('/his-parameters') >= 0;
+  }
+
+  get isParameterPickerScreen(): boolean {
+    return this.isTestParameterScreen || this.isParameterMasterScreen;
+  }
+
   isCodeReadonly(field: any): boolean {
     if (!field || field.name !== 'code' || !this.id) {
       return false;
@@ -123,8 +131,12 @@ export class MasterFormComponent implements OnInit {
         field.name === 'specimenCode' || field.name === 'specimenName')) {
       return true;
     }
-    if (this.isTestParameterScreen &&
-      (field.name === 'hisParamCode' || field.name === 'hisParamUnit')) {
+    if (this.isParameterPickerScreen &&
+      (field.name === 'hisParamCode' || field.name === 'hisParamDescription' ||
+        field.name === 'hisParamUnit' || field.name === 'hisParamMethod')) {
+      return true;
+    }
+    if (this.apiName === 'HisParameterRangeMaster' && field.name === 'hisRangeCode') {
       return true;
     }
     return !!field.readonly || this.isCodeReadonly(field);
@@ -134,9 +146,6 @@ export class MasterFormComponent implements OnInit {
     if (this.apiName === 'TestMappingMaster') {
       return this.fields.filter(f =>
         f.name !== 'hisTestCode' && f.name !== 'hisTestCodeDescription' && f.name !== 'specimenCode');
-    }
-    if (this.isTestParameterScreen) {
-      return this.fields.filter(f => f.name !== 'hisParamMethod');
     }
     return this.fields;
   }
@@ -170,10 +179,6 @@ export class MasterFormComponent implements OnInit {
     if (this.apiName === 'TestMappingMaster') {
       requests.equipments = this.httpEquipmentList();
     }
-    if (this.isTestParameterScreen) {
-      requests.methods = this.masterService.getAll('Method');
-    }
-
     forkJoin(requests).subscribe(
       (data: any) => {
         this.tests = data.tests || [];
@@ -183,17 +188,29 @@ export class MasterFormComponent implements OnInit {
         if (data.equipments) {
           this.equipments = data.equipments || [];
         }
-        if (data.methods) {
-          this.methods = (data.methods || []).filter((m: any) => m.isActive !== false && m.IsActive !== false);
-        }
         this.lookupsLoaded = true;
-        if (this.id) {
+        if (this.isParameterPickerScreen) {
+          this.loadParameterCatalog(() => {
+            if (this.id) {
+              this.masterService.getItem(this.apiName, this.id).subscribe(item => {
+                if (item) {
+                  this.patchItem(item);
+                  this.syncHisTestPicker(item);
+                  this.syncParameterPicker(item);
+                  this.lockParameterDerivedFields(true);
+                }
+              });
+            }
+          });
+        } else if (this.apiName === 'HisParameterRangeMaster' && !this.id) {
+          this.assignNextRangeCode();
+        } else if (this.id) {
           this.masterService.getItem(this.apiName, this.id).subscribe(item => {
             if (item) {
               this.patchItem(item);
               this.syncHisTestPicker(item);
-              if (this.isTestParameterScreen) {
-                this.loadParametersForTest(item.hisTestId || item.HisTestId, () => this.syncParameterPicker(item));
+              if (this.apiName === 'HisParameterRangeMaster') {
+                this.lockRangeCodeField();
               }
             }
           });
@@ -201,6 +218,22 @@ export class MasterFormComponent implements OnInit {
       },
       () => this.alertService.error('Failed to load lookup data.')
     );
+  }
+
+  private assignNextRangeCode() {
+    this.masterService.getNextRangeCode().subscribe(code => {
+      if (code) {
+        this.form.patchValue({ hisRangeCode: code });
+        this.lockRangeCodeField();
+      }
+    });
+  }
+
+  private lockRangeCodeField() {
+    const control = this.form.get('hisRangeCode');
+    if (control) {
+      control.disable({ emitEvent: false });
+    }
   }
 
   onHisTestSelected() {
@@ -214,23 +247,15 @@ export class MasterFormComponent implements OnInit {
         specimenName: test.hisSpecimenName || test.HISSpecimenName || ''
       });
     }
-    if (this.isTestParameterScreen) {
-      this.loadParametersForTest(testId);
-    }
   }
 
   onHisTestIdChanged() {
-    if (this.isTestParameterScreen) {
+    if (this.isTestParameterScreen || this.isParameterMasterScreen) {
       this.onHisTestSelected();
     }
   }
 
-  loadParametersForTest(testId: number, afterLoad?: () => void) {
-    this.parameterOptions = [];
-    if (!testId) {
-      if (afterLoad) { afterLoad(); }
-      return;
-    }
+  loadParameterCatalog(afterLoad?: () => void) {
     this.masterService.getItems('HisParameterMaster', {
       RecordPerPage: 500,
       CurrentPage: 1,
@@ -238,8 +263,28 @@ export class MasterFormComponent implements OnInit {
       SortDirection: true
     }).subscribe(r => {
       const items = r?.items || r?.Items || [];
-      this.parameterOptions = items.filter((p: any) => +p.hisTestId === +testId);
-      if (afterLoad) { afterLoad(); }
+      const seen = new Set<string>();
+      this.parameterOptions = [];
+      for (const p of items) {
+        const code = ('' + (p.hisParamCode || p.HISParamCode || '')).trim();
+        if (!code) {
+          continue;
+        }
+        const key = code.toLowerCase();
+        if (seen.has(key)) {
+          continue;
+        }
+        seen.add(key);
+        this.parameterOptions.push(p);
+      }
+      if (afterLoad) {
+        afterLoad();
+      }
+    }, () => {
+      this.parameterOptions = [];
+      if (afterLoad) {
+        afterLoad();
+      }
     });
   }
 
@@ -252,9 +297,22 @@ export class MasterFormComponent implements OnInit {
     this.form.patchValue({
       hisParamCode: param.hisParamCode || param.HISParamCode,
       hisParamDescription: param.hisParamDescription || param.HISParamDescription,
-      hisParamUnit: param.hisParamUnit || param.HISParamUnit,
-      hisParamMethod: param.hisParamMethod || param.HISParamMethod,
-      lisParamCode: param.lisParamCode || param.LISParamCode || param.hisParamCode
+      hisParamUnit: param.hisParamUnit || param.HISParamUnit || '',
+      hisParamMethod: param.hisParamMethod || param.HISParamMethod || '',
+      lisParamCode: param.lisParamCode || param.LISParamCode || param.hisParamCode || param.HISParamCode
+    });
+    this.lockParameterDerivedFields(true);
+  }
+
+  private lockParameterDerivedFields(includeIdentityFields = true) {
+    const names = includeIdentityFields
+      ? ['hisParamCode', 'hisParamDescription', 'hisParamUnit', 'hisParamMethod']
+      : ['hisParamUnit', 'hisParamMethod'];
+    names.forEach(name => {
+      const control = this.form.get(name);
+      if (control) {
+        control.disable({ emitEvent: false });
+      }
     });
   }
 
@@ -272,13 +330,18 @@ export class MasterFormComponent implements OnInit {
   }
 
   private syncParameterPicker(item: any) {
-    if (!this.isTestParameterScreen || !item?.hisParamCode) {
+    if (!this.isParameterPickerScreen) {
+      return;
+    }
+    const code = item?.hisParamCode || item?.HISParamCode;
+    if (!code) {
       return;
     }
     const match = this.parameterOptions.find(p =>
-      (p.hisParamCode || p.HISParamCode) === item.hisParamCode);
+      (p.hisParamCode || p.HISParamCode) === code);
     if (match) {
       this.form.patchValue({ hisParameterPicker: match.id });
+      this.onParameterTemplateSelected();
     }
   }
 
@@ -352,7 +415,32 @@ export class MasterFormComponent implements OnInit {
     if (patch.equipmentId != null) { patch.equipmentId = +patch.equipmentId; }
     if (patch.isActive != null) { patch.isActive = this.coerceBool(patch.isActive); }
     if (patch.IsActive != null) { patch.isActive = this.coerceBool(patch.IsActive); }
+    if (patch.HISParamCode != null && patch.hisParamCode == null) { patch.hisParamCode = patch.HISParamCode; }
+    if (patch.HISParamDescription != null && patch.hisParamDescription == null) { patch.hisParamDescription = patch.HISParamDescription; }
+    if (patch.HISParamUnit != null && patch.hisParamUnit == null) { patch.hisParamUnit = patch.HISParamUnit; }
+    if (patch.HISParamMethod != null && patch.hisParamMethod == null) { patch.hisParamMethod = patch.HISParamMethod; }
+    if (patch.LISParamCode != null && patch.lisParamCode == null) { patch.lisParamCode = patch.LISParamCode; }
+    if (patch.HISRangeCode != null && patch.hisRangeCode == null) { patch.hisRangeCode = patch.HISRangeCode; }
+    if (patch.Gender != null && patch.gender == null) { patch.gender = patch.Gender; }
+    patch.gender = this.normalizeGenderForForm(patch.gender);
     this.form.patchValue(patch);
+  }
+
+  private normalizeGenderForForm(gender: string): string {
+    if (!gender) {
+      return '';
+    }
+    const g = ('' + gender).trim().toUpperCase();
+    if (g === 'M' || g === 'MALE') {
+      return 'Male';
+    }
+    if (g === 'F' || g === 'FEMALE') {
+      return 'Female';
+    }
+    if (g === 'B' || g === 'BOTH') {
+      return 'Both';
+    }
+    return gender;
   }
 
   private coerceBool(value: any): boolean {
@@ -388,7 +476,7 @@ export class MasterFormComponent implements OnInit {
       }
       delete item.hisTestPicker;
     }
-    if (this.isTestParameterScreen) {
+    if (this.isParameterPickerScreen) {
       delete item.hisParameterPicker;
     }
     if (this.apiName === 'PatientMaster' && !item.hisPatientId) {

@@ -62,6 +62,13 @@ export class MasterService {
     );
   }
 
+  getNextRangeCode(): Observable<string> {
+    return this.http.get<any>(`${this.baseUrl}/api/HisParameterRangeMaster/NextRangeCode`).pipe(
+      map(r => (typeof r === 'string' ? r : r?.rangeCode || r?.RangeCode || '')),
+      catchError(() => of(''))
+    );
+  }
+
   getNextPatientId(): Observable<string> {
     return this.http.get<any>(`${this.baseUrl}/api/PatientMaster/NextPatientId`).pipe(
       map(r => (typeof r === 'string' ? r : r?.patientId || r?.PatientId || '')),
