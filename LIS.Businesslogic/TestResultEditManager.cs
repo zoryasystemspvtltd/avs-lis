@@ -62,7 +62,18 @@ namespace LIS.BusinessLogic
             if (!string.IsNullOrWhiteSpace(options.InvoiceNo))
             {
                 var inv = options.InvoiceNo.Trim();
-                query = query.Where(r => r.HISRequestNo != null && r.HISRequestNo.IndexOf(inv, StringComparison.OrdinalIgnoreCase) >= 0);
+                var invoiceNos = invoiceRepo.Get(i => i.IsActive && i.InvoiceNo != null)
+                    .AsEnumerable()
+                    .Where(i => i.InvoiceNo.IndexOf(inv, StringComparison.OrdinalIgnoreCase) >= 0)
+                    .Select(i => i.InvoiceNo)
+                    .ToList();
+
+                query = query.Where(r =>
+                    (r.HISRequestNo != null && r.HISRequestNo.IndexOf(inv, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                    (r.SampleNo != null && r.SampleNo.IndexOf(inv, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                    invoiceNos.Any(no =>
+                        (r.HISRequestNo != null && r.HISRequestNo.Equals(no, StringComparison.OrdinalIgnoreCase)) ||
+                        (r.SampleNo != null && r.SampleNo.Equals(no, StringComparison.OrdinalIgnoreCase))));
             }
 
             if (options.FromDate.HasValue)
@@ -87,13 +98,16 @@ namespace LIS.BusinessLogic
                     p.Name.IndexOf(name, StringComparison.OrdinalIgnoreCase) >= 0);
             }
 
+            var resultRequestIds = new HashSet<long>(
+                resultRepo.Get().Select(res => res.TestRequestId));
+
             var rows = query
                 .GroupBy(r => r.SampleNo ?? r.HISRequestNo)
                 .Select(g =>
                 {
                     var first = g.OrderByDescending(x => x.Id).First();
                     patients.TryGetValue(first.PatientId, out var patient);
-                    var hasResults = resultRepo.Get().Any(res => g.Any(req => req.Id == res.TestRequestId));
+                    var hasResults = g.Any(req => resultRequestIds.Contains(req.Id));
                     return new TestResultEditSearchRow
                     {
                         SampleNo = first.SampleNo ?? first.HISRequestNo,
@@ -155,7 +169,10 @@ namespace LIS.BusinessLogic
 
                 var canEdit = CanEditStatus(req.ReportStatus, isAdministrator);
                 var details = detailRepo.Get(d => d.TestResultId == result.Id).ToList();
-                var paramDtos = BuildParameters(details, result.HISTestCode, patient, allParams, allRanges, canEdit);
+                var testCode = !string.IsNullOrWhiteSpace(req.HISTestCode)
+                    ? req.HISTestCode
+                    : result.HISTestCode;
+                var paramDtos = BuildParameters(details, testCode, patient, allParams, allRanges, canEdit);
 
                 equipments.TryGetValue(result.EquipmentId, out var eqName);
 
@@ -218,16 +235,18 @@ namespace LIS.BusinessLogic
             }
 
             var patient = patientRepo.Get(result.PatientId);
-            var existingDetails = detailRepo.Get(d => d.TestResultId == result.Id).ToDictionary(d => d.Id, d => d);
+            var existingDetails = detailRepo.Get(d => d.TestResultId == result.Id).ToList();
+            var detailsById = existingDetails.ToDictionary(d => d.Id, d => d);
             var auditLog = new StringBuilder();
             var now = DateTime.Now;
             var editor = identity?.ActivityMember ?? "system";
+            var changed = false;
 
             if (request.Parameters != null)
             {
                 foreach (var change in request.Parameters)
                 {
-                    if (!existingDetails.TryGetValue(change.DetailId, out var detail))
+                    if (!detailsById.TryGetValue(change.DetailId, out var detail))
                     {
                         continue;
                     }
@@ -250,12 +269,13 @@ namespace LIS.BusinessLogic
 
                     detail.LISParamValue = newValue;
                     detailRepo.Update(detail);
+                    changed = true;
 
                     logger.LogInfo($"TestResultEdit: Sample={result.SampleNo} TestResultId={result.Id} Param={detail.LISParamCode} Old={oldValue} New={newValue} By={editor}");
                 }
             }
 
-            if (auditLog.Length == 0)
+            if (!changed)
             {
                 return new TestResultEditSaveResult
                 {
@@ -267,13 +287,11 @@ namespace LIS.BusinessLogic
             }
 
             result.TechnicianNote = (result.TechnicianNote ?? string.Empty) + auditLog;
-            result.ReviewedBy = editor;
-            result.ReviewDate = now;
 
-            ApplyApprovalReset(testRequest, isAdministrator);
+            ApplyApprovalReset(testRequest);
             requestRepo.Update(testRequest);
 
-            if (testRequest.ReportStatus <= ReportStatusType.TechnicianApproved)
+            if (testRequest.ReportStatus != ReportStatusType.DoctorApproved)
             {
                 result.AuthorizedBy = null;
                 result.AuthorizationDate = null;
@@ -355,7 +373,10 @@ namespace LIS.BusinessLogic
             }
         }
 
-        private static void ApplyApprovalReset(TestRequestDetail request, bool isAdministrator)
+        /// <summary>
+        /// After manual correction, technician must re-approve (same pattern as rejection re-run).
+        /// </summary>
+        private static void ApplyApprovalReset(TestRequestDetail request)
         {
             if (request.ReportStatus == ReportStatusType.TechnicianApproved)
             {

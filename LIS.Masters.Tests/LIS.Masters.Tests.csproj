@@ -74,8 +74,10 @@
     <Compile Include="Transactions\SaleInvoicePatientValidationTests.cs" />
     <Compile Include="Transactions\SaleInvoiceEditWorkflowTests.cs" />
     <Compile Include="Workflows\PatientInvoiceSampleWorkflowTests.cs" />
+    <Compile Include="Workflows\TestResultEditManagerTests.cs" />
     <Compile Include="Masters\PatientMasterManagerTests.cs" />
     <Compile Include="Masters\HisParameterAndMappingTests.cs" />
+    <Compile Include="Masters\MasterDuplicateRevalidationTests.cs" />
     <Compile Include="Masters\EquipmentManagerTests.cs" />
     <Compile Include="Database\RelationIntegrityTests.cs" />
     <Compile Include="Validation\NegativeValidationTests.cs" />

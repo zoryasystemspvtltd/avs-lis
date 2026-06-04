@@ -63,6 +63,17 @@ export class EditTestResultsComponent {
     );
   }
 
+  openSample(row: any) {
+    if (!row?.sampleNo) {
+      return;
+    }
+    if (row.hasResults === false) {
+      this.filterError = 'No analyzer results exist for this sample yet.';
+      return;
+    }
+    this.loadSample(row.sampleNo);
+  }
+
   loadSample(sampleNo: string) {
     if (!sampleNo) {
       return;
@@ -169,6 +180,9 @@ export class EditTestResultsComponent {
   }
 
   private readError(err: any, fallback: string): string {
+    if (err?.status === 401) {
+      return 'Insufficient privilege. Your role needs Reports Edit or Authorize permission.';
+    }
     if (typeof err?.error === 'string' && err.error.trim()) {
       return err.error;
     }

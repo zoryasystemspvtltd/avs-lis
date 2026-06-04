@@ -362,11 +362,21 @@ namespace LIS.BusinessLogic
 
         private bool ExistsDuplicate(TestMappingMaster item, int? excludeId)
         {
+            var histest = (item.HISTestCode ?? string.Empty).Trim();
+            var lisCode = (item.LISTestCode ?? string.Empty).Trim();
+            if (string.IsNullOrEmpty(histest) || string.IsNullOrEmpty(lisCode))
+            {
+                return false;
+            }
+
             return Repo.Get(m =>
-                m.EquipmentId == item.EquipmentId &&
-                m.LISTestCode == item.LISTestCode &&
-                m.IsActive &&
-                (!excludeId.HasValue || m.Id != excludeId.Value)).Any();
+                    m.EquipmentId == item.EquipmentId &&
+                    m.IsActive &&
+                    (!excludeId.HasValue || m.Id != excludeId.Value))
+                .AsEnumerable()
+                .Any(m =>
+                    string.Equals((m.HISTestCode ?? string.Empty).Trim(), histest, StringComparison.OrdinalIgnoreCase) &&
+                    string.Equals((m.LISTestCode ?? string.Empty).Trim(), lisCode, StringComparison.OrdinalIgnoreCase));
         }
     }
 

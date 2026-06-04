@@ -32,6 +32,7 @@ namespace LIS.BusinessLogic
 
         public long Add(TestRateMaster item)
         {
+            NormalizeRateContext(item);
             ValidateNoOverlappingRate(item, null);
             Stamp(item, true);
             return rateRepo.Add(item);
@@ -39,6 +40,7 @@ namespace LIS.BusinessLogic
 
         public void Update(TestRateMaster item)
         {
+            NormalizeRateContext(item);
             ValidateNoOverlappingRate(item, item.Id);
             Stamp(item, false);
             rateRepo.Update(item);
@@ -258,12 +260,30 @@ namespace LIS.BusinessLogic
             var now = DateTime.Now;
             if (isNew)
             {
+                item.IsActive = true;
                 item.CreatedOn = now;
                 item.CreatedBy = identity?.ActivityMember;
             }
 
             item.ModifiedOn = now;
             item.ModifiedBy = identity?.ActivityMember;
+        }
+
+        private static void NormalizeRateContext(TestRateMaster item)
+        {
+            if (item == null)
+            {
+                return;
+            }
+
+            item.CorporateId = NormalizeContextId(item.CorporateId);
+            item.ReferralDoctorId = NormalizeContextId(item.ReferralDoctorId);
+            item.TestProfileId = NormalizeContextId(item.TestProfileId);
+        }
+
+        private static int? NormalizeContextId(int? value)
+        {
+            return value.HasValue && value.Value > 0 ? value : null;
         }
 
         private void ValidateNoOverlappingRate(TestRateMaster item, int? excludeId)
@@ -285,6 +305,10 @@ namespace LIS.BusinessLogic
                 throw new InvalidOperationException("Effective end date must be on or after effective start date.");
             }
 
+            var corporateId = NormalizeContextId(item.CorporateId);
+            var referralDoctorId = NormalizeContextId(item.ReferralDoctorId);
+            var profileId = NormalizeContextId(item.TestProfileId);
+
             var overlapping = rateRepo.Get(r =>
                     r.IsActive &&
                     r.TestId == item.TestId &&
@@ -292,9 +316,9 @@ namespace LIS.BusinessLogic
                     (!excludeId.HasValue || r.Id != excludeId.Value))
                 .AsEnumerable()
                 .Where(r =>
-                    NullableEquals(r.CorporateId, item.CorporateId) &&
-                    NullableEquals(r.ReferralDoctorId, item.ReferralDoctorId) &&
-                    NullableEquals(r.TestProfileId, item.TestProfileId) &&
+                    NullableEquals(NormalizeContextId(r.CorporateId), corporateId) &&
+                    NullableEquals(NormalizeContextId(r.ReferralDoctorId), referralDoctorId) &&
+                    NullableEquals(NormalizeContextId(r.TestProfileId), profileId) &&
                     r.EffectiveStart.Date <= end &&
                     r.EffectiveEnd.Date >= start)
                 .Any();

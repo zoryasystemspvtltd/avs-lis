@@ -42,9 +42,12 @@ namespace Lis.Api.Controllers.Api
             return HttpContext.Current?.User?.IsInRole("Administrator") == true;
         }
 
+        private const ModulePermissionType EditTestResultsPermission =
+            ModulePermissionType.CanEdit | ModulePermissionType.CanAuthorize;
+
         [HttpGet]
         [Route("search")]
-        [QAuthorize(ModuleName = "Reports", ModulePermissionTypes = ModulePermissionType.CanEdit)]
+        [QAuthorize(ModuleName = "Reports", ModulePermissionTypes = EditTestResultsPermission)]
         public IHttpActionResult Search()
         {
             try
@@ -60,7 +63,7 @@ namespace Lis.Api.Controllers.Api
 
         [HttpGet]
         [Route("{sampleNo}")]
-        [QAuthorize(ModuleName = "Reports", ModulePermissionTypes = ModulePermissionType.CanEdit)]
+        [QAuthorize(ModuleName = "Reports", ModulePermissionTypes = EditTestResultsPermission)]
         public IHttpActionResult Get(string sampleNo)
         {
             try
@@ -76,7 +79,7 @@ namespace Lis.Api.Controllers.Api
 
         [HttpPut]
         [Route("")]
-        [QAuthorize(ModuleName = "Reports", ModulePermissionTypes = ModulePermissionType.CanEdit)]
+        [QAuthorize(ModuleName = "Reports", ModulePermissionTypes = EditTestResultsPermission)]
         public IHttpActionResult Put(TestResultEditSaveRequest request)
         {
             try

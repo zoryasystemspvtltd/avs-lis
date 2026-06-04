@@ -63,7 +63,8 @@
             <td>{{ row.reportStatusLabel }}</td>
             <td>{{ row.hasResults ? 'Yes' : 'No' }}</td>
             <td>
-              <button type="button" class="btn btn-xs btn-primary" (click)="loadSample(row.sampleNo)">
+              <button type="button" class="btn btn-xs btn-primary" (click)="openSample(row)"
+                [disabled]="!row.hasResults">
                 Open
               </button>
             </td>
