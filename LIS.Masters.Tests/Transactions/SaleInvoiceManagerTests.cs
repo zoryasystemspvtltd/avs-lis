@@ -45,19 +45,7 @@ namespace LIS.Masters.Tests.Transactions
 
         private int EnsureTestWithRate(out int rateId)
         {
-            var tests = Services.HisTest.Get(ListOptionsFactory.ForHisTest()).Items;
-            var test = tests?.FirstOrDefault(t => t != null && t.IsActive);
-            if (test == null)
-            {
-                var dept = Services.Department.Get().First();
-                var specimen = Services.Specimen.Get().Cast<HISSpecimenMaster>().First();
-                var newId = (int)Services.HisTest.Add(MasterTestDataBuilder.HisTest(UniqueCode("TST"), dept.Code, specimen.Code));
-                test = Services.HisTest.GetTestById(newId);
-            }
-
-            var rate = MasterTestDataBuilder.StandardRate(test.Id, 250m);
-            rateId = (int)Services.TestRate.Add(rate);
-            return test.Id;
+            return EnsureTestWithStandardRate(250m, out rateId);
         }
 
         [TestMethod]
@@ -84,6 +72,47 @@ namespace LIS.Masters.Tests.Transactions
             Assert.IsTrue(loaded.Invoice.NetAmount > 0);
             Assert.AreEqual(1, loaded.Details.Count());
             Assert.IsTrue(loaded.Details.First().Rate > 0, "Rate should be resolved from TestRate master");
+            Assert.IsTrue(loaded.Invoice.IsActive, "New invoices must be active");
+
+            Services.SaleInvoice.Cancel(id);
+        }
+
+        [TestMethod]
+        public void SaleInvoice_Update_Preserves_IsActive_When_Dto_Omits_Flag()
+        {
+            var patientId = EnsurePatientId();
+            var requestDetailId = EnsureRequestDetailId(patientId);
+            var rateId = 0;
+            var testId = EnsureTestWithRate(out rateId);
+            var id = Services.SaleInvoice.Save(BuildInvoiceDto(UniqueCode("INV"), patientId, testId, requestDetailId));
+
+            var loaded = Services.SaleInvoice.GetById(id);
+            var forUpdate = new SaleInvoiceDto
+            {
+                Invoice = new SaleInvoice
+                {
+                    Id = loaded.Invoice.Id,
+                    InvoiceNo = loaded.Invoice.InvoiceNo,
+                    InvoiceDate = loaded.Invoice.InvoiceDate,
+                    PatientId = loaded.Invoice.PatientId,
+                    RequestDetailId = loaded.Invoice.RequestDetailId,
+                    InvoiceStatus = (int)InvoiceStatusType.Confirmed,
+                    PaymentStatus = loaded.Invoice.PaymentStatus,
+                    GrossAmount = loaded.Invoice.GrossAmount,
+                    DiscountAmount = loaded.Invoice.DiscountAmount,
+                    TaxAmount = loaded.Invoice.TaxAmount,
+                    NetAmount = loaded.Invoice.NetAmount,
+                    PaidAmount = loaded.Invoice.PaidAmount,
+                    DueAmount = loaded.Invoice.DueAmount,
+                    IsActive = false
+                },
+                Details = loaded.Details.ToList()
+            };
+            Services.SaleInvoice.Save(forUpdate);
+
+            var reloaded = Services.SaleInvoice.GetById(id);
+            Assert.IsTrue(reloaded.Invoice.IsActive, "Edit/confirm must not deactivate invoice");
+            Assert.AreEqual((int)InvoiceStatusType.Confirmed, reloaded.Invoice.InvoiceStatus);
 
             Services.SaleInvoice.Cancel(id);
         }

@@ -273,12 +273,7 @@ namespace LIS.BusinessLogic
             ApplyApprovalReset(testRequest, isAdministrator);
             requestRepo.Update(testRequest);
 
-            if (testRequest.ReportStatus == ReportStatusType.DoctorApproved)
-            {
-                result.AuthorizedBy = null;
-                result.AuthorizationDate = null;
-            }
-            else if (testRequest.ReportStatus <= ReportStatusType.TechnicianApproved)
+            if (testRequest.ReportStatus <= ReportStatusType.TechnicianApproved)
             {
                 result.AuthorizedBy = null;
                 result.AuthorizationDate = null;
@@ -349,7 +344,7 @@ namespace LIS.BusinessLogic
                 case ReportStatusType.FinallyRejected:
                     return false;
                 case ReportStatusType.DoctorApproved:
-                    return isAdministrator;
+                    return false;
                 case ReportStatusType.ReportGenerated:
                 case ReportStatusType.TechnicianApproved:
                 case ReportStatusType.New:
@@ -362,14 +357,7 @@ namespace LIS.BusinessLogic
 
         private static void ApplyApprovalReset(TestRequestDetail request, bool isAdministrator)
         {
-            if (request.ReportStatus == ReportStatusType.DoctorApproved && isAdministrator)
-            {
-                request.ReportStatus = ReportStatusType.TechnicianApproved;
-                return;
-            }
-
-            if (request.ReportStatus == ReportStatusType.TechnicianApproved ||
-                request.ReportStatus == ReportStatusType.DoctorApproved)
+            if (request.ReportStatus == ReportStatusType.TechnicianApproved)
             {
                 request.ReportStatus = ReportStatusType.ReportGenerated;
             }

@@ -43,23 +43,24 @@ export class TestEditComponent implements OnInit {
       departments: this.testMasterService.getDepartments()
     }).subscribe(
       data => {
-        this.specimens = data.specimens || [];
         this.departments = data.departments || [];
-        this.loadTestData();
+        this.loadTestData(data.specimens || []);
       },
       () => {
         this.alertService.error('Failed to load specimens or departments');
-        this.specimens = [];
         this.departments = [];
-        this.loadTestData();
+        this.loadTestData([]);
       }
     );
   }
 
-  loadTestData() {
+  loadTestData(specimenList: any[]) {
     this.testMasterService.getById(this.id)
       .subscribe(response => {
         this.item = response;
+        const code = response?.hisSpecimenCode || response?.HISSpecimenCode;
+        const name = response?.hisSpecimenName || response?.HISSpecimenName;
+        this.specimens = this.testMasterService.ensureSpecimenInList(specimenList, code, name);
         this.isLoaded = true;
         this.initForms();
       },

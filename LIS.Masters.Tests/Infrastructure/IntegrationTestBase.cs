@@ -1,5 +1,7 @@
+using LIS.DtoModel.Models;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Linq;
 
 namespace LIS.Masters.Tests.Infrastructure
 {
@@ -39,6 +41,21 @@ namespace LIS.Masters.Tests.Infrastructure
             var suffix = Guid.NewGuid().ToString("N").Substring(0, 6);
             var code = $"{prefix}{suffix}";
             return code.Length <= maxLength ? code : code.Substring(0, maxLength);
+        }
+
+        protected int CreateIsolatedTest()
+        {
+            var dept = Services.Department.Get().First();
+            var specimen = Services.Specimen.Get().Cast<HISSpecimenMaster>().First();
+            var code = UniqueCode("TST");
+            return (int)Services.HisTest.Add(MasterTestDataBuilder.HisTest(code, dept.Code, specimen.Code));
+        }
+
+        protected int EnsureTestWithStandardRate(decimal rate, out int rateId)
+        {
+            var testId = CreateIsolatedTest();
+            rateId = (int)Services.TestRate.Add(MasterTestDataBuilder.StandardRate(testId, rate));
+            return testId;
         }
     }
 }

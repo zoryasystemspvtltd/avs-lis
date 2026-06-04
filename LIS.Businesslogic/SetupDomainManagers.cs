@@ -276,7 +276,7 @@ namespace LIS.BusinessLogic
             item.CreatedBy = Identity?.ActivityMember;
             if (ExistsDuplicate(item, null))
             {
-                throw new InvalidOperationException("Duplicate mapping for this equipment and LIS test code.");
+                throw new InvalidOperationException("Test Mapping already exists.");
             }
 
             return base.Add(item);
@@ -286,7 +286,7 @@ namespace LIS.BusinessLogic
         {
             if (ExistsDuplicate(item, item.Id))
             {
-                throw new InvalidOperationException("Duplicate mapping for this equipment and LIS test code.");
+                throw new InvalidOperationException("Test Mapping already exists.");
             }
 
             base.Update(item);
@@ -486,7 +486,7 @@ namespace LIS.BusinessLogic
 
             if (ExistsDuplicatePatient(item, null))
             {
-                throw new InvalidOperationException("A patient with this patient ID already exists.");
+                throw new InvalidOperationException("Patient already exists.");
             }
 
             item.IsActive = true;
@@ -508,7 +508,7 @@ namespace LIS.BusinessLogic
         {
             if (ExistsDuplicatePatient(item, item.Id))
             {
-                throw new InvalidOperationException("A patient with this external ID already exists.");
+                throw new InvalidOperationException("Patient already exists.");
             }
 
             repo.Update(item);
@@ -516,15 +516,56 @@ namespace LIS.BusinessLogic
 
         private bool ExistsDuplicatePatient(PatientDetail item, long? excludeId)
         {
-            if (item == null || string.IsNullOrWhiteSpace(item.HisPatientId))
+            if (item == null)
             {
                 return false;
             }
 
-            return repo.Get(p =>
-                p.HisPatientId == item.HisPatientId &&
+            var candidates = repo.Get(p =>
                 p.IsActive &&
-                (!excludeId.HasValue || p.Id != excludeId.Value)).Any();
+                (!excludeId.HasValue || p.Id != excludeId.Value)).AsEnumerable();
+
+            if (!string.IsNullOrWhiteSpace(item.HisPatientId))
+            {
+                var patientId = item.HisPatientId.Trim();
+                if (candidates.Any(p =>
+                    p.HisPatientId != null &&
+                    p.HisPatientId.Trim().Equals(patientId, StringComparison.OrdinalIgnoreCase)))
+                {
+                    return true;
+                }
+            }
+
+            var phone = NormalizePatientPhone(item.Phone);
+            var name = NormalizePatientName(item.Name);
+            if (!string.IsNullOrEmpty(phone) && !string.IsNullOrEmpty(name))
+            {
+                if (candidates.Any(p =>
+                    NormalizePatientPhone(p.Phone) == phone &&
+                    NormalizePatientName(p.Name) == name))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static string NormalizePatientPhone(string phone)
+        {
+            if (string.IsNullOrWhiteSpace(phone))
+            {
+                return string.Empty;
+            }
+
+            return new string(phone.Where(char.IsDigit).ToArray());
+        }
+
+        private static string NormalizePatientName(string name)
+        {
+            return string.IsNullOrWhiteSpace(name)
+                ? string.Empty
+                : name.Trim().ToUpperInvariant();
         }
 
         public void Delete(PatientDetail item)

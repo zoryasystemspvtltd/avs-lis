@@ -1,6 +1,7 @@
 using LIS.DtoModel.Models;
 using LIS.Masters.Tests.Infrastructure;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.Linq;
 
 namespace LIS.Masters.Tests.Masters
@@ -25,9 +26,10 @@ namespace LIS.Masters.Tests.Masters
             var loaded = Services.HisTest.GetTestById(id);
             Assert.AreEqual(code, loaded.HISTestCode);
 
-            loaded.HISTestCodeDescription = "Updated description";
+            var updatedName = "Updated " + code;
+            loaded.HISTestCodeDescription = updatedName;
             Services.HisTest.Update(loaded);
-            Assert.AreEqual("Updated description", Services.HisTest.GetTestById(id).HISTestCodeDescription);
+            Assert.AreEqual(updatedName, Services.HisTest.GetTestById(id).HISTestCodeDescription);
         }
 
         [TestMethod]
@@ -51,6 +53,39 @@ namespace LIS.Masters.Tests.Masters
             var search = sample.HISTestCode.Substring(0, System.Math.Min(3, sample.HISTestCode.Length));
             var filtered = Services.HisTest.Get(ListOptionsFactory.Create(sortColumn: "HISTestCode", search: search));
             Assert.IsTrue(filtered.Items.Any(i => i.HISTestCode.Contains(search)));
+        }
+
+        [TestMethod]
+        public void HisTest_Duplicate_TestCode_Throws_On_Create()
+        {
+            var dept = Services.Department.Get().First();
+            var specimen = Services.Specimen.Get().Cast<HISSpecimenMaster>().First();
+            var code = UniqueCode("TST");
+            var id = Services.HisTest.Add(MasterTestDataBuilder.HisTest(code, dept.Code, specimen.Code));
+
+            var duplicate = MasterTestDataBuilder.HisTest(code, dept.Code, specimen.Code);
+            Assert.ThrowsException<InvalidOperationException>(() => Services.HisTest.Add(duplicate));
+
+            Services.HisTest.Delete(Services.HisTest.GetTestById(id));
+        }
+
+        [TestMethod]
+        public void HisTest_Duplicate_TestName_Throws_On_Create()
+        {
+            var dept = Services.Department.Get().First();
+            var specimen = Services.Specimen.Get().Cast<HISSpecimenMaster>().First();
+            var code1 = UniqueCode("TST");
+            var code2 = UniqueCode("TST");
+            var sharedName = "Shared Test Name " + UniqueCode("NM");
+            var test1 = MasterTestDataBuilder.HisTest(code1, dept.Code, specimen.Code);
+            test1.HISTestCodeDescription = sharedName;
+            var id = Services.HisTest.Add(test1);
+
+            var test2 = MasterTestDataBuilder.HisTest(code2, dept.Code, specimen.Code);
+            test2.HISTestCodeDescription = sharedName;
+            Assert.ThrowsException<InvalidOperationException>(() => Services.HisTest.Add(test2));
+
+            Services.HisTest.Delete(Services.HisTest.GetTestById(id));
         }
 
         [TestMethod]

@@ -140,7 +140,7 @@
         </div>
         <p class="text-muted"><small>H = High, L = Low (calculated using existing reference range rules; not stored separately).</small></p>
         <p class="text-warning" *ngIf="!selectedTest.canEdit">
-          Editing is not allowed for this approval status. Doctor-approved results require Administrator override.
+          Editing is not allowed for this approval status. Doctor-approved results cannot be modified.
         </p>
         <button type="button" class="btn btn-primary" (click)="save()" [disabled]="saving || !selectedTest.canEdit">
           <span class="glyphicon glyphicon-floppy-disk"></span> Save Changes

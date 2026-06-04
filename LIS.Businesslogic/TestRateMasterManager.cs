@@ -32,12 +32,14 @@ namespace LIS.BusinessLogic
 
         public long Add(TestRateMaster item)
         {
+            ValidateNoOverlappingRate(item, null);
             Stamp(item, true);
             return rateRepo.Add(item);
         }
 
         public void Update(TestRateMaster item)
         {
+            ValidateNoOverlappingRate(item, item.Id);
             Stamp(item, false);
             rateRepo.Update(item);
         }
@@ -262,6 +264,51 @@ namespace LIS.BusinessLogic
 
             item.ModifiedOn = now;
             item.ModifiedBy = identity?.ActivityMember;
+        }
+
+        private void ValidateNoOverlappingRate(TestRateMaster item, int? excludeId)
+        {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
+            if (item.TestId <= 0)
+            {
+                throw new ArgumentException("Test is required.");
+            }
+
+            var start = item.EffectiveStart.Date;
+            var end = item.EffectiveEnd.Date;
+            if (end < start)
+            {
+                throw new InvalidOperationException("Effective end date must be on or after effective start date.");
+            }
+
+            var overlapping = rateRepo.Get(r =>
+                    r.IsActive &&
+                    r.TestId == item.TestId &&
+                    r.RateType == item.RateType &&
+                    (!excludeId.HasValue || r.Id != excludeId.Value))
+                .AsEnumerable()
+                .Where(r =>
+                    NullableEquals(r.CorporateId, item.CorporateId) &&
+                    NullableEquals(r.ReferralDoctorId, item.ReferralDoctorId) &&
+                    NullableEquals(r.TestProfileId, item.TestProfileId) &&
+                    r.EffectiveStart.Date <= end &&
+                    r.EffectiveEnd.Date >= start)
+                .Any();
+
+            if (overlapping)
+            {
+                throw new InvalidOperationException(
+                    "An active Test Rate already exists for the selected test and overlapping effective period.");
+            }
+        }
+
+        private static bool NullableEquals(int? left, int? right)
+        {
+            return left == right;
         }
     }
 }

@@ -158,8 +158,9 @@ namespace LIS.BusinessLogic
             Recalculate(header, lines);
 
             var now = DateTime.Now;
-            if (header.Id == 0)
+            if (header.Id <= 0)
             {
+                header.Id = 0;
                 var duplicateNo = invoiceRepo.Get(i => i.InvoiceNo == header.InvoiceNo && i.IsActive).FirstOrDefault();
                 if (duplicateNo != null)
                 {
@@ -204,34 +205,47 @@ namespace LIS.BusinessLogic
                 return id;
             }
 
-            header.ModifiedOn = now;
-            header.ModifiedBy = identity?.ActivityMember;
-            invoiceRepo.Update(header);
+            var existingHeader = invoiceRepo.Get(header.Id);
+            if (existingHeader == null)
+            {
+                throw new KeyNotFoundException("Invoice not found");
+            }
 
-            var existing = detailRepo.Get(d => d.SaleInvoiceId == header.Id).ToList();
+            if (existingHeader.InvoiceStatus == (int)InvoiceStatusType.Cancelled)
+            {
+                throw new InvalidOperationException("Cancelled invoice cannot be edited");
+            }
+
+            // Save must never deactivate; Cancel() is the only deactivation path.
+            ApplyInvoiceHeaderUpdate(existingHeader, header);
+            existingHeader.ModifiedOn = now;
+            existingHeader.ModifiedBy = identity?.ActivityMember;
+            invoiceRepo.Update(existingHeader);
+
+            var existing = detailRepo.Get(d => d.SaleInvoiceId == existingHeader.Id).ToList();
             foreach (var old in existing)
             {
                 detailRepo.Delete(old);
             }
 
-            LinkTestRequestsToLines(header, lines, header.InvoiceNo);
+            LinkTestRequestsToLines(existingHeader, lines, existingHeader.InvoiceNo);
 
             foreach (var line in lines)
             {
-                line.SaleInvoiceId = header.Id;
+                line.SaleInvoiceId = existingHeader.Id;
                 line.CreatedOn = now;
                 line.CreatedBy = identity?.ActivityMember;
                 line.IsActive = true;
                 detailRepo.Add(line);
             }
 
-            if ((!header.RequestDetailId.HasValue || header.RequestDetailId <= 0) && lines.Any(l => l.RequestDetailId > 0))
+            if ((!existingHeader.RequestDetailId.HasValue || existingHeader.RequestDetailId <= 0) && lines.Any(l => l.RequestDetailId > 0))
             {
-                header.RequestDetailId = lines.First(l => l.RequestDetailId > 0).RequestDetailId;
-                invoiceRepo.Update(header);
+                existingHeader.RequestDetailId = lines.First(l => l.RequestDetailId > 0).RequestDetailId;
+                invoiceRepo.Update(existingHeader);
             }
 
-            return header.Id;
+            return existingHeader.Id;
         }
 
         public void UpdateStatus(long id, int invoiceStatus, int paymentStatus)
@@ -249,6 +263,7 @@ namespace LIS.BusinessLogic
 
             invoice.InvoiceStatus = invoiceStatus;
             invoice.PaymentStatus = paymentStatus;
+            invoice.IsActive = true;
             invoice.ModifiedOn = DateTime.Now;
             invoice.ModifiedBy = identity?.ActivityMember;
 
@@ -405,6 +420,27 @@ namespace LIS.BusinessLogic
                 invoice.PatientName = patient.Name;
                 invoice.PatientPhone = patient.Phone;
             }
+        }
+
+        private static void ApplyInvoiceHeaderUpdate(SaleInvoice existing, SaleInvoice incoming)
+        {
+            existing.InvoiceNo = incoming.InvoiceNo;
+            existing.InvoiceDate = incoming.InvoiceDate;
+            existing.InvoiceStatus = incoming.InvoiceStatus;
+            existing.PaymentStatus = incoming.PaymentStatus;
+            existing.RequestDetailId = incoming.RequestDetailId;
+            existing.PatientId = incoming.PatientId;
+            existing.GrossAmount = incoming.GrossAmount;
+            existing.DiscountAmount = incoming.DiscountAmount;
+            existing.TaxAmount = incoming.TaxAmount;
+            existing.NetAmount = incoming.NetAmount;
+            existing.PaidAmount = incoming.PaidAmount;
+            existing.DueAmount = incoming.DueAmount;
+            existing.RefDoctorName = incoming.RefDoctorName;
+            existing.ReferralDoctorId = incoming.ReferralDoctorId;
+            existing.CorporateId = incoming.CorporateId;
+            existing.Notes = incoming.Notes;
+            existing.IsActive = true;
         }
 
         private static string ResolveSortColumn(string sortColumnName)

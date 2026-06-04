@@ -203,6 +203,7 @@ namespace LIS.BusinessLogic
             }
 
             test.HISTestCode = test.HISTestCode.Trim();
+            ValidateUniqueTest(test, null);
             test.IsActive = true;
             if (test.CreatedOn == default(DateTime))
             {
@@ -219,7 +220,46 @@ namespace LIS.BusinessLogic
 
         public void Update(HisTestMaster test)
         {
+            if (test == null)
+            {
+                throw new ArgumentNullException(nameof(test));
+            }
+
+            ValidateUniqueTest(test, test.Id);
             testRepo.Update(test);
+        }
+
+        private void ValidateUniqueTest(HisTestMaster test, long? excludeId)
+        {
+            var code = (test.HISTestCode ?? string.Empty).Trim();
+            if (string.IsNullOrEmpty(code))
+            {
+                throw new ArgumentException("Test Code is required.");
+            }
+
+            var codeDuplicate = testRepo.Get(t =>
+                    (!excludeId.HasValue || t.Id != excludeId.Value))
+                .AsEnumerable()
+                .Any(t => string.Equals((t.HISTestCode ?? string.Empty).Trim(), code, StringComparison.OrdinalIgnoreCase));
+
+            if (codeDuplicate)
+            {
+                throw new InvalidOperationException("Test Code already exists.");
+            }
+
+            var name = (test.HISTestCodeDescription ?? string.Empty).Trim();
+            if (!string.IsNullOrEmpty(name))
+            {
+                var nameDuplicate = testRepo.Get(t =>
+                        (!excludeId.HasValue || t.Id != excludeId.Value))
+                    .AsEnumerable()
+                    .Any(t => string.Equals((t.HISTestCodeDescription ?? string.Empty).Trim(), name, StringComparison.OrdinalIgnoreCase));
+
+                if (nameDuplicate)
+                {
+                    throw new InvalidOperationException("Test Name already exists.");
+                }
+            }
         }
 
         public void Delete(HisTestMaster test)

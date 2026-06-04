@@ -11,15 +11,7 @@ namespace LIS.Masters.Tests.Transactions
     {
         private int EnsureTestId()
         {
-            var existing = Services.HisTest.Get(ListOptionsFactory.ForHisTest()).Items?.FirstOrDefault();
-            if (existing != null)
-            {
-                return existing.Id;
-            }
-
-            var dept = Services.Department.Get().First();
-            var specimen = Services.Specimen.Get().Cast<HISSpecimenMaster>().First();
-            return (int)Services.HisTest.Add(MasterTestDataBuilder.HisTest(UniqueCode("TST"), dept.Code, specimen.Code));
+            return CreateIsolatedTest();
         }
 
         [TestMethod]
@@ -39,24 +31,24 @@ namespace LIS.Masters.Tests.Transactions
         }
 
         [TestMethod]
-        public void TestRate_Overlapping_Current_Selects_Latest_EffectiveStart()
+        public void TestRate_Overlapping_Period_Blocked_On_Save()
         {
             var dept = Services.Department.Get().First();
             var specimen = Services.Specimen.Get().Cast<HISSpecimenMaster>().First();
             var testId = (int)Services.HisTest.Add(MasterTestDataBuilder.HisTest(UniqueCode("TST"), dept.Code, specimen.Code));
 
-            var older = MasterTestDataBuilder.StandardRate(testId, 80m, DateTime.Today.AddDays(-60), DateTime.Today.AddDays(365));
-            var newer = MasterTestDataBuilder.StandardRate(testId, 120m, DateTime.Today.AddDays(-1), DateTime.Today.AddDays(365));
-            var olderId = (int)Services.TestRate.Add(older);
-            var newerId = (int)Services.TestRate.Add(newer);
+            var existing = MasterTestDataBuilder.StandardRate(testId, 80m, DateTime.Today.AddDays(-60), DateTime.Today.AddDays(365));
+            var existingId = (int)Services.TestRate.Add(existing);
 
-            var effective = Services.TestRate.GetEffectiveRate(testId, (int)RateType.Standard, null, null, null);
-            Assert.IsNotNull(effective);
-            Assert.IsTrue(effective.Id == newerId || effective.Rate == 120m,
-                "When multiple rates overlap, latest EffectiveStart should win");
+            var overlap = MasterTestDataBuilder.StandardRate(testId, 120m, DateTime.Today.AddDays(30), DateTime.Today.AddDays(90));
+            Assert.ThrowsException<InvalidOperationException>(() => Services.TestRate.Add(overlap));
 
-            Services.TestRate.Delete(new TestRateMaster { Id = olderId });
-            Services.TestRate.Delete(new TestRateMaster { Id = newerId });
+            var nonOverlap = MasterTestDataBuilder.StandardRate(testId, 150m, DateTime.Today.AddDays(400), DateTime.Today.AddDays(500));
+            var nonOverlapId = (int)Services.TestRate.Add(nonOverlap);
+            Assert.IsTrue(nonOverlapId > 0);
+
+            Services.TestRate.Delete(new TestRateMaster { Id = nonOverlapId });
+            Services.TestRate.Delete(new TestRateMaster { Id = existingId });
         }
 
         [TestMethod]

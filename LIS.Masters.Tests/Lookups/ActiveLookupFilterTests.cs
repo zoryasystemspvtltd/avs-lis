@@ -43,13 +43,8 @@ namespace LIS.Masters.Tests.Lookups
         [TestMethod]
         public void TestRate_GetAllActive_Only_Returns_Active_Rates()
         {
-            var test = Services.HisTest.Get(ListOptionsFactory.ForHisTest()).Items.FirstOrDefault();
-            if (test == null)
-            {
-                Assert.Inconclusive("No tests available for rate lookup");
-            }
-
-            var rate = MasterTestDataBuilder.StandardRate(test.Id, 99.99m);
+            var testId = CreateIsolatedTest();
+            var rate = MasterTestDataBuilder.StandardRate(testId, 99.99m);
             var rateId = (int)Services.TestRate.Add(rate);
             Assert.IsTrue(Services.TestRate.GetAllActive().Any(r => r.Id == rateId));
 

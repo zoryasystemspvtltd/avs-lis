@@ -15,19 +15,7 @@ namespace LIS.Masters.Tests.Workflows
     {
         private int EnsureTestWithRate(decimal rateAmount, out int rateId)
         {
-            var tests = Services.HisTest.Get(ListOptionsFactory.ForHisTest()).Items;
-            var test = tests?.FirstOrDefault(t => t != null && t.IsActive);
-            if (test == null)
-            {
-                var dept = Services.Department.Get().First();
-                var specimen = Services.Specimen.Get().Cast<HISSpecimenMaster>().First();
-                var newId = (int)Services.HisTest.Add(MasterTestDataBuilder.HisTest(UniqueCode("TST"), dept.Code, specimen.Code));
-                test = Services.HisTest.GetTestById(newId);
-            }
-
-            var rate = MasterTestDataBuilder.StandardRate(test.Id, rateAmount);
-            rateId = (int)Services.TestRate.Add(rate);
-            return test.Id;
+            return EnsureTestWithStandardRate(rateAmount, out rateId);
         }
 
         [TestMethod]

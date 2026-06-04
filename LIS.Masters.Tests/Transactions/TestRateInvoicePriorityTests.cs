@@ -11,15 +11,7 @@ namespace LIS.Masters.Tests.Transactions
     {
         private int EnsureTestId()
         {
-            var existing = Services.HisTest.Get(ListOptionsFactory.ForHisTest()).Items?.FirstOrDefault();
-            if (existing != null)
-            {
-                return existing.Id;
-            }
-
-            var dept = Services.Department.Get().First();
-            var specimen = Services.Specimen.Get().Cast<HISSpecimenMaster>().First();
-            return (int)Services.HisTest.Add(MasterTestDataBuilder.HisTest(UniqueCode("TST"), dept.Code, specimen.Code));
+            return CreateIsolatedTest();
         }
 
         [TestMethod]

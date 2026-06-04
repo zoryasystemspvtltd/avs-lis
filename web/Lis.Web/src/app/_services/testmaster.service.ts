@@ -18,13 +18,21 @@ export class TestMasterService {
     return response.items || response.Items || [];
   }
 
-  private hisTestListOption() {
+  private lookupListOption(sortColumn: string) {
     return {
       RecordPerPage: 500,
       CurrentPage: 1,
-      SortColumnName: 'HISTestCode',
+      SortColumnName: sortColumn,
       SortDirection: true
     };
+  }
+
+  private hisTestListOption() {
+    return this.lookupListOption('HISTestCode');
+  }
+
+  private isActiveRecord(item: any): boolean {
+    return item && item.isActive !== false && item.IsActive !== false;
   }
 
   getAll() {
@@ -54,19 +62,33 @@ export class TestMasterService {
   }
 
   getSpecimens() {
-    return this.http.get<any>(`${environment.ApplicationServer}/api/Specimens/`)
+    const headers = new HttpHeaders({ ApiOption: JSON.stringify(this.lookupListOption('Name')) });
+    return this.http.get<any>(`${environment.ApplicationServer}/api/Specimens/`, { headers })
       .pipe(
-        map(response => this.normalizeList(response)),
+        map(response => this.normalizeList(response).filter(s => this.isActiveRecord(s))),
         catchError(() => of([]))
       );
   }
 
   getDepartments() {
-    return this.http.get<any>(`${environment.ApplicationServer}/api/Department/`)
+    const headers = new HttpHeaders({ ApiOption: JSON.stringify(this.lookupListOption('Name')) });
+    return this.http.get<any>(`${environment.ApplicationServer}/api/Department/`, { headers })
       .pipe(
-        map(response => this.normalizeList(response)),
+        map(response => this.normalizeList(response).filter(d => this.isActiveRecord(d))),
         catchError(() => of([]))
       );
+  }
+
+  ensureSpecimenInList(specimens: any[], code: string, name?: string): any[] {
+    if (!code) {
+      return specimens || [];
+    }
+    const list = specimens || [];
+    const normalized = (code || '').trim();
+    if (list.some(s => (s.code || s.Code || '').toString().trim() === normalized)) {
+      return list;
+    }
+    return [...list, { code: normalized, name: name || normalized, isActive: true }];
   }
 
   getNextTestCode(): Observable<string> {

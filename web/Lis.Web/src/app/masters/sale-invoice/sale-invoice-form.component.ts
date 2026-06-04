@@ -326,12 +326,14 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
       return;
     }
 
+    const loadedIsActive = this.invoiceDto?.invoice?.isActive ?? this.invoiceDto?.invoice?.IsActive;
     const dto = {
       invoice: Object.assign({}, val, {
         id: val.id || (this.id ? +this.id : 0),
         invoiceDate: new Date(val.invoiceDate),
         invoiceStatus: confirm ? 1 : (val.invoiceStatus || 0),
-        patientId: +val.patientId
+        patientId: +val.patientId,
+        isActive: this.id ? (loadedIsActive !== false) : true
       }),
       details: lineItems
     };

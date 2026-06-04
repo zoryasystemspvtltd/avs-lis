@@ -17,19 +17,7 @@ namespace LIS.Masters.Tests.Transactions
 
         private int EnsureTestWithRate(out int rateId)
         {
-            var tests = Services.HisTest.Get(ListOptionsFactory.ForHisTest()).Items;
-            var test = tests?.FirstOrDefault(t => t != null && t.IsActive);
-            if (test == null)
-            {
-                var dept = Services.Department.Get().First();
-                var specimen = Services.Specimen.Get().Cast<HISSpecimenMaster>().First();
-                var newId = (int)Services.HisTest.Add(MasterTestDataBuilder.HisTest(UniqueCode("TST"), dept.Code, specimen.Code));
-                test = Services.HisTest.GetTestById(newId);
-            }
-
-            var rate = MasterTestDataBuilder.StandardRate(test.Id, 200m);
-            rateId = (int)Services.TestRate.Add(rate);
-            return test.Id;
+            return EnsureTestWithStandardRate(200m, out rateId);
         }
 
         [TestMethod]

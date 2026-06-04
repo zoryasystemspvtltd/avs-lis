@@ -53,5 +53,21 @@ namespace LIS.Masters.Tests.Masters
 
             Services.PatientMaster.Delete(new PatientDetail { Id = id });
         }
+
+        [TestMethod]
+        public void Patient_Duplicate_Name_And_Phone_Throws_On_Create()
+        {
+            var suffix = UniqueCode("PHN");
+            var patient = MasterTestDataBuilder.Patient(suffix);
+            patient.Phone = "9000000001";
+            var id = Services.PatientMaster.Add(patient);
+
+            var duplicate = MasterTestDataBuilder.Patient("other");
+            duplicate.Phone = "900-000-0001";
+            duplicate.Name = patient.Name;
+            Assert.ThrowsException<System.InvalidOperationException>(() => Services.PatientMaster.Add(duplicate));
+
+            Services.PatientMaster.Delete(new PatientDetail { Id = id });
+        }
     }
 }
