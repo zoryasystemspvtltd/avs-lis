@@ -1,4 +1,4 @@
-name: Deploy LIS (API + Web)
+﻿name: Deploy LIS (API + Web)
 
 on:
   workflow_dispatch: # 
@@ -17,7 +17,7 @@ jobs:
         uses: NuGet/setup-nuget@v1
 
       - name: Restore NuGet packages (API)
-        run: nuget restore web\Lis.Api\Lis.Api.csproj -NonInteractive -Verbosity quiet
+        run: nuget restore web\Lis.Api\Lis.Api.csproj -NonInteractive - /verbosity:minimal
 
       - name: Publish API to C:\\zorya
         shell: cmd
