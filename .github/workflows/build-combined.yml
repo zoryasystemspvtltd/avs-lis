@@ -97,12 +97,12 @@ jobs:
 
       - name: Install web dependencies
         working-directory: web/Lis.Web
-        shell: pwsh
+        shell: powershell
         run: npm ci --no-audit --prefer-offline
 
       - name: Build Angular web (production)
         working-directory: web/Lis.Web
-        shell: pwsh
+        shell: powershell
         run: |
           if (Test-Path package.json -PathType Leaf -and (Get-Content package.json | Select-String '"build"')) {
             npm run build -- --prod
@@ -111,7 +111,7 @@ jobs:
           }
 
       - name: Copy web build to C:\\zorya\\ui
-        shell: pwsh
+        shell: powershell
         run: |
           $uiOut = 'C:\\zorya\\ui'
           if (-not (Test-Path $uiOut)) { New-Item -Path $uiOut -ItemType Directory -Force | Out-Null }
@@ -123,7 +123,7 @@ jobs:
           Copy-Item -Path (Join-Path $distDir.FullName '*') -Destination $uiOut -Recurse -Force
 
       - name: Replace Index.cshtml with ui/index.html content
-        shell: pwsh
+        shell: powershell
         run: |
           $src = 'C:\\zorya\\ui\\index.html'
           $dest = 'web\\Lis.Api\\Views\\Home\\Index.cshtml'
