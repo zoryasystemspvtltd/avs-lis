@@ -1,0 +1,114 @@
+<br>
+<h3>Add Sample</h3>
+<br>
+<form [formGroup]="addSampleForm" (ngSubmit)="onSubmit()" *ngIf="isLoaded">
+    <div class="form-group">
+        <h4>Patient Information</h4>
+        <hr />
+        <div class="row">
+            <div class="col-sm-2 col-md-2 col-lg-2"><label> Request No<span class="error">*</span></label></div>
+            <div class="col-sm-4 col-md-4 col-lg-4">
+                <input type="text" class="form-control" formControlName="hisRequestNo" readonly />
+            </div>
+            <div class="col-sm-2 col-md-2 col-lg-2"><label> Patient<span class="error">*</span></label></div>
+            <div class="col-sm-4 col-md-4 col-lg-4">
+                <select class="form-control" formControlName="patientId" (change)="onPatientSelected()">
+                    <option value="">-- Select Patient --</option>
+                    <option *ngFor="let p of patients" [value]="p.id">{{p.name}} ({{p.hisPatientId}})</option>
+                </select>
+                <span *ngIf="isInValid('patientId')" class="error">Patient is required.</span>
+            </div>
+        </div>
+        <br />
+        <div class="row">
+            <div class="col-sm-2 col-md-2 col-lg-2"><label> Patient Id</label></div>
+            <div class="col-sm-4 col-md-4 col-lg-4">
+                <input type="text" class="form-control" formControlName="hisPatientId" readonly />
+            </div>
+            <div class="col-sm-2 col-md-2 col-lg-2"><label> Patient Name</label></div>
+            <div class="col-sm-4 col-md-4 col-lg-4">
+                <input type="text" class="form-control" formControlName="patientName" readonly />
+            </div>
+        </div>
+        <br />
+        <div class="row">
+            <div class="col-sm-2 col-md-2 col-lg-2"><label> Age<span class="error">*</span></label></div>
+            <div class="col-sm-4 col-md-4 col-lg-4">
+                <div class="input-group">
+                    <input type="number" class="form-control" formControlName="year" placeholder="Year" style="width:45%;" min="0" max="150" />
+                    <input type="number" class="form-control" formControlName="month" placeholder="Month" style="width:45%;" min="0" max="11" />
+                </div>
+                <span *ngIf="isInValid('year')" class="error">Year is required.</span>
+            </div>
+            <div class="col-sm-2 col-md-2 col-lg-2"><label> Gender<span class="error">*</span></label></div>
+            <div class="col-sm-4 col-md-4 col-lg-4">
+                <select formControlName="gender" class="form-control">
+                    <option value="">-- Select Gender --</option>
+                    <option value="M">Male</option>
+                    <option value="F">Female</option>
+                </select>
+                <span *ngIf="isInValid('gender')" class="error">Please select gender.</span>
+            </div>
+        </div>
+        <br />
+        <div class="row">
+            <div class="col-sm-2 col-md-2 col-lg-2"><label> Sample Collection Date<span class="error">*</span></label></div>
+            <div class="col-sm-4 col-md-4 col-lg-4">
+                <input type="date" class="form-control" formControlName="sampleCollectionDate" />
+                <span *ngIf="isInValid('sampleCollectionDate')" class="error">Sample Collection Date is required.</span>
+            </div>
+        </div>
+        <br />
+        <h4>Selected Tests</h4>
+        <div class="col-md-12 form-grid-stye" *ngFor="let test of selectedTest">
+            <label title="{{test.hisTestCodeDescription}}">
+                {{test.hisTestCode}} — {{test.hisTestCodeDescription}}
+                <span *ngIf="test.displayRate"> (₹{{test.displayRate}})</span>
+                <span style="cursor:pointer;" class="glyphicon glyphicon-remove" (click)="deleteItem(test)"></span>
+            </label>
+        </div>
+        <hr />
+        <div class="row">
+            <div class="col-md-12">
+                <div class="input-group">
+                    <span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>
+                    <input type="text" class="form-control" placeholder="Search tests" (keyup)="doSearch($event)">
+                </div>
+            </div>
+        </div>
+        <hr />
+        <div class="row">
+            <div class="col-md-12">
+                <div *ngFor="let item of departments">
+                    <div *ngIf="hasMapping(hisTests,item.code)">
+                        <div class="panel-heading panel-head-area">
+                            <div class="panel-title">
+                                <a data-toggle="collapse" class="glyphicon panel-link" (click)="selectPanel(item)" href="#t_{{item.code}}">{{item.name}}</a>
+                            </div>
+                        </div>
+                        <div id="t_{{item.code}}" class="panel-collapse collapse in">
+                            <div class="panel-body panel">
+                                <div class="row">
+                                    <div class="col-sm-12 col-md-4 col-lg-4 form-grid-stye" *ngFor="let test of filterMapping(hisTests,item.code)">
+                                        <input type="checkbox" [id]="test.hisTestCode" [checked]="test.isActive" (change)="onCheckActive($event,test)">
+                                        <label [for]="test.hisTestCode">
+                                            {{test.hisTestCode}}: {{test.hisTestCodeDescription}}
+                                            <span *ngIf="test.displayRate"> — ₹{{test.displayRate}}</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <hr>
+        <div class="row">
+            <div class="col-md-12">
+                <button type="submit" class="btn btn-primary" [disabled]="loading">Save</button>
+                <a [routerLink]="['/samples']" class="btn btn-default btn-default-alternet">Back to List</a>
+            </div>
+        </div>
+    </div>
+</form>

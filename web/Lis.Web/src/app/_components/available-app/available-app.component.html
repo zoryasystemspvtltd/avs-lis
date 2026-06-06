@@ -1,0 +1,10 @@
+<ng-select [items]="availableapps"
+bindLabel="name"
+bindValue="accessKey"
+[(ngModel)]="selectedApplication"
+(change)="changeApplication($event)"
+[clearable]="false"
+*ngIf="showApplication"
+>
+
+</ng-select>

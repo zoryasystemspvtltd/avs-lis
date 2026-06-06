@@ -1,0 +1,9 @@
+.zorya-chart-wrap {
+  width: 100%;
+}
+
+.demo-chart {
+  height: 300px;
+  min-height: 300px;
+  width: 100%;
+}

@@ -1,0 +1,141 @@
+<div class="row" *ngIf="isLoaded">
+    <div class="col-sm-12 col-md-12 col-lg-12">
+        <form [formGroup]="editUserForm" (ngSubmit)="onSubmit()">
+            <h3>Edit User Details</h3>
+            <hr />
+            <div class="row">
+                <div class="col-sm-12 col-md-12 col-lg-12">
+                    <input [type]="'hidden'" formControlName="id" />
+                    <div class="form-group">
+                        <div>
+                            <h3>Account Information</h3>
+                            <div class="row">
+                                <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label> First Name<span
+                                            class="error">*</span></label></div>
+                                <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
+                                    <div class="input-group">
+                                        <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
+                                        <input [type]="'text'" class="firstName form-control"
+                                            placeholder="Enter First Name" maxlength="25" style="width:100%;"
+                                            formControlName="first_name">
+                                    </div>
+                                    <span *ngIf="isInValid('first_name')" class="error ">First Name is required.</span>
+                                </div>
+                                <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Last Name<span
+                                            class="error">*</span></label></div>
+                                <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
+                                    <div class="input-group">
+                                        <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
+                                        <input [type]="'text'" class="form-control lastName" formControlName="last_name"
+                                            placeholder="Enter Last Name" maxlength="20">
+                                    </div>
+                                    <span *ngIf="isInValid('last_name')" class="error ">Last Name is required.</span>
+                                </div>
+                            </div>
+                            <br />
+                            <div class="row">
+                                <div class="col-lg-2 col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Email<span
+                                            class="error">*</span></label></div>
+                                <div class="col-lg-4 col-sm-4 col-md-4 col-lg-4 form-grid-stye">
+                                    <div class="input-group">
+                                        <span class="input-group-addon"><i
+                                                class="glyphicon glyphicon-envelope"></i></span>
+                                        <input [type]="'email'" class="form-control email" formControlName="email"
+                                            placeholder="Enter Email" />
+                                    </div>
+                                    <span *ngIf="isInValid('email')" class="error ">Email Name is required.</span>
+                                    <span *ngIf="isInValidEmail('email')" class="error ">Invalid email.</span>
+                                </div>
+                                <div class="col-lg-2 col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Phone
+                                        Number</label></div>
+                                <div class="col-lg-4 col-sm-4 col-md-4 col-lg-4 form-grid-stye">
+                                    <div class="input-group">
+                                        <span class="input-group-addon"><i
+                                                class="glyphicon glyphicon-phone-alt"></i></span>
+                                        <input [type]="'text'" class="form-control" maxlength="15"
+                                            formControlName="phone_number" ui-mask="(9?9?9?) 9?9?9?-9?9?9?9?"
+                                            placeholder="(___) ___-____" ui-mask-placeholder-char="-">
+                                    </div>
+                                </div>
+                            </div>
+                            <br />
+                            
+                            <div class="row">
+                                <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label> Is Locked</label>
+                                </div>
+                                <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
+                                    <div class="input-group">
+                                        <span class="input-group-addon"><i
+                                                class="glyphicon glyphicon-remove-sign"></i></span>
+                                        <div class="form-control">
+                                            <input [type]="'checkbox'" id="chk-locked"
+                                                (change)="onLockedChecked($event.target.checked)"
+                                                [checked]="item.locked">
+                                            &nbsp;
+                                            <label for="chk-locked">Locked</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Roles</label> </div>
+                                <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
+                                    <div class="input-group">
+                                        <span class="input-group-addon"><i
+                                                class="glyphicon glyphicon-plus-sign"></i></span>
+                                        <table class="form-control" style="height: 100%;">
+                                            <tr *ngFor="let role of item.roles">
+                                                <td>
+                                                    <input [type]="'checkbox'" id="{{'c_'+role.id}}" name="user_role"
+                                                        [checked]="role.isInRole" attr.data-id="{{role.id}}"
+                                                        (change)="onCheckRole($event)" /> &nbsp;
+                                                    <label for="c_{{role.id}}">{{role.name}}</label>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <br />
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="row">
+                                        <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye"><label>Blocked
+                                                User</label></div>
+                                        <div class="col-sm-8 col-md-8 col-lg-8 form-grid-stye">
+                                            <div class="input-group">
+                                                <span class="input-group-addon"><i
+                                                        class="glyphicon glyphicon-remove-sign"></i></span>
+                                                <div class="form-control">
+                                                    <input [type]="'checkbox'" id="chk-block"
+                                                        (change)="onBlockedChecked($event.target.checked)"
+                                                        [checked]="item.is_blocked">
+                                                    &nbsp;
+                                                    <label for="chk-block">Block</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-12 col-md-12 col-lg-12">
+                    <alert></alert>
+                </div>
+            </div>
+            <hr />
+            <div class="row">
+                <div class="col-sm-12 col-md-12 col-lg-12">
+                    <div style="float:left;">
+                        <button type="submit" class="btn btn-primary" *ngIf="hasAccess()">Save</button>
+                    </div>
+                    <div style="padding-left:6px; float:left;">
+                        <a [routerLink]="['/','users']" class="btn btn-default btn-default-alternet">Back to List</a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

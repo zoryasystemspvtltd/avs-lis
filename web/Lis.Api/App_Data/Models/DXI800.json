@@ -1,0 +1,26 @@
+﻿[
+  {
+    "Code": "1",
+    "Description": "A2/F"
+  },
+  {
+    "Code": "A1b",
+    "Description": "AFP - Alpha-Feto Protein (cancer and ONTD utility)"
+  },
+  {
+    "Code": "LA1c",
+    "Description": "AgHBs - Hepatitis B Surface Antigen"
+  },
+  {
+    "Code": "4",
+    "Description": "A1c"
+  },
+  {
+    "Code": "P3",
+    "Description": "AgHBsCtl - Hepatitis B Surface Antigen Control"
+  },
+  {
+    "Code": "A0",
+    "Description": "CEA - Carcino-embryonic Antigen"
+  }
+]

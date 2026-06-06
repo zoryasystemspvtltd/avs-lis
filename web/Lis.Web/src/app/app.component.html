@@ -1,0 +1,13 @@
+<div class="wrapper avilis-portal">
+    <app-header></app-header>
+    <app-nav-menu></app-nav-menu>
+    <app-left-nav-menu></app-left-nav-menu>
+    <div class="container body-content avilis-body">
+        <div class="container-main qcontent" [ngClass]="{'content-with-sidebar': !authenticationService.hideSideNav }">
+            <div class="avilis-page-body">
+                <router-outlet></router-outlet>
+            </div>
+            <app-footer></app-footer>
+        </div>
+    </div>
+</div>

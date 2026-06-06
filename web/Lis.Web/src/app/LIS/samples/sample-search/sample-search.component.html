@@ -1,0 +1,7 @@
+<div class="row" *ngIf="isLoaded">
+    <div class="col-md-12">
+        <div *ngFor="let result of item">
+            <app-tech-sample-details [id]="result"></app-tech-sample-details>
+        </div>
+    </div>
+</div>

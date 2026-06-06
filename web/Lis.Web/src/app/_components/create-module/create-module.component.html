@@ -1,0 +1,122 @@
+<form [formGroup]="moduleForm" (ngSubmit)="onSubmit()">
+    <div class="row">
+        <div class="col-md-12">
+            <div style="padding-top: 20px;"></div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div style="padding-left:15px;float:left;">
+                <button type="submit" class="btn btn-default btn-default-alternet" *ngIf="hasAccess(1,0)" >Save</button> 
+            </div>
+            <div style="padding-left:6px; float:left;">
+                <button type="button" class="btn btn-default btn-default-alternet" *ngIf="hasAccess(4,2)" (click)="onPublish()">Save & Publish</button> 
+            </div>
+            <div style="padding-left:6px; float:left;">
+                <a [routerLink]="['/',schemma.url]" class="btn btn-default btn-default-alternet">Back to List</a>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <alert></alert>
+        </div>
+        <div class="col-md-12">
+            <div style="padding-top: 20px;"></div>
+        </div>
+    </div>
+
+    <div *ngFor="let row of schemma.elements;" class="form-group rows">
+        <div *ngFor="let element of row;" class="col-md-{{element.col}}">
+                <div [ngSwitch]="element.type">
+                    <div *ngSwitchCase="'blank'">
+                        <span></span>
+                    </div>
+                    <div *ngSwitchCase="'dropdown'">
+                        <label for="{{element.fieldName}}"><span *ngIf="element.required" class="error">*</span>{{element.label}}:</label>
+                        <div class="input-group ">
+                            <span class="input-group-addon "><i class="glyphicon glyphicon-{{element.icon}} "></i></span>
+                            <select formControlName="{{element.fieldName}}" class="form-control input-group-sm input-sm" [ngModel]="element.value">
+                                <option value="">{{element.default}}</option>
+                                <option *ngFor="let item of element.data" [ngValue]="item.id">{{item.name}}</option>
+                            </select>
+                        </div>
+                        <span *ngIf="isInValid(element.fieldName,element.required)" class="error ">{{element.label}} is required.</span>
+                        <span *ngIf="hasValidationError(element.fieldName)" class="error ">{{showError(element.fieldName)}}</span>
+                    </div>
+                    <div *ngSwitchCase="'text'">
+                        <label for="{{element.fieldName}}"><span *ngIf="element.required" class="error">*</span>{{element.label}}:</label>
+                        <div class="input-group ">
+                            <span class="input-group-addon "><i class="glyphicon glyphicon-{{element.icon}} "></i></span>
+                            <input class="form-control input-group-sm input-sm"  [type]="'text'" formControlName="{{element.fieldName}}"/>
+                        </div>
+                        <span *ngIf="isInValid(element.fieldName,element.required)" class="error ">{{element.label}} is required.</span>
+                        <span *ngIf="hasValidationError(element.fieldName)" class="error ">{{showError(element.fieldName)}}</span>
+                    </div>
+                    <div *ngSwitchCase="'number'">
+                        <label for="{{element.fieldName}}"><span *ngIf="element.required" class="error">*</span>{{element.label}}:</label>
+                        <div class="input-group ">
+                            <span class="input-group-addon "><i class="glyphicon glyphicon-{{element.icon}} "></i></span>
+                            <input class="form-control input-group-sm input-sm"  [type]="'number'" formControlName="{{element.fieldName}}"/>
+                        </div>
+                        <span *ngIf="isInValid(element.fieldName,element.required)" class="error ">{{element.label}} is required.</span>
+                        <span *ngIf="hasValidationError(element.fieldName)" class="error ">{{showError(element.fieldName)}}</span>
+                    </div>
+                    <div *ngSwitchCase="'hidden'">
+                        <input [type]="'hidden'" formControlName="{{element.fieldName}}"/>
+                    </div>
+                    <div *ngSwitchCase="'currency'">
+                        <label for="{{element.fieldName}}"><span *ngIf="element.required" class="error">*</span>{{element.label}}:</label>
+                        <div class="input-group ">
+                            <span class="input-group-addon "><i class="glyphicon glyphicon-{{element.icon}} "></i></span>
+                            <input class="form-control input-group-sm input-sm"  [type]="'number'" formControlName="{{element.fieldName}}"/>
+                        </div>
+                        <span *ngIf="isInValid(element.fieldName,element.required)" class="error ">{{element.label}} is required.</span>
+                        <span *ngIf="hasValidationError(element.fieldName)" class="error ">{{showError(element.fieldName)}}</span>
+                    </div>
+                    <div *ngSwitchCase="'datetime-local'">
+                        <label for="{{element.fieldName}}"><span *ngIf="element.required" class="error">*</span>{{element.label}}:</label>
+                        <div class="input-group ">
+                            <span class="input-group-addon "><i class="glyphicon glyphicon-{{element.icon}} "></i></span>
+                            <input class="form-control input-group-sm input-sm" [type]="'datetime-local'" formControlName="{{element.fieldName}}">
+                        </div>
+                        <span *ngIf="isInValid(element.fieldName,element.required)" class="error ">{{element.label}} is required.</span>
+                        <span *ngIf="hasValidationError(element.fieldName)" class="error ">{{showError(element.fieldName)}}</span>
+                    </div>
+                    <div *ngSwitchCase="'datetime'">
+                        <label for="{{element.fieldName}}"><span *ngIf="element.required" class="error">*</span>{{element.label}}:</label>
+                        <div class="input-group ">
+                            <span class="input-group-addon "><i class="glyphicon glyphicon-{{element.icon}} "></i></span>
+                            <input class="form-control input-group-sm input-sm" [type]="'datetime'" formControlName="{{element.fieldName}}">
+                        </div>
+                        <span *ngIf="isInValid(element.fieldName,element.required)" class="error ">{{element.label}} is required.</span>
+                        <span *ngIf="hasValidationError(element.fieldName)" class="error ">{{showError(element.fieldName)}}</span>
+                    </div>
+                    <div *ngSwitchCase="'editor'">
+                        <label for="{{element.fieldName}}"><span *ngIf="element.required" class="error">*</span>{{element.label}}:</label>
+                        <span *ngIf="isInValid(element.fieldName,element.required)" class="error ">{{element.label}} is required.</span>
+                        <span *ngIf="hasValidationError(element.fieldName)" class="error ">{{showError(element.fieldName)}}</span>
+                        <app-tiny-mce-editor formControlName="{{element.fieldName}}"></app-tiny-mce-editor>
+                    </div>
+                </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div style="padding-top: 20px;"></div>
+        </div>
+        <div class="col-md-12">
+            <alert></alert>
+        </div>
+        <div class="col-md-12">
+            <div style="padding-left:15px;float:left;">
+                <button type="submit" class="btn btn-default btn-default-alternet" *ngIf="hasAccess(1,0)" >Save</button> 
+            </div>
+            <div style="padding-left:6px; float:left;">
+                <button type="button" class="btn btn-default btn-default-alternet" *ngIf="hasAccess(4,2)" (click)="onPublish()">Save & Publish</button> 
+            </div>
+            <div style="padding-left:6px; float:left;">
+                <a [routerLink]="['/',schemma.url]" class="btn btn-default btn-default-alternet">Back to List</a>
+            </div>
+        </div>
+    </div>
+</form>

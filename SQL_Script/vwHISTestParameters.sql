@@ -1,0 +1,27 @@
+﻿USE [LISStaging]
+GO
+
+/****** Object:  View [dbo].[vwHISTestParameters]    Script Date: 5/26/2024 11:25:54 AM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+
+ALTER VIEW [dbo].[vwHISTestParameters]
+AS 
+
+SELECT A.TESTID as TestId,A.TCODE AS TestAlias,A.TESTNM AS TestName,B.COMPID AS ParameterCode,B.COMPNM AS Parameter,
+B.METHOD AS MethodName,B.SEX AS Gender,B.FROMAGE AS AgeFrom,B.TOAGE AS AgeTo,B.TP1 AS AgeType,
+B.REFRANGETO AS MinValue,B.MAXRAFRANGE AS MaxValue, B.UNIT as Unit
+FROM [NEOSOFT]..[LIS_ZO].[LIS_TESTMAST] A
+INNER JOIN [NEOSOFT]..[LIS_ZO].[LIS_TESTPARAM] B ON A.TESTID = B.TESTID
+
+
+
+
+
+GO
+
+

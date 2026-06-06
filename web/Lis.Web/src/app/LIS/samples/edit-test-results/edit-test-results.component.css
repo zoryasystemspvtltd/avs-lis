@@ -1,0 +1,7 @@
+.edit-test-results-page .table td {
+  vertical-align: middle;
+}
+
+.edit-test-results-page .input-sm {
+  min-width: 100px;
+}

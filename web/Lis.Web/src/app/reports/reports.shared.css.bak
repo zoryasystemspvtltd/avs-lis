@@ -1,0 +1,283 @@
+.zorya-report-page {
+  max-width: var(--zorya-content-max);
+  margin: 0 auto;
+  padding: 8px 16px 32px;
+}
+
+.zorya-report-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px 16px;
+  margin-bottom: 16px;
+}
+
+.zorya-report-title h3 {
+  color: var(--zorya-primary-dark);
+  font-weight: 600;
+  font-size: 20px;
+  margin: 0 0 4px;
+}
+
+.zorya-report-subtitle {
+  margin: 0;
+  font-size: 13px;
+  color: var(--zorya-text-muted);
+}
+
+.zorya-report-header-actions .btn-success {
+  background: var(--zorya-primary);
+  border-color: var(--zorya-primary-dark);
+}
+
+.zorya-report-header-actions .btn-success:hover:not(:disabled) {
+  background: var(--zorya-primary-dark);
+}
+
+.zorya-report-filters {
+  background: var(--zorya-surface);
+  border: 1px solid var(--zorya-border);
+  border-radius: var(--zorya-radius);
+  padding: 14px 18px 16px;
+  margin-bottom: 14px;
+  box-shadow: var(--zorya-shadow-sm);
+}
+
+.zorya-report-filters-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--zorya-primary);
+  margin-bottom: 12px;
+}
+
+.zorya-report-filters .filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+  align-items: flex-end;
+}
+
+.zorya-report-filters .filter-field {
+  flex: 1 1 150px;
+  min-width: 130px;
+}
+
+.zorya-report-filters .filter-field.filter-wide {
+  flex: 2 1 200px;
+  min-width: 180px;
+}
+
+.zorya-report-filters label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--zorya-text-muted);
+  margin-bottom: 5px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.zorya-report-filters label .req {
+  color: #c0392b;
+}
+
+.zorya-report-filters .filter-actions {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 8px;
+  padding-bottom: 1px;
+}
+
+.zorya-report-select ::ng-deep .ng-select-container {
+  min-height: 30px;
+  font-size: 13px;
+  border-color: var(--zorya-border);
+  border-radius: var(--zorya-radius-sm);
+}
+
+.zorya-report-toolbar {
+  margin-bottom: 10px;
+}
+
+.zorya-report-summary {
+  font-size: 13px;
+  color: var(--zorya-text-muted);
+}
+
+.zorya-report-grid-wrap {
+  position: relative;
+  background: var(--zorya-surface);
+  border: 1px solid var(--zorya-border);
+  border-radius: var(--zorya-radius);
+  overflow: hidden;
+  box-shadow: var(--zorya-shadow-sm);
+  min-height: 120px;
+}
+
+.zorya-report-grid-wrap.is-loading {
+  min-height: 160px;
+}
+
+.zorya-report-loading {
+  padding: 48px 16px;
+  text-align: center;
+  color: var(--zorya-text-muted);
+  font-size: 14px;
+}
+
+.zorya-report-table-scroll {
+  max-height: calc(100vh - 380px);
+  min-height: 200px;
+  overflow: auto;
+}
+
+.zorya-report-table {
+  width: 100%;
+  margin: 0;
+  font-size: 13px;
+}
+
+.zorya-report-table thead th {
+  background: var(--zorya-primary-soft);
+  color: var(--zorya-primary-dark);
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 2px solid var(--zorya-border);
+  padding: 11px 12px;
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  box-shadow: 0 1px 0 var(--zorya-border);
+}
+
+.zorya-report-table tbody td {
+  padding: 10px 12px;
+  border-top: 1px solid var(--zorya-border-light);
+  vertical-align: middle;
+}
+
+.zorya-report-table tbody tr:nth-child(even) {
+  background: #fafcfd;
+}
+
+.zorya-report-table tbody tr:hover {
+  background: var(--zorya-primary-soft);
+}
+
+.zorya-report-table .text-right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.zorya-report-table .text-muted {
+  color: var(--zorya-text-muted);
+  font-size: 12px;
+}
+
+.zorya-report-table .cell-strong {
+  font-weight: 600;
+  color: var(--zorya-text);
+}
+
+.zorya-report-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.zorya-report-empty {
+  padding: 40px 24px;
+  text-align: center;
+  color: var(--zorya-text-muted);
+}
+
+.zorya-report-empty .glyphicon {
+  font-size: 28px;
+  color: var(--zorya-primary-light);
+  margin-bottom: 12px;
+}
+
+.zorya-report-empty p {
+  margin: 0 0 6px;
+  font-size: 14px;
+}
+
+.zorya-report-empty .hint {
+  font-size: 12px;
+  color: var(--zorya-text-muted);
+}
+
+.zorya-report-pager {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-top: 1px solid var(--zorya-border-light);
+  gap: 12px;
+  background: #fbfcfd;
+}
+
+.zorya-report-pager .pager-left {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.zorya-report-pager .pager-info {
+  font-size: 13px;
+  color: var(--zorya-text-muted);
+}
+
+.zorya-report-pager .pager-size-label {
+  font-size: 12px;
+  color: var(--zorya-text-muted);
+  margin: 0 0 0 8px;
+  font-weight: normal;
+}
+
+.pager-size-select {
+  width: auto;
+  min-width: 64px;
+  display: inline-block;
+}
+
+.filter-error {
+  color: #c0392b;
+  font-size: 12px;
+  margin: 10px 0 0;
+}
+
+@media (max-width: 768px) {
+  .zorya-report-header {
+    flex-direction: column;
+  }
+
+  .zorya-report-header-actions {
+    width: 100%;
+  }
+
+  .zorya-report-header-actions .btn {
+    width: 100%;
+  }
+
+  .zorya-report-filters .filter-field,
+  .zorya-report-filters .filter-field.filter-wide {
+    flex: 1 1 100%;
+  }
+
+  .zorya-report-table-scroll {
+    max-height: none;
+  }
+}
+
