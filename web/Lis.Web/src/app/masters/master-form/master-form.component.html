@@ -1,0 +1,156 @@
+<div class="avilis-form-page" *ngIf="form">
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <h3>{{title}} {{id ? '(Edit)' : '(Create)'}}</h3>
+    <hr />
+
+    <ng-container *ngFor="let field of visibleFields()">
+      <div class="row" *ngIf="field.type !== 'checkbox'">
+        <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye">
+          <label>{{field.label}}<span class="error" *ngIf="field.required">*</span></label>
+        </div>
+        <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
+          <div class="input-group" *ngIf="field.type !== 'select'">
+            <span class="input-group-addon"><i class="glyphicon glyphicon-pencil"></i></span>
+            <input *ngIf="field.type === 'text' || field.type === 'number' || field.type === 'date'"
+              [type]="field.type === 'number' ? 'number' : (field.type === 'date' ? 'date' : 'text')"
+              class="form-control" [formControlName]="field.name"
+              [readonly]="isFieldReadonly(field)" />
+          </div>
+          <select *ngIf="field.type === 'select'" class="form-control" [formControlName]="field.name">
+            <option *ngFor="let opt of field.options" [value]="opt.value">{{opt.label}}</option>
+          </select>
+          <span *ngIf="submitted && f[field.name]?.invalid" class="error">{{field.label}} is required.</span>
+        </div>
+      </div>
+      <div class="row" *ngIf="field.type === 'checkbox'">
+        <div class="col-sm-12 form-grid-stye">
+          <label><input type="checkbox" [formControlName]="field.name" /> {{field.label}}</label>
+        </div>
+      </div>
+      <br *ngIf="field.type !== 'checkbox'" />
+    </ng-container>
+
+    <ng-container *ngIf="apiName === 'TestRate'">
+      <p *ngIf="!lookupsLoaded" class="text-muted">Loading lookups...</p>
+      <div class="row">
+        <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Test<span class="error">*</span></label></div>
+        <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
+          <select class="form-control" formControlName="testId" [disabled]="!lookupsLoaded">
+            <option [ngValue]="null">-- Select Test --</option>
+            <option *ngFor="let t of tests" [ngValue]="t.id">{{t.hisTestCode}} - {{t.hisTestCodeDescription}}</option>
+          </select>
+          <span *ngIf="submitted && f.testId?.invalid" class="error">Test is required.</span>
+        </div>
+        <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Rate Type</label></div>
+        <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
+          <select class="form-control" formControlName="rateType" (change)="onRateTypeChange()">
+            <option [ngValue]="0">Standard</option>
+            <option [ngValue]="1">Corporate</option>
+            <option [ngValue]="2">Referral Doctor</option>
+            <option [ngValue]="3">Profile</option>
+            <option [ngValue]="4">Emergency</option>
+          </select>
+        </div>
+      </div>
+      <br />
+      <div class="row" *ngIf="rateType === 1">
+        <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Corporate<span class="error">*</span></label></div>
+        <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
+          <select class="form-control" formControlName="corporateId" [disabled]="!lookupsLoaded">
+            <option [ngValue]="null">-- Select Corporate --</option>
+            <option *ngFor="let c of corporates" [ngValue]="c.id">{{c.code}} - {{c.name}}</option>
+          </select>
+          <span *ngIf="submitted && f.corporateId?.invalid" class="error">Corporate is required.</span>
+        </div>
+      </div>
+      <br *ngIf="rateType === 1" />
+      <div class="row" *ngIf="rateType === 2">
+        <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Referral Doctor<span class="error">*</span></label></div>
+        <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
+          <select class="form-control" formControlName="referralDoctorId" [disabled]="!lookupsLoaded">
+            <option [ngValue]="null">-- Select Doctor --</option>
+            <option *ngFor="let d of doctors" [ngValue]="d.id">{{d.code}} - {{d.name}}</option>
+          </select>
+          <span *ngIf="submitted && f.referralDoctorId?.invalid" class="error">Referral Doctor is required.</span>
+        </div>
+      </div>
+      <br *ngIf="rateType === 2" />
+      <div class="row" *ngIf="rateType === 3">
+        <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Test Profile<span class="error">*</span></label></div>
+        <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
+          <select class="form-control" formControlName="testProfileId" [disabled]="!lookupsLoaded">
+            <option [ngValue]="null">-- Select Profile --</option>
+            <option *ngFor="let p of profiles" [ngValue]="p.id">{{p.code}} - {{p.name}}</option>
+          </select>
+          <span *ngIf="submitted && f.testProfileId?.invalid" class="error">Test Profile is required.</span>
+        </div>
+      </div>
+      <br *ngIf="rateType === 3" />
+    </ng-container>
+
+    <ng-container *ngIf="apiName === 'HisParameterMaster'">
+      <div class="row">
+        <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Test<span class="error">*</span></label></div>
+        <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
+          <select class="form-control" formControlName="hisTestId" [disabled]="!lookupsLoaded" (change)="onHisTestIdChanged()">
+            <option [ngValue]="null">-- Select Test --</option>
+            <option *ngFor="let t of tests" [ngValue]="t.id">{{t.hisTestCode}} - {{t.hisTestCodeDescription}}</option>
+          </select>
+        </div>
+      </div>
+      <br />
+      <ng-container *ngIf="isParameterPickerScreen">
+        <div class="row">
+          <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Parameter<span class="error">*</span></label></div>
+          <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
+            <select class="form-control" formControlName="hisParameterPicker" [disabled]="!lookupsLoaded" (change)="onParameterTemplateSelected()">
+              <option [ngValue]="null">-- Select Parameter --</option>
+              <option *ngFor="let p of parameterOptions" [ngValue]="p.id">{{p.hisParamCode}} - {{p.hisParamDescription}}</option>
+            </select>
+          </div>
+        </div>
+        <br />
+      </ng-container>
+    </ng-container>
+
+    <ng-container *ngIf="apiName === 'HisParameterRangeMaster'">
+      <div class="row">
+        <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Parameter<span class="error">*</span></label></div>
+        <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
+          <select class="form-control" formControlName="hisParameterId" [disabled]="!lookupsLoaded">
+            <option [ngValue]="null">-- Select Parameter --</option>
+            <option *ngFor="let p of hisParameters" [ngValue]="p.id">{{p.hisParamCode}} - {{p.hisParamDescription}}</option>
+          </select>
+        </div>
+      </div>
+      <br />
+    </ng-container>
+
+    <ng-container *ngIf="apiName === 'TestMappingMaster'">
+      <div class="row">
+        <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Test<span class="error">*</span></label></div>
+        <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
+          <select class="form-control" formControlName="hisTestPicker" [disabled]="!lookupsLoaded || !!id" (change)="onHisTestSelected()">
+            <option [ngValue]="null">-- Select Test --</option>
+            <option *ngFor="let t of tests" [ngValue]="t.id">{{t.hisTestCode}} - {{t.hisTestCodeDescription}}</option>
+          </select>
+        </div>
+      </div>
+      <br />
+      <div class="row">
+        <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Equipment<span class="error">*</span></label></div>
+        <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
+          <select class="form-control" formControlName="equipmentId" [disabled]="!lookupsLoaded">
+            <option [ngValue]="null">-- Select Equipment --</option>
+            <option *ngFor="let e of equipments" [ngValue]="e.id">{{e.name}} ({{e.model}})</option>
+          </select>
+        </div>
+      </div>
+      <br />
+    </ng-container>
+
+    <button type="submit" class="btn btn-primary" [disabled]="loading">Save</button>
+    <button type="button" class="btn btn-default" (click)="cancel()">Cancel</button>
+    <button type="button" class="btn btn-warning" *ngIf="id" (click)="deactivate()">{{apiName === 'HisParameterMaster' || apiName === 'Department' ? 'Delete' : 'Deactivate'}}</button>
+  </form>
+</div>

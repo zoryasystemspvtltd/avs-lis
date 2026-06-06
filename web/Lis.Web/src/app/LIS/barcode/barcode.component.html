@@ -1,0 +1,10 @@
+<div style="border: 0px solid #ccc;text-align: center;width:50mm;margin-top:2mm;">
+    <div style="float:left;text-align: left;padding-bottom:2px;padding-left:9px;font-size: 12px;font-weight: bold;font-family: Arial, Helvetica, sans-serif;" [innerHTML]="code"></div>
+    <div style="float:left;text-align: left;padding-bottom:2px;padding-left:6px;padding-right:6px;font-size: 12px;font-weight: bold;font-family: Arial, Helvetica, sans-serif;">{{groupName}}</div>
+    <div style="float:left;text-align: left;padding-bottom:2px;padding-left:6px;padding-right:6px;font-size: 12px;font-weight: bold;font-family: Arial, Helvetica, sans-serif;">{{bedNo}}</div>
+    <ngx-barcode [bc-value]="codeLower" [bc-font]="'monospace'"  [bc-height]="28" [bc-width]="1.5" [bc-format]="'CODE128'" [bc-margin]="0" [bc-margin-top]="0" [bc-margin-bottom]="0" [bc-margin-left]="0" [bc-margin-right]="0" [bc-display-value]="false"></ngx-barcode>
+    <div style="text-align: left;padding-top:4px;padding-bottom:2px;padding-left:9px;font-size: 8px;font-weight: bold;font-family: Arial, Helvetica, sans-serif;" [innerHTML]="trustedHtml"></div>
+    <div style="float:left;text-align: left;padding-bottom:2px;padding-left:9px;padding-right:6px;font-size: 8px;font-weight: bold;font-family: Arial, Helvetica, sans-serif;">{{ipNo}}-{{mrNo}}</div>
+    <div style="float:right;text-align: left;padding-top:2px;padding-right:9px;font-size: 8px;font-weight: bold;font-family: Arial, Helvetica, sans-serif;">{{currentDate|date:'dd MMM yyyy'}}</div>
+    
+</div>

@@ -1,0 +1,66 @@
+<div class="content">
+    <div class="page-wrapper">
+        <div class="row" *ngIf="isLoaded">
+            <div class="col-sm-12 col-md-12 col-lg-12">
+                <div class="form-group">
+                    <div class="container-fluid">
+                        <h3>Account Information</h3>
+                        <div class="row">
+                            <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label> First Name</label>
+                            </div>
+                            <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
+                                {{item.first_name}}
+                            </div>
+                            <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Last Name</label>
+                            </div>
+                            <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
+                                {{item.last_name}}
+                            </div>
+                        </div>
+                        <br />
+                        <div class="row">
+                            <div class="col-lg-2 col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Email</label>
+                            </div>
+                            <div class="col-lg-4 col-sm-4 col-md-4 col-lg-4 form-grid-stye">
+                                {{item.email}}
+                            </div>
+                            <div class="col-lg-2 col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Phone
+                                    Number</label></div>
+                            <div class="col-lg-4 col-sm-4 col-md-4 col-lg-4 form-grid-stye">
+                                {{item.phone_number}}
+                            </div>
+                        </div>
+                        <br />
+                        <div class="row">
+                            <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Roles</label> </div>
+                            <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
+                                <table>
+                                    <tr *ngFor="let role of item.roles">
+                                        <td>
+                                            <label *ngIf="role.isInRole">{{role.name}}</label>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                        <br />
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="row">
+                                    <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye"><label>Status
+                                            User</label></div>
+                                    <div class="col-sm-8 col-md-8 col-lg-8 form-grid-stye">
+                                        <label>{{item.status==2?'Active':'Blocked'}}</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <span class="glyphicon glyphicon-user text-success"></span><a [routerLink]='["/change-password"]'>Change Password</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,166 @@
+<div class="row" *ngIf="isLoaded">
+    <div class="col-md-12">
+        <h3>Approved Report Details - {{item.sampleNo}}</h3>
+        <hr />
+        <div class="row">
+            <div class="col-md-7">
+                <div class="row">
+                    <div class="col-md-3"><label> MR NO.</label></div>
+                    <div class="col-md-3">
+                        {{item.mrNo}}
+                    </div>
+                    <div class="col-md-3"><label> Patient Id</label></div>
+                    <div class="col-md-3">
+                        {{item.hisPatientId}}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-3"><label> Patient Name</label></div>
+                    <div class="col-md-3">
+                        {{item.patientName}}
+                    </div>
+                    <div class="col-md-3"><label> Age</label></div>
+                    <div class="col-md-3">
+                        {{item.age | number:'1.0-2'}}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-3"><label> Gender</label></div>
+                    <div class="col-md-3">
+                        {{item.gender}}
+                    </div>
+                    <div class="col-md-3"><label> Department</label></div>
+                    <div class="col-md-3">
+                        {{item.department}}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-3"><label> Test Name</label></div>
+                    <div class="col-md-3">
+                        {{item.testName}}
+                    </div>
+                    <div class="col-md-3"><label> Specimen</label></div>
+                    <div class="col-md-3">
+                        {{item.specimenName}}
+                    </div>
+                </div>
+                <div class="row" *ngIf="item.ipNo">
+                    <div class="col-md-3"><label> IPNo</label></div>
+                    <div class="col-md-3">
+                        {{item.ipNo}}
+                    </div>
+                    <div class="col-md-3"><label> BedNo</label></div>
+                    <div class="col-md-3">
+                        {{item.bedNo}}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-3"><label> Technician Name</label></div>
+                    <div class="col-md-3">
+                        {{item.reviewedBy}}
+                    </div>
+                    <div class="col-md-3"><label> Technician Approval Time</label></div>
+                    <div class="col-md-3">
+                        {{item.reviewDate | date:'dd/MM/yyyy hh:mm a'}}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-5">
+                <div class="row">
+                    <div class="col-md-6"><label> Barcode Number</label></div>
+                    <div class="col-md-6">
+                        {{item.sampleNo}}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6"><label> Sample Col. Date & Time</label></div>
+                    <div class="col-md-6">
+                        {{item.sampleCollectionDate | date:'dd/MM/yyyy hh:mm a'}}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6"><label> Report Date & Time</label></div>
+                    <div class="col-md-6">
+                        {{item.reportDate | date:'dd/MM/yyyy hh:mm a'}}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6"><label> Doctor Name</label></div>
+                    <div class="col-md-6">
+                        {{item.approvedBy}}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6"><label> Doctor Approval Time</label></div>
+                    <div class="col-md-6">
+                        {{item.approvedOn | date:'dd/MM/yyyy hh:mm a'}}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <hr />
+        <div class="row">
+            <div class="col-sm-12 col-md-12 col-lg-12">
+                <div class="panel-group" id="accordion" *ngFor="let run of item.testRuns">
+                    <div class="panel panel-default" *ngIf="run.reportStatus == 5">
+                        <div class="panel-collapse collapse in ">
+                            <div class="panel-body ">
+                                <table class="table table-striped ">
+                                    <thead>
+                                        <tr>
+                                            <th>
+                                                Parameter Name
+                                            </th>
+                                            <th>
+                                                Value
+                                            </th>
+                                            <th>
+                                                Unit
+                                            </th>
+                                            <th>
+                                                Normal Value
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr *ngFor="let result of run.testValues ">
+                                            <td>{{result.hisParamName}}</td>
+                                            <td>{{result.paramValue}}</td>
+                                            <td>{{result.paramUnit}}</td>
+                                            <td>
+												<div *ngFor="let range of result.hisRangeValues">
+													{{range}}
+												</div>
+											</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <hr />
+        <div class="row" *ngIf="item.technicianNote">
+            <div class="col-md-12"><label> Note</label></div>
+            <div class="col-md-12">
+                <div [innerHTML]="trustedHtml(item.technicianNote)" style="float: left;"></div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-12 col-md-12 col-lg-12">
+                <alert></alert>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-12 col-md-12 col-lg-12">
+                <div style="padding-left:6px; float:left;">
+                    <a [routerLink]="['/approvedsamples']" class="btn btn-default btn-default-alternet">Back to
+                        List</a>
+                </div>
+            </div>
+        </div>
+        <hr>
+    </div>
+</div>

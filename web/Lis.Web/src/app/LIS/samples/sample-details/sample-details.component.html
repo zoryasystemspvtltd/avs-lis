@@ -1,0 +1,136 @@
+<div class="row" *ngIf="isLoaded">
+    <div class="col-md-12">
+        <h3>Test Details - {{item.sampleNo}}
+            <div style="padding-right:6px; float:right;">
+                <a [routerLink]="['/samples/edit/',id]" class="btn btn-default btn-default-alternet">Add
+                    New Test</a>
+            </div>
+        </h3>
+        <hr />
+        <div class="row">
+            <div class="col-md-7">
+                <div class="row">
+                    <div class="col-md-3"><label> LABNO</label></div>
+                    <div class="col-md-3">
+                        {{item.hisRequestNo}}
+                    </div>
+                    <div class="col-md-3"><label> Patient Id</label></div>
+                    <div class="col-md-3">
+                        {{item.patient.hisPatientId}}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-3"><label> Patient Name</label></div>
+                    <div class="col-md-3">
+                        {{item.patient.name}}
+                    </div>
+                    <div class="col-md-3"><label> Age</label></div>
+                    <div class="col-md-3">
+                        {{item.patient.age | number:'1.0-2'}}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-3"><label> Gender</label></div>
+                    <div class="col-md-3">
+                        {{item.patient.gender}}
+                    </div>
+                    <div class="col-md-3"><label> Department</label></div>
+                    <div class="col-md-3">
+                        {{item.department}}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-3"><label> Test Name</label></div>
+                    <div class="col-md-3">
+                        {{item.hisTestName}}
+                    </div>
+                    <div class="col-md-3"><label> Specimen</label></div>
+                    <div class="col-md-3">
+                        {{item.specimenName}}
+                    </div>
+                </div>
+                <div class="row" *ngIf="item.ipNo">
+                    <div class="col-md-3"><label> IPNo</label></div>
+                    <div class="col-md-3">
+                        {{item.ipNo}}
+                    </div>
+                    <div class="col-md-3"><label> BedNo</label></div>
+                    <div class="col-md-3">
+                        {{item.bedNo}}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-5">
+                <div class="row">
+                    <div class="col-md-3"><label> MR NO.</label></div>
+                    <div class="col-md-3">
+                        {{item.mrNo}}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6"><label> Barcode NO.</label></div>
+                    <div class="col-md-6">
+                        <div>
+                            <app-barcode [code]="item.sampleNo" style="float:left;"
+                                [text]="item.barcodeText"></app-barcode>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6"><label> Sample Col. Date</label></div>
+                    <div class="col-md-6">
+                        {{item.sampleCollectionDate | date:'dd/MM/yyyy hh:mm a'}}
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <hr />
+        <div class="row">
+            <div class="col-sm-12 col-md-12 col-lg-12">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>
+                                Parameter Code
+                            </th>
+                            <th>
+                                Parameter Name
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let result of item.parameters">
+                            <td>{{result.hisParamCode}}</td>
+                            <td>{{result.hisParamName}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-12 col-md-12 col-lg-12">
+                <div style="padding-left:6px; float:left;">
+                    <a [routerLink]="['/samples']" class="btn btn-default btn-default-alternet">Back to List</a>
+                </div>
+                <div style="padding-left:6px; float:left">
+                    <button type="button" class="btn btn-primary" (click)="rerunSample(0)" *ngIf="hasAccess()">Re-Run
+                        Sample</button>
+                </div>
+                <div style="padding-left:6px; float:left;">
+                    <button class="btn btn-primary" printSectionId="print-section" ngxPrint>Print Barcode</button>
+                </div>
+            </div>
+        </div>
+        <hr>
+    </div>
+</div>
+<div style="display: none;visibility: hidden;" *ngIf="isLoaded">
+    <div style="width: 100%" id="print-section">
+        <p>
+            <app-barcode [code]="item.sampleNo" style="float:left;margin-left:0px" [text]="item.barcodeText">
+            </app-barcode>
+        </p>
+    </div>
+</div>

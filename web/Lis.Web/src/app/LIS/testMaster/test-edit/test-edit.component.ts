@@ -1,0 +1,134 @@
+import { Component, OnInit } from '@angular/core';
+import { FormGroup, FormBuilder, Validators } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
+import { forkJoin } from 'rxjs';
+import { AlertService, TestMasterService } from '../../../_services';
+
+@Component({
+  selector: 'app-test-edit',
+  templateUrl: './test-edit.component.html',
+  styleUrls: ['./test-edit.component.css']
+})
+export class TestEditComponent implements OnInit {
+
+  id: string;
+  private sub: any;
+  public isLoaded: boolean;
+  submitted: boolean = false;
+  loading: boolean = false;
+  editTestForm: FormGroup;
+  validationError: any[] = [];
+  public message: string;
+  item: any;
+  specimens: any[] = [];
+  departments: any[] = [];
+
+  constructor(
+    private testMasterService: TestMasterService,
+    private route: ActivatedRoute,
+    private formBuilder: FormBuilder,
+    private alertService: AlertService,
+    private router: Router) { }
+
+  ngOnInit() {
+    this.sub = this.route.params.subscribe(params => {
+      this.id = params['id'];
+      this.loadDropdowns();
+    });
+  }
+
+  loadDropdowns() {
+    forkJoin({
+      specimens: this.testMasterService.getSpecimens(),
+      departments: this.testMasterService.getDepartments()
+    }).subscribe(
+      data => {
+        this.departments = data.departments || [];
+        this.loadTestData(data.specimens || []);
+      },
+      () => {
+        this.alertService.error('Failed to load specimens or departments');
+        this.departments = [];
+        this.loadTestData([]);
+      }
+    );
+  }
+
+  loadTestData(specimenList: any[]) {
+    this.testMasterService.getById(this.id)
+      .subscribe(response => {
+        this.item = response;
+        const code = response?.hisSpecimenCode || response?.HISSpecimenCode;
+        const name = response?.hisSpecimenName || response?.HISSpecimenName;
+        this.specimens = this.testMasterService.ensureSpecimenInList(specimenList, code, name);
+        this.isLoaded = true;
+        this.initForms();
+      },
+        error => {
+          this.alertService.error('Failed to load test details');
+          this.isLoaded = true;
+        });
+  }
+
+  initForms() {
+    this.editTestForm = this.formBuilder.group({
+      hisTestCode: [this.item.hisTestCode || this.item.HISTestCode, Validators.required],
+      hisTestCodeDescription: [this.item.hisTestCodeDescription || this.item.HISTestCodeDescription, Validators.required],
+      hisSpecimenCode: [this.item.hisSpecimenCode || this.item.HISSpecimenCode, Validators.required],
+      departmentCode: [this.item.departmentCode || this.item.DepartmentCode, Validators.required],
+      isActive: [this.coerceBool(this.item.isActive ?? this.item.IsActive)]
+    });
+  }
+
+  get f() { return this.editTestForm.controls; }
+
+  isInValid(fieldName: string) {
+    if (this.editTestForm.get(fieldName).hasError('required') && this.editTestForm.get(fieldName).touched) {
+      return true;
+    }
+    return false;
+  }
+
+  onSubmit() {
+    this.submitted = true;
+
+    if (this.editTestForm.invalid) {
+      return;
+    }
+
+    this.loading = true;
+    const formValue = this.editTestForm.getRawValue();
+    const selectedSpecimen = this.specimens.find(s =>
+      (s.code || s.Code) === formValue.hisSpecimenCode);
+    const test: any = {
+      id: this.id,
+      hisTestCode: formValue.hisTestCode,
+      hisTestCodeDescription: formValue.hisTestCodeDescription,
+      hisSpecimenCode: formValue.hisSpecimenCode,
+      hisSpecimenName: selectedSpecimen ? (selectedSpecimen.name || selectedSpecimen.Name) : (this.item.hisSpecimenName || this.item.HISSpecimenName),
+      departmentCode: formValue.departmentCode,
+      createdOn: this.item.createdOn,
+      isActive: formValue.isActive
+    };
+
+    this.testMasterService.update(test)
+      .subscribe(
+        data => {
+          this.loading = false;
+          this.alertService.success('Test updated successfully');
+          this.router.navigate(['/test-master']);
+        },
+        error => {
+          this.loading = false;
+          this.alertService.error(error?.error?.message || 'Failed to update test');
+        });
+  }
+
+  private coerceBool(value: any): boolean {
+    return value === true || value === 'true' || value === 1 || value === '1';
+  }
+
+  ngOnDestroy() {
+    this.sub.unsubscribe();
+  }
+}

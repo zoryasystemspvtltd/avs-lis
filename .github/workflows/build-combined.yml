@@ -1,0 +1,94 @@
+name: Deploy LIS (API + Web)
+
+on:
+  push:
+    paths:
+      - 'web/Lis.Api/**'
+      - 'web/Lis.Web/**'
+  pull_request:
+    paths:
+      - 'web/Lis.Api/**'
+      - 'web/Lis.Web/**'
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v1
+
+      - name: Restore NuGet packages (API)
+        run: nuget restore web\Lis.Api\Lis.Api.csproj -NonInteractive -Verbosity minimal
+
+      - name: Publish API to C:\\zorya
+        shell: cmd
+        run: |
+          if not exist C:\\zorya mkdir C:\\zorya
+          msbuild web\Lis.Api\Lis.Api.csproj /m /p:Configuration=Release /p:Platform="AnyCPU" /p:WebPublishMethod=FileSystem /p:publishUrl=C:\\zorya /p:DeployOnBuild=true /p:DeleteExistingFiles=true /tv:latest
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '14'
+          cache: 'npm'
+
+      - name: Cache node modules (optional)
+        uses: actions/cache@v4
+        with:
+          path: |
+            C:\\Users\\runner\\AppData\\Roaming\\npm-cache
+            web/Lis.Web\node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('web/Lis.Web/**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install web dependencies
+        working-directory: web/Lis.Web
+        shell: pwsh
+        run: npm ci --no-audit --prefer-offline
+
+      - name: Build Angular web (production)
+        working-directory: web/Lis.Web
+        shell: pwsh
+        run: |
+          if (Test-Path package.json -PathType Leaf -and (Get-Content package.json | Select-String '"build"')) {
+            npm run build -- --prod
+          } else {
+            npx -p @angular/cli@10 ng build --configuration production
+          }
+
+      - name: Copy web build to C:\\zorya\\ui
+        shell: pwsh
+        run: |
+          $uiOut = 'C:\\zorya\\ui'
+          if (-not (Test-Path $uiOut)) { New-Item -Path $uiOut -ItemType Directory -Force | Out-Null }
+          # Locate the generated index.html under web/Lis.Web/dist
+          $distRoot = Join-Path $PWD 'web\Lis.Web\dist'
+          if (-not (Test-Path $distRoot)) { Write-Error "dist folder not found at $distRoot"; exit 1 }
+          $distDir = Get-ChildItem -Path $distRoot -Directory | Select-Object -First 1
+          if (-not $distDir) { Write-Error "Could not find built angular app folder under $distRoot"; exit 1 }
+          Copy-Item -Path (Join-Path $distDir.FullName '*') -Destination $uiOut -Recurse -Force
+
+      - name: Replace Index.cshtml with ui/index.html content
+        shell: pwsh
+        run: |
+          $src = 'C:\\zorya\\ui\\index.html'
+          $dest = 'web\\Lis.Api\\Views\\Home\\Index.cshtml'
+          if (-not (Test-Path $src)) { Write-Error "Source index.html not found at $src"; exit 1 }
+          $content = Get-Content -Raw -Path $src
+          # Overwrite the cshtml file with the HTML content (no cshtml layout applied)
+          Set-Content -Path $dest -Value $content -Encoding UTF8
+
+      - name: Upload combined output artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: combined-build
+          path: |
+            C:\\zorya
+            web\Lis.Api\Views\Home\Index.cshtml

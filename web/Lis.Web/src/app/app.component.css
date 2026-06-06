@@ -1,0 +1,23 @@
+.container-main.qcontent {
+  min-height: calc(100vh - 56px);
+  padding: 20px 24px 28px;
+  background-color: #f0f4f6;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.container-main.qcontent.content-with-sidebar {
+  margin-left: 248px;
+  width: calc(100% - 248px);
+}
+
+.container-main.qcontent {
+  display: flex;
+  flex-direction: column;
+}
+
+.body-content {
+  padding-left: 0;
+  padding-right: 0;
+  background-color: #f0f4f6;
+}

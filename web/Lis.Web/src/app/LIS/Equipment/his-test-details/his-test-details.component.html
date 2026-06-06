@@ -1,0 +1,22 @@
+<table class="table table-striped" *ngIf="isLoaded">
+    <thead>
+        <tr>
+            <th style="width:30%"><label class="black-text">Test Name</label></th>
+            <th style="width:40%"><label class="black-text">Specimen</label></th>
+            <th><label class="black-text">Parameter</label></th>
+            <th style="width:30%"><label class="black-text">Ranges</label></th>
+        </tr>
+    </thead>
+    <tbody *ngFor="let par of item.parameters">
+        <tr>
+            <td>{{item.hisTestCodeDescription}}</td>
+            <td>{{item.hisSpecimenName}}</td>
+            <td>{{par.hisParamDescription}}</td>
+            <td>
+                <div *ngFor="let range of par.ranges">
+                    {{range.gender}} {{range.ageFrom}} - {{range.ageTo}} {{range.ageType}} - ({{range.hisRangeValue}})
+                </div>
+            </td>
+        </tr>
+    </tbody>
+</table>
