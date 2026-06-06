@@ -20,33 +20,10 @@ jobs:
         run: nuget restore web\Lis.Api\Lis.Api.csproj -NonInteractive -Verbosity quiet -PackagesDirectory packages
 
       - name: Publish API to C:\\zorya
-        shell: pwsh
+        shell: cmd
         run: |
-          $outDir = 'C:\\zorya'
-          if (-not (Test-Path $outDir)) { New-Item -Path $outDir -ItemType Directory -Force | Out-Null }
-
-          # Try to locate MSBuild via vswhere (preferred), then common locations as fallback
-          $msbuild = $null
-          $vswhere = Join-Path $Env:ProgramFiles(x86) 'Microsoft Visual Studio\Installer\vswhere.exe'
-          if (Test-Path $vswhere) {
-            $msbuild = & $vswhere -latest -products * -requires Microsoft.Component.MSBuild -find '**\\MSBuild\\**\\Bin\\MSBuild.exe' | Select-Object -First 1
-          }
-
-          if (-not $msbuild) {
-            $candidatePaths = @(
-              Join-Path $Env:ProgramFiles(x86) 'MSBuild\Current\Bin\MSBuild.exe',
-              Join-Path $Env:ProgramFiles(x86) 'MSBuild\14.0\Bin\MSBuild.exe',
-              Join-Path $Env:WINDIR 'Microsoft.NET\Framework64\v4.0.30319\MSBuild.exe'
-            )
-            foreach ($p in $candidatePaths) { if (Test-Path $p) { $msbuild = $p; break } }
-          }
-
-          if (-not $msbuild) {
-            Write-Error 'MSBuild not found on runner. Install Visual Studio or Build Tools, or run this job on a runner that has MSBuild available.'
-            exit 1
-          }
-
-          & $msbuild 'web\Lis.Api\Lis.Api.csproj' /m /p:Configuration=Release /p:Platform="AnyCPU" /p:WebPublishMethod=FileSystem /p:publishUrl=$outDir /p:DeployOnBuild=true /p:DeleteExistingFiles=true /tv:latest
+          if not exist C:\\zorya mkdir C:\\zorya
+          msbuild web\Lis.Api\Lis.Api.csproj /m /p:Configuration=Release /p:Platform="AnyCPU" /p:WebPublishMethod=FileSystem /p:publishUrl=C:\\zorya /p:DeployOnBuild=true /p:DeleteExistingFiles=true /tv:latest
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
