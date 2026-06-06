@@ -20,7 +20,7 @@ jobs:
         run: nuget restore web\Lis.Api\Lis.Api.csproj -NonInteractive -Verbosity quiet -PackagesDirectory packages
 
       - name: Publish API to C:\\zorya
-        shell: pwsh
+        shell: powershell
         run: |
           $outDir = 'C:\\zorya'
           if (-not (Test-Path $outDir)) { New-Item -Path $outDir -ItemType Directory -Force | Out-Null }
