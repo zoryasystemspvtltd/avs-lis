@@ -1,0 +1,37 @@
+name: Build LIS.API (.NET Framework 4.8)
+
+on:
+  push:
+    paths:
+      - 'web/Lis.Api/**'
+  pull_request:
+    paths:
+      - 'web/Lis.Api/**'
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v1
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            C:\Users\runner\AppData\Local\NuGet\Cache
+            ~/.nuget/packages
+            packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.config') }}
+
+      - name: Restore NuGet packages
+        run: nuget restore web\Lis.Api\Lis.Api.csproj -NonInteractive -Verbosity minimal
+
+      - name: Build with MSBuild
+        shell: cmd
+        run: |
+          msbuild web\Lis.Api\Lis.Api.csproj /m /p:Configuration=Release /p:Platform="AnyCPU" /tv:latest

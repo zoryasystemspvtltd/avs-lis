@@ -1,0 +1,52 @@
+﻿name: Build LIS.Web (Angular 10)
+
+on:
+  push:
+    paths:
+      - 'web/Lis.Web/**'
+  pull_request:
+    paths:
+      - 'web/Lis.Web/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '14'
+          cache: 'npm'
+
+      - name: Cache node modules (optional)
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            web/Lis.Web/node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('web/Lis.Web/**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        working-directory: web/Lis.Web
+        run: npm ci --no-audit --prefer-offline
+
+      - name: Build (production)
+        working-directory: web/Lis.Web
+        run: |
+          if [ -f package.json ] && grep -q "\"build\"" package.json; then
+            npm run build -- --prod
+          else
+            npx -p @angular/cli@10 ng build --configuration production
+          fi
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: lis-web-dist
+          path: web/Lis.Web/dist
