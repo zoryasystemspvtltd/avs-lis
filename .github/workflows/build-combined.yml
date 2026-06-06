@@ -23,7 +23,7 @@ jobs:
         shell: cmd
         run: |
           if not exist C:\\zorya mkdir C:\\zorya
-          msbuild web\Lis.Api\Lis.Api.csproj /m /p:Configuration=Release /p:Platform="AnyCPU" /p:WebPublishMethod=FileSystem /p:publishUrl=C:\\zorya /p:DeployOnBuild=true /p:DeleteExistingFiles=true /tv:latest
+          msbuild web\Lis.Api\Lis.Api.csproj /m /p:Configuration=Release /p:Platform="AnyCPU" /p:WebPublishMethod=FileSystem /p:publishUrl=C:\\zorya /p:DeployOnBuild=true /p:DeleteExistingFiles=true /tv:Current
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
