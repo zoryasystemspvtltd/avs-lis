@@ -1,14 +1,7 @@
 name: Deploy LIS (API + Web)
 
 on:
-  push:
-    paths:
-      - 'web/Lis.Api/**'
-      - 'web/Lis.Web/**'
-  pull_request:
-    paths:
-      - 'web/Lis.Api/**'
-      - 'web/Lis.Web/**'
+  workflow_dispatch: # 
 
 jobs:
   build:
