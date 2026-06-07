@@ -37,7 +37,7 @@ jobs:
           }
 
           # Copy the compiled output to the publish directory
-          Copy-Item -Path 'web\Lis.Api\bin\Release\*' -Destination $outDir -Recurse -Force
+          Copy-Item -Path 'web\Lis.Api\bin\*' -Destination $outDir -Recurse -Force
           Write-Host "API published successfully to $outDir"
 
       - name: Setup Node.js
