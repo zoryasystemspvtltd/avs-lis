@@ -29,7 +29,8 @@ jobs:
           if (-not (Test-Path $outDir)) { New-Item -Path $outDir -ItemType Directory -Force | Out-Null }
           Write-Host "Publishing to: $outDir"
 
-          msbuild 'web\Lis.Api\Lis.Api.csproj' /m /p:Configuration=Release /p:Platform="AnyCPU" /tv:Current
+          # Publish the ASP.NET (Framework) web app to a file-system folder so the artifact contains the complete site
+          msbuild 'web\Lis.Api\Lis.Api.csproj' /m /p:Configuration=Release /p:Platform="AnyCPU" /p:WebPublishMethod=FileSystem /p:publishUrl=$outDir /p:DeployOnBuild=true /p:DeleteExistingFiles=true /tv:Current
 
           if ($LASTEXITCODE -ne 0) {
             Write-Error "MSBuild failed with exit code $LASTEXITCODE"
