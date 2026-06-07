@@ -45,6 +45,8 @@ jobs:
         with:
           node-version: '14'
           cache: 'npm'
+          # Ensure setup-node finds the lockfile inside the web/Lis.Web folder
+          cache-dependency-path: 'web/Lis.Web/package-lock.json'
 
       - name: Cache node modules (optional)
         uses: actions/cache@v4
