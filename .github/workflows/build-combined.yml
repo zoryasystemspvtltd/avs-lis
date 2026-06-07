@@ -29,12 +29,16 @@ jobs:
           if (-not (Test-Path $outDir)) { New-Item -Path $outDir -ItemType Directory -Force | Out-Null }
           Write-Host "Publishing to: $outDir"
 
-          msbuild 'web\Lis.Api\Lis.Api.csproj' /m /p:Configuration=Release /p:Platform="AnyCPU" /p:WebPublishMethod=FileSystem /p:publishUrl=$outDir /p:DeployOnBuild=true /p:DeleteExistingFiles=true /tv:Current
+          msbuild 'web\Lis.Api\Lis.Api.csproj' /m /p:Configuration=Release /p:Platform="AnyCPU" /tv:Current
 
           if ($LASTEXITCODE -ne 0) {
             Write-Error "MSBuild failed with exit code $LASTEXITCODE"
             exit 1
           }
+
+          # Copy the compiled output to the publish directory
+          Copy-Item -Path 'web\Lis.Api\bin\Release\*' -Destination $outDir -Recurse -Force
+          Write-Host "API published successfully to $outDir"
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
