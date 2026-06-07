@@ -43,10 +43,18 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '14'
+          node-version: '10'
           cache: 'npm'
           # Ensure setup-node finds the lockfile inside the web/Lis.Web folder
           cache-dependency-path: 'web/Lis.Web/package-lock.json'
+
+      - name: Ensure npm v6 (compat for Angular 10 lockfile)
+        shell: powershell
+        run: |
+          Write-Host "Current npm version:"; npm --version
+          Write-Host "Installing npm@6 to avoid lockfile npm v7+ incompatibilities"
+          npm install -g npm@6.14.15
+          Write-Host "New npm version:"; npm --version
 
       - name: Cache node modules (optional)
         uses: actions/cache@v4
