@@ -1,7 +1,7 @@
 export const environment = {
   production: true,
   IsOldApplicationServer: true,
-  ApplicationServer: 'http://localhost/lis/',
+  ApplicationServer: '/lis/',
   ClientId: 'DXI800',
   VDName: '',
 };
