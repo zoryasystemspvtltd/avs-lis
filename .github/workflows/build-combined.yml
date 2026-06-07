@@ -13,71 +13,28 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Setup Visual Studio (MSBuild)
+        uses: microsoft/setup-msbuild@v2
+
       - name: Setup NuGet
         uses: NuGet/setup-nuget@v1
 
       - name: Restore NuGet packages (API)
         run: nuget restore web\Lis.Api\Lis.Api.csproj -NonInteractive -Verbosity quiet -PackagesDirectory packages
 
-      - name: Publish API to C:\\zorya
+      - name: Publish API to runner temp directory
         shell: powershell
         run: |
-          $outDir = 'C:\\zorya'
+          $outDir = '${{ runner.temp }}\zorya'
           if (-not (Test-Path $outDir)) { New-Item -Path $outDir -ItemType Directory -Force | Out-Null }
+          Write-Host "Publishing to: $outDir"
 
-          function Find-MSBuild {
-            # Check if msbuild is on PATH
-            $cmd = Get-Command msbuild -ErrorAction SilentlyContinue
-            if ($cmd) { return $cmd.Source }
+          msbuild 'web\Lis.Api\Lis.Api.csproj' /m /p:Configuration=Release /p:Platform="AnyCPU" /p:WebPublishMethod=FileSystem /p:publishUrl=$outDir /p:DeployOnBuild=true /p:DeleteExistingFiles=true /tv:Current
 
-            # Try vswhere to locate installed MSBuild
-            $vswhere = Join-Path $Env:ProgramFiles(x86) 'Microsoft Visual Studio\Installer\vswhere.exe'
-            if (Test-Path $vswhere) {
-              $found = & $vswhere -latest -products * -requires Microsoft.Component.MSBuild -find '**\\MSBuild\\**\\Bin\\MSBuild.exe' | Select-Object -First 1
-              if ($found) { return $found }
-            }
-
-            # Common fallback locations
-            $candidates = @(
-              Join-Path $Env:ProgramFiles(x86) 'Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe',
-              Join-Path $Env:ProgramFiles(x86) 'Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\MSBuild.exe',
-              Join-Path $Env:ProgramFiles(x86) 'MSBuild\Current\Bin\MSBuild.exe',
-              Join-Path $Env:WINDIR 'Microsoft.NET\Framework64\v4.0.30319\MSBuild.exe'
-            )
-            foreach ($p in $candidates) { if (Test-Path $p) { return $p } }
-            return $null
-          }
-
-          $msbuild = Find-MSBuild
-          if (-not $msbuild) {
-            Write-Host 'MSBuild not found. Attempting to install Visual Studio Build Tools (requires admin).'
-            $installer = Join-Path $env:TEMP 'vs_buildtools.exe'
-            $url = 'https://aka.ms/vs/17/release/vs_BuildTools.exe'
-            Write-Host "Downloading build tools from $url to $installer"
-            Invoke-WebRequest -Uri $url -OutFile $installer -UseBasicParsing
-
-            # Install only the MSBuild tools workload
-            & $installer --quiet --wait --norestart --nocache --installPath 'C:\\BuildTools' --add Microsoft.VisualStudio.Workload.MSBuildTools | Write-Host
-            if ($LASTEXITCODE -ne 0) {
-              Write-Error "Build Tools installer failed with exit code $LASTEXITCODE"
-              exit 1
-            }
-
-            # Try to locate msbuild again
-            $msbuild = Find-MSBuild
-          }
-
-          if (-not $msbuild) {
-            Write-Error 'MSBuild still not found after attempted installation. Install Visual Studio or Build Tools on the runner.'
+          if ($LASTEXITCODE -ne 0) {
+            Write-Error "MSBuild failed with exit code $LASTEXITCODE"
             exit 1
           }
-
-          $msbuildDir = Split-Path $msbuild
-          # Add msbuild directory to PATH for the job
-          $env:PATH = "$msbuildDir;$env:PATH"
-          Write-Host "Using MSBuild at: $msbuild"
-
-          & $msbuild 'web\\Lis.Api\\Lis.Api.csproj' /m /p:Configuration=Release /p:Platform="AnyCPU" /p:WebPublishMethod=FileSystem /p:publishUrl=$outDir /p:DeployOnBuild=true /p:DeleteExistingFiles=true /tv:Current
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -110,10 +67,10 @@ jobs:
             npx -p @angular/cli@10 ng build --configuration production
           }
 
-      - name: Copy web build to C:\\zorya\\ui
+      - name: Copy web build to runner temp directory
         shell: powershell
         run: |
-          $uiOut = 'C:\\zorya\\ui'
+          $uiOut = '${{ runner.temp }}\zorya\ui'
           if (-not (Test-Path $uiOut)) { New-Item -Path $uiOut -ItemType Directory -Force | Out-Null }
           # Locate the generated index.html under web/Lis.Web/dist
           $distRoot = Join-Path $PWD 'web\Lis.Web\dist'
@@ -125,8 +82,8 @@ jobs:
       - name: Replace Index.cshtml with ui/index.html content
         shell: powershell
         run: |
-          $src = 'C:\\zorya\\ui\\index.html'
-          $dest = 'web\\Lis.Api\\Views\\Home\\Index.cshtml'
+          $src = '${{ runner.temp }}\zorya\ui\index.html'
+          $dest = 'web\Lis.Api\Views\Home\Index.cshtml'
           if (-not (Test-Path $src)) { Write-Error "Source index.html not found at $src"; exit 1 }
           $content = Get-Content -Raw -Path $src
           # Overwrite the cshtml file with the HTML content (no cshtml layout applied)
@@ -137,5 +94,5 @@ jobs:
         with:
           name: combined-build
           path: |
-            C:\\zorya
-            web\Lis.Api\Views\Home\Index.cshtml
+            ${{ runner.temp }}/zorya
+            web/Lis.Api/Views/Home/Index.cshtml
