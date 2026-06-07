@@ -66,10 +66,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
-      - name: Install web dependencies
+      - name: Install web dependencies (workaround: use npm install)
         working-directory: web/Lis.Web
         shell: powershell
-        run: npm ci --no-audit --prefer-offline
+        run: npm install --no-audit --prefer-offline
 
       - name: Build Angular web (production)
         working-directory: web/Lis.Web
