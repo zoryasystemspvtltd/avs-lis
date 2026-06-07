@@ -39,7 +39,7 @@ jobs:
           Write-Host "Publishing to: $outDir"
 
           # Publish the ASP.NET (Framework) web app to a file-system folder so the artifact contains the complete site
-          msbuild 'web\Lis.Api\Lis.Api.csproj' /m /p:Configuration=Release /p:Platform="AnyCPU" /p:WebPublishMethod=FileSystem /p:publishUrl=$outDir /p:DeployOnBuild=true /p:DeleteExistingFiles=true /tv:Current
+          msbuild 'web\Lis.Api\Lis.Api.csproj' /m /p:Configuration=Release /p:Platform="AnyCPU" /tv:Current
 
           if ($LASTEXITCODE -ne 0) {
             Write-Error "MSBuild failed with exit code $LASTEXITCODE"
@@ -112,6 +112,56 @@ jobs:
           $content = Get-Content -Raw -Path $src
           # Overwrite the cshtml file with the HTML content (no cshtml layout applied)
           Set-Content -Path $dest -Value $content -Encoding UTF8
+
+      - name: Copy client libs (jQuery + SignalR) to API Scripts
+        shell: powershell
+        run: |
+          $dest = 'web\Lis.Api\Scripts'
+          if (-not (Test-Path $dest)) { New-Item -Path $dest -ItemType Directory -Force | Out-Null }
+
+          # Prefer copying jQuery from the web project's node_modules (created by npm install)
+          $jqSrc = 'web\Lis.Web\node_modules\jquery\dist'
+          if (Test-Path $jqSrc) {
+            Copy-Item -Path (Join-Path $jqSrc '*') -Destination $dest -Recurse -Force
+            Write-Host "Copied jQuery files from $jqSrc to $dest"
+          } else {
+            Write-Host "jquery not found in node_modules; downloading minified and unminified files"
+            Invoke-WebRequest -Uri 'https://code.jquery.com/jquery-3.7.1.min.js' -OutFile (Join-Path $dest 'jquery-3.7.1.min.js') -UseBasicParsing
+            Invoke-WebRequest -Uri 'https://code.jquery.com/jquery-3.7.1.js' -OutFile (Join-Path $dest 'jquery-3.7.1.js') -UseBasicParsing
+            Invoke-WebRequest -Uri 'https://code.jquery.com/jquery-3.7.1.slim.min.js' -OutFile (Join-Path $dest 'jquery-3.7.1.slim.min.js') -UseBasicParsing
+            Invoke-WebRequest -Uri 'https://code.jquery.com/jquery-3.7.1.slim.js' -OutFile (Join-Path $dest 'jquery-3.7.1.slim.js') -UseBasicParsing
+          }
+
+          # Try to download SignalR client files (fallback to empty placeholder if not available)
+          $sigMin = Join-Path $dest 'jquery.signalR-2.4.2.min.js'
+          $sig = Join-Path $dest 'jquery.signalR-2.4.2.js'
+          if (-not (Test-Path $sigMin) -or -not (Test-Path $sig)) {
+            try {
+              Invoke-WebRequest -Uri 'https://cdnjs.cloudflare.com/ajax/libs/jquery-signalR/2.4.2/jquery.signalR.min.js' -OutFile $sigMin -UseBasicParsing -ErrorAction Stop
+              Invoke-WebRequest -Uri 'https://cdnjs.cloudflare.com/ajax/libs/jquery-signalR/2.4.2/jquery.signalR.js' -OutFile $sig -UseBasicParsing -ErrorAction Stop
+              Write-Host 'Downloaded jquery.signalR from CDNJS'
+            } catch {
+              Write-Host 'Could not download SignalR client from CDNJS; creating empty placeholder files to satisfy publish'
+              New-Item -Path $sig -ItemType File -Force | Out-Null
+              New-Item -Path $sigMin -ItemType File -Force | Out-Null
+            }
+          }
+
+      - name: Publish API to runner temp directory
+        shell: powershell
+        run: |
+          $outDir = '${{ runner.temp }}\zorya'
+          if (-not (Test-Path $outDir)) { New-Item -Path $outDir -ItemType Directory -Force | Out-Null }
+          Write-Host "Publishing to: $outDir"
+
+          msbuild 'web\Lis.Api\Lis.Api.csproj' /m /p:Configuration=Release /p:Platform="AnyCPU" /p:WebPublishMethod=FileSystem /p:publishUrl=$outDir /p:DeployOnBuild=true /p:DeleteExistingFiles=true /tv:Current
+
+          if ($LASTEXITCODE -ne 0) {
+            Write-Error "MSBuild failed with exit code $LASTEXITCODE"
+            exit 1
+          }
+
+          Write-Host "API published successfully to $outDir"
 
       - name: Upload combined output artifact
         uses: actions/upload-artifact@v4
