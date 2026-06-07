@@ -130,7 +130,8 @@ export const MASTER_LIST_SCHEMAS: { [key: string]: any } = {
   testMapping: {
     url: 'test-mappings', heading: 'Test Mapping Master', module: 'TestMappingMaster', hideAction: true,
     elements: [
-      { heading: 'Test', fieldName: 'hisTestCode', sortable: true, width: '15%', type: 'link' },
+      { heading: 'Test Code', fieldName: 'hisTestCode', sortable: true, width: '15%', type: 'link' },
+      { heading: 'Test Name', fieldName: 'hisTestCodeDescription', sortable: true, width: '15%', type: 'link' },
       { heading: 'LIS Test', fieldName: 'lisTestCode', sortable: true, width: '15%', type: 'label' },
       { heading: 'Equipment', fieldName: 'groupName', sortable: false, width: '25%', type: 'label' },
       { heading: 'Active', fieldName: 'isActive', sortable: false, width: '10%', type: 'label' }
