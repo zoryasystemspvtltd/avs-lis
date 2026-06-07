@@ -19,8 +19,8 @@ jobs:
       - name: Setup NuGet
         uses: NuGet/setup-nuget@v1
 
-      - name: Restore NuGet packages (API)
-        run: nuget restore web\Lis.Api\Lis.Api.csproj -NonInteractive -Verbosity quiet -PackagesDirectory packages
+      - name: Restore NuGet packages (Solution)
+        run: nuget restore -NonInteractive -Verbosity quiet -PackagesDirectory packages
 
       - name: Publish API to runner temp directory
         shell: powershell
