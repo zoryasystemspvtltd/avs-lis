@@ -50,9 +50,9 @@
 /web/Lis.Api.Client.Test/Scripts
 /BarcodePrint/log
 /web/Lis.Web/dist/DxI800
-/.vs/CopilotSnapshots/55C54FB76C18AE46858C3A2A94329F18
 /LIS.Masters.Tests/bin/Debug
 /LIS.Masters.Tests/obj/Debug
 /LIS.Masters.Tests/bin/Release
 /LIS.Masters.Tests/obj/Release
-/.vs/CopilotSnapshots/8FC626CBED5AF645B2B6A33AD562EBF8
+/.vs
+/.vs/CopilotSnapshots/92A2ADC57C3F084F8D6821FF219CDBAD/state.mpack
