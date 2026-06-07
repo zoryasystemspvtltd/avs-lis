@@ -22,6 +22,15 @@ jobs:
       - name: Restore NuGet packages (Solution)
         run: nuget restore -NonInteractive -Verbosity quiet -PackagesDirectory packages
 
+      - name: Ensure client libs for API (jquery)
+        shell: powershell
+        run: |
+          $dest = 'web\Lis.Api\Scripts\jquery-3.7.1.js'
+          $dir = Split-Path $dest
+          if (-not (Test-Path $dir)) { New-Item -Path $dir -ItemType Directory -Force | Out-Null }
+          Write-Host "Downloading jquery to $dest"
+          Invoke-WebRequest -Uri 'https://code.jquery.com/jquery-3.7.1.min.js' -OutFile $dest -UseBasicParsing
+
       - name: Publish API to runner temp directory
         shell: powershell
         run: |
