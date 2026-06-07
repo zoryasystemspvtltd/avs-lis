@@ -75,7 +75,7 @@ jobs:
         working-directory: web/Lis.Web
         shell: powershell
         run: |
-          if (Test-Path package.json -PathType Leaf -and (Get-Content package.json | Select-String '"build"')) {
+          if ((Test-Path package.json -PathType Leaf) -and (Get-Content package.json | Select-String '"build"')) {
             npm run build -- --prod
           } else {
             npx -p @angular/cli@10 ng build --configuration production
