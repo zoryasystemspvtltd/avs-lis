@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 
 @Component({
   selector: 'app-equipment',
-  template: '<app-list-module [schemma]="moduleJson"></app-list-module>'
+  template: '<app-list-module [schemma]="moduleJson" [listModuleKey]="\'test-master\'"></app-list-module>'
 })
 export class TestListComponent implements OnInit {
 

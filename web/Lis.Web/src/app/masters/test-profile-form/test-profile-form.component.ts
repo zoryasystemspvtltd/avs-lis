@@ -1,7 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import { AlertService, MasterService } from '../../_services';
+import { extractApiError } from '../../_helpers/api-error';
 
 @Component({
   selector: 'app-test-profile-form',
@@ -32,10 +34,13 @@ export class TestProfileFormComponent implements OnInit {
       lines: this.fb.array([])
     });
 
-    this.masterService.getLookupList('HisTest').subscribe(t => this.tests = t || []);
-
     if (this.id) {
-      this.masterService.getItem('TestProfile', this.id).subscribe(profile => {
+      forkJoin({
+        tests: this.masterService.getLookupList('HisTest'),
+        profile: this.masterService.getItem('TestProfile', this.id)
+      }).subscribe(data => {
+        this.tests = data.tests || [];
+        const profile = data.profile;
         if (profile) {
           this.form.patchValue({
             id: profile.id,
@@ -49,6 +54,7 @@ export class TestProfileFormComponent implements OnInit {
         }
       });
     } else {
+      this.masterService.getLookupList('HisTest').subscribe(t => this.tests = t || []);
       this.masterService.getItems('TestProfile', {
         RecordPerPage: 1, CurrentPage: 1, SortColumnName: 'Code', SortDirection: false
       }).subscribe(list => {
@@ -150,7 +156,7 @@ export class TestProfileFormComponent implements OnInit {
       },
       err => {
         this.loading = false;
-        this.alertService.error(err?.error?.message || 'Save failed');
+        this.alertService.error(extractApiError(err, 'Save failed'));
       }
     );
   }

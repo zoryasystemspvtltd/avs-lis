@@ -9,15 +9,19 @@
           <label>{{field.label}}<span class="error" *ngIf="field.required">*</span></label>
         </div>
         <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
-          <div class="input-group" *ngIf="field.type !== 'select'">
+          <select *ngIf="isUnitOrMethodDropdown(field)" class="form-control" [formControlName]="field.name">
+            <option value="">-- Select {{field.label}} --</option>
+            <option *ngFor="let opt of unitMethodOptions(field.name)" [value]="opt.name || opt.Name">{{opt.name || opt.Name}}</option>
+          </select>
+          <div class="input-group" *ngIf="field.type !== 'select' && !isUnitOrMethodDropdown(field)">
             <span class="input-group-addon"><i class="glyphicon glyphicon-pencil"></i></span>
             <input *ngIf="field.type === 'text' || field.type === 'number' || field.type === 'date'"
               [type]="field.type === 'number' ? 'number' : (field.type === 'date' ? 'date' : 'text')"
               class="form-control" [formControlName]="field.name"
               [readonly]="isFieldReadonly(field)" />
           </div>
-          <select *ngIf="field.type === 'select'" class="form-control" [formControlName]="field.name">
-            <option *ngFor="let opt of field.options" [value]="opt.value">{{opt.label}}</option>
+          <select *ngIf="field.type === 'select' && !isUnitOrMethodDropdown(field)" class="form-control" [formControlName]="field.name">
+            <option *ngFor="let opt of field.options" [ngValue]="opt.value">{{opt.label}}</option>
           </select>
           <span *ngIf="submitted && f[field.name]?.invalid" class="error">{{field.label}} is required.</span>
         </div>

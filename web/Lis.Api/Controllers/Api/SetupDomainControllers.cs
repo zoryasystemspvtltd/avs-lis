@@ -310,6 +310,7 @@ namespace Lis.Api.Controllers.Api
         }
     }
 
+    [RoutePrefix("api/EquipmentHeartbeat")]
     public class EquipmentHeartbeatController : ApiController
     {
         private readonly IEquipmentManager equipmentManager;
@@ -323,11 +324,14 @@ namespace Lis.Api.Controllers.Api
 
         [HttpGet]
         [AllowAnonymous]
+        [Route("")]
         public IEnumerable<EquipmentMaster> Get()
         {
             try
             {
-                return equipmentManager.Get().Where(e => e.IsActive);
+                return equipmentManager.Get()
+                    .Where(e => e.IsActive)
+                    .OrderBy(e => e.Name);
             }
             catch (Exception e)
             {

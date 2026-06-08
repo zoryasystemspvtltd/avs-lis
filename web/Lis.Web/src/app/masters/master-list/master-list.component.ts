@@ -8,13 +8,13 @@ import { MASTER_LIST_SCHEMAS } from '../master-schemas';
   selector: 'app-master-list',
   template: `
     <br>
-    <app-list-module *ngIf="showList && moduleJson" [schemma]="moduleJson"></app-list-module>
+    <app-list-module *ngIf="listRenderKey && moduleJson" [schemma]="moduleJson" [listModuleKey]="listRenderKey"></app-list-module>
     <br>
   `
 })
 export class MasterListComponent implements OnInit, OnDestroy {
   moduleJson: any;
-  showList = false;
+  listRenderKey: string = null;
   private currentKey: string;
   private routeSub: Subscription;
   private routerSub: Subscription;
@@ -48,17 +48,17 @@ export class MasterListComponent implements OnInit, OnDestroy {
     if (!key || !MASTER_LIST_SCHEMAS[key]) {
       return;
     }
-    if (key === this.currentKey && this.showList) {
+    if (key === this.currentKey && this.listRenderKey) {
       return;
     }
     this.currentKey = key;
-    this.showList = false;
+    this.listRenderKey = null;
     this.moduleJson = Object.assign({
       allowPaging: true,
       hideSearch: false
     }, MASTER_LIST_SCHEMAS[key]);
     setTimeout(() => {
-      this.showList = true;
+      this.listRenderKey = key;
     }, 0);
   }
 }

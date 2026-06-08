@@ -3,6 +3,7 @@ import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { AlertService, TestMasterService } from '../../../_services';
+import { extractApiError } from '../../../_helpers/api-error';
 
 @Component({
   selector: 'app-test-create',
@@ -108,7 +109,7 @@ export class TestCreateComponent implements OnInit {
       },
         error => {
           this.loading = false;
-          this.alertService.error(error?.error?.message || 'Failed to add test');
+          this.alertService.error(extractApiError(error, 'Failed to add test'));
         });
   }
 }

@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { forkJoin, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { AlertService, MasterService } from '../../_services';
+import { extractApiError } from '../../_helpers/api-error';
 
 @Component({
   selector: 'app-master-form',
@@ -25,6 +26,7 @@ export class MasterFormComponent implements OnInit {
   hisParameters: any[] = [];
   equipments: any[] = [];
   methods: any[] = [];
+  units: any[] = [];
   parameterOptions: any[] = [];
   lookupsLoaded = false;
 
@@ -115,6 +117,15 @@ export class MasterFormComponent implements OnInit {
     return this.isTestParameterScreen || this.isParameterMasterScreen;
   }
 
+  isUnitOrMethodDropdown(field: any): boolean {
+    return this.isParameterMasterScreen &&
+      (field?.name === 'hisParamUnit' || field?.name === 'hisParamMethod');
+  }
+
+  unitMethodOptions(fieldName: string): any[] {
+    return fieldName === 'hisParamMethod' ? this.methods : this.units;
+  }
+
   isCodeReadonly(field: any): boolean {
     if (!field || field.name !== 'code' || !this.id) {
       return false;
@@ -132,8 +143,7 @@ export class MasterFormComponent implements OnInit {
       return true;
     }
     if (this.isParameterPickerScreen &&
-      (field.name === 'hisParamCode' || field.name === 'hisParamDescription' ||
-        field.name === 'hisParamUnit' || field.name === 'hisParamMethod')) {
+      (field.name === 'hisParamCode' || field.name === 'hisParamDescription')) {
       return true;
     }
     if (this.apiName === 'HisParameterRangeMaster' && field.name === 'hisRangeCode') {
@@ -163,14 +173,48 @@ export class MasterFormComponent implements OnInit {
 
   toDateInput(d: Date | string) {
     if (!d) { return ''; }
-    const dt = typeof d === 'string' ? new Date(d) : d;
-    return dt.toISOString().substring(0, 10);
+    const dt = this.parseLocalDate(d);
+    if (!dt) { return ''; }
+    return this.formatLocalDate(dt);
+  }
+
+  private parseLocalDate(d: Date | string): Date | null {
+    if (!d) { return null; }
+    if (d instanceof Date) {
+      return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    }
+    const text = ('' + d).trim();
+    const datePart = text.length >= 10 ? text.substring(0, 10) : text;
+    const pieces = datePart.split('-').map(v => +v);
+    if (pieces.length === 3 && pieces.every(n => !isNaN(n))) {
+      return new Date(pieces[0], pieces[1] - 1, pieces[2]);
+    }
+    const parsed = new Date(text);
+    return isNaN(parsed.getTime())
+      ? null
+      : new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate());
+  }
+
+  private formatLocalDate(dt: Date): string {
+    const y = dt.getFullYear();
+    const m = String(dt.getMonth() + 1).padStart(2, '0');
+    const day = String(dt.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
+
+  private toApiDateString(d: Date | string): string {
+    const dt = this.parseLocalDate(d);
+    return dt ? this.formatLocalDate(dt) : '';
   }
 
   private loadSetupLookups() {
     const requests: { [key: string]: Observable<any> } = {
       tests: this.masterService.getLookupList('HisTest')
     };
+    if (this.isParameterMasterScreen) {
+      requests.units = this.masterService.getLookupList('Unit');
+      requests.methods = this.masterService.getLookupList('Method');
+    }
     if (this.apiName === 'HisParameterRangeMaster') {
       requests.params = this.masterService.getItems('HisParameterMaster', {
         RecordPerPage: 500, CurrentPage: 1, SortColumnName: 'HISParamCode', SortDirection: true
@@ -182,6 +226,12 @@ export class MasterFormComponent implements OnInit {
     forkJoin(requests).subscribe(
       (data: any) => {
         this.tests = data.tests || [];
+        if (data.units) {
+          this.units = (data.units || []).filter(u => u.isActive !== false);
+        }
+        if (data.methods) {
+          this.methods = (data.methods || []).filter(m => m.isActive !== false);
+        }
         if (data.params) {
           this.hisParameters = (data.params.items || data.params.Items || data.params) || [];
         }
@@ -306,8 +356,8 @@ export class MasterFormComponent implements OnInit {
 
   private lockParameterDerivedFields(includeIdentityFields = true) {
     const names = includeIdentityFields
-      ? ['hisParamCode', 'hisParamDescription', 'hisParamUnit', 'hisParamMethod']
-      : ['hisParamUnit', 'hisParamMethod'];
+      ? ['hisParamCode', 'hisParamDescription']
+      : [];
     names.forEach(name => {
       const control = this.form.get(name);
       if (control) {
@@ -422,8 +472,27 @@ export class MasterFormComponent implements OnInit {
     if (patch.LISParamCode != null && patch.lisParamCode == null) { patch.lisParamCode = patch.LISParamCode; }
     if (patch.HISRangeCode != null && patch.hisRangeCode == null) { patch.hisRangeCode = patch.HISRangeCode; }
     if (patch.Gender != null && patch.gender == null) { patch.gender = patch.Gender; }
-    patch.gender = this.normalizeGenderForForm(patch.gender);
+    patch.gender = this.apiName === 'PatientMaster'
+      ? this.normalizePatientGenderForForm(patch.gender)
+      : this.normalizeGenderForForm(patch.gender);
     this.form.patchValue(patch);
+  }
+
+  private normalizePatientGenderForForm(gender: string): string {
+    if (!gender) {
+      return '';
+    }
+    const g = ('' + gender).trim().toUpperCase();
+    if (g === 'M' || g === 'MALE') {
+      return 'M';
+    }
+    if (g === 'F' || g === 'FEMALE') {
+      return 'F';
+    }
+    if (g === 'O' || g === 'OTHER') {
+      return 'O';
+    }
+    return gender;
   }
 
   private normalizeGenderForForm(gender: string): string {
@@ -466,9 +535,12 @@ export class MasterFormComponent implements OnInit {
     if (item.code) { item.code = ('' + item.code).trim(); }
     if (item.name) { item.name = ('' + item.name).trim(); }
     if (item.hisParamCode) { item.hisParamCode = ('' + item.hisParamCode).trim(); }
-    if (item.effectiveStart) { item.effectiveStart = new Date(item.effectiveStart); }
-    if (item.effectiveEnd) { item.effectiveEnd = new Date(item.effectiveEnd); }
-    if (item.dateOfBirth) { item.dateOfBirth = new Date(item.dateOfBirth); }
+    if (item.effectiveStart) { item.effectiveStart = this.toApiDateString(item.effectiveStart); }
+    if (item.effectiveEnd) { item.effectiveEnd = this.toApiDateString(item.effectiveEnd); }
+    if (item.dateOfBirth) { item.dateOfBirth = this.toApiDateString(item.dateOfBirth); }
+    if (this.apiName === 'PatientMaster' && item.gender) {
+      item.gender = this.normalizePatientGenderForForm(item.gender);
+    }
     if (this.apiName === 'TestMappingMaster') {
       const eq = this.equipments.find(e => +e.id === +item.equipmentId);
       if (eq) {
@@ -512,9 +584,7 @@ export class MasterFormComponent implements OnInit {
       },
       err => {
         this.loading = false;
-        const body = err?.error;
-        const msg = typeof body === 'string' ? body : (body?.message || body?.Message || body?.error || 'Save failed');
-        this.alertService.error(msg);
+        this.alertService.error(extractApiError(err, 'Save failed'));
       }
     );
   }

@@ -263,11 +263,13 @@ namespace LIS.BusinessLogic
     public class TestMappingCrudManager : MasterCrudManager<TestMappingMaster>, IMasterCrudManager<TestMappingMaster>
     {
         private readonly ModuleRepo<EquipmentMaster> equipmentRepo;
+        private readonly ModuleRepo<HisTestMaster> testRepo;
 
         public TestMappingCrudManager(ILogger logger, IModuleIdentity identity, GenericUnitOfWork uow)
             : base(logger, identity, uow, x => x.LISTestCode, x => x.HISTestCodeDescription, x => x.IsActive, "HISTestCode")
         {
             equipmentRepo = new ModuleRepo<EquipmentMaster>(logger, identity, uow);
+            testRepo = new ModuleRepo<HisTestMaster>(logger, identity, uow);
         }
 
         public new long Add(TestMappingMaster item)
@@ -323,11 +325,22 @@ namespace LIS.BusinessLogic
 
             var list = query.ToList();
             var equipmentNames = equipmentRepo.Get().ToDictionary(e => e.Id, e => e.Name);
+            var testNames = testRepo.Get().ToDictionary(
+                t => (t.HISTestCode ?? string.Empty).Trim(),
+                t => t.HISTestCodeDescription,
+                StringComparer.OrdinalIgnoreCase);
             foreach (var m in list)
             {
                 if (equipmentNames.TryGetValue(m.EquipmentId, out var name))
                 {
                     m.GroupName = name;
+                }
+
+                if (string.IsNullOrWhiteSpace(m.HISTestCodeDescription) &&
+                    !string.IsNullOrWhiteSpace(m.HISTestCode) &&
+                    testNames.TryGetValue(m.HISTestCode.Trim(), out var testName))
+                {
+                    m.HISTestCodeDescription = testName;
                 }
             }
 

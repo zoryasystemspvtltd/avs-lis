@@ -39,7 +39,7 @@ namespace LIS.Masters.Tests.Masters
             var code = UniqueCode("CORP");
             var id = (int)Services.Corporate.Add(MasterTestDataBuilder.Corporate(code));
 
-            var list = Services.Corporate.Get(ListOptionsFactory.Create());
+            var list = Services.Corporate.Get(ListOptionsFactory.Create(search: code));
             Assert.IsTrue(list.TotalRecord > 0);
             Assert.IsTrue(list.Items.Any(i => i.Id == id));
 

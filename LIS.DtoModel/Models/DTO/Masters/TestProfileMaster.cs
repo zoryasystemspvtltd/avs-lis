@@ -33,7 +33,6 @@ namespace LIS.DtoModel.Models
 
         public DateTime ModifiedOn { get; set; }
 
-        [JsonIgnore]
         public virtual ICollection<TestProfileDetail> ProfileDetails { get; set; }
     }
 }

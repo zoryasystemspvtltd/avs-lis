@@ -60,5 +60,8 @@ namespace LIS.DtoModel.Models
 
         [NotMapped]
         public string ProfileName { get; set; }
+
+        [NotMapped]
+        public string RateTypeLabel { get; set; }
     }
 }

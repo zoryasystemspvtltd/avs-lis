@@ -53,3 +53,11 @@
 /.vs/CopilotSnapshots/55C54FB76C18AE46858C3A2A94329F18
 /LIS.Masters.Tests/bin/Debug
 /LIS.Masters.Tests/obj/Debug
+*.dll
+*.pdb
+/LIS.Masters.Tests/bin/Release/log4net.xml
+/LIS.Masters.Tests/bin/Release/LIS.DataAccess.dll.config
+/LIS.Masters.Tests/obj/Release/DesignTimeResolveAssemblyReferencesInput.cache
+/LIS.Masters.Tests/obj/Release/LIS.Masters.Tests.csproj.AssemblyReference.cache
+/LIS.Masters.Tests/obj/Release/LIS.Masters.Tests.csproj.CoreCompileInputs.cache
+/LIS.Masters.Tests/obj/Release/LIS.Masters.Tests.csproj.FileListAbsolute.txt

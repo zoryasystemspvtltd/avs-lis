@@ -217,7 +217,22 @@ namespace LIS.BusinessLogic
                 rate.ProfileName = profile?.Name;
             }
 
+            rate.RateTypeLabel = FormatRateType(rate.RateType);
+
             return rate;
+        }
+
+        private static string FormatRateType(int rateType)
+        {
+            switch (rateType)
+            {
+                case (int)RateType.Standard: return "Standard";
+                case (int)RateType.Corporate: return "Corporate";
+                case (int)RateType.ReferralDoctor: return "Referral Doctor";
+                case (int)RateType.Profile: return "Profile";
+                case (int)RateType.Emergency: return "Emergency";
+                default: return rateType.ToString();
+            }
         }
 
         private static string ResolveSortColumn(string sortColumnName)

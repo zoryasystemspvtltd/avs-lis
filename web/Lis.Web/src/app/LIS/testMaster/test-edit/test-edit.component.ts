@@ -3,6 +3,7 @@ import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { AlertService, TestMasterService } from '../../../_services';
+import { extractApiError } from '../../../_helpers/api-error';
 
 @Component({
   selector: 'app-test-edit',
@@ -71,13 +72,15 @@ export class TestEditComponent implements OnInit {
   }
 
   initForms() {
+    const isActive = this.coerceBool(this.item?.isActive ?? this.item?.IsActive);
     this.editTestForm = this.formBuilder.group({
       hisTestCode: [this.item.hisTestCode || this.item.HISTestCode, Validators.required],
       hisTestCodeDescription: [this.item.hisTestCodeDescription || this.item.HISTestCodeDescription, Validators.required],
       hisSpecimenCode: [this.item.hisSpecimenCode || this.item.HISSpecimenCode, Validators.required],
       departmentCode: [this.item.departmentCode || this.item.DepartmentCode, Validators.required],
-      isActive: [this.coerceBool(this.item.isActive ?? this.item.IsActive)]
+      isActive: [isActive]
     });
+    this.editTestForm.patchValue({ isActive }, { emitEvent: false });
   }
 
   get f() { return this.editTestForm.controls; }
@@ -101,14 +104,14 @@ export class TestEditComponent implements OnInit {
     const selectedSpecimen = this.specimens.find(s =>
       (s.code || s.Code) === formValue.hisSpecimenCode);
     const test: any = {
-      id: this.id,
+      id: +this.id,
       hisTestCode: formValue.hisTestCode,
       hisTestCodeDescription: formValue.hisTestCodeDescription,
       hisSpecimenCode: formValue.hisSpecimenCode,
       hisSpecimenName: selectedSpecimen ? (selectedSpecimen.name || selectedSpecimen.Name) : (this.item.hisSpecimenName || this.item.HISSpecimenName),
       departmentCode: formValue.departmentCode,
       createdOn: this.item.createdOn,
-      isActive: formValue.isActive
+      isActive: this.coerceBool(formValue.isActive)
     };
 
     this.testMasterService.update(test)
@@ -120,7 +123,7 @@ export class TestEditComponent implements OnInit {
         },
         error => {
           this.loading = false;
-          this.alertService.error(error?.error?.message || 'Failed to update test');
+          this.alertService.error(extractApiError(error, 'Failed to update test'));
         });
   }
 
