@@ -97,8 +97,9 @@ export const MASTER_LIST_SCHEMAS: { [key: string]: any } = {
   testRate: {
     url: 'test-rates', heading: 'Test Rate Master', module: 'TestRate', hideAction: true,
     elements: [
-      { heading: 'Test', fieldName: 'testName', sortable: false, width: '25%', type: 'link' },
-      { heading: 'Rate', fieldName: 'rate', sortable: true, width: '12%', type: 'label' },
+      { heading: 'Test', fieldName: 'testName', sortable: false, width: '20%', type: 'link' },
+      { heading: 'Rate Type', fieldName: 'rateTypeLabel', sortable: false, width: '12%', type: 'label' },
+      { heading: 'Rate', fieldName: 'rate', sortable: true, width: '10%', type: 'label' },
       { heading: 'Emergency', fieldName: 'emergencyRate', sortable: false, width: '12%', type: 'label' },
       { heading: 'Discount %', fieldName: 'discountPercent', sortable: false, width: '12%', type: 'label' },
       { heading: 'Tax %', fieldName: 'taxPercent', sortable: false, width: '10%', type: 'label' },

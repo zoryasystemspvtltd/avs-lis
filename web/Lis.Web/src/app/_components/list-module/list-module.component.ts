@@ -396,6 +396,54 @@ export class ListModuleComponent implements OnInit, OnChanges {
     return ((parseInt(acc.access, 10) & type) === type);
   }
 
+  private readonly inactiveHighlightModules = [
+    'HisTest', 'TestRate', 'TestMappingMaster', 'PatientMaster',
+    'Specimens', 'Unit', 'Method', 'ReferralDoctor', 'Corporate',
+    'TestGroup', 'TestCategory', 'SampleType', 'Container'
+  ];
+
+  isInactiveRow(item: any): boolean {
+    if (!item || this.inactiveHighlightModules.indexOf(this.schemma?.module) < 0) {
+      return false;
+    }
+    if (!this.hasOwn(item, 'isActive') && !this.hasOwn(item, 'IsActive')) {
+      return false;
+    }
+    return item.isActive === false || item.IsActive === false;
+  }
+
+  fieldValue(item: any, fieldName: string): any {
+    if (!item || !fieldName) {
+      return '';
+    }
+    const direct = item[fieldName];
+    if (direct != null && direct !== '') {
+      return direct;
+    }
+    const aliases: { [key: string]: string[] } = {
+      hisTestCode: ['histTestCode', 'HISTestCode'],
+      hisTestCodeDescription: ['histTestCodeDescription', 'HISTestCodeDescription'],
+      hisSpecimenName: ['hisSpecimenName', 'HISSpecimenName'],
+      departmentName: ['departmentName', 'DepartmentName'],
+      rateTypeLabel: ['rateTypeLabel', 'RateTypeLabel'],
+      isActive: ['isActive', 'IsActive'],
+      lisTestCode: ['lisTestCode', 'LISTestCode'],
+      groupName: ['groupName', 'GroupName']
+    };
+    const keys = aliases[fieldName] || [];
+    for (const key of keys) {
+      const val = item[key];
+      if (val != null && val !== '') {
+        return val;
+      }
+    }
+    return direct ?? '';
+  }
+
+  private hasOwn(item: any, key: string): boolean {
+    return item && Object.prototype.hasOwnProperty.call(item, key);
+  }
+
   allowFilter(filter: number) {
     let allowed = false;
     if (this.schemma.allowedFilter) {

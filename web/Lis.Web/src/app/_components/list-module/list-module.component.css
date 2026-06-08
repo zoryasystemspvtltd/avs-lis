@@ -1,3 +1,8 @@
+  tr.inactive-master-row td {
+    background-color: #f2dede !important;
+    color: #a94442;
+  }
+
   .linktooltip {
     width: 300px;
     background-color: black;

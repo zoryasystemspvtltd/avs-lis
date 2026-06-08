@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { forkJoin, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { AlertService, MasterService } from '../../_services';
+import { extractApiError } from '../../_helpers/api-error';
 
 @Component({
   selector: 'app-master-form',
@@ -25,6 +26,7 @@ export class MasterFormComponent implements OnInit {
   hisParameters: any[] = [];
   equipments: any[] = [];
   methods: any[] = [];
+  units: any[] = [];
   parameterOptions: any[] = [];
   lookupsLoaded = false;
 
@@ -115,6 +117,15 @@ export class MasterFormComponent implements OnInit {
     return this.isTestParameterScreen || this.isParameterMasterScreen;
   }
 
+  isUnitOrMethodDropdown(field: any): boolean {
+    return this.isParameterMasterScreen &&
+      (field?.name === 'hisParamUnit' || field?.name === 'hisParamMethod');
+  }
+
+  unitMethodOptions(fieldName: string): any[] {
+    return fieldName === 'hisParamMethod' ? this.methods : this.units;
+  }
+
   isCodeReadonly(field: any): boolean {
     if (!field || field.name !== 'code' || !this.id) {
       return false;
@@ -132,8 +143,7 @@ export class MasterFormComponent implements OnInit {
       return true;
     }
     if (this.isParameterPickerScreen &&
-      (field.name === 'hisParamCode' || field.name === 'hisParamDescription' ||
-        field.name === 'hisParamUnit' || field.name === 'hisParamMethod')) {
+      (field.name === 'hisParamCode' || field.name === 'hisParamDescription')) {
       return true;
     }
     if (this.apiName === 'HisParameterRangeMaster' && field.name === 'hisRangeCode') {
@@ -171,6 +181,10 @@ export class MasterFormComponent implements OnInit {
     const requests: { [key: string]: Observable<any> } = {
       tests: this.masterService.getLookupList('HisTest')
     };
+    if (this.isParameterMasterScreen) {
+      requests.units = this.masterService.getLookupList('Unit');
+      requests.methods = this.masterService.getLookupList('Method');
+    }
     if (this.apiName === 'HisParameterRangeMaster') {
       requests.params = this.masterService.getItems('HisParameterMaster', {
         RecordPerPage: 500, CurrentPage: 1, SortColumnName: 'HISParamCode', SortDirection: true
@@ -182,6 +196,12 @@ export class MasterFormComponent implements OnInit {
     forkJoin(requests).subscribe(
       (data: any) => {
         this.tests = data.tests || [];
+        if (data.units) {
+          this.units = (data.units || []).filter(u => u.isActive !== false);
+        }
+        if (data.methods) {
+          this.methods = (data.methods || []).filter(m => m.isActive !== false);
+        }
         if (data.params) {
           this.hisParameters = (data.params.items || data.params.Items || data.params) || [];
         }
@@ -306,8 +326,8 @@ export class MasterFormComponent implements OnInit {
 
   private lockParameterDerivedFields(includeIdentityFields = true) {
     const names = includeIdentityFields
-      ? ['hisParamCode', 'hisParamDescription', 'hisParamUnit', 'hisParamMethod']
-      : ['hisParamUnit', 'hisParamMethod'];
+      ? ['hisParamCode', 'hisParamDescription']
+      : [];
     names.forEach(name => {
       const control = this.form.get(name);
       if (control) {
@@ -512,9 +532,7 @@ export class MasterFormComponent implements OnInit {
       },
       err => {
         this.loading = false;
-        const body = err?.error;
-        const msg = typeof body === 'string' ? body : (body?.message || body?.Message || body?.error || 'Save failed');
-        this.alertService.error(msg);
+        this.alertService.error(extractApiError(err, 'Save failed'));
       }
     );
   }

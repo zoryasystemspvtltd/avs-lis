@@ -109,6 +109,56 @@ namespace LIS.Masters.Tests.Masters
         }
 
         [TestMethod]
+        public void TestRate_Exact_Same_Range_Blocked()
+        {
+            var testId = CreateTest();
+            var y = 2032;
+            var start = new DateTime(y, 1, 1);
+            var end = new DateTime(y, 12, 31);
+            var id1 = (int)Services.TestRate.Add(Rate(testId, start, end));
+
+            AssertOverlapBlocked(() => Services.TestRate.Add(Rate(testId, start, end)));
+
+            Services.TestRate.Delete(new TestRateMaster { Id = id1 });
+        }
+
+        [TestMethod]
+        public void TestRate_Future_NonOverlapping_Allowed()
+        {
+            var testId = CreateTest();
+            var y = 2033;
+            var id1 = (int)Services.TestRate.Add(Rate(testId, new DateTime(y, 1, 1), new DateTime(y, 6, 30)));
+            var id2 = (int)Services.TestRate.Add(Rate(testId, new DateTime(y, 7, 1), new DateTime(y, 12, 31)));
+            Assert.IsTrue(id2 > 0);
+
+            Services.TestRate.Delete(new TestRateMaster { Id = id1 });
+            Services.TestRate.Delete(new TestRateMaster { Id = id2 });
+        }
+
+        [TestMethod]
+        public void TestRate_Different_Profile_Allows_Overlap()
+        {
+            var testId = CreateTest();
+            var code1 = UniqueCode("PF1");
+            var code2 = UniqueCode("PF2");
+            var p1 = MasterTestDataBuilder.Profile(code1, testId);
+            var p2 = MasterTestDataBuilder.Profile(code2, testId);
+            Services.TestProfile.SaveWithDetails(p1, p1.ProfileDetails);
+            Services.TestProfile.SaveWithDetails(p2, p2.ProfileDetails);
+
+            var y = 2034;
+            var start = new DateTime(y, 1, 1);
+            var end = new DateTime(y, 12, 31);
+
+            var id1 = (int)Services.TestRate.Add(Rate(testId, start, end, (int)RateType.Profile, null, null, p1.Id));
+            var id2 = (int)Services.TestRate.Add(Rate(testId, start, end, (int)RateType.Profile, null, null, p2.Id));
+            Assert.IsTrue(id2 > 0);
+
+            Services.TestRate.Delete(new TestRateMaster { Id = id1 });
+            Services.TestRate.Delete(new TestRateMaster { Id = id2 });
+        }
+
+        [TestMethod]
         public void TestRate_Different_ReferralDoctor_Allows_Overlap()
         {
             var testId = CreateTest();
@@ -212,6 +262,29 @@ namespace LIS.Masters.Tests.Masters
             Assert.IsTrue(list.Items.Any(s =>
                 s.IsActive &&
                 string.Equals(s.Code, "SERUM", StringComparison.OrdinalIgnoreCase)));
+        }
+
+        [TestMethod]
+        public void HisTest_Duplicate_Code_And_Name_Blocked()
+        {
+            var dept = Services.Department.Get().First();
+            var specimen = Services.Specimen.Get().Cast<HISSpecimenMaster>().First();
+            var code = UniqueCode("TST");
+            var name = "Reval Test " + UniqueCode("NM");
+            var t1 = MasterTestDataBuilder.HisTest(code, dept.Code, specimen.Code);
+            t1.HISTestCodeDescription = name;
+            var id = Services.HisTest.Add(t1);
+
+            var dupCode = MasterTestDataBuilder.HisTest(code, dept.Code, specimen.Code);
+            var ex1 = Assert.ThrowsException<InvalidOperationException>(() => Services.HisTest.Add(dupCode));
+            Assert.AreEqual("Test Code already exists.", ex1.Message);
+
+            var dupName = MasterTestDataBuilder.HisTest(UniqueCode("TST"), dept.Code, specimen.Code);
+            dupName.HISTestCodeDescription = name;
+            var ex2 = Assert.ThrowsException<InvalidOperationException>(() => Services.HisTest.Add(dupName));
+            Assert.AreEqual("Test Name already exists.", ex2.Message);
+
+            Services.HisTest.Delete(Services.HisTest.GetTestById(id));
         }
 
         [TestMethod]

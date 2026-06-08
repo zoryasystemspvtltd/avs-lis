@@ -95,7 +95,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr *ngFor="let item of items">
+                        <tr *ngFor="let item of items" [class.inactive-master-row]="isInactiveRow(item)">
                             <td *ngIf="!schemma.hideAction || schemma.allowPrint">
                                 <input type="checkbox" name="chk_item" (change)="deSelectAll();" [(ngModel)]="item.IsSelected" />
                                 <app-you-frame [html]="item.reportStatus | statusType"></app-you-frame>
@@ -103,7 +103,7 @@
                             <td *ngFor="let element of schemma.elements;" width="{{element.width}}">
                                 <div [ngSwitch]="element.type">
                                     <div *ngSwitchCase="'label'">
-                                        {{item[element.fieldName]}}
+                                        {{fieldValue(item, element.fieldName)}}
                                     </div>
                                     <div *ngSwitchCase="'chield'">
                                         {{item[element.fieldName].name}}
@@ -124,7 +124,7 @@
                                         {{item[element.otherFieldName] | date:element.format}} {{element.seperater}} {{item[element.fieldName] | date:element.format}}
                                     </div>
                                     <div *ngSwitchCase="'link'">
-                                        <a [routerLink]="['/',schemma.url,item.id]">{{item[element.fieldName]}}</a>
+                                        <a [routerLink]="['/',schemma.url,item.id]">{{fieldValue(item, element.fieldName)}}</a>
                                     </div>
                                     <div *ngSwitchCase="'link_search'">
                                         <a [routerLink]="['/',schemma.url,item[element.fieldName]]">{{item[element.fieldName]}}</a>
