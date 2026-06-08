@@ -1,10 +1,12 @@
 <div class="content list-loading" *ngIf="!isLoaded">
     <h1>{{schemma?.heading}}</h1>
+    <p class="text-muted" *ngIf="schemma?.pageDescription">{{schemma.pageDescription}}</p>
     <p class="text-muted"><span class="glyphicon glyphicon-refresh glyphicon-spin"></span> Loading...</p>
 </div>
 <div class="content" *ngIf="isLoaded">
     <div class="alert alert-warning" *ngIf="loadError">{{loadError}}</div>
     <h1>{{schemma.heading}}</h1>
+    <p class="text-muted" *ngIf="schemma.pageDescription">{{schemma.pageDescription}}</p>
     <div class="qtable">
         <div class="row">
             <div class="col-md-12">

@@ -21,7 +21,7 @@
               [readonly]="isFieldReadonly(field)" />
           </div>
           <select *ngIf="field.type === 'select' && !isUnitOrMethodDropdown(field)" class="form-control" [formControlName]="field.name">
-            <option *ngFor="let opt of field.options" [value]="opt.value">{{opt.label}}</option>
+            <option *ngFor="let opt of field.options" [ngValue]="opt.value">{{opt.label}}</option>
           </select>
           <span *ngIf="submitted && f[field.name]?.invalid" class="error">{{field.label}} is required.</span>
         </div>

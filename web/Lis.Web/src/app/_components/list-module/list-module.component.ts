@@ -11,8 +11,11 @@ import { Subscription, timer, of } from 'rxjs';
   styleUrls: ['./list-module.component.css']
 })
 export class ListModuleComponent implements OnInit, OnChanges {
+  private static listStateByModule: { [key: string]: any } = {};
+
   private user: AuthenticationToken;
   @Input() schemma: any;
+  @Input() listModuleKey: string;
 
   private readonly getAllApiModules = [
     'ReferralDoctor', 'Corporate', 'TestGroup', 'TestCategory', 'Unit', 'Method',
@@ -31,10 +34,10 @@ export class ListModuleComponent implements OnInit, OnChanges {
   public loadError: string;
 
   public option = {
-    'RecordPerPage': this.authenticationService.RecordPerPage,
-    'CurrentPage': this.authenticationService.CurrentPage,
-    'SortColumnName': this.authenticationService.SortColumnName,
-    'SortDirection': this.authenticationService.SortDirection
+    'RecordPerPage': 10,
+    'CurrentPage': 1,
+    'SortColumnName': 'Name',
+    'SortDirection': true
   };
 
   public recordFrom: number;
@@ -50,7 +53,7 @@ export class ListModuleComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    if (changes.schemma && !changes.schemma.firstChange && this.schemma) {
+    if (this.schemma && (changes.listModuleKey || (changes.schemma && !changes.schemma.firstChange))) {
       this.initList();
     }
   }
@@ -111,7 +114,34 @@ export class ListModuleComponent implements OnInit, OnChanges {
         this.filterStatus = this.authenticationService.selectedStatus;
       }
     }
+    this.restoreListState();
     this.getItems();
+  }
+
+  private getListStateKey(): string {
+    return this.listModuleKey || this.schemma?.module || this.schemma?.url || 'default';
+  }
+
+  private restoreListState() {
+    const saved = ListModuleComponent.listStateByModule[this.getListStateKey()];
+    if (saved) {
+      this.option.RecordPerPage = saved.RecordPerPage;
+      this.option.CurrentPage = saved.CurrentPage;
+      this.option.SortColumnName = saved.SortColumnName;
+      this.option.SortDirection = saved.SortDirection;
+    } else {
+      this.option.CurrentPage = 1;
+      this.option.RecordPerPage = 10;
+    }
+  }
+
+  private saveListState() {
+    ListModuleComponent.listStateByModule[this.getListStateKey()] = {
+      RecordPerPage: this.option.RecordPerPage,
+      CurrentPage: this.option.CurrentPage,
+      SortColumnName: this.option.SortColumnName,
+      SortDirection: this.option.SortDirection
+    };
   }
 
   subscription: Subscription
@@ -135,7 +165,7 @@ export class ListModuleComponent implements OnInit, OnChanges {
 
   refreshItems() {
     this.setFilter();
-    this.authenticationService.CurrentPage = this.option.CurrentPage;
+    this.saveListState();
 
     const masterApiModules = [
       'HisTest', 'TestRate', 'SaleInvoice', 'HisParameterMaster', 'HisParameterRangeMaster',
@@ -208,6 +238,10 @@ export class ListModuleComponent implements OnInit, OnChanges {
       ? response.totalRecord
       : (response.TotalRecord != null ? response.TotalRecord : items.length);
 
+    if (items.length > this.option.RecordPerPage && items.length === totalRecord) {
+      return this.paginateClientList(items);
+    }
+
     return { items, totalRecord };
   }
 
@@ -237,10 +271,7 @@ export class ListModuleComponent implements OnInit, OnChanges {
   sort = function (columnName: string) {
     this.option.SortColumnName = columnName;
     this.option.SortDirection = !this.option.SortDirection;
-
-    this.authenticationService.SortColumnName = columnName,
-      this.authenticationService.SortDirection = this.option.SortDirection;
-
+    this.saveListState();
     this.getItems();
   }
 
@@ -317,7 +348,7 @@ export class ListModuleComponent implements OnInit, OnChanges {
 
   doSearch = function () {
     this.option.CurrentPage = 1;
-    this.authenticationService.CurrentPage = 1;
+    this.saveListState();
     this.getItems();
   }
 
@@ -459,9 +490,9 @@ export class ListModuleComponent implements OnInit, OnChanges {
 
   onChangePageSize(val) {
     this.option.RecordPerPage = val;
-    this.authenticationService.RecordPerPage = val,
-
-      this.getItems();
+    this.option.CurrentPage = 1;
+    this.saveListState();
+    this.getItems();
   }
 
   printAbleItems: any[] = [];

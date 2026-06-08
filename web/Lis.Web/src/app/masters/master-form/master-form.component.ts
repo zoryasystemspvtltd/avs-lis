@@ -173,8 +173,38 @@ export class MasterFormComponent implements OnInit {
 
   toDateInput(d: Date | string) {
     if (!d) { return ''; }
-    const dt = typeof d === 'string' ? new Date(d) : d;
-    return dt.toISOString().substring(0, 10);
+    const dt = this.parseLocalDate(d);
+    if (!dt) { return ''; }
+    return this.formatLocalDate(dt);
+  }
+
+  private parseLocalDate(d: Date | string): Date | null {
+    if (!d) { return null; }
+    if (d instanceof Date) {
+      return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    }
+    const text = ('' + d).trim();
+    const datePart = text.length >= 10 ? text.substring(0, 10) : text;
+    const pieces = datePart.split('-').map(v => +v);
+    if (pieces.length === 3 && pieces.every(n => !isNaN(n))) {
+      return new Date(pieces[0], pieces[1] - 1, pieces[2]);
+    }
+    const parsed = new Date(text);
+    return isNaN(parsed.getTime())
+      ? null
+      : new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate());
+  }
+
+  private formatLocalDate(dt: Date): string {
+    const y = dt.getFullYear();
+    const m = String(dt.getMonth() + 1).padStart(2, '0');
+    const day = String(dt.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
+
+  private toApiDateString(d: Date | string): string {
+    const dt = this.parseLocalDate(d);
+    return dt ? this.formatLocalDate(dt) : '';
   }
 
   private loadSetupLookups() {
@@ -442,8 +472,27 @@ export class MasterFormComponent implements OnInit {
     if (patch.LISParamCode != null && patch.lisParamCode == null) { patch.lisParamCode = patch.LISParamCode; }
     if (patch.HISRangeCode != null && patch.hisRangeCode == null) { patch.hisRangeCode = patch.HISRangeCode; }
     if (patch.Gender != null && patch.gender == null) { patch.gender = patch.Gender; }
-    patch.gender = this.normalizeGenderForForm(patch.gender);
+    patch.gender = this.apiName === 'PatientMaster'
+      ? this.normalizePatientGenderForForm(patch.gender)
+      : this.normalizeGenderForForm(patch.gender);
     this.form.patchValue(patch);
+  }
+
+  private normalizePatientGenderForForm(gender: string): string {
+    if (!gender) {
+      return '';
+    }
+    const g = ('' + gender).trim().toUpperCase();
+    if (g === 'M' || g === 'MALE') {
+      return 'M';
+    }
+    if (g === 'F' || g === 'FEMALE') {
+      return 'F';
+    }
+    if (g === 'O' || g === 'OTHER') {
+      return 'O';
+    }
+    return gender;
   }
 
   private normalizeGenderForForm(gender: string): string {
@@ -486,9 +535,12 @@ export class MasterFormComponent implements OnInit {
     if (item.code) { item.code = ('' + item.code).trim(); }
     if (item.name) { item.name = ('' + item.name).trim(); }
     if (item.hisParamCode) { item.hisParamCode = ('' + item.hisParamCode).trim(); }
-    if (item.effectiveStart) { item.effectiveStart = new Date(item.effectiveStart); }
-    if (item.effectiveEnd) { item.effectiveEnd = new Date(item.effectiveEnd); }
-    if (item.dateOfBirth) { item.dateOfBirth = new Date(item.dateOfBirth); }
+    if (item.effectiveStart) { item.effectiveStart = this.toApiDateString(item.effectiveStart); }
+    if (item.effectiveEnd) { item.effectiveEnd = this.toApiDateString(item.effectiveEnd); }
+    if (item.dateOfBirth) { item.dateOfBirth = this.toApiDateString(item.dateOfBirth); }
+    if (this.apiName === 'PatientMaster' && item.gender) {
+      item.gender = this.normalizePatientGenderForForm(item.gender);
+    }
     if (this.apiName === 'TestMappingMaster') {
       const eq = this.equipments.find(e => +e.id === +item.equipmentId);
       if (eq) {
