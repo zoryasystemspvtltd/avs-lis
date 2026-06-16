@@ -18,6 +18,7 @@ namespace LIS.BusinessLogic
         private readonly ModuleRepo<TestRequestDetail> testRequestRepo;
         private readonly ModuleRepo<HisTestMaster> testRepo;
         private readonly ITestRateMasterManager rateManager;
+        private readonly ITestProfileMasterManager profileManager;
         private readonly IModuleIdentity identity;
         private readonly ILogger logger;
 
@@ -25,11 +26,13 @@ namespace LIS.BusinessLogic
             ILogger logger,
             IModuleIdentity identity,
             GenericUnitOfWork unitOfWork,
-            ITestRateMasterManager rateManager)
+            ITestRateMasterManager rateManager,
+            ITestProfileMasterManager profileManager)
         {
             this.logger = logger;
             this.identity = identity;
             this.rateManager = rateManager;
+            this.profileManager = profileManager;
             invoiceRepo = new ModuleRepo<SaleInvoice>(logger, identity, unitOfWork);
             detailRepo = new ModuleRepo<SaleInvoiceDetail>(logger, identity, unitOfWork);
             patientRepo = new ModuleRepo<PatientDetail>(logger, identity, unitOfWork);
@@ -47,6 +50,7 @@ namespace LIS.BusinessLogic
 
             EnrichHeader(invoice);
             var details = detailRepo.Get(d => d.SaleInvoiceId == id && d.IsActive).ToList();
+            EnrichDetails(details);
 
             return new SaleInvoiceDto
             {
@@ -122,13 +126,15 @@ namespace LIS.BusinessLogic
 
             var header = dto.Invoice;
             var lines = (dto.Details ?? new List<SaleInvoiceDetail>())
-                .Where(l => l.TestId > 0)
+                .Where(l => l.TestId > 0 || (l.TestProfileId.HasValue && l.TestProfileId > 0))
                 .ToList();
 
             if (!lines.Any())
             {
-                throw new ArgumentException("At least one test line is required");
+                throw new ArgumentException("At least one test or profile line is required");
             }
+
+            NormalizeProfileLines(lines);
 
             if (header.PatientId <= 0)
             {
@@ -143,6 +149,22 @@ namespace LIS.BusinessLogic
 
             foreach (var line in lines)
             {
+                if (line.TestProfileId.HasValue && line.TestProfileId > 0)
+                {
+                    var profile = profileManager.GetWithDetails(line.TestProfileId.Value);
+                    if (profile == null || !profile.IsActive)
+                    {
+                        throw new InvalidOperationException("Selected test profile is inactive or unavailable.");
+                    }
+
+                    if (line.Rate <= 0)
+                    {
+                        line.Rate = profile.PackageRate;
+                    }
+
+                    continue;
+                }
+
                 var test = testRepo.Get(line.TestId);
                 if (test == null)
                 {
@@ -299,6 +321,12 @@ namespace LIS.BusinessLogic
 
             foreach (var line in lines.Where(l => l.TestId > 0))
             {
+                if (line.TestProfileId.HasValue && line.TestProfileId > 0)
+                {
+                    ExpandProfileTestRequests(invoice, line, reqNo, now);
+                    continue;
+                }
+
                 if (line.RequestDetailId > 0 && testRequestRepo.Get(line.RequestDetailId) != null)
                 {
                     continue;
@@ -378,7 +406,18 @@ namespace LIS.BusinessLogic
         {
             foreach (var line in lines)
             {
-                if (line.Rate <= 0 && line.TestId > 0)
+                if (line.TestProfileId.HasValue && line.TestProfileId > 0)
+                {
+                    if (line.Rate <= 0)
+                    {
+                        var profile = profileManager.GetById(line.TestProfileId.Value);
+                        if (profile != null)
+                        {
+                            line.Rate = profile.PackageRate;
+                        }
+                    }
+                }
+                else if (line.Rate <= 0 && line.TestId > 0)
                 {
                     var invoiceDate = header.InvoiceDate == default(DateTime) ? DateTime.Today : header.InvoiceDate;
                     var rate = rateManager.GetEffectiveRateForInvoice(
@@ -469,6 +508,118 @@ namespace LIS.BusinessLogic
                     return "Id";
                 default:
                     return "InvoiceDate";
+            }
+        }
+
+        private void EnrichDetails(List<SaleInvoiceDetail> details)
+        {
+            if (details == null)
+            {
+                return;
+            }
+
+            foreach (var line in details)
+            {
+                if (line.TestProfileId.HasValue && line.TestProfileId > 0)
+                {
+                    var profile = profileManager.GetById(line.TestProfileId.Value);
+                    if (profile != null)
+                    {
+                        line.TestProfileName = profile.Name;
+                    }
+                }
+
+                var test = testRepo.Get(line.TestId);
+                if (test != null)
+                {
+                    line.TestName = $"{test.HISTestCode} - {test.HISTestCodeDescription}";
+                }
+            }
+        }
+
+        private void NormalizeProfileLines(List<SaleInvoiceDetail> lines)
+        {
+            foreach (var line in lines.Where(l => l.TestProfileId.HasValue && l.TestProfileId > 0))
+            {
+                var profile = profileManager.GetWithDetails(line.TestProfileId.Value);
+                if (profile?.ProfileDetails == null || !profile.ProfileDetails.Any())
+                {
+                    throw new InvalidOperationException("Selected profile has no tests configured.");
+                }
+
+                if (line.TestId <= 0)
+                {
+                    line.TestId = profile.ProfileDetails.First().TestId;
+                }
+
+                if (line.Quantity <= 0)
+                {
+                    line.Quantity = 1;
+                }
+
+                if (line.Rate <= 0)
+                {
+                    line.Rate = profile.PackageRate;
+                }
+            }
+        }
+
+        private void ExpandProfileTestRequests(SaleInvoice invoice, SaleInvoiceDetail line, string requestNo, DateTime now)
+        {
+            var profile = profileManager.GetWithDetails(line.TestProfileId.Value);
+            if (profile?.ProfileDetails == null)
+            {
+                return;
+            }
+
+            long firstRequestId = 0;
+            foreach (var detail in profile.ProfileDetails)
+            {
+                var test = testRepo.Get(detail.TestId);
+                if (test == null)
+                {
+                    continue;
+                }
+
+                for (var i = 0; i < Math.Max(1, detail.Quantity); i++)
+                {
+                    var request = testRequestRepo.Get(t =>
+                        t.PatientId == invoice.PatientId &&
+                        t.HISTestCode == test.HISTestCode &&
+                        t.HISRequestNo == requestNo).FirstOrDefault();
+
+                    if (request == null)
+                    {
+                        var sampleNo = $"{requestNo}-{test.HISTestCode}";
+                        request = new TestRequestDetail
+                        {
+                            PatientId = invoice.PatientId,
+                            HISTestCode = test.HISTestCode,
+                            HISTestName = test.HISTestCodeDescription,
+                            HISRequestNo = requestNo,
+                            HISRequestId = requestNo,
+                            SampleNo = sampleNo,
+                            SampleCollectionDate = now,
+                            SampleReceivedDate = now,
+                            SpecimenCode = test.HISSpecimenCode,
+                            SpecimenName = test.HISSpecimenName,
+                            ReportStatus = ReportStatusType.New,
+                            CreatedOn = now,
+                            CreatedBy = identity?.ActivityMember
+                        };
+                        request.Id = testRequestRepo.Add(request);
+                    }
+
+                    if (firstRequestId <= 0)
+                    {
+                        firstRequestId = request.Id;
+                    }
+                }
+            }
+
+            if (firstRequestId > 0)
+            {
+                line.RequestDetailId = firstRequestId;
             }
         }
 

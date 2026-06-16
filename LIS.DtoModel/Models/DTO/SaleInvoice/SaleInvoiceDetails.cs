@@ -23,6 +23,14 @@ namespace LIS.DtoModel.Models
         [JsonIgnore]
         public virtual HisTestMaster HisTestMaster { get; set; }
 
+        public int? TestProfileId { get; set; }
+
+        [NotMapped]
+        public string TestProfileName { get; set; }
+
+        [NotMapped]
+        public string TestName { get; set; }
+
         public decimal Rate { get; set; } = 0;
         public int Quantity { get; set; } = 1;
         public decimal Amount { get; set; } = 0;

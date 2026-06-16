@@ -61,7 +61,7 @@ namespace LIS.Masters.Tests.Infrastructure
             Specimen = new SpecimenManager(Logger, Identity, Uow);
             HisTest = new HISTestMasterManager(Logger, Identity, Uow);
             TestRate = new TestRateMasterManager(Logger, Identity, Uow);
-            SaleInvoice = new SaleInvoiceManager(Logger, Identity, Uow, TestRate);
+            SaleInvoice = new SaleInvoiceManager(Logger, Identity, Uow, TestRate, TestProfile);
             PatientMaster = new PatientMasterManager(Logger, Identity, Uow);
             PatientWorkflow = new PatientDetailManager(Logger, Identity, Uow, db);
             HisParameter = new HisParameterMasterManager(Logger, Identity, Uow);

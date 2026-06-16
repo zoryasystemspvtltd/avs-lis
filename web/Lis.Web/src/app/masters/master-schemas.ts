@@ -89,9 +89,10 @@ export const MASTER_LIST_SCHEMAS: { [key: string]: any } = {
   testProfile: {
     url: 'test-profiles', heading: 'Test Profile / Package Master', module: 'TestProfile', hideAction: true,
     elements: [
-      { heading: 'Code', fieldName: 'code', sortable: true, width: '20%', type: 'link' },
-      { heading: 'Name', fieldName: 'name', sortable: true, width: '40%', type: 'label' },
-      { heading: 'Package Rate', fieldName: 'packageRate', sortable: false, width: '20%', type: 'label' }
+      { heading: 'Code', fieldName: 'code', sortable: true, width: '15%', type: 'link' },
+      { heading: 'Name', fieldName: 'name', sortable: true, width: '35%', type: 'label' },
+      { heading: 'Package Rate', fieldName: 'packageRate', sortable: false, width: '15%', type: 'currency' },
+      { heading: 'Active', fieldName: 'isActive', sortable: false, width: '10%', type: 'label' }
     ]
   },
   testRate: {

@@ -47,7 +47,7 @@ import { TestListComponent } from './LIS/testMaster/test-list/test-list.componen
 import { TestDetailsComponent } from './LIS/testMaster/test-details/test-details.component';
 import { TestCreateComponent } from './LIS/testMaster/test-create/test-create.component';
 import { TestEditComponent } from './LIS/testMaster/test-edit/test-edit.component';
-import { MasterListComponent, MasterFormComponent, SaleInvoiceFormComponent, TestProfileFormComponent } from './masters';
+import { MasterListComponent, MasterFormComponent, SaleInvoiceFormComponent, TestProfileFormComponent, TestProfileViewComponent } from './masters';
 import { SaleInvoiceRegisterComponent, TestBookingRegisterComponent, TestReportComponent } from './reports';
 
 export const options: Partial<IConfig> | (() => Partial<IConfig>) = null;
@@ -146,6 +146,7 @@ export const options: Partial<IConfig> | (() => Partial<IConfig>) = null;
     MasterFormComponent,
     SaleInvoiceFormComponent,
     TestProfileFormComponent,
+    TestProfileViewComponent,
     SaleInvoiceRegisterComponent,
     TestBookingRegisterComponent,
     TestReportComponent

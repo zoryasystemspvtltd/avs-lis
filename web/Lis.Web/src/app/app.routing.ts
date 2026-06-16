@@ -21,7 +21,7 @@ import { TestListComponent } from './LIS/testMaster/test-list/test-list.componen
 import { TestDetailsComponent } from './LIS/testMaster/test-details/test-details.component';
 import { TestCreateComponent } from './LIS/testMaster/test-create/test-create.component';
 import { TestEditComponent } from './LIS/testMaster/test-edit/test-edit.component';
-import { MasterListComponent, MasterFormComponent, SaleInvoiceFormComponent, TestProfileFormComponent } from './masters';
+import { MasterListComponent, MasterFormComponent, SaleInvoiceFormComponent, TestProfileFormComponent, TestProfileViewComponent } from './masters';
 import { SaleInvoiceRegisterComponent, TestBookingRegisterComponent, TestReportComponent } from './reports';
 import { ListEquipmentHeartbeatComponent } from './LIS';
 
@@ -242,7 +242,8 @@ const appRoutes: Routes = [
 
     { path: 'test-profiles', component: MasterListComponent, data: { masterKey: 'testProfile' }, canActivate: [AuthGuard] },
     { path: 'test-profiles/create', component: TestProfileFormComponent, canActivate: [AuthGuard] },
-    { path: 'test-profiles/:id', component: TestProfileFormComponent, canActivate: [AuthGuard] },
+    { path: 'test-profiles/edit/:id', component: TestProfileFormComponent, canActivate: [AuthGuard] },
+    { path: 'test-profiles/:id', component: TestProfileViewComponent, canActivate: [AuthGuard] },
 
     { path: 'test-rates', component: MasterListComponent, data: { masterKey: 'testRate' }, canActivate: [AuthGuard] },
     { path: 'test-rates/create', component: MasterFormComponent, data: { apiName: 'TestRate', returnUrl: '/test-rates', title: 'Test Rate', fields: LOOKUP_FIELDS.testRate }, canActivate: [AuthGuard] },

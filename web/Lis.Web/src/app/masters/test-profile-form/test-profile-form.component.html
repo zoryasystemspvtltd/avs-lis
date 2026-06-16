@@ -52,7 +52,7 @@
               <option *ngFor="let t of tests" [value]="t.id">{{t.hisTestCode}} - {{t.hisTestCodeDescription}}</option>
             </select>
           </td>
-          <td><input type="number" class="form-control" formControlName="quantity" min="1" (change)="recalcPackageRate()" /></td>
+          <td><input type="number" class="form-control" formControlName="quantity" min="1" (change)="recalcPackageRate(); refreshParameterPreview()" /></td>
           <td><button type="button" class="btn btn-xs btn-danger" (click)="removeLine(i)">X</button></td>
         </tr>
       </tbody>
@@ -60,6 +60,30 @@
     <button type="button" class="btn btn-default btn-sm" (click)="addLine()">+ Add Test</button>
     <button type="button" class="btn btn-default btn-sm" style="margin-left:8px" (click)="recalcPackageRate()">Recalculate Rate</button>
     <br /><br />
+
+    <h4 *ngIf="previewTests.length">Parameter Expansion Preview</h4>
+    <div *ngFor="let test of previewTests" class="well well-sm">
+      <strong>{{test.testCode}} — {{test.testName}}</strong>
+      <table class="table table-condensed table-bordered" *ngIf="test.parameters?.length" style="margin-top:8px">
+        <thead>
+          <tr><th>Parameter</th><th>Unit</th><th>Method</th><th>Reference Range</th></tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let p of test.parameters">
+            <td>{{p.paramCode}} — {{p.description}}</td>
+            <td>{{p.unit || '—'}}</td>
+            <td>{{p.method || '—'}}</td>
+            <td>
+              <span *ngFor="let r of p.ranges; let last = last">
+                {{r.rangeValue || (r.minValue + ' - ' + r.maxValue)}}<span *ngIf="r.gender"> ({{r.gender}})</span><span *ngIf="!last">; </span>
+              </span>
+              <span *ngIf="!p.ranges?.length">—</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="text-muted" *ngIf="!test.parameters?.length">No parameters mapped for this test.</p>
+    </div>
 
     <button type="submit" class="btn btn-primary" [disabled]="loading">Save</button>
     <button type="button" class="btn btn-default" (click)="cancel()">Cancel</button>

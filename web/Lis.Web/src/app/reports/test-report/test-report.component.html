@@ -84,7 +84,21 @@
         </table>
       </section>
 
-      <section class="report-test-block" *ngFor="let section of report.sections">
+      <section class="report-profile-group" *ngFor="let group of report.profileGroups">
+        <div class="report-profile-header">
+          <strong>{{ group.profileName }}</strong>
+        </div>
+        <ng-container *ngFor="let section of group.sections">
+          <ng-container *ngTemplateOutlet="testSection; context: { section: section }"></ng-container>
+        </ng-container>
+      </section>
+
+      <ng-container *ngFor="let section of report.sections">
+        <ng-container *ngTemplateOutlet="testSection; context: { section: section }"></ng-container>
+      </ng-container>
+
+      <ng-template #testSection let-section="section">
+      <section class="report-test-block">
         <div class="test-block-header">
           <strong>{{ section.testName }}</strong>
           <span class="test-meta" *ngIf="section.testCode"> ({{ section.testCode }})</span>
@@ -112,6 +126,7 @@
           </tbody>
         </table>
       </section>
+      </ng-template>
     </div>
 
     <!-- Fixed on every printed page: disclaimer, approval, page number -->

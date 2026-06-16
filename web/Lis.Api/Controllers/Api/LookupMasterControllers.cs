@@ -151,7 +151,7 @@ namespace Lis.Api.Controllers.Api
             {
                 if (id.HasValue)
                 {
-                    return Ok(profileManager.GetWithDetails(id.Value));
+                    return Ok(profileManager.GetWithHierarchy(id.Value));
                 }
 
                 return GetCore(null);
@@ -160,6 +160,26 @@ namespace Lis.Api.Controllers.Api
             {
                 Logger.LogException(e);
                 return Ok(new ItemList<TestProfileMaster> { TotalRecord = 0, Items = new List<TestProfileMaster>() });
+            }
+        }
+
+        [HttpGet, Route("{id:int}/Hierarchy")]
+        public IHttpActionResult GetHierarchy(int id)
+        {
+            try
+            {
+                var hierarchy = profileManager.GetWithHierarchy(id);
+                if (hierarchy == null)
+                {
+                    return NotFound();
+                }
+
+                return Ok(hierarchy);
+            }
+            catch (Exception e)
+            {
+                Logger.LogException(e);
+                return InternalServerError(e);
             }
         }
 
@@ -189,7 +209,25 @@ namespace Lis.Api.Controllers.Api
         }
 
         [HttpPost, Route("Put")]
-        public override HttpResponseMessage Put(TestProfileMaster item) => base.Put(item);
+        public override HttpResponseMessage Put(TestProfileMaster item)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return Request.CreateResponse(HttpStatusCode.PreconditionFailed, ModelState);
+                }
+
+                profileManager.SaveWithDetails(item, item?.ProfileDetails);
+                var response = ResponseMgr.CreateResponse(HttpStatusCode.OK, "Profile updated successfully", null, item.Id);
+                return Request.CreateResponse(HttpStatusCode.OK, response);
+            }
+            catch (Exception e)
+            {
+                Logger.LogException(e);
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, e.Message);
+            }
+        }
 
         [HttpPost, Route("Delete")]
         public override HttpResponseMessage Delete(TestProfileMaster item) => base.Delete(item);

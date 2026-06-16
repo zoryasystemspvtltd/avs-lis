@@ -51,7 +51,7 @@
     <table class="table table-bordered qtable invoice-lines-table">
       <thead>
         <tr>
-          <th class="col-test">Test</th>
+          <th class="col-test">Test / Profile</th>
           <th class="col-num text-right">Rate</th>
           <th class="col-qty text-right">Qty</th>
           <th class="col-num text-right">Discount</th>
@@ -63,7 +63,15 @@
       <tbody formArrayName="lines">
         <tr *ngFor="let line of lines.controls; let i=index" [formGroupName]="i">
           <td>
-            <select class="form-control input-sm" formControlName="testId" (change)="onTestChange(i)">
+            <select class="form-control input-sm" formControlName="lineType" (change)="onLineTypeChange(i)" style="margin-bottom:4px">
+              <option value="test">Test</option>
+              <option value="profile">Profile</option>
+            </select>
+            <select class="form-control input-sm" *ngIf="line.value.lineType === 'profile'" formControlName="testProfileId" (change)="onProfileChange(i)">
+              <option value="">-- Profile --</option>
+              <option *ngFor="let p of profiles" [value]="p.id">{{p.code}} - {{p.name}} ({{p.packageRate | currency:'INR'}})</option>
+            </select>
+            <select class="form-control input-sm" *ngIf="line.value.lineType !== 'profile'" formControlName="testId" (change)="onTestChange(i)">
               <option value="">-- Test --</option>
               <option *ngFor="let t of tests" [value]="t.id">{{t.hisTestCode}} - {{t.hisTestCodeDescription}}</option>
             </select>
@@ -159,7 +167,7 @@
         </thead>
         <tbody>
           <tr *ngFor="let d of invoiceDto.details">
-            <td>{{getTestName(d.testId)}}</td>
+            <td>{{getLineDescription(d)}}</td>
             <td class="text-right">{{d.rate | currency:'INR'}}</td>
             <td class="text-right">{{d.quantity}}</td>
             <td class="text-right">{{d.discountAmount | currency:'INR'}}</td>

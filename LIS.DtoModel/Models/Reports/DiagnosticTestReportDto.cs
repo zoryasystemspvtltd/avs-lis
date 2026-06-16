@@ -6,6 +6,14 @@ namespace LIS.DtoModel.Models
     public class DiagnosticTestReportDto
     {
         public DiagnosticTestReportHeader Header { get; set; }
+        public List<DiagnosticTestReportProfileGroup> ProfileGroups { get; set; }
+        public List<DiagnosticTestReportSection> Sections { get; set; }
+    }
+
+    public class DiagnosticTestReportProfileGroup
+    {
+        public string ProfileName { get; set; }
+        public string ProfileCode { get; set; }
         public List<DiagnosticTestReportSection> Sections { get; set; }
     }
 

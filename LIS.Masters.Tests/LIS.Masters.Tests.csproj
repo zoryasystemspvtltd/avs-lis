@@ -67,6 +67,7 @@
     <Compile Include="Lookups\ActiveLookupFilterTests.cs" />
     <Compile Include="Transactions\SaleInvoiceManagerTests.cs" />
     <Compile Include="Transactions\TestProfileMasterManagerTests.cs" />
+    <Compile Include="Transactions\TestProfileHierarchyTests.cs" />
     <Compile Include="Transactions\TestRateMasterManagerTests.cs" />
     <Compile Include="Transactions\TestRateReferralDoctorTests.cs" />
     <Compile Include="Transactions\TestRateEffectiveDateExtendedTests.cs" />

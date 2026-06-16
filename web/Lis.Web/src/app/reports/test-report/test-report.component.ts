@@ -85,7 +85,7 @@ export class TestReportComponent implements OnInit, OnDestroy {
         this.report = this.normalizeReport(r);
         this.searched = true;
         this.loading = false;
-        if (!this.report?.sections?.length) {
+        if (!this.report?.sections?.length && !this.report?.profileGroups?.length) {
           this.filterError = 'No report data returned.';
         }
       },
@@ -249,6 +249,17 @@ export class TestReportComponent implements OnInit, OnDestroy {
         padding: 4px 6px;
         margin: 10px 0 3px;
       }
+      .report-profile-header {
+        margin: 14px 0 6px;
+        padding: 6px 8px;
+        text-align: center;
+        font-size: 12pt;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        border-top: 1.5pt solid #1a7f8c;
+        border-bottom: 1.5pt solid #1a7f8c;
+      }
       .report-results-table th {
         background: #1a7f8c;
         color: #fff;
@@ -277,7 +288,7 @@ export class TestReportComponent implements OnInit, OnDestroy {
       return null;
     }
     const header = r.header || r.Header || {};
-    const sections = (r.sections || r.Sections || []).map((s: any) => ({
+    const mapSection = (s: any) => ({
       testCode: s.testCode ?? s.TestCode,
       testName: s.testName ?? s.TestName,
       specimen: s.specimen ?? s.Specimen,
@@ -292,6 +303,12 @@ export class TestReportComponent implements OnInit, OnDestroy {
         flag: p.flag ?? p.Flag,
         isAbnormal: p.isAbnormal ?? p.IsAbnormal
       }))
+    });
+    const sections = (r.sections || r.Sections || []).map(mapSection);
+    const profileGroups = (r.profileGroups || r.ProfileGroups || []).map((g: any) => ({
+      profileName: g.profileName ?? g.ProfileName,
+      profileCode: g.profileCode ?? g.ProfileCode,
+      sections: (g.sections || g.Sections || []).map(mapSection)
     }));
 
     return {
@@ -308,6 +325,7 @@ export class TestReportComponent implements OnInit, OnDestroy {
         reportDate: header.reportDate ?? header.ReportDate,
         approvedBy: header.approvedBy ?? header.ApprovedBy
       },
+      profileGroups,
       sections
     };
   }

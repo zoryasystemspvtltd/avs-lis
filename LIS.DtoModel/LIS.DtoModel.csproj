@@ -84,6 +84,7 @@
     <Compile Include="Models\DTO\Masters\TestCategoryMaster.cs" />
     <Compile Include="Models\DTO\Masters\TestProfileMaster.cs" />
     <Compile Include="Models\DTO\Masters\TestProfileDetail.cs" />
+    <Compile Include="Models\DTO\Masters\TestProfileHierarchyDto.cs" />
     <Compile Include="Models\DTO\Masters\UnitMaster.cs" />
     <Compile Include="Models\DTO\Masters\MethodMaster.cs" />
     <Compile Include="Models\DTO\Masters\SampleTypeMaster.cs" />

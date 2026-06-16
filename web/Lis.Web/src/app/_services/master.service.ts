@@ -130,6 +130,12 @@ export class MasterService {
     return this.http.get<any>(url);
   }
 
+  getProfileHierarchy(id: any): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/api/TestProfile/${id}`).pipe(
+      catchError(() => of(null))
+    );
+  }
+
   getInvoice(id: number): Observable<any> {
     return this.http.get<any>(`${this.baseUrl}/api/SaleInvoice/${id}`);
   }

@@ -15,6 +15,7 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
   saving = false;
   id: string;
   tests: any[] = [];
+  profiles: any[] = [];
   patients: any[] = [];
   corporates: any[] = [];
   doctors: any[] = [];
@@ -56,6 +57,7 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
     });
 
     this.loadBillableTests();
+    this.loadBillableProfiles();
     this.masterService.getAll('Corporate').subscribe(c => {
       this.corporates = (c || []).filter(x => x.isActive !== false && x.IsActive !== false);
     });
@@ -98,8 +100,11 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
   get lines(): FormArray { return this.form.get('lines') as FormArray; }
 
   addLine(line?: any) {
+    const isProfile = !!(line?.testProfileId);
     this.lines.push(this.fb.group({
       id: [line?.id || 0],
+      lineType: [isProfile ? 'profile' : 'test'],
+      testProfileId: [line?.testProfileId || null],
       testId: [line?.testId || '', Validators.required],
       rate: [line?.rate || 0],
       quantity: [line?.quantity || 1],
@@ -121,9 +126,75 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
     return v.invoiceDate || new Date().toISOString().substring(0, 10);
   }
 
-  getTestName(testId: number): string {
+  getTestName(testId: number, testProfileId?: number, testProfileName?: string): string {
+    if (testProfileId) {
+      const p = this.profiles.find(x => +x.id === +testProfileId);
+      return p ? `Profile: ${p.code} - ${p.name}` : (testProfileName ? `Profile: ${testProfileName}` : `Profile #${testProfileId}`);
+    }
     const t = this.tests.find(x => +x.id === +testId);
     return t ? `${t.hisTestCode} - ${t.hisTestCodeDescription}` : String(testId);
+  }
+
+  getLineDescription(line: any): string {
+    return this.getTestName(line?.testId, line?.testProfileId, line?.testProfileName);
+  }
+
+  onLineTypeChange(i: number) {
+    const line = this.lines.at(i);
+    if (line.get('lineType').value === 'profile') {
+      line.patchValue({ testId: '', testProfileId: null, rate: 0, amount: 0, netAmount: 0 });
+    } else {
+      line.patchValue({ testProfileId: null, testId: '', rate: 0, amount: 0, netAmount: 0 });
+    }
+    this.recalc();
+  }
+
+  onProfileChange(i: number) {
+    const line = this.lines.at(i);
+    const profileId = +line.get('testProfileId').value;
+    if (!profileId) { return; }
+
+    const duplicate = this.lines.controls.some((c, idx) =>
+      idx !== i && c.value.lineType === 'profile' && +c.value.testProfileId === profileId);
+    if (duplicate) {
+      this.alertService.error('Profile already added to invoice');
+      line.patchValue({ testProfileId: null });
+      return;
+    }
+
+    this.masterService.getProfileHierarchy(profileId).subscribe(profile => {
+      if (!profile || profile.isActive === false) {
+        this.alertService.error('Selected profile is inactive or unavailable');
+        line.patchValue({ testProfileId: null });
+        return;
+      }
+
+      const details = profile.profileDetails || profile.ProfileDetails || [];
+      const firstTestId = details[0]?.testId;
+      if (!firstTestId) {
+        this.alertService.error('Profile has no tests configured');
+        line.patchValue({ testProfileId: null });
+        return;
+      }
+
+      const amount = +profile.packageRate || 0;
+      line.patchValue({
+        testId: firstTestId,
+        rate: profile.packageRate,
+        quantity: 1,
+        amount,
+        discountAmount: 0,
+        taxAmount: 0,
+        netAmount: amount
+      });
+      this.recalc();
+    });
+  }
+
+  private loadBillableProfiles() {
+    this.masterService.getAll('TestProfile').subscribe(all => {
+      this.profiles = (all || []).filter(x => x.isActive !== false && x.IsActive !== false);
+    });
   }
 
   getCorporateName(corporateId: number | null | undefined): string {
@@ -146,6 +217,9 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
 
   onTestChange(i: number) {
     const line = this.lines.at(i);
+    if (line.get('lineType').value === 'profile') {
+      return;
+    }
     const testId = line.get('testId').value;
     if (!testId) { return; }
 
@@ -308,10 +382,11 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
 
     const val = this.form.getRawValue();
     const lineItems = (val.lines || [])
-      .filter(l => l.testId)
+      .filter(l => l.testId || l.testProfileId)
       .map(l => ({
         id: l.id || 0,
         testId: +l.testId,
+        testProfileId: l.lineType === 'profile' && l.testProfileId ? +l.testProfileId : null,
         rate: +l.rate,
         quantity: +l.quantity,
         amount: +l.amount,

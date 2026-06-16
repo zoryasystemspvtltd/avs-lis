@@ -15,6 +15,9 @@ export class TestProfileFormComponent implements OnInit {
   loading = false;
   id: string;
   tests: any[] = [];
+  allParameters: any[] = [];
+  allRanges: any[] = [];
+  previewTests: any[] = [];
 
   constructor(
     private route: ActivatedRoute,
@@ -34,12 +37,24 @@ export class TestProfileFormComponent implements OnInit {
       lines: this.fb.array([])
     });
 
+    const paramLoad$ = forkJoin({
+      parameters: this.masterService.getItems('HisParameterMaster', {
+        RecordPerPage: 2000, CurrentPage: 1, SortColumnName: 'HISParamCode', SortDirection: true
+      }),
+      ranges: this.masterService.getItems('HisParameterRangeMaster', {
+        RecordPerPage: 5000, CurrentPage: 1, SortColumnName: 'HISRangeCode', SortDirection: true
+      })
+    });
+
     if (this.id) {
       forkJoin({
         tests: this.masterService.getLookupList('HisTest'),
-        profile: this.masterService.getItem('TestProfile', this.id)
+        profile: this.masterService.getProfileHierarchy(this.id),
+        catalog: paramLoad$
       }).subscribe(data => {
-        this.tests = data.tests || [];
+        this.tests = this.activeTestsOnly(data.tests);
+        this.allParameters = data.catalog.parameters?.items || data.catalog.parameters?.Items || [];
+        this.allRanges = data.catalog.ranges?.items || data.catalog.ranges?.Items || [];
         const profile = data.profile;
         if (profile) {
           this.form.patchValue({
@@ -51,10 +66,18 @@ export class TestProfileFormComponent implements OnInit {
           });
           const details = profile.profileDetails || profile.ProfileDetails || [];
           details.forEach(line => this.addLine(line));
+          this.previewTests = profile.tests || [];
         }
       });
     } else {
-      this.masterService.getLookupList('HisTest').subscribe(t => this.tests = t || []);
+      forkJoin({
+        tests: this.masterService.getLookupList('HisTest'),
+        catalog: paramLoad$
+      }).subscribe(data => {
+        this.tests = this.activeTestsOnly(data.tests);
+        this.allParameters = data.catalog.parameters?.items || data.catalog.parameters?.Items || [];
+        this.allRanges = data.catalog.ranges?.items || data.catalog.ranges?.Items || [];
+      });
       this.masterService.getItems('TestProfile', {
         RecordPerPage: 1, CurrentPage: 1, SortColumnName: 'Code', SortDirection: false
       }).subscribe(list => {
@@ -65,6 +88,10 @@ export class TestProfileFormComponent implements OnInit {
     }
   }
 
+  private activeTestsOnly(tests: any[]): any[] {
+    return (tests || []).filter(t => t.isActive !== false && t.IsActive !== false);
+  }
+
   get lines(): FormArray { return this.form.get('lines') as FormArray; }
 
   addLine(line?: any) {
@@ -73,23 +100,72 @@ export class TestProfileFormComponent implements OnInit {
       testId: [line?.testId || '', Validators.required],
       quantity: [line?.quantity || 1, [Validators.required, Validators.min(1)]]
     }));
+    this.refreshParameterPreview();
   }
 
   removeLine(i: number) {
     this.lines.removeAt(i);
     this.recalcPackageRate();
+    this.refreshParameterPreview();
   }
 
   onTestChange(i: number) {
     const testId = +this.lines.at(i).get('testId').value;
-    if (!testId) { return; }
+    if (!testId) {
+      this.refreshParameterPreview();
+      return;
+    }
+
+    const test = this.tests.find(t => +t.id === testId);
+    if (!test) {
+      this.alertService.error('Selected test is inactive or unavailable');
+      this.lines.at(i).patchValue({ testId: '' });
+      this.refreshParameterPreview();
+      return;
+    }
 
     const duplicate = this.lines.controls.some((c, idx) => idx !== i && +c.value.testId === testId);
     if (duplicate) {
       this.alertService.error('Test already added to this profile');
       this.lines.at(i).patchValue({ testId: '' });
+      this.refreshParameterPreview();
       return;
     }
+
+    this.recalcPackageRate();
+    this.refreshParameterPreview();
+  }
+
+  refreshParameterPreview() {
+    const testIds = this.lines.controls
+      .map(c => +c.get('testId').value)
+      .filter(id => id > 0);
+
+    this.previewTests = testIds.map(testId => {
+      const test = this.tests.find(t => +t.id === testId);
+      const params = this.allParameters.filter(p => +(p.hisTestId || p.HisTestId) === testId);
+      return {
+        testId,
+        quantity: this.lines.controls.find(c => +c.value.testId === testId)?.value?.quantity || 1,
+        testCode: test?.hisTestCode || test?.HISTestCode,
+        testName: test?.hisTestCodeDescription || test?.HISTestCodeDescription,
+        parameters: params.map(p => ({
+          paramCode: p.hisParamCode || p.HISParamCode,
+          description: p.hisParamDescription || p.HISParamDescription,
+          unit: p.hisParamUnit || p.HISParamUnit,
+          method: p.hisParamMethod || p.HISParamMethod,
+          ranges: this.allRanges
+            .filter(r => +(r.hisParameterId || r.HisParameterId) === +(p.id || p.Id))
+            .map(r => ({
+              rangeCode: r.hisRangeCode || r.HISRangeCode,
+              rangeValue: r.hisRangeValue || r.HISRangeValue,
+              gender: r.gender || r.Gender,
+              minValue: r.minValue ?? r.MinValue,
+              maxValue: r.maxValue ?? r.MaxValue
+            }))
+        }))
+      };
+    });
   }
 
   recalcPackageRate() {
@@ -148,11 +224,20 @@ export class TestProfileFormComponent implements OnInit {
     };
 
     this.loading = true;
-    this.masterService.addItem('TestProfile', profile).subscribe(
-      () => {
+    const req = this.id
+      ? this.masterService.editItem('TestProfile', profile)
+      : this.masterService.addItem('TestProfile', profile);
+
+    req.subscribe(
+      (data) => {
         this.loading = false;
         this.alertService.success('Profile saved successfully');
-        this.router.navigate(['/test-profiles']);
+        const newId = data?.result ?? data?.Result ?? profile.id;
+        if (newId) {
+          this.router.navigate(['/test-profiles', newId]);
+        } else {
+          this.router.navigate(['/test-profiles']);
+        }
       },
       err => {
         this.loading = false;

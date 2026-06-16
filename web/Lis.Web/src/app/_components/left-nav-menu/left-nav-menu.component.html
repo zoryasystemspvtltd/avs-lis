@@ -76,6 +76,7 @@
                 <div id="collapseMaster" class="panel-collapse collapse in">
                     <div class="panel-body">
                         <table class="table">
+                            <tr *ngIf="hasAccess('Masters',63)"><td><span class="glyphicon glyphicon-th nav-icon"></span><a routerLink="/test-profiles" routerLinkActive="active-menu-link" [routerLinkActiveOptions]="{exact: true}">Test Profile</a></td></tr>
                             <tr *ngIf="hasAccess('HisTest',63)"><td><span class="glyphicon glyphicon-list-alt nav-icon"></span><a routerLink="/test-master" routerLinkActive="active-menu-link" [routerLinkActiveOptions]="{exact: true}">Test Master</a></td></tr>
                             <tr *ngIf="hasAccess('Masters',63)"><td><span class="glyphicon glyphicon-tint nav-icon"></span><a routerLink="/specimens" routerLinkActive="active-menu-link" [routerLinkActiveOptions]="{exact: true}">Specimen</a></td></tr>
                             <tr *ngIf="hasAccess('TestRates',63)"><td><span class="glyphicon glyphicon-usd nav-icon"></span><a routerLink="/test-rates" routerLinkActive="active-menu-link" [routerLinkActiveOptions]="{exact: true}">Test Rate</a></td></tr>
