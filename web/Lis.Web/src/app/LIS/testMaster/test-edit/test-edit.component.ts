@@ -72,7 +72,10 @@ export class TestEditComponent implements OnInit {
   }
 
   initForms() {
-    const isActive = this.coerceBool(this.item?.isActive ?? this.item?.IsActive);
+    const rawActive = this.item?.isActive ?? this.item?.IsActive;
+    const isActive = rawActive === undefined || rawActive === null
+      ? true
+      : this.coerceBool(rawActive);
     this.editTestForm = this.formBuilder.group({
       hisTestCode: [this.item.hisTestCode || this.item.HISTestCode, Validators.required],
       hisTestCodeDescription: [this.item.hisTestCodeDescription || this.item.HISTestCodeDescription, Validators.required],
@@ -80,7 +83,7 @@ export class TestEditComponent implements OnInit {
       departmentCode: [this.item.departmentCode || this.item.DepartmentCode, Validators.required],
       isActive: [isActive]
     });
-    this.editTestForm.patchValue({ isActive }, { emitEvent: false });
+    this.editTestForm.get('isActive').setValue(isActive, { emitEvent: false });
   }
 
   get f() { return this.editTestForm.controls; }
@@ -128,7 +131,23 @@ export class TestEditComponent implements OnInit {
   }
 
   private coerceBool(value: any): boolean {
-    return value === true || value === 'true' || value === 1 || value === '1';
+    if (value === true || value === 1) {
+      return true;
+    }
+    if (value === false || value === 0) {
+      return false;
+    }
+    if (value == null) {
+      return false;
+    }
+    const normalized = ('' + value).trim().toLowerCase();
+    if (normalized === 'true' || normalized === '1' || normalized === 'yes') {
+      return true;
+    }
+    if (normalized === 'false' || normalized === '0' || normalized === 'no') {
+      return false;
+    }
+    return false;
   }
 
   ngOnDestroy() {

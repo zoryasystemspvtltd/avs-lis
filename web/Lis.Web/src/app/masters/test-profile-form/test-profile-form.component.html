@@ -48,8 +48,8 @@
         <tr *ngFor="let line of lines.controls; let i=index" [formGroupName]="i">
           <td>
             <select class="form-control" formControlName="testId" (change)="onTestChange(i)">
-              <option value="">-- Select Test --</option>
-              <option *ngFor="let t of tests" [value]="t.id">{{t.hisTestCode}} - {{t.hisTestCodeDescription}}</option>
+              <option [ngValue]="null">-- Select Test --</option>
+              <option *ngFor="let t of tests" [ngValue]="t.id">{{t.hisTestCode}} - {{t.hisTestCodeDescription}}</option>
             </select>
           </td>
           <td><input type="number" class="form-control" formControlName="quantity" min="1" (change)="recalcPackageRate(); refreshParameterPreview()" /></td>

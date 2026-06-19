@@ -475,6 +475,14 @@ export class MasterFormComponent implements OnInit {
     patch.gender = this.apiName === 'PatientMaster'
       ? this.normalizePatientGenderForForm(patch.gender)
       : this.normalizeGenderForForm(patch.gender);
+    if (this.isParameterMasterScreen) {
+      if (patch.hisParamUnit) {
+        patch.hisParamUnit = this.matchLookupName(patch.hisParamUnit, this.units);
+      }
+      if (patch.hisParamMethod) {
+        patch.hisParamMethod = this.matchLookupName(patch.hisParamMethod, this.methods);
+      }
+    }
     this.form.patchValue(patch);
   }
 
@@ -513,7 +521,30 @@ export class MasterFormComponent implements OnInit {
   }
 
   private coerceBool(value: any): boolean {
-    return value === true || value === 'true' || value === 1 || value === '1';
+    if (value === true || value === 1) {
+      return true;
+    }
+    if (value === false || value === 0) {
+      return false;
+    }
+    if (value == null) {
+      return false;
+    }
+    const normalized = ('' + value).trim().toLowerCase();
+    return normalized === 'true' || normalized === '1' || normalized === 'yes';
+  }
+
+  private matchLookupName(value: string, options: any[]): string {
+    if (!value || !options?.length) {
+      return value || '';
+    }
+    const trimmed = ('' + value).trim();
+    const exact = options.find(o => (o.name || o.Name) === trimmed);
+    if (exact) {
+      return exact.name || exact.Name;
+    }
+    const ci = options.find(o => (o.name || o.Name || '').toLowerCase() === trimmed.toLowerCase());
+    return ci ? (ci.name || ci.Name) : trimmed;
   }
 
   onSubmit() {
@@ -628,8 +659,7 @@ export class MasterFormComponent implements OnInit {
       },
       err => {
         this.loading = false;
-        const apiMsg = typeof err?.error === 'string' ? err.error : err?.error?.message;
-        this.alertService.error(apiMsg || (isDelete ? 'Delete failed' : 'Deactivate failed'));
+        this.alertService.error(extractApiError(err, isDelete ? 'Delete failed' : 'Deactivate failed'));
       }
     );
   }

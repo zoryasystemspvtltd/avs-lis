@@ -97,8 +97,7 @@ namespace Lis.Api.Controllers.Api
                     catch (Exception ex)
                     {
                         logger.LogError(ex.Message);
-                        aPIResponse = responseMgr.CreateResponse(HttpStatusCode.OK, ex.Message, null, ex);
-                        return Request.CreateResponse<APIResponse>(HttpStatusCode.InternalServerError, aPIResponse);
+                        return Request.CreateResponse(HttpStatusCode.InternalServerError, ex.Message);
                     }
                 }
                 else
@@ -134,8 +133,7 @@ namespace Lis.Api.Controllers.Api
                     catch (Exception ex)
                     {
                         logger.LogError(ex.Message);
-                        aPIResponse = responseMgr.CreateResponse(HttpStatusCode.OK, ex.Message, null, ex);
-                        return Request.CreateResponse<APIResponse>(HttpStatusCode.InternalServerError, aPIResponse);
+                        return Request.CreateResponse(HttpStatusCode.InternalServerError, ex.Message);
                     }
                 }
                 else
@@ -172,8 +170,7 @@ namespace Lis.Api.Controllers.Api
                     catch (Exception ex)
                     {
                         logger.LogError(ex.Message);
-                        aPIResponse = responseMgr.CreateResponse(HttpStatusCode.OK, ex.Message, null, ex);
-                        return Request.CreateResponse<APIResponse>(HttpStatusCode.InternalServerError, aPIResponse);
+                        return Request.CreateResponse(HttpStatusCode.InternalServerError, ex.Message);
                     }
                 }
                 else

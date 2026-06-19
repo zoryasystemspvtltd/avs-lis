@@ -276,6 +276,7 @@ namespace LIS.BusinessLogic
         {
             item.CreatedOn = DateTime.Now;
             item.CreatedBy = Identity?.ActivityMember;
+            ApplyTestMetadata(item);
             if (ExistsDuplicate(item, null))
             {
                 throw new InvalidOperationException("Test Mapping already exists.");
@@ -286,12 +287,24 @@ namespace LIS.BusinessLogic
 
         public new void Update(TestMappingMaster item)
         {
+            ApplyTestMetadata(item);
             if (ExistsDuplicate(item, item.Id))
             {
                 throw new InvalidOperationException("Test Mapping already exists.");
             }
 
             base.Update(item);
+        }
+
+        public new TestMappingMaster GetById(int id)
+        {
+            var item = base.GetById(id);
+            if (item != null)
+            {
+                EnrichMappingItem(item);
+            }
+
+            return item;
         }
 
         public new void Delete(TestMappingMaster item)
@@ -331,17 +344,7 @@ namespace LIS.BusinessLogic
                 StringComparer.OrdinalIgnoreCase);
             foreach (var m in list)
             {
-                if (equipmentNames.TryGetValue(m.EquipmentId, out var name))
-                {
-                    m.GroupName = name;
-                }
-
-                if (string.IsNullOrWhiteSpace(m.HISTestCodeDescription) &&
-                    !string.IsNullOrWhiteSpace(m.HISTestCode) &&
-                    testNames.TryGetValue(m.HISTestCode.Trim(), out var testName))
-                {
-                    m.HISTestCodeDescription = testName;
-                }
+                EnrichMappingItem(m, equipmentNames, testNames);
             }
 
             result.TotalRecord = list.Count;
@@ -371,6 +374,73 @@ namespace LIS.BusinessLogic
                 col,
                 System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.IgnoreCase);
             return prop != null ? prop.Name : fallback;
+        }
+
+        private void ApplyTestMetadata(TestMappingMaster item)
+        {
+            if (item == null || string.IsNullOrWhiteSpace(item.HISTestCode))
+            {
+                return;
+            }
+
+            var test = testRepo.Get()
+                .FirstOrDefault(t => t.HISTestCode != null &&
+                    t.HISTestCode.Equals(item.HISTestCode.Trim(), StringComparison.OrdinalIgnoreCase));
+            if (test == null)
+            {
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(item.HISTestCodeDescription))
+            {
+                item.HISTestCodeDescription = test.HISTestCodeDescription;
+            }
+
+            if (string.IsNullOrWhiteSpace(item.SpecimenCode))
+            {
+                item.SpecimenCode = test.HISSpecimenCode;
+            }
+
+            if (string.IsNullOrWhiteSpace(item.SpecimenName))
+            {
+                item.SpecimenName = test.HISSpecimenName;
+            }
+        }
+
+        private void EnrichMappingItem(
+            TestMappingMaster m,
+            Dictionary<int, string> equipmentNames = null,
+            Dictionary<string, string> testNames = null)
+        {
+            if (m == null)
+            {
+                return;
+            }
+
+            if (equipmentNames == null)
+            {
+                equipmentNames = equipmentRepo.Get().ToDictionary(e => e.Id, e => e.Name);
+            }
+
+            if (testNames == null)
+            {
+                testNames = testRepo.Get().ToDictionary(
+                    t => (t.HISTestCode ?? string.Empty).Trim(),
+                    t => t.HISTestCodeDescription,
+                    StringComparer.OrdinalIgnoreCase);
+            }
+
+            if (equipmentNames.TryGetValue(m.EquipmentId, out var name))
+            {
+                m.GroupName = name;
+            }
+
+            if (string.IsNullOrWhiteSpace(m.HISTestCodeDescription) &&
+                !string.IsNullOrWhiteSpace(m.HISTestCode) &&
+                testNames.TryGetValue(m.HISTestCode.Trim(), out var testName))
+            {
+                m.HISTestCodeDescription = testName;
+            }
         }
 
         private bool ExistsDuplicate(TestMappingMaster item, int? excludeId)

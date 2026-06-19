@@ -182,7 +182,9 @@ namespace LIS.BusinessLogic
                     TestId = detail.TestId,
                     Quantity = detail.Quantity,
                     TestCode = test?.HISTestCode,
-                    TestName = test?.HISTestCodeDescription,
+                    TestName = !string.IsNullOrWhiteSpace(test?.HISTestCodeDescription)
+                        ? test.HISTestCodeDescription
+                        : test?.HISTestCode,
                     Parameters = BuildParameterNodes(detail.TestId)
                 };
                 nodes.Add(node);

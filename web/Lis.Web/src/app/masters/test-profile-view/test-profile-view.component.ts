@@ -21,7 +21,7 @@ export class TestProfileViewComponent implements OnInit {
     this.id = this.route.snapshot.params['id'];
     this.masterService.getProfileHierarchy(this.id).subscribe(
       data => {
-        this.profile = data;
+        this.profile = this.normalizeProfile(data);
         this.loading = false;
       },
       () => {
@@ -48,5 +48,32 @@ export class TestProfileViewComponent implements OnInit {
       },
       () => this.alertService.error('Deactivate failed')
     );
+  }
+
+  private normalizeProfile(data: any): any {
+    if (!data) {
+      return data;
+    }
+    const tests = (data.tests || data.Tests || []).map((t: any) => ({
+      ...t,
+      testCode: t.testCode ?? t.TestCode,
+      testName: t.testName ?? t.TestName ?? t.testCode ?? t.TestCode ?? '',
+      quantity: t.quantity ?? t.Quantity ?? 1,
+      parameters: (t.parameters || t.Parameters || []).map((p: any) => ({
+        paramCode: p.paramCode ?? p.ParamCode,
+        description: p.description ?? p.Description,
+        unit: p.unit ?? p.Unit,
+        method: p.method ?? p.Method,
+        ranges: p.ranges ?? p.Ranges ?? []
+      }))
+    }));
+    return {
+      ...data,
+      code: data.code ?? data.Code,
+      name: data.name ?? data.Name,
+      packageRate: data.packageRate ?? data.PackageRate,
+      isActive: data.isActive ?? data.IsActive,
+      tests
+    };
   }
 }

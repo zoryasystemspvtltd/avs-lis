@@ -189,6 +189,7 @@ export class ListModuleComponent implements OnInit, OnChanges {
 
         const oldItems = this.items.map(x => x);
         this.items = response.items || [];
+        this.items = this.items.map(i => this.normalizeMasterItem(i));
         this.items.forEach(i => {
           const oldItem = oldItems.filter(o => o.id === i.id);
           if (oldItem && oldItem.length > 0) {
@@ -428,47 +429,96 @@ export class ListModuleComponent implements OnInit, OnChanges {
   }
 
   private readonly inactiveHighlightModules = [
-    'HisTest', 'TestRate', 'TestMappingMaster', 'PatientMaster',
-    'Specimens', 'Unit', 'Method', 'ReferralDoctor', 'Corporate',
-    'TestGroup', 'TestCategory', 'SampleType', 'Container'
+    'HisTest', 'TestRate', 'TestMappingMaster', 'PatientMaster', 'HisParameterMaster',
+    'Specimens', 'Unit', 'Method', 'Department', 'TestProfile',
+    'ReferralDoctor', 'Corporate', 'TestGroup', 'TestCategory', 'SampleType', 'Container'
   ];
 
   isInactiveRow(item: any): boolean {
     if (!item || this.inactiveHighlightModules.indexOf(this.schemma?.module) < 0) {
       return false;
     }
-    if (!this.hasOwn(item, 'isActive') && !this.hasOwn(item, 'IsActive')) {
+    const normalized = this.normalizeMasterItem(item);
+    if (normalized.isActive === undefined && normalized.IsActive === undefined) {
       return false;
     }
-    return item.isActive === false || item.IsActive === false;
+    return normalized.isActive === false || normalized.IsActive === false;
   }
 
   fieldValue(item: any, fieldName: string): any {
     if (!item || !fieldName) {
       return '';
     }
-    const direct = item[fieldName];
+    const normalized = this.normalizeMasterItem(item);
+    const direct = normalized[fieldName];
+    if (fieldName === 'isActive') {
+      return this.formatActiveLabel(direct);
+    }
+    if (fieldName === 'rateTypeLabel' && (direct == null || direct === '')) {
+      return this.rateTypeLabelFromCode(normalized.rateType ?? normalized.RateType);
+    }
     if (direct != null && direct !== '') {
       return direct;
     }
     const aliases: { [key: string]: string[] } = {
-      hisTestCode: ['histTestCode', 'HISTestCode'],
-      hisTestCodeDescription: ['histTestCodeDescription', 'HISTestCodeDescription'],
+      hisTestCode: ['histTestCode', 'HISTestCode', 'hiSTestCode', 'histestCode'],
+      hisTestCodeDescription: ['histTestCodeDescription', 'HISTestCodeDescription', 'hiSTestCodeDescription', 'histestCodeDescription'],
       hisSpecimenName: ['hisSpecimenName', 'HISSpecimenName'],
       departmentName: ['departmentName', 'DepartmentName'],
       rateTypeLabel: ['rateTypeLabel', 'RateTypeLabel'],
       isActive: ['isActive', 'IsActive'],
       lisTestCode: ['lisTestCode', 'LISTestCode'],
-      groupName: ['groupName', 'GroupName']
+      groupName: ['groupName', 'GroupName'],
+      testName: ['testName', 'TestName']
     };
     const keys = aliases[fieldName] || [];
     for (const key of keys) {
-      const val = item[key];
+      const val = normalized[key];
       if (val != null && val !== '') {
         return val;
       }
     }
     return direct ?? '';
+  }
+
+  private normalizeMasterItem(item: any): any {
+    if (!item) {
+      return item;
+    }
+    const n = { ...item };
+    n.hisTestCode = n.hisTestCode ?? n.hiSTestCode ?? n.HISTestCode ?? n.histestCode ?? n.histTestCode;
+    n.hisTestCodeDescription = n.hisTestCodeDescription ?? n.hiSTestCodeDescription ?? n.HISTestCodeDescription
+      ?? n.histestCodeDescription ?? n.histTestCodeDescription;
+    n.hisSpecimenName = n.hisSpecimenName ?? n.HISSpecimenName;
+    n.departmentName = n.departmentName ?? n.DepartmentName;
+    n.lisTestCode = n.lisTestCode ?? n.LISTestCode;
+    n.groupName = n.groupName ?? n.GroupName;
+    n.testName = n.testName ?? n.TestName;
+    n.rateTypeLabel = n.rateTypeLabel ?? n.RateTypeLabel;
+    if (n.isActive === undefined && n.IsActive !== undefined) {
+      n.isActive = n.IsActive;
+    }
+    return n;
+  }
+
+  private formatActiveLabel(value: any): string {
+    if (value === true || value === 'true' || value === 1 || value === '1') {
+      return 'Yes';
+    }
+    if (value === false || value === 'false' || value === 0 || value === '0') {
+      return 'No';
+    }
+    return value == null ? '' : ('' + value);
+  }
+
+  private rateTypeLabelFromCode(rateType: any): string {
+    switch (+rateType) {
+      case 1: return 'Corporate';
+      case 2: return 'Doctor';
+      case 3: return 'Profile';
+      case 4: return 'Emergency';
+      default: return 'Standard';
+    }
   }
 
   private hasOwn(item: any, key: string): boolean {

@@ -64,9 +64,17 @@ export class TestProfileFormComponent implements OnInit {
             packageRate: profile.packageRate,
             isActive: profile.isActive !== false
           });
-          const details = profile.profileDetails || profile.ProfileDetails || [];
+          let details = profile.profileDetails || profile.ProfileDetails || [];
+          if (!details.length && (profile.tests || []).length) {
+            details = profile.tests.map((t: any) => ({
+              id: 0,
+              testId: t.testId,
+              quantity: t.quantity || 1
+            }));
+          }
           details.forEach(line => this.addLine(line));
           this.previewTests = profile.tests || [];
+          this.refreshParameterPreview();
         }
       });
     } else {
@@ -97,7 +105,7 @@ export class TestProfileFormComponent implements OnInit {
   addLine(line?: any) {
     this.lines.push(this.fb.group({
       id: [line?.id || 0],
-      testId: [line?.testId || '', Validators.required],
+      testId: [line?.testId ? +line.testId : null, Validators.required],
       quantity: [line?.quantity || 1, [Validators.required, Validators.min(1)]]
     }));
     this.refreshParameterPreview();
@@ -119,7 +127,7 @@ export class TestProfileFormComponent implements OnInit {
     const test = this.tests.find(t => +t.id === testId);
     if (!test) {
       this.alertService.error('Selected test is inactive or unavailable');
-      this.lines.at(i).patchValue({ testId: '' });
+      this.lines.at(i).patchValue({ testId: null });
       this.refreshParameterPreview();
       return;
     }
@@ -127,7 +135,7 @@ export class TestProfileFormComponent implements OnInit {
     const duplicate = this.lines.controls.some((c, idx) => idx !== i && +c.value.testId === testId);
     if (duplicate) {
       this.alertService.error('Test already added to this profile');
-      this.lines.at(i).patchValue({ testId: '' });
+      this.lines.at(i).patchValue({ testId: null });
       this.refreshParameterPreview();
       return;
     }
@@ -232,7 +240,7 @@ export class TestProfileFormComponent implements OnInit {
       (data) => {
         this.loading = false;
         this.alertService.success('Profile saved successfully');
-        const newId = data?.result ?? data?.Result ?? profile.id;
+        const newId = this.extractSavedId(data, profile.id);
         if (newId) {
           this.router.navigate(['/test-profiles', newId]);
         } else {
@@ -260,5 +268,26 @@ export class TestProfileFormComponent implements OnInit {
 
   cancel() {
     this.router.navigate(['/test-profiles']);
+  }
+
+  private extractSavedId(data: any, fallback: number): number {
+    if (!data) {
+      return fallback || 0;
+    }
+    if (typeof data === 'number') {
+      return data;
+    }
+    const result = data.result ?? data.Result;
+    if (typeof result === 'number') {
+      return result;
+    }
+    if (result && typeof result === 'object') {
+      const nested = result.id ?? result.Id;
+      if (nested) {
+        return +nested;
+      }
+    }
+    const direct = data.id ?? data.Id;
+    return direct ? +direct : (fallback || 0);
   }
 }
