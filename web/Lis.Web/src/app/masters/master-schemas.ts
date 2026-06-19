@@ -103,7 +103,6 @@ export const MASTER_LIST_SCHEMAS: { [key: string]: any } = {
       { heading: 'Rate', fieldName: 'rate', sortable: true, width: '10%', type: 'label' },
       { heading: 'Emergency', fieldName: 'emergencyRate', sortable: false, width: '12%', type: 'label' },
       { heading: 'Discount %', fieldName: 'discountPercent', sortable: false, width: '12%', type: 'label' },
-      { heading: 'Tax %', fieldName: 'taxPercent', sortable: false, width: '10%', type: 'label' },
       { heading: 'Effective From', fieldName: 'effectiveStart', sortable: true, width: '15%', type: 'date', format: 'dd/MM/yyyy' },
       { heading: 'Active', fieldName: 'isActive', sortable: false, width: '8%', type: 'label' }
     ]

@@ -20,5 +20,7 @@ namespace LIS.DtoModel.Models
         public ReportStatusType Status { get; set; }
 
         public string SearchText { get; set; }
+
+        public bool ReceivedOnly { get; set; }
     }
 }

@@ -16,6 +16,7 @@ export interface WorkflowSearchOptions {
   orderNumber?: string;
   patientName?: string;
   collectionDate?: string;
+  orderDate?: string;
   modality?: string;
 }
 

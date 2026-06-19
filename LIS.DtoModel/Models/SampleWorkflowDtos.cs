@@ -10,6 +10,7 @@ namespace LIS.DtoModel.Models
         public string OrderNumber { get; set; }
         public string PatientName { get; set; }
         public DateTime? CollectionDate { get; set; }
+        public DateTime? OrderDate { get; set; }
         public DateTime? FromDate { get; set; }
         public DateTime? ToDate { get; set; }
         public string CollectorName { get; set; }

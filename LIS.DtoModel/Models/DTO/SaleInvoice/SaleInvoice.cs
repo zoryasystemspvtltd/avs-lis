@@ -56,6 +56,12 @@ namespace LIS.DtoModel.Models
 
         public string Notes { get; set; }
 
+        [NotMapped]
+        public string PaymentType { get; set; }
+
+        [NotMapped]
+        public string DiscountType { get; set; }
+
         public DateTime CreatedOn { get; set; }
 
         public string CreatedBy { get; set; }

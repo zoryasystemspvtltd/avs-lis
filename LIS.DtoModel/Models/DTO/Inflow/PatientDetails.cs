@@ -21,6 +21,8 @@ namespace LIS.DtoModel.Models
         public string Gender { get; set; }        
         [MaxLength(15)]
         public string Phone { get; set; }
+        [MaxLength(500)]
+        public string Address { get; set; }
         public bool IsActive { get; set; }
         public DateTime DateOfBirth { get; set; }       
         [NotMapped]

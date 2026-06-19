@@ -21,8 +21,7 @@ export class ListRawSampleComponent implements OnInit {
     hideSearch: false,
     hideCreate: true,
     allowPaging: true,
-    //filterStatus:0,
-    allowedFilter: [0, 1, 2],
+    receivedOnly: true,
     auto_refresh:false,
     isNew:true,
     elements: [
@@ -33,13 +32,7 @@ export class ListRawSampleComponent implements OnInit {
         heading: 'Lab No', fieldName: 'hisRequestNo', sortable: false, width: '10%', type: 'label'
       },
       {
-        heading: 'IP No', fieldName: 'ipNo', sortable: false, width: '10%', type: 'label'
-      },
-      {
         heading: 'Test Name', fieldName: 'hisTestName',chieldFieldName:'name', sortable: false, width: '14%', type: 'label'
-      },
-      {
-        heading: 'Test Parameter', fieldName: 'testParameterNames', sortable: false, width: '14%', type: 'label'
       },
       {
         heading: 'Department', fieldName: 'department',chieldFieldName:'name', sortable: false, width: '14%', type: 'label'

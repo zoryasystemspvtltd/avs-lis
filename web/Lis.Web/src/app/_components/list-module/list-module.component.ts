@@ -317,7 +317,11 @@ export class ListModuleComponent implements OnInit, OnChanges {
 
     this.option.SearchCondition = null;
 
-    if (this.filterStatus >= 0) {
+    if (this.schemma.receivedOnly) {
+      this.option.ReceivedOnly = true;
+    }
+
+    if (this.filterStatus >= 0 && !this.schemma.receivedOnly) {
       this.option.SearchCondition = {
         'Name': 'Status',
         'Value': this.filterStatus

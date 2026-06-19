@@ -92,7 +92,8 @@
                             <!-- Referral Doctor master screen hidden per business decision; doctor references remain on invoice/patient -->
                             <tr *ngIf="hasAccess('Masters',63)"><td><span class="glyphicon glyphicon-briefcase nav-icon"></span><a routerLink="/corporates" routerLinkActive="active-menu-link">Corporate</a></td></tr>
                             <tr *ngIf="hasAccess('Masters',63)"><td><span class="glyphicon glyphicon-random nav-icon"></span><a routerLink="/test-mappings" routerLinkActive="active-menu-link">Test Mapping</a></td></tr>
-                            <tr *ngIf="hasAccess('Masters',63)"><td><span class="glyphicon glyphicon-list nav-icon"></span><a routerLink="/test-parameters" routerLinkActive="active-menu-link">Test Parameter</a></td></tr>
+                            <!-- Test Parameter Mapping menu hidden — covered by Parameter Master + Test Master + Test Profile -->
+                            <!-- <tr *ngIf="hasAccess('Masters',63)"><td><span class="glyphicon glyphicon-list nav-icon"></span><a routerLink="/test-parameters" routerLinkActive="active-menu-link">Test Parameter</a></td></tr> -->
                             <tr *ngIf="hasAccess('Masters',63)"><td><span class="glyphicon glyphicon-filter nav-icon"></span><a routerLink="/his-parameters" routerLinkActive="active-menu-link">Parameter Master</a></td></tr>
                             <tr *ngIf="hasAccess('Masters',63)"><td><span class="glyphicon glyphicon-signal nav-icon"></span><a routerLink="/his-parameter-ranges" routerLinkActive="active-menu-link">Parameter Range</a></td></tr>
                         </table>

@@ -79,9 +79,19 @@ namespace LIS.BusinessLogic
             var patientsById = patientRepo.Get().ToDictionary(p => p.Id, p => p);
 
             // Materialize in memory — avoids EF enum/navigation issues that returned empty lists in UI.
-            IEnumerable<TestRequestDetail> query = testRequestRepo.Get()
-                .Where(p => p.ReportStatus == option.Status)
-                .ToList();
+            IEnumerable<TestRequestDetail> query;
+            if (option.ReceivedOnly)
+            {
+                query = testRequestRepo.Get()
+                    .Where(p => !string.IsNullOrWhiteSpace(p.ReceivedBy))
+                    .ToList();
+            }
+            else
+            {
+                query = testRequestRepo.Get()
+                    .Where(p => p.ReportStatus == option.Status)
+                    .ToList();
+            }
 
             if (!string.IsNullOrWhiteSpace(option.SearchText))
             {

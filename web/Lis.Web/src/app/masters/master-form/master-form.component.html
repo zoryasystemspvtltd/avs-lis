@@ -18,7 +18,9 @@
             <input *ngIf="field.type === 'text' || field.type === 'number' || field.type === 'date'"
               [type]="field.type === 'number' ? 'number' : (field.type === 'date' ? 'date' : 'text')"
               class="form-control" [formControlName]="field.name"
-              [readonly]="isFieldReadonly(field)" />
+              [readonly]="isFieldReadonly(field)"
+              (change)="field.name === 'dateOfBirth' && apiName === 'PatientMaster' ? onPatientDobChange() : null"
+              (input)="field.name === 'age' && apiName === 'PatientMaster' ? onPatientAgeChange() : null" />
           </div>
           <select *ngIf="field.type === 'select' && !isUnitOrMethodDropdown(field)" class="form-control" [formControlName]="field.name">
             <option *ngFor="let opt of field.options" [ngValue]="opt.value">{{opt.label}}</option>

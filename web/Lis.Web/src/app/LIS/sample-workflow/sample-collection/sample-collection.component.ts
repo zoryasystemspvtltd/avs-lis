@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { AlertService } from '../../../_services/alert.service';
 import { SampleWorkflowService } from '../../../_services/sample-workflow.service';
 import { extractApiError } from '../../../_helpers/api-error';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-sample-collection',
@@ -14,23 +15,22 @@ export class SampleCollectionComponent implements OnInit {
   totalRecord = 0;
   currentPage = 1;
   recordPerPage = 25;
+  selectAll = false;
 
   searchText = '';
-  uhid = '';
   barcodeNumber = '';
   orderNumber = '';
   patientName = '';
-  collectionDate = '';
+  orderDate = '';
 
   selectedRow: any = null;
+  selectedRows: any[] = [];
+  bulkCollectMode = false;
   collectDateTime = '';
   collectRemarks = '';
   rejectRemarks = '';
   showCollectModal = false;
   showRejectModal = false;
-  showBarcodeModal = false;
-  barcodeValue = '';
-  barcodeText = '';
 
   constructor(
     private workflowService: SampleWorkflowService,
@@ -41,6 +41,10 @@ export class SampleCollectionComponent implements OnInit {
     this.search(1);
   }
 
+  get hasSelection(): boolean {
+    return this.rows.some(r => r.selected);
+  }
+
   search(page: number): void {
     this.currentPage = page;
     this.loading = true;
@@ -48,15 +52,15 @@ export class SampleCollectionComponent implements OnInit {
       currentPage: page,
       recordPerPage: this.recordPerPage,
       searchText: this.searchText,
-      uhid: this.uhid,
       barcodeNumber: this.barcodeNumber,
       orderNumber: this.orderNumber,
       patientName: this.patientName,
-      collectionDate: this.collectionDate || null
+      orderDate: this.orderDate || null
     }).subscribe(
       r => {
-        this.rows = r.items || [];
+        this.rows = (r.items || []).map(row => ({ ...row, selected: false }));
         this.totalRecord = r.totalRecord || 0;
+        this.selectAll = false;
         this.loading = false;
       },
       err => {
@@ -68,11 +72,10 @@ export class SampleCollectionComponent implements OnInit {
 
   reset(): void {
     this.searchText = '';
-    this.uhid = '';
     this.barcodeNumber = '';
     this.orderNumber = '';
     this.patientName = '';
-    this.collectionDate = '';
+    this.orderDate = '';
     this.search(1);
   }
 
@@ -84,8 +87,35 @@ export class SampleCollectionComponent implements OnInit {
     return Math.min(this.currentPage * this.recordPerPage, this.totalRecord);
   }
 
+  toggleSelectAll(event: Event): void {
+    const checked = (event.target as HTMLInputElement).checked;
+    this.selectAll = checked;
+    this.rows.forEach(r => r.selected = checked);
+  }
+
+  onRowSelectionChange(): void {
+    this.selectAll = this.rows.length > 0 && this.rows.every(r => r.selected);
+  }
+
   openCollect(row: any): void {
+    this.bulkCollectMode = false;
     this.selectedRow = row;
+    this.selectedRows = [row];
+    this.prepareCollectModal();
+  }
+
+  openBulkCollect(): void {
+    this.selectedRows = this.rows.filter(r => r.selected);
+    if (!this.selectedRows.length) {
+      this.alertService.error('Select at least one sample.');
+      return;
+    }
+    this.bulkCollectMode = true;
+    this.selectedRow = null;
+    this.prepareCollectModal();
+  }
+
+  private prepareCollectModal(): void {
     const now = new Date();
     now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
     this.collectDateTime = now.toISOString().slice(0, 16);
@@ -94,18 +124,29 @@ export class SampleCollectionComponent implements OnInit {
   }
 
   submitCollect(): void {
-    if (!this.selectedRow || !this.collectDateTime) {
+    if (!this.collectDateTime) {
       this.alertService.error('Collection date and time are mandatory.');
       return;
     }
-    this.workflowService.collectSample({
-      testRequestId: this.selectedRow.id,
+
+    const targets = this.bulkCollectMode ? this.selectedRows : (this.selectedRow ? [this.selectedRow] : []);
+    if (!targets.length) {
+      this.alertService.error('No sample selected.');
+      return;
+    }
+
+    const requests = targets.map(row => this.workflowService.collectSample({
+      testRequestId: row.id,
       collectionDateTime: this.collectDateTime,
       remarks: this.collectRemarks,
-      barcodeNumber: this.selectedRow.sampleNo
-    }).subscribe(
+      barcodeNumber: row.sampleNo
+    }));
+
+    forkJoin(requests).subscribe(
       () => {
-        this.alertService.success('Sample collected successfully.');
+        this.alertService.success(targets.length > 1
+          ? `${targets.length} samples collected successfully.`
+          : 'Sample collected successfully.');
         this.showCollectModal = false;
         this.search(this.currentPage);
       },
@@ -145,31 +186,6 @@ export class SampleCollectionComponent implements OnInit {
       () => {
         this.alertService.success('Recollection initiated.');
         this.search(this.currentPage);
-      },
-      err => this.alertService.error(extractApiError(err))
-    );
-  }
-
-  printBarcode(row: any): void {
-    this.workflowService.ensureBarcode(row.id).subscribe(
-      r => {
-        this.barcodeValue = r.barcode || row.sampleNo;
-        const p = row.patientName || '';
-        this.barcodeText = `${p}####`;
-        this.showBarcodeModal = true;
-      },
-      err => this.alertService.error(extractApiError(err))
-    );
-  }
-
-  scanBarcode(): void {
-    if (!this.barcodeNumber.trim()) {
-      return;
-    }
-    this.workflowService.getByBarcode('collection', this.barcodeNumber.trim()).subscribe(
-      row => {
-        this.rows = [row];
-        this.totalRecord = 1;
       },
       err => this.alertService.error(extractApiError(err))
     );

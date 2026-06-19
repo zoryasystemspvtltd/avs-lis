@@ -78,7 +78,6 @@ const LOOKUP_FIELDS = {
     { name: 'rate', label: 'Rate', type: 'number', required: true },
     { name: 'emergencyRate', label: 'Emergency Rate', type: 'number' },
     { name: 'discountPercent', label: 'Discount %', type: 'number' },
-    { name: 'taxPercent', label: 'Tax %', type: 'number' },
     { name: 'effectiveStart', label: 'Effective From', type: 'date', required: true },
     { name: 'effectiveEnd', label: 'Effective To', type: 'date', required: true },
     { name: 'isActive', label: 'Active', type: 'checkbox' }
@@ -88,7 +87,7 @@ const LOOKUP_FIELDS = {
     { name: 'hisParamDescription', label: 'Description', type: 'text', required: true },
     { name: 'hisParamUnit', label: 'Unit', type: 'text' },
     { name: 'hisParamMethod', label: 'Method', type: 'text' },
-    { name: 'lisParamCode', label: 'LIS Param Code', type: 'text' }
+    { name: 'isActive', label: 'Active', type: 'checkbox' }
   ],
   hisParameterRange: [
     { name: 'hisRangeCode', label: 'Range Code', type: 'text', readonly: true },
@@ -117,7 +116,8 @@ const LOOKUP_FIELDS = {
   patient: [
     { name: 'name', label: 'Patient Name', type: 'text', required: true },
     { name: 'hisPatientId', label: 'Patient ID', type: 'text', readonly: true },
-    { name: 'phone', label: 'Phone', type: 'text' },
+    { name: 'phone', label: 'Phone', type: 'text', required: true },
+    { name: 'address', label: 'Address', type: 'text' },
     { name: 'gender', label: 'Gender', type: 'select', required: true, options: [
       { value: '', label: '-- Select Gender --' },
       { value: 'M', label: 'Male' },

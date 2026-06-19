@@ -49,6 +49,7 @@ namespace LIS.BusinessLogic
             }
 
             EnrichHeader(invoice);
+            SaleInvoiceNotesMeta.ApplyToInvoice(invoice);
             var details = detailRepo.Get(d => d.SaleInvoiceId == id && d.IsActive).ToList();
             EnrichDetails(details);
 
@@ -178,6 +179,7 @@ namespace LIS.BusinessLogic
             }
 
             Recalculate(header, lines);
+            SaleInvoiceNotesMeta.EncodeFromInvoice(header);
 
             var now = DateTime.Now;
             if (header.Id <= 0)
@@ -652,6 +654,86 @@ namespace LIS.BusinessLogic
                 PatientName = invoice.PatientName,
                 PatientPhone = invoice.PatientPhone
             };
+        }
+    }
+
+    internal static class SaleInvoiceNotesMeta
+    {
+        private const string Prefix = "[META|";
+        private const string Suffix = "]";
+
+        public static void ApplyToInvoice(SaleInvoice invoice)
+        {
+            if (invoice == null || string.IsNullOrWhiteSpace(invoice.Notes) || !invoice.Notes.StartsWith(Prefix))
+            {
+                return;
+            }
+
+            var end = invoice.Notes.IndexOf(Suffix, StringComparison.Ordinal);
+            if (end < 0)
+            {
+                return;
+            }
+
+            var meta = invoice.Notes.Substring(Prefix.Length, end - Prefix.Length);
+            var userNotes = invoice.Notes.Length > end + Suffix.Length
+                ? invoice.Notes.Substring(end + Suffix.Length).TrimStart('\r', '\n')
+                : string.Empty;
+
+            foreach (var part in meta.Split('|'))
+            {
+                var kv = part.Split(new[] { '=' }, 2);
+                if (kv.Length != 2)
+                {
+                    continue;
+                }
+
+                if (kv[0] == "PaymentType")
+                {
+                    invoice.PaymentType = kv[1];
+                }
+                else if (kv[0] == "DiscountType")
+                {
+                    invoice.DiscountType = kv[1];
+                }
+            }
+
+            invoice.Notes = userNotes;
+        }
+
+        public static void EncodeFromInvoice(SaleInvoice invoice)
+        {
+            if (invoice == null)
+            {
+                return;
+            }
+
+            var userNotes = invoice.Notes ?? string.Empty;
+            if (userNotes.StartsWith(Prefix))
+            {
+                ApplyToInvoice(invoice);
+                userNotes = invoice.Notes ?? string.Empty;
+            }
+
+            var parts = new List<string>();
+            if (!string.IsNullOrWhiteSpace(invoice.PaymentType))
+            {
+                parts.Add("PaymentType=" + invoice.PaymentType.Trim());
+            }
+
+            if (!string.IsNullOrWhiteSpace(invoice.DiscountType))
+            {
+                parts.Add("DiscountType=" + invoice.DiscountType.Trim());
+            }
+
+            if (!parts.Any())
+            {
+                invoice.Notes = userNotes;
+                return;
+            }
+
+            invoice.Notes = Prefix + string.Join("|", parts) + Suffix +
+                (string.IsNullOrWhiteSpace(userNotes) ? string.Empty : Environment.NewLine + userNotes);
         }
     }
 }

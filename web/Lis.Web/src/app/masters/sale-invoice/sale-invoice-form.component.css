@@ -27,6 +27,31 @@
   min-height: 34px;
 }
 
+.sale-invoice-page .sale-invoice-test-select {
+  width: 100%;
+}
+
+.sale-invoice-page .sale-invoice-test-select .ng-select-container {
+  min-height: 30px;
+}
+
+.sale-invoice-page .total-discount-cell {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.sale-invoice-page .inline-discount-type {
+  width: 130px;
+  display: inline-block;
+}
+
+.sale-invoice-page .inline-discount-value {
+  width: 100px;
+  display: inline-block;
+}
+
 .sale-invoice-page .invoice-lines-table th.col-test {
   min-width: 220px;
 }

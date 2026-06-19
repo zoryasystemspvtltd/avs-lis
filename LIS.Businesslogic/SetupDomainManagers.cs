@@ -572,6 +572,11 @@ namespace LIS.BusinessLogic
 
         public long Add(PatientDetail item)
         {
+            if (string.IsNullOrWhiteSpace(item.Phone))
+            {
+                throw new InvalidOperationException("Phone number is required.");
+            }
+
             if (string.IsNullOrWhiteSpace(item.HisPatientId))
             {
                 item.HisPatientId = GenerateNextPatientId();
@@ -599,6 +604,11 @@ namespace LIS.BusinessLogic
 
         public void Update(PatientDetail item)
         {
+            if (string.IsNullOrWhiteSpace(item.Phone))
+            {
+                throw new InvalidOperationException("Phone number is required.");
+            }
+
             if (ExistsDuplicatePatient(item, item.Id))
             {
                 throw new InvalidOperationException("Patient already exists.");

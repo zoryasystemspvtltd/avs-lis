@@ -18,11 +18,15 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
   profiles: any[] = [];
   patients: any[] = [];
   patientsLoading = false;
+  testsLoading = false;
   corporates: any[] = [];
   doctors: any[] = [];
   isPrintView = false;
   invoiceDto: any;
   private patientSearchTimer: ReturnType<typeof setTimeout>;
+  private testSearchTimer: ReturnType<typeof setTimeout>;
+  readonly paymentTypes = ['Cash', 'Card', 'UPI', 'Net Banking', 'Cheque', 'Credit'];
+  readonly discountTypes = ['Percentage', 'Fixed Amount'];
 
   constructor(
     private route: ActivatedRoute,
@@ -55,6 +59,8 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
       corporateId: [null],
       referralDoctorId: [null],
       notes: [''],
+      paymentType: ['Cash'],
+      discountType: ['Fixed Amount'],
       lines: this.fb.array([])
     });
 
@@ -85,7 +91,11 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
       if (dto?.invoice) {
         const inv = dto.invoice;
         inv.invoiceDate = inv.invoiceDate ? inv.invoiceDate.substring(0, 10) : '';
-        this.form.patchValue(inv);
+        this.form.patchValue({
+          ...inv,
+          paymentType: inv.paymentType || 'Cash',
+          discountType: inv.discountType || 'Fixed Amount'
+        });
         this.lines.clear();
         (dto.details || []).forEach(line => this.addLine(line));
         if (this.isCancelled || this.isPaid) {
@@ -108,10 +118,12 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
       rate: [line?.rate || 0],
       quantity: [line?.quantity || 1],
       amount: [line?.amount || 0],
+      discountType: [line?.discountType || 'Fixed Amount'],
       discountAmount: [line?.discountAmount || 0],
       taxAmount: [line?.taxAmount || 0],
       netAmount: [line?.netAmount || 0],
-      sampleNo: [line?.sampleNo || '']
+      sampleNo: [line?.sampleNo || ''],
+      testLabel: [line?.testName || '']
     }));
   }
 
@@ -214,6 +226,9 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
     document.body.classList.remove('sale-invoice-print-mode');
     if (this.patientSearchTimer) {
       clearTimeout(this.patientSearchTimer);
+    }
+    if (this.testSearchTimer) {
+      clearTimeout(this.testSearchTimer);
     }
   }
 
@@ -340,10 +355,20 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
     this.onRateContextChange();
   }
 
-  private loadBillableTests() {
+  private loadBillableTests(searchText = '') {
     const invoiceDate = this.getInvoiceDate();
+    this.testsLoading = true;
     this.masterService.getLookupList('HisTest').subscribe(allTests => {
       const activeTests = (allTests || []).filter(x => x.isActive !== false && x.IsActive !== false);
+      const search = (searchText || '').trim().toLowerCase();
+      const filteredBySearch = search
+        ? activeTests.filter(t => {
+          const code = ('' + (t.hisTestCode || t.HISTestCode || '')).toLowerCase();
+          const name = ('' + (t.hisTestCodeDescription || t.HISTestCodeDescription || '')).toLowerCase();
+          return code.indexOf(search) >= 0 || name.indexOf(search) >= 0;
+        })
+        : activeTests;
+
       this.masterService.getItems('TestRate', {
         RecordPerPage: 5000,
         CurrentPage: 1,
@@ -366,11 +391,60 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
             testIdsWithRate.add(+(r.testId || r.TestId));
           }
         });
-        this.tests = activeTests.filter(t => testIdsWithRate.has(+t.id));
+        this.tests = filteredBySearch
+          .filter(t => testIdsWithRate.has(+t.id))
+          .map(t => this.normalizeTestOption(t));
+        this.testsLoading = false;
+        this.ensureSelectedTestsInList();
       }, () => {
         this.tests = [];
+        this.testsLoading = false;
       });
+    }, () => {
+      this.tests = [];
+      this.testsLoading = false;
     });
+  }
+
+  onTestSearch(event: any): void {
+    const search = (typeof event === 'string' ? event : event?.term || '').trim();
+    if (this.testSearchTimer) {
+      clearTimeout(this.testSearchTimer);
+    }
+    this.testSearchTimer = setTimeout(() => this.loadBillableTests(search), 300);
+  }
+
+  private normalizeTestOption(test: any): any {
+    const id = test.id ?? test.Id;
+    const code = test.hisTestCode || test.HISTestCode || '';
+    const name = test.hisTestCodeDescription || test.HISTestCodeDescription || '';
+    return { id, code, name, label: `${code} - ${name}`.trim() };
+  }
+
+  testOptionLabel(test: any): string {
+    return test?.label || `${test?.code || ''} - ${test?.name || ''}`.trim();
+  }
+
+  private ensureSelectedTestsInList(): void {
+    this.lines.controls.forEach(line => {
+      const testId = +line.get('testId')?.value;
+      if (!testId || this.tests.some(t => +t.id === testId)) {
+        return;
+      }
+      const label = line.get('testLabel')?.value || `Test #${testId}`;
+      const parts = ('' + label).split(' - ');
+      this.tests = [{ id: testId, code: parts[0] || '', name: parts.slice(1).join(' - ') || label, label }, ...this.tests];
+    });
+  }
+
+  onLineTestChange(i: number): void {
+    const line = this.lines.at(i);
+    const testId = +line.get('testId')?.value;
+    const test = this.tests.find(t => +t.id === testId);
+    if (test) {
+      line.patchValue({ testLabel: this.testOptionLabel(test) }, { emitEvent: false });
+    }
+    this.onTestChange(i);
   }
 
   onRateContextChange() {
@@ -394,28 +468,55 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
   recalcLine(i: number) {
     const line = this.lines.at(i).value;
     const amount = (line.rate || 0) * (line.quantity || 1);
-    const net = amount - (line.discountAmount || 0) + (line.taxAmount || 0);
+    const discount = this.computeDiscount(amount, line.discountType, line.discountAmount);
+    const net = amount - discount + (line.taxAmount || 0);
     this.lines.at(i).patchValue({ amount, netAmount: net }, { emitEvent: false });
     this.recalc();
   }
 
+  private computeDiscount(amount: number, discountType: string, discountValue: number): number {
+    if (!discountValue) {
+      return 0;
+    }
+    if (discountType === 'Percentage') {
+      return Math.round(amount * discountValue) / 100;
+    }
+    return discountValue;
+  }
+
   recalc() {
-    let gross = 0, disc = 0, tax = 0, net = 0;
+    let gross = 0, lineDisc = 0, tax = 0, net = 0;
     this.lines.controls.forEach(c => {
       const v = c.value;
-      gross += v.amount || 0;
-      disc += v.discountAmount || 0;
+      const amount = (v.rate || 0) * (v.quantity || 1);
+      gross += amount;
+      lineDisc += this.computeDiscount(amount, v.discountType, v.discountAmount);
       tax += v.taxAmount || 0;
       net += v.netAmount || 0;
     });
+
+    const headerType = this.form.get('discountType')?.value || 'Fixed Amount';
+    const headerDiscInput = +this.form.get('discountAmount')?.value || 0;
+    let totalDisc = lineDisc;
+    if (headerType === 'Percentage') {
+      totalDisc = this.computeDiscount(gross, 'Percentage', headerDiscInput);
+    } else if (headerDiscInput > 0) {
+      totalDisc = headerDiscInput;
+    }
+
     const paid = this.form.getRawValue().paidAmount || 0;
+    const finalNet = gross - totalDisc + tax;
     this.form.patchValue({
       grossAmount: gross,
-      discountAmount: disc,
+      discountAmount: totalDisc,
       taxAmount: tax,
-      netAmount: net,
-      dueAmount: net - paid
+      netAmount: finalNet,
+      dueAmount: finalNet - paid
     }, { emitEvent: false });
+  }
+
+  onTotalDiscountChange(): void {
+    this.recalc();
   }
 
   private readApiError(err: any): string {
@@ -449,18 +550,22 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
     const val = this.form.getRawValue();
     const lineItems = (val.lines || [])
       .filter(l => l.testId || l.testProfileId)
-      .map(l => ({
-        id: l.id || 0,
-        testId: +l.testId,
-        testProfileId: l.lineType === 'profile' && l.testProfileId ? +l.testProfileId : null,
-        rate: +l.rate,
-        quantity: +l.quantity,
-        amount: +l.amount,
-        discountAmount: +l.discountAmount,
-        taxAmount: +l.taxAmount,
-        netAmount: +l.netAmount,
-        sampleNo: l.sampleNo
-      }));
+      .map(l => {
+        const amount = (+l.rate || 0) * (+l.quantity || 1);
+        const discountAmount = this.computeDiscount(amount, l.discountType, +l.discountAmount || 0);
+        return {
+          id: l.id || 0,
+          testId: +l.testId,
+          testProfileId: l.lineType === 'profile' && l.testProfileId ? +l.testProfileId : null,
+          rate: +l.rate,
+          quantity: +l.quantity,
+          amount,
+          discountAmount,
+          taxAmount: +l.taxAmount,
+          netAmount: amount - discountAmount + (+l.taxAmount || 0),
+          sampleNo: l.sampleNo
+        };
+      });
 
     if (!lineItems.length) {
       this.alertService.error('Add at least one test line');

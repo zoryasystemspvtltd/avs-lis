@@ -114,7 +114,7 @@ export class MasterFormComponent implements OnInit {
   }
 
   get isParameterPickerScreen(): boolean {
-    return this.isTestParameterScreen || this.isParameterMasterScreen;
+    return this.isTestParameterScreen;
   }
 
   isUnitOrMethodDropdown(field: any): boolean {
@@ -142,8 +142,14 @@ export class MasterFormComponent implements OnInit {
         field.name === 'specimenCode' || field.name === 'specimenName')) {
       return true;
     }
-    if (this.isParameterPickerScreen &&
+    if (this.isTestParameterScreen &&
       (field.name === 'hisParamCode' || field.name === 'hisParamDescription')) {
+      return true;
+    }
+    if (this.isParameterMasterScreen && field.name === 'hisParamCode' && !this.id) {
+      return false;
+    }
+    if (this.isParameterMasterScreen && field.name === 'hisParamCode' && !!this.id) {
       return true;
     }
     if (this.apiName === 'HisParameterRangeMaster' && field.name === 'hisRangeCode') {
@@ -156,6 +162,9 @@ export class MasterFormComponent implements OnInit {
     if (this.apiName === 'TestMappingMaster') {
       return this.fields.filter(f =>
         f.name !== 'hisTestCode' && f.name !== 'hisTestCodeDescription' && f.name !== 'specimenCode');
+    }
+    if (this.apiName === 'TestRate') {
+      return this.fields.filter(f => f.name !== 'taxPercent');
     }
     return this.fields;
   }
@@ -250,6 +259,13 @@ export class MasterFormComponent implements OnInit {
                   this.lockParameterDerivedFields(true);
                 }
               });
+            }
+          });
+        } else if (this.apiName === 'HisParameterMaster' && this.id) {
+          this.masterService.getItem(this.apiName, this.id).subscribe(item => {
+            if (item) {
+              this.patchItem(item);
+              this.syncHisTestPicker(item);
             }
           });
         } else if (this.apiName === 'HisParameterRangeMaster' && !this.id) {
@@ -486,6 +502,40 @@ export class MasterFormComponent implements OnInit {
     this.form.patchValue(patch);
   }
 
+  onPatientAgeChange(): void {
+    if (this.apiName !== 'PatientMaster') {
+      return;
+    }
+    const age = +this.form.get('age')?.value;
+    if (!age || age <= 0 || isNaN(age)) {
+      return;
+    }
+    const dob = new Date();
+    dob.setHours(0, 0, 0, 0);
+    dob.setFullYear(dob.getFullYear() - Math.floor(age));
+    this.form.patchValue({ dateOfBirth: this.toDateInput(dob) }, { emitEvent: false });
+  }
+
+  onPatientDobChange(): void {
+    if (this.apiName !== 'PatientMaster') {
+      return;
+    }
+    const dob = this.parseLocalDate(this.form.get('dateOfBirth')?.value);
+    if (!dob) {
+      return;
+    }
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    let age = today.getFullYear() - dob.getFullYear();
+    const monthDiff = today.getMonth() - dob.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+      age--;
+    }
+    if (age >= 0) {
+      this.form.patchValue({ age }, { emitEvent: false });
+    }
+  }
+
   private normalizePatientGenderForForm(gender: string): string {
     if (!gender) {
       return '';
@@ -585,6 +635,21 @@ export class MasterFormComponent implements OnInit {
     if (this.apiName === 'PatientMaster' && !item.hisPatientId) {
       this.alertService.error('Patient ID is required.');
       return;
+    }
+    if (this.apiName === 'PatientMaster' && !('' + (item.phone || '')).trim()) {
+      this.alertService.error('Phone number is required.');
+      return;
+    }
+    if (this.isParameterMasterScreen) {
+      if (!item.hisParamCode) {
+        const testId = item.hisTestId;
+        const test = this.tests.find(t => +t.id === +testId);
+        const prefix = ((test?.hisTestCode || test?.HISTestCode || 'P') + '').trim().substring(0, 8) || 'P';
+        item.hisParamCode = `${prefix}-${Date.now().toString(36).toUpperCase()}`;
+      }
+      if (!item.lisParamCode) {
+        item.lisParamCode = item.hisParamCode;
+      }
     }
     if (this.apiName === 'TestRate') {
       const rt = +item.rateType;
