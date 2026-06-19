@@ -1,0 +1,52 @@
+<div class="container-fluid">
+  <h3><span class="glyphicon glyphicon-picture"></span> Radiology Report Entry</h3>
+
+  <div class="panel panel-default filter-panel" *ngIf="!showEntry">
+    <div class="panel-body row">
+      <div class="col-sm-4"><label>Search</label><input class="form-control input-sm" [(ngModel)]="searchText" (keyup.enter)="search()" /></div>
+      <div class="col-sm-3"><label>Modality</label><input class="form-control input-sm" [(ngModel)]="modality" /></div>
+      <div class="col-sm-2"><label>&nbsp;</label><button class="btn btn-primary btn-sm btn-block" (click)="search()">Search</button></div>
+    </div>
+  </div>
+
+  <div *ngIf="!showEntry && !loading" class="table-responsive">
+    <table class="table table-striped">
+      <thead><tr><th>Accession</th><th>Patient</th><th>Test</th><th>Modality</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+        <tr *ngFor="let row of rows">
+          <td>{{ row.accessionNo }}</td>
+          <td>{{ row.patientName }}</td>
+          <td>{{ row.testName }}</td>
+          <td>{{ row.modality }}</td>
+          <td>{{ row.status }}</td>
+          <td><button class="btn btn-primary btn-xs" (click)="openEntry(row)">Entry</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div *ngIf="showEntry && reportDetail" class="panel panel-default entry-panel">
+    <div class="panel-heading">
+      <strong>{{ reportDetail.patientName }}</strong> — {{ reportDetail.testName }} ({{ reportDetail.status }})
+      <button class="btn btn-default btn-xs pull-right" (click)="showEntry=false">Back</button>
+    </div>
+    <div class="panel-body">
+      <div class="form-group"><label>Clinical History</label><textarea class="form-control" rows="2" [(ngModel)]="clinicalHistory" [readonly]="!reportDetail.canEdit"></textarea></div>
+      <div class="form-group"><label>Findings <span class="text-danger">*</span></label><textarea class="form-control" rows="4" [(ngModel)]="findings" [readonly]="!reportDetail.canEdit"></textarea></div>
+      <div class="form-group"><label>Impression <span class="text-danger">*</span></label><textarea class="form-control" rows="3" [(ngModel)]="impression" [readonly]="!reportDetail.canEdit"></textarea></div>
+      <div class="form-group"><label>Recommendation</label><textarea class="form-control" rows="2" [(ngModel)]="recommendation" [readonly]="!reportDetail.canEdit"></textarea></div>
+
+      <div *ngIf="reportDetail.canAuthorize" class="form-group">
+        <label>Digital Signature <span class="text-danger">*</span></label>
+        <input class="form-control" [(ngModel)]="digitalSignature" placeholder="Enter authorized user signature" />
+      </div>
+
+      <div class="btn-toolbar">
+        <button class="btn btn-default" (click)="saveDraft()" *ngIf="reportDetail.canEdit">Save Draft</button>
+        <button class="btn btn-primary" (click)="submitReview()" *ngIf="reportDetail.canEdit">Submit for Review</button>
+        <button class="btn btn-success" (click)="authorize(false)" *ngIf="reportDetail.canAuthorize">Authorize</button>
+        <button class="btn btn-info" (click)="authorize(true)" *ngIf="reportDetail.canAuthorize">Authorize &amp; Release</button>
+      </div>
+    </div>
+  </div>
+</div>

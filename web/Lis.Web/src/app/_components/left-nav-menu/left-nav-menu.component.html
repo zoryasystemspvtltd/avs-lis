@@ -7,7 +7,7 @@
     </div>
     <div class="sidenav-menu-scroll">
         <div class="panel-group" id="accordion">
-            <div class="panel panel-default" *ngIf="hasGroupAccess('Reports,Samples,DoctorsApprovals')">
+            <div class="panel panel-default" *ngIf="hasGroupAccess('Reports,Samples,DoctorsApprovals,SampleCollection,SampleReceiving,RadiologyReportEntry')">
                 <div class="panel-heading">
                     <h4 class="panel-title">
                         <a data-toggle="collapse" data-parent="#accordion" target="_self" href="#collapseWorkingBoard">
@@ -20,6 +20,15 @@
                         <table class="table">
                             <tr *ngIf="hasAccess('Samples',63)">
                                 <td><span class="glyphicon glyphicon-blackboard nav-icon"></span><a routerLink="/samples" routerLinkActive="active-menu-link">Recent Samples</a></td>
+                            </tr>
+                            <tr *ngIf="hasAccess('SampleCollection',63)">
+                                <td><span class="glyphicon glyphicon-tint nav-icon"></span><a routerLink="/sample-collection" routerLinkActive="active-menu-link">Sample Collection</a></td>
+                            </tr>
+                            <tr *ngIf="hasAccess('SampleReceiving',63)">
+                                <td><span class="glyphicon glyphicon-import nav-icon"></span><a routerLink="/sample-receiving" routerLinkActive="active-menu-link">Sample Receiving</a></td>
+                            </tr>
+                            <tr *ngIf="hasAccess('RadiologyReportEntry',63)">
+                                <td><span class="glyphicon glyphicon-picture nav-icon"></span><a routerLink="/radiology-report-entry" routerLinkActive="active-menu-link">Radiology Report Entry</a></td>
                             </tr>
                             <tr *ngIf="hasAccess('Reports',2) || hasAccess('Reports',4) || hasAccess('Reports',63)">
                                 <td><span class="glyphicon glyphicon-edit nav-icon"></span><a routerLink="/edit-test-results" routerLinkActive="active-menu-link">Edit Test Results</a></td>
@@ -128,6 +137,39 @@
                             </tr>
                             <tr *ngIf="hasReportAccess()">
                                 <td><span class="glyphicon glyphicon-print nav-icon"></span><a routerLink="/reports/test-report" routerLinkActive="active-menu-link">Diagnostic Report</a></td>
+                            </tr>
+                            <tr *ngIf="hasReportAccess()">
+                                <td><span class="glyphicon glyphicon-tint nav-icon"></span><a routerLink="/reports/collection-summary" routerLinkActive="active-menu-link">Collection Summary</a></td>
+                            </tr>
+                            <tr *ngIf="hasReportAccess()">
+                                <td><span class="glyphicon glyphicon-user nav-icon"></span><a routerLink="/reports/collector-wise" routerLinkActive="active-menu-link">Collector Wise Report</a></td>
+                            </tr>
+                            <tr *ngIf="hasReportAccess()">
+                                <td><span class="glyphicon glyphicon-time nav-icon"></span><a routerLink="/reports/pending-collection" routerLinkActive="active-menu-link">Pending Collection</a></td>
+                            </tr>
+                            <tr *ngIf="hasReportAccess()">
+                                <td><span class="glyphicon glyphicon-repeat nav-icon"></span><a routerLink="/reports/recollection" routerLinkActive="active-menu-link">Recollection Report</a></td>
+                            </tr>
+                            <tr *ngIf="hasReportAccess()">
+                                <td><span class="glyphicon glyphicon-ok nav-icon"></span><a routerLink="/reports/received-samples" routerLinkActive="active-menu-link">Received Samples</a></td>
+                            </tr>
+                            <tr *ngIf="hasReportAccess()">
+                                <td><span class="glyphicon glyphicon-remove nav-icon"></span><a routerLink="/reports/rejected-samples" routerLinkActive="active-menu-link">Rejected Samples</a></td>
+                            </tr>
+                            <tr *ngIf="hasReportAccess()">
+                                <td><span class="glyphicon glyphicon-dashboard nav-icon"></span><a routerLink="/reports/sample-turnaround" routerLinkActive="active-menu-link">Turnaround Time</a></td>
+                            </tr>
+                            <tr *ngIf="hasAccess('RadiologyReports',63) || hasReportAccess()">
+                                <td><span class="glyphicon glyphicon-picture nav-icon"></span><a routerLink="/reports/radiology/pending" routerLinkActive="active-menu-link">Pending Radiology Cases</a></td>
+                            </tr>
+                            <tr *ngIf="hasAccess('RadiologyReports',63) || hasReportAccess()">
+                                <td><span class="glyphicon glyphicon-check nav-icon"></span><a routerLink="/reports/radiology/authorized" routerLinkActive="active-menu-link">Authorized Radiology</a></td>
+                            </tr>
+                            <tr *ngIf="hasAccess('RadiologyReports',63) || hasReportAccess()">
+                                <td><span class="glyphicon glyphicon-signal nav-icon"></span><a routerLink="/reports/radiology/modality-stats" routerLinkActive="active-menu-link">Modality Statistics</a></td>
+                            </tr>
+                            <tr *ngIf="hasAccess('RadiologyReports',63) || hasReportAccess()">
+                                <td><span class="glyphicon glyphicon-stats nav-icon"></span><a routerLink="/reports/radiology/productivity" routerLinkActive="active-menu-link">Radiologist Productivity</a></td>
                             </tr>
                         </table>
                     </div>

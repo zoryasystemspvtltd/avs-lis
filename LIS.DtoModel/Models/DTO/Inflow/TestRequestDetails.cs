@@ -27,6 +27,14 @@ namespace LIS.DtoModel.Models
         [MaxLength(80)]
         public string CreatedBy { get; set; }
         public DateTime CreatedOn { get; set; }
+        [MaxLength(80)]
+        public string CollectedBy { get; set; }
+        [MaxLength(500)]
+        public string CollectedRemarks { get; set; }
+        [MaxLength(80)]
+        public string ReceivedBy { get; set; }
+        [MaxLength(500)]
+        public string ReceivedRemarks { get; set; }
         public ReportStatusType ReportStatus { get; set; }        
         [MaxLength(20)]
         public string IPNo { get; set; }

@@ -9,5 +9,11 @@ namespace LIS.DtoModel.Models
         public long? PatientId { get; set; }
         public int? ReferralDoctorId { get; set; }
         public string InvoiceNo { get; set; }
+        public string BarcodeNumber { get; set; }
+        public string OrderNumber { get; set; }
+        public string PatientName { get; set; }
+        public string CollectorName { get; set; }
+        public string Modality { get; set; }
+        public string QueueType { get; set; }
     }
 }

@@ -223,6 +223,9 @@
     <Compile Include="Controllers\Api\RawSampleController.cs" />
     <Compile Include="Controllers\Api\ReportController.cs" />
     <Compile Include="Controllers\Api\OperationalReportsController.cs" />
+    <Compile Include="Controllers\Api\SampleCollectionController.cs" />
+    <Compile Include="Controllers\Api\SampleReceivingController.cs" />
+    <Compile Include="Controllers\Api\RadiologyReportController.cs" />
     <Compile Include="Controllers\Api\TestResultEditController.cs" />
     <Compile Include="Controllers\Api\ResultsController.cs" />
     <Compile Include="Controllers\Api\QualityController.cs" />

@@ -86,6 +86,7 @@
     <Compile Include="Models\DTO\Masters\TestProfileDetail.cs" />
     <Compile Include="Models\DTO\Masters\TestProfileHierarchyDto.cs" />
     <Compile Include="Models\DTO\Masters\UnitMaster.cs" />
+    <Compile Include="Models\DTO\Masters\SampleRejectionReasonMaster.cs" />
     <Compile Include="Models\DTO\Masters\MethodMaster.cs" />
     <Compile Include="Models\DTO\Masters\SampleTypeMaster.cs" />
     <Compile Include="Models\DTO\Masters\ContainerMaster.cs" />
@@ -94,7 +95,12 @@
     <Compile Include="Interfaces\ITestRateMasterManager.cs" />
     <Compile Include="Interfaces\ISaleInvoiceManager.cs" />
     <Compile Include="Interfaces\IReportManager.cs" />
+    <Compile Include="Interfaces\ISampleCollectionManager.cs" />
+    <Compile Include="Interfaces\ISampleReceivingManager.cs" />
+    <Compile Include="Interfaces\IRadiologyReportManager.cs" />
     <Compile Include="Models\ReportFilterOptions.cs" />
+    <Compile Include="Models\SampleWorkflowDtos.cs" />
+    <Compile Include="Models\SampleWorkflowReportRows.cs" />
     <Compile Include="Models\Reports\SaleInvoiceRegisterRow.cs" />
     <Compile Include="Models\Reports\DiagnosticTestReportDto.cs" />
     <Compile Include="Interfaces\ITestReportManager.cs" />
@@ -116,6 +122,8 @@
     <Compile Include="Models\DTO\HIS\HISSpecimenMaster.cs" />
     <Compile Include="Models\DTO\Inflow\TestParameter.cs" />
     <Compile Include="Models\DTO\Inflow\TestRequestDetails.cs" />
+    <Compile Include="Models\DTO\Inflow\RadiologyRequestDetail.cs" />
+    <Compile Include="Models\DTO\Inflow\RadiologyResultDetail.cs" />
     <Compile Include="Models\DTO\Outflow\TestResult.cs" />
     <Compile Include="Models\ExtendedMethods.cs" />
     <Compile Include="Models\ExternalApi\TestAcknowledgement.cs" />

@@ -145,5 +145,78 @@ namespace Lis.Api.Controllers.Api
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "Unable to load test report."));
             }
         }
+
+        [HttpGet]
+        [Route("CollectionSummary")]
+        [QAuthorize(ModuleName = "Reports", ModulePermissionTypes = ModulePermissionType.CanView)]
+        public ItemList<CollectionSummaryRow> GetCollectionSummary() => RunReport(reportManager.GetCollectionSummary);
+
+        [HttpGet]
+        [Route("CollectorWise")]
+        [QAuthorize(ModuleName = "Reports", ModulePermissionTypes = ModulePermissionType.CanView)]
+        public ItemList<CollectorWiseRow> GetCollectorWise() => RunReport(reportManager.GetCollectorWiseReport);
+
+        [HttpGet]
+        [Route("PendingCollection")]
+        [QAuthorize(ModuleName = "Reports", ModulePermissionTypes = ModulePermissionType.CanView)]
+        public ItemList<PendingCollectionRow> GetPendingCollection() => RunReport(reportManager.GetPendingCollectionReport);
+
+        [HttpGet]
+        [Route("Recollection")]
+        [QAuthorize(ModuleName = "Reports", ModulePermissionTypes = ModulePermissionType.CanView)]
+        public ItemList<RecollectionRow> GetRecollection() => RunReport(reportManager.GetRecollectionReport);
+
+        [HttpGet]
+        [Route("ReceivedSamples")]
+        [QAuthorize(ModuleName = "Reports", ModulePermissionTypes = ModulePermissionType.CanView)]
+        public ItemList<ReceivedSampleRow> GetReceivedSamples() => RunReport(reportManager.GetReceivedSamplesReport);
+
+        [HttpGet]
+        [Route("RejectedSamples")]
+        [QAuthorize(ModuleName = "Reports", ModulePermissionTypes = ModulePermissionType.CanView)]
+        public ItemList<RejectedSampleRow> GetRejectedSamples() => RunReport(reportManager.GetRejectedSamplesReport);
+
+        [HttpGet]
+        [Route("SampleTurnaround")]
+        [QAuthorize(ModuleName = "Reports", ModulePermissionTypes = ModulePermissionType.CanView)]
+        public ItemList<SampleTurnaroundRow> GetSampleTurnaround() => RunReport(reportManager.GetSampleTurnaroundReport);
+
+        [HttpGet]
+        [Route("PendingRadiology")]
+        [QAuthorize(ModuleName = "RadiologyReports", ModulePermissionTypes = ModulePermissionType.CanView)]
+        public ItemList<PendingRadiologyRow> GetPendingRadiology() => RunReport(reportManager.GetPendingRadiologyReport);
+
+        [HttpGet]
+        [Route("AuthorizedRadiology")]
+        [QAuthorize(ModuleName = "RadiologyReports", ModulePermissionTypes = ModulePermissionType.CanView)]
+        public ItemList<AuthorizedRadiologyRow> GetAuthorizedRadiology() => RunReport(reportManager.GetAuthorizedRadiologyReport);
+
+        [HttpGet]
+        [Route("ModalityStatistics")]
+        [QAuthorize(ModuleName = "RadiologyReports", ModulePermissionTypes = ModulePermissionType.CanView)]
+        public ItemList<ModalityStatisticsRow> GetModalityStatistics() => RunReport(reportManager.GetModalityStatisticsReport);
+
+        [HttpGet]
+        [Route("RadiologistProductivity")]
+        [QAuthorize(ModuleName = "RadiologyReports", ModulePermissionTypes = ModulePermissionType.CanView)]
+        public ItemList<RadiologistProductivityRow> GetRadiologistProductivity() => RunReport(reportManager.GetRadiologistProductivityReport);
+
+        private ItemList<T> RunReport<T>(Func<ReportFilterOptions, ItemList<T>> action) where T : class
+        {
+            try
+            {
+                return action(FilterOption);
+            }
+            catch (ArgumentException ex)
+            {
+                logger.LogError(ex.Message);
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ex.Message));
+            }
+            catch (Exception ex)
+            {
+                logger.LogException(ex);
+                return new ItemList<T> { TotalRecord = 0, Items = new List<T>() };
+            }
+        }
     }
 }

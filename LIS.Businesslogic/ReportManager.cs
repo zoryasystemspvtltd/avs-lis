@@ -17,6 +17,8 @@ namespace LIS.BusinessLogic
         private readonly ModuleRepo<CorporateMaster> corporateRepo;
         private readonly ModuleRepo<TestRequestDetail> requestRepo;
         private readonly ModuleRepo<HisTestMaster> testRepo;
+        private readonly ModuleRepo<RadiologyRequestDetail> radiologyRequestRepo;
+        private readonly ModuleRepo<RadiologyResultDetail> radiologyResultRepo;
 
         public ReportManager(ILogger logger, IModuleIdentity identity, GenericUnitOfWork uow)
         {
@@ -26,6 +28,8 @@ namespace LIS.BusinessLogic
             corporateRepo = new ModuleRepo<CorporateMaster>(logger, identity, uow);
             requestRepo = new ModuleRepo<TestRequestDetail>(logger, identity, uow);
             testRepo = new ModuleRepo<HisTestMaster>(logger, identity, uow);
+            radiologyRequestRepo = new ModuleRepo<RadiologyRequestDetail>(logger, identity, uow);
+            radiologyResultRepo = new ModuleRepo<RadiologyResultDetail>(logger, identity, uow);
         }
 
         public ItemList<SaleInvoiceRegisterRow> GetSaleInvoiceRegister(ReportFilterOptions options)
@@ -174,6 +178,343 @@ namespace LIS.BusinessLogic
             }).ToList();
 
             return Paginate(rows, options, "BookingDate");
+        }
+
+        public ItemList<CollectionSummaryRow> GetCollectionSummary(ReportFilterOptions options)
+        {
+            ValidateDateRange(options);
+            var from = options.FromDate.Value.Date;
+            var to = options.ToDate.Value.Date.AddDays(1).AddTicks(-1);
+            var patients = patientRepo.Get().ToDictionary(p => p.Id, p => p);
+
+            var rows = requestRepo.Get(r =>
+                !string.IsNullOrEmpty(r.CollectedBy) &&
+                r.SampleCollectionDate >= from &&
+                r.SampleCollectionDate <= to).ToList()
+                .Select(r =>
+                {
+                    patients.TryGetValue(r.PatientId, out var patient);
+                    return new CollectionSummaryRow
+                    {
+                        Id = r.Id,
+                        CollectionDate = r.SampleCollectionDate,
+                        SampleNo = r.SampleNo,
+                        OrderNumber = r.HISRequestNo,
+                        PatientId = patient?.HisPatientId,
+                        PatientName = patient?.Name,
+                        TestName = r.HISTestName,
+                        CollectedBy = r.CollectedBy,
+                        Status = FormatCollectionStatus(r)
+                    };
+                }).ToList();
+
+            if (!string.IsNullOrWhiteSpace(options.CollectorName))
+            {
+                var collector = options.CollectorName.Trim();
+                rows = rows.Where(r => r.CollectedBy != null &&
+                    r.CollectedBy.IndexOf(collector, StringComparison.OrdinalIgnoreCase) >= 0).ToList();
+            }
+
+            return Paginate(rows, options, "CollectionDate");
+        }
+
+        public ItemList<CollectorWiseRow> GetCollectorWiseReport(ReportFilterOptions options)
+        {
+            ValidateDateRange(options);
+            var from = options.FromDate.Value.Date;
+            var to = options.ToDate.Value.Date.AddDays(1).AddTicks(-1);
+
+            var rows = requestRepo.Get(r => r.SampleCollectionDate >= from && r.SampleCollectionDate <= to).ToList()
+                .GroupBy(r => string.IsNullOrWhiteSpace(r.CollectedBy) ? "Unassigned" : r.CollectedBy)
+                .Select(g => new CollectorWiseRow
+                {
+                    CollectorName = g.Key,
+                    TotalCollected = g.Count(x => !string.IsNullOrWhiteSpace(x.CollectedBy)),
+                    TotalRejected = g.Count(x => x.ReportStatus == ReportStatusType.FinallyRejected),
+                    TotalRecollection = g.Count(x => x.CollectedRemarks != null && x.CollectedRemarks.IndexOf("Recollection", StringComparison.OrdinalIgnoreCase) >= 0)
+                }).ToList();
+
+            return Paginate(rows, options, "CollectorName");
+        }
+
+        public ItemList<PendingCollectionRow> GetPendingCollectionReport(ReportFilterOptions options)
+        {
+            var patients = patientRepo.Get().ToDictionary(p => p.Id, p => p);
+            var rows = requestRepo.Get(r =>
+                r.ReportStatus == ReportStatusType.New &&
+                (r.CollectedBy == null || r.CollectedBy == "")).ToList()
+                .Select(r =>
+                {
+                    patients.TryGetValue(r.PatientId, out var patient);
+                    return new PendingCollectionRow
+                    {
+                        Id = r.Id,
+                        SampleNo = r.SampleNo,
+                        OrderNumber = r.HISRequestNo,
+                        PatientId = patient?.HisPatientId,
+                        PatientName = patient?.Name,
+                        TestName = r.HISTestName,
+                        OrderDate = r.CreatedOn
+                    };
+                }).ToList();
+
+            return Paginate(rows, options, "OrderDate");
+        }
+
+        public ItemList<RecollectionRow> GetRecollectionReport(ReportFilterOptions options)
+        {
+            ValidateDateRange(options);
+            var from = options.FromDate.Value.Date;
+            var to = options.ToDate.Value.Date.AddDays(1).AddTicks(-1);
+            var patients = patientRepo.Get().ToDictionary(p => p.Id, p => p);
+
+            var rows = requestRepo.Get(r =>
+                r.SampleCollectionDate >= from &&
+                r.SampleCollectionDate <= to &&
+                r.CollectedRemarks != null &&
+                r.CollectedRemarks.IndexOf("Recollection", StringComparison.OrdinalIgnoreCase) >= 0).ToList()
+                .Select(r =>
+                {
+                    patients.TryGetValue(r.PatientId, out var patient);
+                    return new RecollectionRow
+                    {
+                        Id = r.Id,
+                        SampleNo = r.SampleNo,
+                        OrderNumber = r.HISRequestNo,
+                        PatientName = patient?.Name,
+                        TestName = r.HISTestName,
+                        CollectedBy = r.CollectedBy,
+                        CollectionDate = r.SampleCollectionDate,
+                        Remarks = r.CollectedRemarks
+                    };
+                }).ToList();
+
+            return Paginate(rows, options, "CollectionDate");
+        }
+
+        public ItemList<ReceivedSampleRow> GetReceivedSamplesReport(ReportFilterOptions options)
+        {
+            ValidateDateRange(options);
+            var from = options.FromDate.Value.Date;
+            var to = options.ToDate.Value.Date.AddDays(1).AddTicks(-1);
+            var patients = patientRepo.Get().ToDictionary(p => p.Id, p => p);
+
+            var rows = requestRepo.Get(r =>
+                !string.IsNullOrEmpty(r.ReceivedBy) &&
+                r.SampleReceivedDate >= from &&
+                r.SampleReceivedDate <= to).ToList()
+                .Select(r =>
+                {
+                    patients.TryGetValue(r.PatientId, out var patient);
+                    var tat = (int)Math.Max(0, (r.SampleReceivedDate - r.SampleCollectionDate).TotalMinutes);
+                    return new ReceivedSampleRow
+                    {
+                        Id = r.Id,
+                        SampleNo = r.SampleNo,
+                        PatientName = patient?.Name,
+                        TestName = r.HISTestName,
+                        CollectionDate = r.SampleCollectionDate,
+                        ReceivedDate = r.SampleReceivedDate,
+                        ReceivedBy = r.ReceivedBy,
+                        TurnaroundMinutes = tat
+                    };
+                }).ToList();
+
+            return Paginate(rows, options, "ReceivedDate");
+        }
+
+        public ItemList<RejectedSampleRow> GetRejectedSamplesReport(ReportFilterOptions options)
+        {
+            ValidateDateRange(options);
+            var from = options.FromDate.Value.Date;
+            var to = options.ToDate.Value.Date.AddDays(1).AddTicks(-1);
+            var patients = patientRepo.Get().ToDictionary(p => p.Id, p => p);
+
+            var rows = requestRepo.Get(r =>
+                r.ReportStatus == ReportStatusType.FinallyRejected &&
+                r.CreatedOn >= from &&
+                r.CreatedOn <= to).ToList()
+                .Select(r =>
+                {
+                    patients.TryGetValue(r.PatientId, out var patient);
+                    var stage = !string.IsNullOrWhiteSpace(r.ReceivedRemarks) ? "Receiving" : "Collection";
+                    var reason = !string.IsNullOrWhiteSpace(r.ReceivedRemarks) ? r.ReceivedRemarks : r.CollectedRemarks;
+                    return new RejectedSampleRow
+                    {
+                        Id = r.Id,
+                        SampleNo = r.SampleNo,
+                        PatientName = patient?.Name,
+                        TestName = r.HISTestName,
+                        RejectionReason = reason,
+                        RejectedBy = !string.IsNullOrWhiteSpace(r.ReceivedBy) ? r.ReceivedBy : r.CollectedBy,
+                        RejectedOn = !string.IsNullOrWhiteSpace(r.ReceivedBy) ? r.SampleReceivedDate : r.SampleCollectionDate,
+                        Stage = stage
+                    };
+                }).ToList();
+
+            return Paginate(rows, options, "RejectedOn");
+        }
+
+        public ItemList<SampleTurnaroundRow> GetSampleTurnaroundReport(ReportFilterOptions options)
+        {
+            var received = GetReceivedSamplesReport(options);
+            var rows = received.Items.Select(r => new SampleTurnaroundRow
+            {
+                SampleNo = r.SampleNo,
+                PatientName = r.PatientName,
+                TestName = r.TestName,
+                CollectionDate = r.CollectionDate,
+                ReceivedDate = r.ReceivedDate,
+                TurnaroundMinutes = r.TurnaroundMinutes
+            }).ToList();
+
+            return Paginate(rows, options, "ReceivedDate");
+        }
+
+        public ItemList<PendingRadiologyRow> GetPendingRadiologyReport(ReportFilterOptions options)
+        {
+            ValidateDateRange(options);
+            var from = options.FromDate.Value.Date;
+            var to = options.ToDate.Value.Date.AddDays(1).AddTicks(-1);
+            var patients = patientRepo.Get().ToDictionary(p => p.Id, p => p);
+            var radRepo = radiologyRequestRepo;
+
+            var rows = radRepo.Get(r =>
+                r.CreatedOn >= from &&
+                r.CreatedOn <= to &&
+                (r.ReportStatus == RadiologyReportStatus.Pending ||
+                 r.ReportStatus == RadiologyReportStatus.Draft ||
+                 r.ReportStatus == RadiologyReportStatus.UnderReview)).ToList()
+                .Select(r =>
+                {
+                    patients.TryGetValue(r.PatientId, out var patient);
+                    return new PendingRadiologyRow
+                    {
+                        Id = r.Id,
+                        AccessionNo = r.AccessionNo,
+                        PatientName = patient?.Name,
+                        TestName = r.HISTestName,
+                        Modality = r.Modality,
+                        Status = FormatRadiologyStatus(r.ReportStatus),
+                        CreatedOn = r.CreatedOn
+                    };
+                }).ToList();
+
+            return Paginate(rows, options, "CreatedOn");
+        }
+
+        public ItemList<AuthorizedRadiologyRow> GetAuthorizedRadiologyReport(ReportFilterOptions options)
+        {
+            ValidateDateRange(options);
+            var from = options.FromDate.Value.Date;
+            var to = options.ToDate.Value.Date.AddDays(1).AddTicks(-1);
+            var patients = patientRepo.Get().ToDictionary(p => p.Id, p => p);
+            var radRepo = radiologyRequestRepo;
+            var resultRadRepo = radiologyResultRepo;
+
+            var authorized = resultRadRepo.Get(r =>
+                r.AuthorizedOn.HasValue &&
+                r.AuthorizedOn.Value >= from &&
+                r.AuthorizedOn.Value <= to).ToList();
+
+            var rows = authorized.Select(result =>
+            {
+                var request = radRepo.Get(result.RadiologyRequestId);
+                patients.TryGetValue(request?.PatientId ?? 0, out var patient);
+                return new AuthorizedRadiologyRow
+                {
+                    Id = request?.Id ?? result.RadiologyRequestId,
+                    AccessionNo = request?.AccessionNo,
+                    PatientName = patient?.Name,
+                    TestName = request?.HISTestName,
+                    Modality = request?.Modality,
+                    AuthorizedBy = result.AuthorizedBy,
+                    AuthorizedOn = result.AuthorizedOn,
+                    Status = request != null ? FormatRadiologyStatus(request.ReportStatus) : "Authorized"
+                };
+            }).ToList();
+
+            return Paginate(rows, options, "AuthorizedOn");
+        }
+
+        public ItemList<ModalityStatisticsRow> GetModalityStatisticsReport(ReportFilterOptions options)
+        {
+            ValidateDateRange(options);
+            var from = options.FromDate.Value.Date;
+            var to = options.ToDate.Value.Date.AddDays(1).AddTicks(-1);
+            var radRepo = radiologyRequestRepo;
+
+            var rows = radRepo.Get(r => r.CreatedOn >= from && r.CreatedOn <= to).ToList()
+                .GroupBy(r => string.IsNullOrWhiteSpace(r.Modality) ? "Unknown" : r.Modality)
+                .Select(g => new ModalityStatisticsRow
+                {
+                    Modality = g.Key,
+                    TotalCases = g.Count(),
+                    AuthorizedCases = g.Count(x =>
+                        x.ReportStatus == RadiologyReportStatus.Authorized ||
+                        x.ReportStatus == RadiologyReportStatus.Released),
+                    PendingCases = g.Count(x =>
+                        x.ReportStatus == RadiologyReportStatus.Pending ||
+                        x.ReportStatus == RadiologyReportStatus.Draft ||
+                        x.ReportStatus == RadiologyReportStatus.UnderReview)
+                }).ToList();
+
+            return Paginate(rows, options, "Modality");
+        }
+
+        public ItemList<RadiologistProductivityRow> GetRadiologistProductivityReport(ReportFilterOptions options)
+        {
+            ValidateDateRange(options);
+            var from = options.FromDate.Value.Date;
+            var to = options.ToDate.Value.Date.AddDays(1).AddTicks(-1);
+            var radRepo = radiologyRequestRepo;
+            var resultRadRepo = radiologyResultRepo;
+
+            var results = resultRadRepo.Get(r =>
+                r.AuthorizedOn.HasValue &&
+                r.AuthorizedOn.Value >= from &&
+                r.AuthorizedOn.Value <= to).ToList();
+
+            var requestMap = radRepo.Get().ToDictionary(r => r.Id, r => r);
+            var rows = results.GroupBy(r => string.IsNullOrWhiteSpace(r.AuthorizedBy) ? "Unknown" : r.AuthorizedBy)
+                .Select(g => new RadiologistProductivityRow
+                {
+                    RadiologistName = g.Key,
+                    AuthorizedCount = g.Count(),
+                    ReleasedCount = g.Count(x =>
+                        requestMap.TryGetValue(x.RadiologyRequestId, out var req) &&
+                        req.ReportStatus == RadiologyReportStatus.Released)
+                }).ToList();
+
+            return Paginate(rows, options, "RadiologistName");
+        }
+
+        private static string FormatCollectionStatus(TestRequestDetail request)
+        {
+            if (request.ReportStatus == ReportStatusType.FinallyRejected)
+            {
+                return "Rejected";
+            }
+
+            if (!string.IsNullOrWhiteSpace(request.ReceivedBy))
+            {
+                return "Received";
+            }
+
+            return !string.IsNullOrWhiteSpace(request.CollectedBy) ? "Collected" : "Pending";
+        }
+
+        private static string FormatRadiologyStatus(RadiologyReportStatus status)
+        {
+            switch (status)
+            {
+                case RadiologyReportStatus.Pending: return "Pending";
+                case RadiologyReportStatus.Draft: return "Draft";
+                case RadiologyReportStatus.UnderReview: return "Under Review";
+                case RadiologyReportStatus.Authorized: return "Authorized";
+                case RadiologyReportStatus.Released: return "Released";
+                default: return status.ToString();
+            }
         }
 
         private static void ValidateDateRange(ReportFilterOptions options)

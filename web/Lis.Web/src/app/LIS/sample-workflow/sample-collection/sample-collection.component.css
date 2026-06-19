@@ -1,0 +1,4 @@
+.filter-panel { margin-bottom: 16px; }
+.filter-actions { margin-top: 12px; }
+.action-cell .btn { margin-right: 4px; margin-bottom: 4px; }
+.modal.in { background: rgba(0,0,0,0.4); }

@@ -83,6 +83,7 @@ export class LeftNavMenuComponent implements OnInit {
   hasReportAccess(): boolean {
     return this.hasAccess('Reports', 63)
       || this.hasAccess('SaleInvoices', 63)
-      || this.hasAccess('Samples', 63);
+      || this.hasAccess('Samples', 63)
+      || this.hasAccess('RadiologyReports', 63);
   }
 }
