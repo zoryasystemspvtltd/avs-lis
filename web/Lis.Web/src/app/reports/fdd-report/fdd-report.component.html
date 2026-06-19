@@ -43,6 +43,9 @@
   </div>
 
   <div class="zorya-report-grid-wrap" [class.is-loading]="loading">
+    <div class="zorya-report-loading" *ngIf="loading">
+      <span class="glyphicon glyphicon-refresh glyphicon-spin"></span> Loading...
+    </div>
     <div class="table-responsive zorya-report-table-scroll" *ngIf="!loading && rows.length">
       <table class="table table-hover zorya-report-table">
         <thead><tr><th *ngFor="let col of columns">{{ col.header }}</th></tr></thead>
@@ -60,12 +63,17 @@
       </table>
     </div>
     <div class="zorya-report-empty" *ngIf="!loading && searched && !rows.length">
-      <p>No records found.</p>
+      <span class="glyphicon glyphicon-info-sign"></span>
+      <p>No records found for the selected criteria.</p>
+      <p class="hint">Adjust the date range or filters and search again.</p>
     </div>
   </div>
 
   <div class="zorya-report-pager" *ngIf="searched && totalRecord > 0 && !loading">
-    <ngb-pagination [(page)]="currentPage" [pageSize]="recordPerPage" [collectionSize]="totalRecord"
+    <div class="pager-left">
+      <span class="pager-info">Showing {{ recordFrom }}&ndash;{{ recordTo }} of {{ totalRecord }}</span>
+    </div>
+    <ngb-pagination class="zorya-report-pagination" [(page)]="currentPage" [pageSize]="recordPerPage" [collectionSize]="totalRecord"
       (pageChange)="onPageChange($event)"></ngb-pagination>
   </div>
 </div>

@@ -1027,6 +1027,49 @@ footer .avilis-footer-brand {
   margin-top: 0;
 }
 
+.avilis-login-card .login-subtitle {
+  margin-bottom: 16px;
+  font-size: 13px;
+}
+
+.avilis-login-card .login-actions {
+  margin-top: 8px;
+}
+
+.avilis-login-card .login-alert-wrap {
+  text-align: left;
+  margin-top: 12px;
+}
+
+.avilis-login-card .has-error .form-control,
+.avilis-form-page .has-error .form-control,
+.has-error .form-control {
+  border-color: #a94442;
+}
+
+.avilis-login-card .has-error label,
+.avilis-form-page .has-error label {
+  color: #a94442;
+}
+
+.avilis-login-card .help-block.error,
+.avilis-form-page .help-block.error {
+  color: #a94442;
+  font-size: 12px;
+  margin: 6px 0 0;
+  display: block;
+}
+
+.equipment-alert-item {
+  display: inline-block;
+  margin: 0 4px 4px 0;
+}
+
+.list-pager-info {
+  font-size: 13px;
+  color: var(--zorya-text-muted);
+}
+
 .avilis-login-banner {
   background: var(--zorya-surface);
   border: 1px solid var(--zorya-border);

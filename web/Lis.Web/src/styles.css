@@ -293,7 +293,7 @@ body {
 }
 
 .glyphicon-inr {
-    background-image: url("data:image/svg+xml;utg8,<svg xmlns='http://www.w3.org/2000/svg' version='1.1' height='50px' width='50px'><text x='0' y='15' fill='red' font-size='20'>₹</text></svg>");
+    background-image: url("data:image/svg+xml;charset=utf8,<svg xmlns='http://www.w3.org/2000/svg' version='1.1' height='50px' width='50px'><text x='0' y='15' fill='red' font-size='20'>₹</text></svg>");
 }
 
 .modal-backdrop.fade {

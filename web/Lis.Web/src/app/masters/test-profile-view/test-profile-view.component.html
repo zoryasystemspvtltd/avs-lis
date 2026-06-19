@@ -3,6 +3,14 @@
   <p class="text-muted"><span class="glyphicon glyphicon-refresh glyphicon-spin"></span> Loading profile...</p>
 </div>
 
+<div class="avilis-form-page" *ngIf="!loading && !profile">
+  <div class="alert alert-warning">
+    <span class="glyphicon glyphicon-exclamation-sign"></span>
+  Unable to load test profile. It may have been removed or you may not have access.
+  </div>
+  <button type="button" class="btn btn-default" routerLink="/test-profiles">Back to Test Profiles</button>
+</div>
+
 <div class="avilis-form-page" *ngIf="!loading && profile">
   <h3>Test Profile — {{profile.name}} ({{profile.code}})</h3>
   <p class="text-muted">Read-only enterprise view: Profile → Test → Parameter → Unit / Method / Reference Range</p>

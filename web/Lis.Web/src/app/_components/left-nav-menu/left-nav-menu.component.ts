@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { Router, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs/operators';
 import { AuthenticationService } from '../../_services';
 import { AuthenticationToken } from '../../_models';
 
@@ -11,12 +13,51 @@ export class LeftNavMenuComponent implements OnInit {
 
   public isAuthenticated: boolean;
   user: AuthenticationToken;
+  expandWorkingBoard = false;
+  expandSetup = false;
+  expandMaster = false;
+  expandTransaction = false;
+  expandReports = false;
+  expandAccount = false;
 
-  constructor(public authenticationService: AuthenticationService) { }
+  constructor(
+    public authenticationService: AuthenticationService,
+    private router: Router
+  ) { }
 
   ngOnInit() {
     this.syncUserState();
     this.authenticationService.isUserChanged().subscribe(() => this.syncUserState());
+    this.updateExpandedSections(this.router.url);
+    this.router.events.pipe(filter(e => e instanceof NavigationEnd)).subscribe((e: NavigationEnd) => {
+      this.updateExpandedSections(e.urlAfterRedirects || e.url);
+    });
+  }
+
+  private updateExpandedSections(url: string): void {
+    const path = (url || '').split('?')[0].toLowerCase();
+    this.expandWorkingBoard = this.matchesAny(path, [
+      '/samples', '/sample-collection', '/sample-receiving', '/radiology-report-entry',
+      '/edit-test-results', '/technicianapprovals', '/doctorapprovals', '/approvedsamples',
+      '/rejectedsamples', '/quality-controls'
+    ]);
+    this.expandSetup = this.matchesAny(path, ['/departments', '/units', '/methods', '/equipments', '/equipment-heartbeat']);
+    this.expandMaster = this.matchesAny(path, [
+      '/test-profiles', '/test-master', '/specimens', '/test-rates', '/corporates',
+      '/test-mappings', '/test-parameters', '/his-parameters', '/his-parameter-ranges'
+    ]);
+    this.expandTransaction = this.matchesAny(path, ['/patient-master', '/sale-invoices']);
+    this.expandReports = this.matchesAny(path, [
+      '/reports', '/fdd-report', '/radiology-reports', '/test-report'
+    ]);
+    this.expandAccount = this.matchesAny(path, ['/users', '/roles', '/change-password', '/activitylog']);
+    if (path === '/' || path === '/home') {
+      this.expandWorkingBoard = true;
+    }
+  }
+
+  private matchesAny(path: string, prefixes: string[]): boolean {
+    return prefixes.some(p => path === p || path.startsWith(p + '/'));
   }
 
   private syncUserState() {

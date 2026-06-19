@@ -19,6 +19,14 @@
   margin-bottom: 4px;
 }
 
+.sale-invoice-page .sale-invoice-patient-select {
+  width: 100%;
+}
+
+.sale-invoice-page .sale-invoice-patient-select .ng-select-container {
+  min-height: 34px;
+}
+
 .sale-invoice-page .invoice-lines-table th.col-test {
   min-width: 220px;
 }

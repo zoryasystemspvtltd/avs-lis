@@ -57,7 +57,7 @@
                                 Rejected</a></li>
                         <li *ngIf="allowFilter(5)" [ngClass]="{'active': filterStatus === 5}"><a style="cursor: pointer;" (click)="setFilterStatus(5);"><span
                                     class="glyphicon glyphicon-thumbs-up" title="Doctor Approved"></span>Doctor
-                                Approvrd</a></li>
+                                Approved</a></li>
                         <li *ngIf="allowFilter(6)" [ngClass]="{'active': filterStatus === 6}"><a style="cursor: pointer;" (click)="setFilterStatus(6);"><span
                                     class="glyphicon glyphicon-thumbs-down" title="Doctor Rejected"></span>Doctor
                                 Rejected</a></li>
@@ -177,17 +177,23 @@
                                         <app-you-frame [html]="item[element.fieldName]" [maxLength]="element.length" [htmlToText]="element.textOnly"></app-you-frame>
                                     </div>
                                     <div *ngSwitchCase="'status_icon'">
-                                        <span class="glyphicon glyphicon glyphicon-ok-sign icon-large" title="Refresh Ststus." [ngClass]="{'icon-green': item[element.fieldName] === true,'icon-red': item[element.fieldName] !== true}"></span>
+                                        <span class="glyphicon glyphicon-ok-sign icon-large" title="Refresh status." [ngClass]="{'icon-green': item[element.fieldName] === true,'icon-red': item[element.fieldName] !== true}"></span>
                                     </div>
                                 </div>
+                            </td>
+                        </tr>
+                        <tr *ngIf="isLoaded && !loading && !items.length">
+                            <td [attr.colspan]="(schemma.hideAction && !schemma.allowPrint ? 0 : 1) + schemma.elements.length" class="text-center text-muted list-empty-cell">
+                                <span class="glyphicon glyphicon-info-sign"></span> No records found.
+                            </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
         </div>
-        <div class="row" *ngIf="schemma.allowPaging">
+        <div class="row" *ngIf="schemma.allowPaging && totalRecord > 0">
             <div class="col-md-5">
-                <h4 class="pagination">{{recordFrom}} to {{recordTo}} of {{totalRecord}} items - Page size &nbsp; </h4>
+                <h4 class="list-pager-info">Showing {{recordFrom}}&ndash;{{recordTo}} of {{totalRecord}} &mdash; Page size &nbsp; </h4>
                 <select class="pagination" [ngModel]="option.RecordPerPage" (change)="onChangePageSize($event.target.value)">
                     <option value="10">10</option>
                     <option value="25">25</option>

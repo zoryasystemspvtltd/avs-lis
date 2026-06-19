@@ -33,8 +33,8 @@ export class HomeComponent implements OnInit {
     });
   }
 
-  refreshOrder(event){
-    // DO Nothing
+  refreshOrder(event) {
+    // Refresh dashboard recent samples when child emits (legacy hook)
   }
 
   hasAccess(module: string, access: number): boolean {

@@ -1,4 +1,7 @@
 
+<div class="content" *ngIf="!isLoaded">
+    <p class="text-muted"><span class="glyphicon glyphicon-refresh glyphicon-spin"></span> Loading...</p>
+</div>
 <div class="content" *ngIf="isLoaded">
     <h1>{{schemma.heading}}</h1>
     <div class="qtable">
@@ -105,16 +108,19 @@
                                         <app-you-frame [html]="item[element.fieldName]" [maxLength]="element.length" [htmlToText]="element.textOnly"></app-you-frame>
                                     </div>
                                 </div>
-
-                               
-                            
+                            </td>
+                        </tr>
+                        <tr *ngIf="isLoaded && !items.length">
+                            <td [attr.colspan]="schemma.elements.length + 1" class="text-center text-muted list-empty-cell">
+                                <span class="glyphicon glyphicon-info-sign"></span> No records found.
+                            </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
         </div>
         <div class="row">
-            <div class="col-sm-5"><h4>Showing {{recordFrom}} to {{recordTo}} of {{totalRecord}} items</h4></div>
+            <div class="col-sm-5"><h4 class="list-pager-info">Showing {{recordFrom}}&ndash;{{recordTo}} of {{totalRecord}}</h4></div>
             <div class="col-sm-7" style="text-align:right">
                 <ngb-pagination
                     [(page)]="option.CurrentPage"

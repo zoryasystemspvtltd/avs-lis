@@ -1,3 +1,21 @@
 .filter-panel { margin-bottom: 16px; }
 .entry-panel { margin-top: 12px; }
-.btn-toolbar .btn { margin-right: 8px; }
+.entry-panel-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.entry-back-btn { float: none !important; }
+.filter-actions-col { padding-top: 22px; }
+.workflow-loading, .workflow-empty { padding: 16px 0; }
+.workflow-pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+}
+.entry-actions .btn { margin-right: 8px; margin-bottom: 8px; }

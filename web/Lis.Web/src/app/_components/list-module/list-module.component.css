@@ -3,6 +3,16 @@
     color: #a94442;
   }
 
+  .list-empty-cell {
+    padding: 24px 12px !important;
+  }
+
+  .list-pager-info {
+    font-size: 14px;
+    color: #666;
+    margin: 8px 0;
+  }
+
   .linktooltip {
     width: 300px;
     background-color: black;

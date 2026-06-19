@@ -17,10 +17,12 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
   tests: any[] = [];
   profiles: any[] = [];
   patients: any[] = [];
+  patientsLoading = false;
   corporates: any[] = [];
   doctors: any[] = [];
   isPrintView = false;
   invoiceDto: any;
+  private patientSearchTimer: ReturnType<typeof setTimeout>;
 
   constructor(
     private route: ActivatedRoute,
@@ -64,11 +66,7 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
     this.masterService.getAll('ReferralDoctor').subscribe(d => {
       this.doctors = (d || []).filter(x => x.isActive !== false && x.IsActive !== false);
     });
-    this.masterService.getBillingPatients({
-      RecordPerPage: 500, CurrentPage: 1, SearchText: '', SortColumnName: 'Name', SortDirection: false, Status: 0
-    }).subscribe(p => {
-      this.patients = p?.items || [];
-    });
+    this.loadPatients('');
 
     if (this.id) {
       this.loadInvoice(+this.id);
@@ -93,6 +91,7 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
         if (this.isCancelled || this.isPaid) {
           this.form.disable();
         }
+        this.ensureSelectedPatientInList();
       }
     });
   }
@@ -213,6 +212,73 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     document.body.classList.remove('sale-invoice-print-mode');
+    if (this.patientSearchTimer) {
+      clearTimeout(this.patientSearchTimer);
+    }
+  }
+
+  loadPatients(searchText: string): void {
+    this.patientsLoading = true;
+    this.masterService.getBillingPatients({
+      RecordPerPage: 100,
+      CurrentPage: 1,
+      SearchText: searchText || '',
+      SortColumnName: 'Name',
+      SortDirection: false,
+      Status: 0
+    }).subscribe(
+      p => {
+        this.patients = this.normalizePatients(p?.items || p?.Items || []);
+        this.ensureSelectedPatientInList();
+        this.patientsLoading = false;
+      },
+      () => {
+        this.patientsLoading = false;
+      }
+    );
+  }
+
+  onPatientSearch(event: any): void {
+    const search = (typeof event === 'string' ? event : event?.term || '').trim();
+    if (this.patientSearchTimer) {
+      clearTimeout(this.patientSearchTimer);
+    }
+    this.patientSearchTimer = setTimeout(() => this.loadPatients(search), 300);
+  }
+
+  private normalizePatients(items: any[]): any[] {
+    return items
+      .map(x => ({
+        id: x.id ?? x.Id,
+        name: (x.name ?? x.Name ?? '').trim(),
+        phone: x.phone ?? x.Phone ?? '',
+        hisPatientId: x.hisPatientId ?? x.HisPatientId ?? ''
+      }))
+      .filter(x => x.id > 0 && x.name);
+  }
+
+  private ensureSelectedPatientInList(): void {
+    const patientId = this.form?.get('patientId')?.value;
+    if (!patientId || this.patients.some(p => p.id === patientId)) {
+      return;
+    }
+    const inv = this.invoiceDto?.invoice;
+    if (inv) {
+      this.patients = [{
+        id: patientId,
+        name: inv.patientName || `Patient #${patientId}`,
+        phone: inv.patientPhone || '',
+        hisPatientId: inv.patientId || ''
+      }, ...this.patients];
+    }
+  }
+
+  patientOptionLabel(patient: any): string {
+    if (!patient) {
+      return '';
+    }
+    const extra = patient.phone || patient.hisPatientId || 'N/A';
+    return `${patient.name} (${extra})`;
   }
 
   onTestChange(i: number) {

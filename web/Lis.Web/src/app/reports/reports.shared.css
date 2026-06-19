@@ -262,6 +262,17 @@
   display: inline-block;
 }
 
+.zorya-report-loading {
+  text-align: center;
+  padding: 24px 12px;
+  color: var(--zorya-text-muted);
+  font-size: 14px;
+}
+
+.zorya-report-pagination .pagination {
+  margin: 0;
+}
+
 .filter-hint {
   color: #666;
   font-size: 12px;

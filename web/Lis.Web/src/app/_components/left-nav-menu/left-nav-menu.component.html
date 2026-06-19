@@ -15,7 +15,7 @@
                         </a>
                     </h4>
                 </div>
-                <div id="collapseWorkingBoard" class="panel-collapse collapse">
+                <div id="collapseWorkingBoard" class="panel-collapse collapse" [ngClass]="{'in': expandWorkingBoard}">
                     <div class="panel-body">
                         <table class="table">
                             <tr *ngIf="hasAccess('Samples',63)">
@@ -61,14 +61,14 @@
                         </a>
                     </h4>
                 </div>
-                <div id="collapseSetup" class="panel-collapse collapse in">
+                <div id="collapseSetup" class="panel-collapse collapse" [ngClass]="{'in': expandSetup}">
                     <div class="panel-body">
                         <table class="table">
                             <tr *ngIf="hasAccess('Masters',63)"><td><span class="glyphicon glyphicon-list nav-icon"></span><a routerLink="/departments" routerLinkActive="active-menu-link">Department</a></td></tr>
                             <tr *ngIf="hasAccess('Masters',63)"><td><span class="glyphicon glyphicon-resize-horizontal nav-icon"></span><a routerLink="/units" routerLinkActive="active-menu-link">Unit</a></td></tr>
                             <tr *ngIf="hasAccess('Masters',63)"><td><span class="glyphicon glyphicon-wrench nav-icon"></span><a routerLink="/methods" routerLinkActive="active-menu-link">Method</a></td></tr>
-                            <tr *ngIf="hasAccess('Equipments',63)"><td><span class="glyphicon glyphicon-hdd nav-icon"></span><a routerLink="/equipments" routerLinkActive="active-menu-link" [routerLinkActiveOptions]="{exact: true}">Equipment</a></td></tr>
-                            <tr *ngIf="hasAccess('Equipments',63)"><td><span class="glyphicon glyphicon-heart nav-icon"></span><a routerLink="/equipment-heartbeat" routerLinkActive="active-menu-link" [routerLinkActiveOptions]="{exact: true}">Equipment Heartbeat</a></td></tr>
+                            <tr *ngIf="hasAccess('Equipments',63)"><td><span class="glyphicon glyphicon-hdd nav-icon"></span><a routerLink="/equipments" routerLinkActive="active-menu-link">Equipment</a></td></tr>
+                            <tr *ngIf="hasAccess('Equipments',63)"><td><span class="glyphicon glyphicon-heart nav-icon"></span><a routerLink="/equipment-heartbeat" routerLinkActive="active-menu-link">Equipment Heartbeat</a></td></tr>
                         </table>
                     </div>
                 </div>
@@ -82,7 +82,7 @@
                         </a>
                     </h4>
                 </div>
-                <div id="collapseMaster" class="panel-collapse collapse in">
+                <div id="collapseMaster" class="panel-collapse collapse" [ngClass]="{'in': expandMaster}">
                     <div class="panel-body">
                         <table class="table">
                             <tr *ngIf="hasAccess('Masters',63)"><td><span class="glyphicon glyphicon-th nav-icon"></span><a routerLink="/test-profiles" routerLinkActive="active-menu-link">Test Profile</a></td></tr>
@@ -90,11 +90,11 @@
                             <tr *ngIf="hasAccess('Masters',63)"><td><span class="glyphicon glyphicon-tint nav-icon"></span><a routerLink="/specimens" routerLinkActive="active-menu-link">Specimen</a></td></tr>
                             <tr *ngIf="hasAccess('TestRates',63)"><td><span class="glyphicon glyphicon-usd nav-icon"></span><a routerLink="/test-rates" routerLinkActive="active-menu-link">Test Rate</a></td></tr>
                             <!-- Referral Doctor master screen hidden per business decision; doctor references remain on invoice/patient -->
-                            <tr *ngIf="hasAccess('Masters',63)"><td><span class="glyphicon glyphicon-briefcase nav-icon"></span><a routerLink="/corporates" routerLinkActive="active-menu-link" [routerLinkActiveOptions]="{exact: true}">Corporate</a></td></tr>
-                            <tr *ngIf="hasAccess('Masters',63)"><td><span class="glyphicon glyphicon-random nav-icon"></span><a routerLink="/test-mappings" routerLinkActive="active-menu-link" [routerLinkActiveOptions]="{exact: true}">Test Mapping</a></td></tr>
+                            <tr *ngIf="hasAccess('Masters',63)"><td><span class="glyphicon glyphicon-briefcase nav-icon"></span><a routerLink="/corporates" routerLinkActive="active-menu-link">Corporate</a></td></tr>
+                            <tr *ngIf="hasAccess('Masters',63)"><td><span class="glyphicon glyphicon-random nav-icon"></span><a routerLink="/test-mappings" routerLinkActive="active-menu-link">Test Mapping</a></td></tr>
                             <tr *ngIf="hasAccess('Masters',63)"><td><span class="glyphicon glyphicon-list nav-icon"></span><a routerLink="/test-parameters" routerLinkActive="active-menu-link">Test Parameter</a></td></tr>
                             <tr *ngIf="hasAccess('Masters',63)"><td><span class="glyphicon glyphicon-filter nav-icon"></span><a routerLink="/his-parameters" routerLinkActive="active-menu-link">Parameter Master</a></td></tr>
-                            <tr *ngIf="hasAccess('Masters',63)"><td><span class="glyphicon glyphicon-signal nav-icon"></span><a routerLink="/his-parameter-ranges" routerLinkActive="active-menu-link" [routerLinkActiveOptions]="{exact: true}">Parameter Range</a></td></tr>
+                            <tr *ngIf="hasAccess('Masters',63)"><td><span class="glyphicon glyphicon-signal nav-icon"></span><a routerLink="/his-parameter-ranges" routerLinkActive="active-menu-link">Parameter Range</a></td></tr>
                         </table>
                     </div>
                 </div>
@@ -108,11 +108,11 @@
                         </a>
                     </h4>
                 </div>
-                <div id="collapseTransaction" class="panel-collapse collapse">
+                <div id="collapseTransaction" class="panel-collapse collapse" [ngClass]="{'in': expandTransaction}">
                     <div class="panel-body">
                         <table class="table">
                             <tr *ngIf="hasAccess('Masters',63)"><td><span class="glyphicon glyphicon-user nav-icon"></span><a routerLink="/patient-master" routerLinkActive="active-menu-link">Patient Details</a></td></tr>
-                            <tr *ngIf="hasAccess('SaleInvoices',63)"><td><span class="glyphicon glyphicon-file nav-icon"></span><a routerLink="/sale-invoices" routerLinkActive="active-menu-link" [routerLinkActiveOptions]="{exact: true}">Sale Invoice</a></td></tr>
+                            <tr *ngIf="hasAccess('SaleInvoices',63)"><td><span class="glyphicon glyphicon-file nav-icon"></span><a routerLink="/sale-invoices" routerLinkActive="active-menu-link">Sale Invoice</a></td></tr>
                         </table>
                     </div>
                 </div>
@@ -126,7 +126,7 @@
                         </a>
                     </h4>
                 </div>
-                <div id="collapseReports" class="panel-collapse collapse">
+                <div id="collapseReports" class="panel-collapse collapse" [ngClass]="{'in': expandReports}">
                     <div class="panel-body">
                         <table class="table">
                             <tr *ngIf="hasReportAccess()">
@@ -184,14 +184,14 @@
                         </a>
                     </h4>
                 </div>
-                <div id="collapseAccount" class="panel-collapse collapse">
+                <div id="collapseAccount" class="panel-collapse collapse" [ngClass]="{'in': expandAccount}">
                     <div class="panel-body">
                         <table class="table">
                             <tr *ngIf="hasAccess('Users',63)">
                                 <td><span class="glyphicon glyphicon-user nav-icon"></span><a routerLink="/users" routerLinkActive="active-menu-link">Users</a></td>
                             </tr>
                             <tr *ngIf="hasAccess('Roles',63)">
-                                <td><span class="glyphicon glyphicon-lock nav-icon"></span><a routerLink="/roles" routerLinkActive="active-menu-link">Roles</a></td>
+                                <td><span class="glyphicon glyphicon-th-list nav-icon"></span><a routerLink="/roles" routerLinkActive="active-menu-link">Roles</a></td>
                             </tr>
                             <tr>
                                 <td><span class="glyphicon glyphicon-lock nav-icon"></span><a routerLink="/change-password" routerLinkActive="active-menu-link">Change Password</a></td>

@@ -17,13 +17,23 @@
         <label>Date</label>
         <input type="date" class="form-control" formControlName="invoiceDate" (change)="onInvoiceDateChange()" />
       </div>
-      <div class="col-md-6 form-group">
+      <div class="col-md-6 form-group" [ngClass]="{ 'has-error': submitted && form.get('patientId')?.invalid }">
         <label>Patient *</label>
-        <select class="form-control" formControlName="patientId" [class.has-error]="submitted && form.get('patientId')?.invalid">
-          <option [ngValue]="null">-- Select Patient --</option>
-          <option *ngFor="let p of patients" [ngValue]="p.id">{{p.name}} ({{p.phone || 'N/A'}})</option>
-        </select>
-        <span *ngIf="submitted && form.get('patientId')?.invalid" class="error">Patient is required.</span>
+        <ng-select
+          [items]="patients"
+          bindLabel="name"
+          bindValue="id"
+          formControlName="patientId"
+          placeholder="Search patient by name, phone, or ID"
+          [searchable]="true"
+          [clearable]="false"
+          [loading]="patientsLoading"
+          (search)="onPatientSearch($event)"
+          class="sale-invoice-patient-select">
+          <ng-template ng-label-tmp let-item="item">{{ patientOptionLabel(item) }}</ng-template>
+          <ng-template ng-option-tmp let-item="item">{{ patientOptionLabel(item) }}</ng-template>
+        </ng-select>
+        <span *ngIf="submitted && form.get('patientId')?.invalid" class="help-block error">Patient is required.</span>
       </div>
     </div>
 
@@ -48,6 +58,7 @@
       </div>
     </div>
 
+    <div class="table-responsive">
     <table class="table table-bordered qtable invoice-lines-table">
       <thead>
         <tr>
@@ -81,10 +92,11 @@
           <td class="text-right"><input type="number" class="form-control input-sm text-right" formControlName="discountAmount" (change)="recalcLine(i)" /></td>
           <td class="text-right"><input type="number" class="form-control input-sm text-right" formControlName="taxAmount" (change)="recalcLine(i)" /></td>
           <td class="text-right line-net">{{line.value.netAmount | currency:'INR'}}</td>
-          <td class="text-center"><button type="button" class="btn btn-xs btn-danger" (click)="removeLine(i)" [disabled]="isCancelled">X</button></td>
+          <td class="text-center"><button type="button" class="btn btn-xs btn-danger" (click)="removeLine(i)" [disabled]="isCancelled" title="Remove line" aria-label="Remove line"><span class="glyphicon glyphicon-remove"></span></button></td>
         </tr>
       </tbody>
     </table>
+    </div>
     <button type="button" class="btn btn-default btn-sm" (click)="addLine()" [disabled]="isCancelled">+ Add Test</button>
 
     <div class="invoice-totals-panel">

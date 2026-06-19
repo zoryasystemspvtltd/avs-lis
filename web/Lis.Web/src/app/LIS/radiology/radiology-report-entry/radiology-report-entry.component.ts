@@ -12,6 +12,9 @@ import { extractApiError } from '../../../_helpers/api-error';
 export class RadiologyReportEntryComponent implements OnInit {
   rows: any[] = [];
   loading = false;
+  totalRecord = 0;
+  currentPage = 1;
+  recordPerPage = 25;
   searchText = '';
   modality = '';
 
@@ -34,16 +37,18 @@ export class RadiologyReportEntryComponent implements OnInit {
     this.search();
   }
 
-  search(): void {
+  search(page: number = 1): void {
+    this.currentPage = page;
     this.loading = true;
     this.workflowService.getRadiologyQueue({
-      currentPage: 1,
-      recordPerPage: 100,
+      currentPage: page,
+      recordPerPage: this.recordPerPage,
       searchText: this.searchText,
       modality: this.modality
     }).subscribe(
       r => {
         this.rows = r.items || [];
+        this.totalRecord = r.totalRecord || 0;
         this.loading = false;
       },
       err => {
@@ -51,6 +56,14 @@ export class RadiologyReportEntryComponent implements OnInit {
         this.alertService.error(extractApiError(err));
       }
     );
+  }
+
+  get recordFrom(): number {
+    return this.totalRecord === 0 ? 0 : (this.currentPage - 1) * this.recordPerPage + 1;
+  }
+
+  get recordTo(): number {
+    return Math.min(this.currentPage * this.recordPerPage, this.totalRecord);
   }
 
   openEntry(row: any): void {

@@ -76,6 +76,14 @@ export class SampleCollectionComponent implements OnInit {
     this.search(1);
   }
 
+  get recordFrom(): number {
+    return this.totalRecord === 0 ? 0 : (this.currentPage - 1) * this.recordPerPage + 1;
+  }
+
+  get recordTo(): number {
+    return Math.min(this.currentPage * this.recordPerPage, this.totalRecord);
+  }
+
   openCollect(row: any): void {
     this.selectedRow = row;
     const now = new Date();

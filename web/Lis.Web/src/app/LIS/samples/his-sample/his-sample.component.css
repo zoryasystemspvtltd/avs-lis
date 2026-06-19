@@ -1,0 +1,47 @@
+.his-sample-dashboard {
+  margin-bottom: 20px;
+}
+
+.his-sample-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.his-sample-heading .panel-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.his-sample-status,
+.his-sample-empty {
+  text-align: center;
+  padding: 20px 12px;
+  color: #666;
+}
+
+.his-sample-empty .glyphicon-inbox {
+  font-size: 28px;
+  display: block;
+  margin-bottom: 10px;
+  color: #999;
+}
+
+.his-sample-empty p {
+  margin-bottom: 12px;
+}
+
+.his-sample-alert {
+  margin-bottom: 0;
+}
+
+.his-sample-table {
+  margin-bottom: 0;
+}
+
+.his-sample-table th {
+  font-size: 12px;
+  text-transform: uppercase;
+  color: #666;
+}

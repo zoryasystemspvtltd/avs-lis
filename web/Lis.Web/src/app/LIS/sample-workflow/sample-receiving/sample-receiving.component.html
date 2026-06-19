@@ -12,6 +12,7 @@
       </div>
       <div class="filter-actions">
         <button class="btn btn-primary btn-sm" (click)="search(1)" [disabled]="loading">Search</button>
+        <button class="btn btn-default btn-sm" (click)="reset()" [disabled]="loading">Reset</button>
         <button class="btn btn-info btn-sm" (click)="scanBarcode()" [disabled]="loading">Scan</button>
       </div>
     </div>
@@ -43,7 +44,12 @@
         </tr>
       </tbody>
     </table>
-    <p *ngIf="!rows.length" class="text-muted text-center">No samples awaiting receiving.</p>
+    <p *ngIf="!rows.length" class="text-muted text-center workflow-empty">No samples awaiting receiving.</p>
+    <div class="workflow-pager" *ngIf="totalRecord > recordPerPage">
+      <span class="list-pager-info">Showing {{ recordFrom }}&ndash;{{ recordTo }} of {{ totalRecord }}</span>
+      <ngb-pagination [(page)]="currentPage" [pageSize]="recordPerPage" [collectionSize]="totalRecord"
+        [maxSize]="5" [rotate]="true" [boundaryLinks]="true" (pageChange)="search($event)"></ngb-pagination>
+    </div>
   </div>
 
   <div class="modal fade" [class.in]="showReceiveModal" [style.display]="showReceiveModal ? 'block' : 'none'">

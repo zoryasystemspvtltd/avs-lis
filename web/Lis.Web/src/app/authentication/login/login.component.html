@@ -2,42 +2,43 @@
     <div class="page-wrapper">
         <h2>Sign in to ZoryaLIS Laboratory Portal</h2>
         <div class="row avilis-login-row">
-            <div class="col-md-6 col-md-offset-3 col-sm-10 col-sm-offset-1 col-xs-12">
+            <div class="col-xs-12">
                 <div class="page-content avilis-login-card">
                     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
                         <h4>Use your account to log in</h4>
-                        <p class="text-muted" style="margin-bottom:16px;font-size:13px;">Secure access to samples, results, and laboratory workflows.</p>
+                        <p class="text-muted login-subtitle">Secure access to samples, results, and laboratory workflows.</p>
                         <hr />
-                        <div class="form-group ">
-                            <div class="input-group ">
-                                <span class="input-group-addon "><i class="glyphicon glyphicon-user "></i></span>
-                                <input [type]="'email'" autocomplete="username" placeholder="Email "
-                                    class="form-control" formControlName="username"
-                                    [ngClass]="{ 'is-invalid': submitted && f.username.errors }" />
+                        <div class="form-group" [ngClass]="{ 'has-error': submitted && f.username.errors }">
+                            <label for="login-email">Email</label>
+                            <div class="input-group">
+                                <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
+                                <input id="login-email" type="email" autocomplete="username" placeholder="Email"
+                                    class="form-control" formControlName="username" />
                             </div>
-                            <div class="input-group " style="height:20px; ">
-                                <span *ngIf="submitted && f.username.errors" class="error ">Email is required.</span>
+                            <span *ngIf="submitted && f.username.errors?.required" class="help-block error">Email is required.</span>
+                            <span *ngIf="submitted && f.username.errors?.email" class="help-block error">Enter a valid email address.</span>
+                        </div>
+                        <div class="form-group" [ngClass]="{ 'has-error': submitted && f.password.errors }">
+                            <label for="login-password">Password</label>
+                            <div class="input-group">
+                                <span class="input-group-addon"><i class="glyphicon glyphicon-lock"></i></span>
+                                <input id="login-password" type="password" autocomplete="current-password" placeholder="Password"
+                                    class="form-control" formControlName="password" />
                             </div>
-                            <div class="input-group ">
-                                <span class="input-group-addon "><i class="glyphicon glyphicon-lock "></i></span>
-                                <input [type]="'password'" autocomplete="current-password" placeholder="Password "
-                                    class="form-control" formControlName="password"
-                                    [ngClass]="{ 'is-invalid': submitted && f.password.errors }" />
-                            </div>
-                            <div class="input-group " style="height:20px; ">
-                                <span *ngIf="submitted && f.password.errors" class="error ">Password is required.</span>
-                            </div>
-                            <div class="input-group " style="margin-top:8px;">
-                                <button class="btn btn-default btn-blue btn-block">Sign in</button>
-                            </div>
-                            <div style="text-align:left; margin-top:12px;">
-                                <alert></alert>
-                            </div>
+                            <span *ngIf="submitted && f.password.errors" class="help-block error">Password is required.</span>
+                        </div>
+                        <div class="form-group login-actions">
+                            <button type="submit" class="btn btn-default btn-blue btn-block" [disabled]="loading">
+                                <span *ngIf="loading" class="glyphicon glyphicon-refresh glyphicon-spin"></span>
+                                {{ loading ? 'Signing in...' : 'Sign in' }}
+                            </button>
+                        </div>
+                        <div class="login-alert-wrap">
+                            <alert></alert>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
-        <br />
     </div>
 </div>

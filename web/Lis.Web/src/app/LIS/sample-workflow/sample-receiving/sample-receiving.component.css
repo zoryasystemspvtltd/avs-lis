@@ -1,3 +1,13 @@
 .filter-panel { margin-bottom: 16px; }
 .filter-actions { margin-top: 12px; }
 .modal.in { background: rgba(0,0,0,0.4); }
+.workflow-loading, .workflow-empty { padding: 16px 0; }
+.workflow-pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+}
+.list-pager-info { font-size: 14px; color: #666; }

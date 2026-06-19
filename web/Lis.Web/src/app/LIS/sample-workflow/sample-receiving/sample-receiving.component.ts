@@ -62,6 +62,22 @@ export class SampleReceivingComponent implements OnInit {
     );
   }
 
+  get recordFrom(): number {
+    return this.totalRecord === 0 ? 0 : (this.currentPage - 1) * this.recordPerPage + 1;
+  }
+
+  get recordTo(): number {
+    return Math.min(this.currentPage * this.recordPerPage, this.totalRecord);
+  }
+
+  reset(): void {
+    this.barcodeNumber = '';
+    this.orderNumber = '';
+    this.patientName = '';
+    this.searchText = '';
+    this.search(1);
+  }
+
   scanBarcode(): void {
     if (!this.barcodeNumber.trim()) {
       return;

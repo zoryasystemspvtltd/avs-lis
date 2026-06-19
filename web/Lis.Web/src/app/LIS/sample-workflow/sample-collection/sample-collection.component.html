@@ -47,7 +47,12 @@
         </tr>
       </tbody>
     </table>
-    <p *ngIf="!rows.length" class="text-muted text-center">No pending samples found.</p>
+    <p *ngIf="!rows.length" class="text-muted text-center workflow-empty">No pending samples found.</p>
+    <div class="workflow-pager" *ngIf="totalRecord > recordPerPage">
+      <span class="list-pager-info">Showing {{ recordFrom }}&ndash;{{ recordTo }} of {{ totalRecord }}</span>
+      <ngb-pagination [(page)]="currentPage" [pageSize]="recordPerPage" [collectionSize]="totalRecord"
+        [maxSize]="5" [rotate]="true" [boundaryLinks]="true" (pageChange)="search($event)"></ngb-pagination>
+    </div>
   </div>
 
   <div class="modal fade" [class.in]="showCollectModal" [style.display]="showCollectModal ? 'block' : 'none'">
