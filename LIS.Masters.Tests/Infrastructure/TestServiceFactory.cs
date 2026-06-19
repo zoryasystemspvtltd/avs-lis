@@ -40,6 +40,7 @@ namespace LIS.Masters.Tests.Infrastructure
         public HisParameterRangeCrudManager HisParameterRange { get; }
         public TestMappingCrudManager TestMapping { get; }
         public EquipmentManager Equipment { get; }
+        public ReportManager Report { get; }
 
         private TestServiceFactory(ApplicationDBContext db)
         {
@@ -68,6 +69,7 @@ namespace LIS.Masters.Tests.Infrastructure
             HisParameterRange = new HisParameterRangeCrudManager(Logger, Identity, Uow);
             TestMapping = new TestMappingCrudManager(Logger, Identity, Uow);
             Equipment = new EquipmentManager(Logger, Identity, Uow);
+            Report = new ReportManager(Logger, Identity, Uow);
         }
 
         public static bool TryCreate(out TestServiceFactory factory, out string error)

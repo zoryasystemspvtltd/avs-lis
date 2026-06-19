@@ -82,6 +82,7 @@
     <Compile Include="Masters\EquipmentManagerTests.cs" />
     <Compile Include="Database\RelationIntegrityTests.cs" />
     <Compile Include="Validation\NegativeValidationTests.cs" />
+    <Compile Include="Reports\SaleInvoiceRegisterReportTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

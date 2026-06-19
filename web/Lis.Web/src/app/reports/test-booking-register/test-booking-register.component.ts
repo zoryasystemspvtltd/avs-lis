@@ -30,6 +30,45 @@ export class TestBookingRegisterComponent extends ReportPageBase implements OnIn
     this.initReportPage();
   }
 
+  loadLookups(): void {
+    this.masterService.getBillingPatients({
+      RecordPerPage: 500,
+      CurrentPage: 1,
+      SearchText: '',
+      SortColumnName: 'Name',
+      SortDirection: false,
+      Status: 0
+    }).subscribe(p => {
+      const items = (p?.items || p?.Items || [])
+        .map((x: any) => ({
+          id: x.id ?? x.Id,
+          name: (x.name ?? x.Name ?? '').trim(),
+          hisPatientId: x.hisPatientId ?? x.HisPatientId ?? ''
+        }))
+        .filter((x: any) => x.id > 0 && x.name);
+      this.patients = [
+        { id: null, name: 'All Patients', hisPatientId: '' },
+        ...items
+      ];
+    });
+
+    this.masterService.getLookupList('ReferralDoctor').subscribe(d => {
+      const list = Array.isArray(d) ? d : [];
+      const items = list
+        .filter((x: any) => x.isActive !== false && x.IsActive !== false)
+        .map((x: any) => ({
+          id: x.id ?? x.Id,
+          name: (x.name ?? x.Name ?? '').trim(),
+          code: x.code ?? x.Code
+        }))
+        .filter((x: any) => x.id > 0 && x.name);
+      this.doctors = [
+        { id: null, name: 'All Doctors', code: '' },
+        ...items
+      ];
+    });
+  }
+
   reset() {
     this.resetFilters();
   }

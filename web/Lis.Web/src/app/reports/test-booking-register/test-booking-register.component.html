@@ -30,8 +30,8 @@
         <label>Patient</label>
         <ng-select [items]="patients" bindLabel="name" bindValue="id" [(ngModel)]="patientId"
           placeholder="All patients" [clearable]="true" [searchable]="true" class="zorya-report-select">
-          <ng-template ng-label-tmp let-item="item">{{ item.name }} ({{ item.hisPatientId }})</ng-template>
-          <ng-template ng-option-tmp let-item="item">{{ item.name }} ({{ item.hisPatientId }})</ng-template>
+          <ng-template ng-label-tmp let-item="item">{{ item.id == null ? item.name : item.name + ' (' + item.hisPatientId + ')' }}</ng-template>
+          <ng-template ng-option-tmp let-item="item">{{ item.id == null ? item.name : item.name + ' (' + item.hisPatientId + ')' }}</ng-template>
         </ng-select>
       </div>
       <div class="filter-field filter-wide">

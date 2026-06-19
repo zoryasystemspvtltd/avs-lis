@@ -54,14 +54,15 @@ namespace LIS.BusinessLogic
                 query = query.Where(i => i.ReferralDoctorId == options.ReferralDoctorId.Value);
             }
 
+            var invoiceList = query.ToList();
             if (!string.IsNullOrWhiteSpace(options.InvoiceNo))
             {
                 var invSearch = options.InvoiceNo.Trim();
-                query = query.Where(i => i.InvoiceNo != null &&
-                    i.InvoiceNo.IndexOf(invSearch, StringComparison.OrdinalIgnoreCase) >= 0);
+                invoiceList = invoiceList.Where(i => i.InvoiceNo != null &&
+                    i.InvoiceNo.IndexOf(invSearch, StringComparison.OrdinalIgnoreCase) >= 0).ToList();
             }
 
-            var rows = query.ToList().Select(i =>
+            var rows = invoiceList.Select(i =>
             {
                 patients.TryGetValue(i.PatientId, out var patient);
                 string doctorName = i.RefDoctorName;
