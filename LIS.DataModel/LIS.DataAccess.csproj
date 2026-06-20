@@ -90,6 +90,10 @@
     <Compile Include="Migrations\202606191317350_FddSampleRadiology.Designer.cs">
       <DependentUpon>202606191317350_FddSampleRadiology.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202606200950114_patientaddress.cs" />
+    <Compile Include="Migrations\202606200950114_patientaddress.Designer.cs">
+      <DependentUpon>202606200950114_patientaddress.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repo\IGenericRepository.cs" />
@@ -138,6 +142,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202606191317350_FddSampleRadiology.resx">
       <DependentUpon>202606191317350_FddSampleRadiology.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202606200950114_patientaddress.resx">
+      <DependentUpon>202606200950114_patientaddress.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
