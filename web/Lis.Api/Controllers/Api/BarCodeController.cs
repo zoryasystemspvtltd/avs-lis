@@ -1,7 +1,10 @@
 ﻿using LIS.BusinessLogic.Helper;
 using LIS.DtoModel.Interfaces;
+using LIS.DtoModel.Models;
 using LIS.Logger;
+using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Web.Http;
 
@@ -26,50 +29,17 @@ namespace Lis.Api.Controllers.Api
             logger = Logger;
         }
 
-        /// <summary>
-        /// Get Patient name and test details
-        /// </summary>
-        /// <param name="Id">Sample Number</param>
-        /// <returns></returns>
         [AllowAnonymous]
         [HttpGet]
-        public string Get(string Id)
+        public IEnumerable<TestRequestDetail> Get()
         {
             try
             {
-                var testRequests = testRequestDetails.GetTestRequestsBySampleNo(Id);
-                if (testRequests == null)
-                {
-                    return string.Empty;
-                }
+                var testDetails = testRequestDetails.GetAllNewSamples(ReportStatusType.New);
 
-                var sample = testRequests.FirstOrDefault();
-                var sampleNumber = sample.SampleNo;
-
-
-                var patientDetail = sample.Patient;
-                if (patientDetail == null)
-                {
-                    return string.Empty;
-                }
-
-                string annotationText = string.Empty;
-                string patient = $"{patientDetail.Name} {Convert.ToString(patientDetail.Age.ToString("0"))} {patientDetail.Gender.Substring(0, 1)}<br />";
-
-                //var groupname = Helper.GetGroupName(sample.SampleNo);
-
-                //var tests = string.Empty;
-                //foreach (var test in testRequests)
-                //{
-                //    tests = $"{tests},{test.HISTestName}";
-                //}
-                //tests = tests.Trim(',');
-                var test = testRequests.FirstOrDefault();
-                annotationText = $"{patient}#{test?.BedNo}#{test?.IPNo}#{test.MRNo}";
-
-                //var image = Helper.GeneratedBarcode(sampleNumber, annotationText);
-
-                return annotationText;
+                var responseStrign = JsonConvert.SerializeObject(testDetails);
+                logger.LogInfo($"Get Sample Response: {responseStrign}");
+                return testDetails;
             }
             catch (Exception e)
             {
@@ -77,5 +47,78 @@ namespace Lis.Api.Controllers.Api
                 return null;
             }
         }
+
+        [AllowAnonymous]
+        [HttpGet]
+        public IEnumerable<TestRequestDetail> Get(string Id)
+        {
+            try
+            {
+                logger.LogInfo($"Get RequestNo Request: {Id}");
+
+                var testDetails = testRequestDetails.GetByHisRequestNo(Id, ReportStatusType.New);
+
+                var responseStrign = JsonConvert.SerializeObject(testDetails);
+                logger.LogInfo($"Get Sample Response: {responseStrign}");
+                return testDetails;
+            }
+            catch (Exception e)
+            {
+                logger.LogException(e);
+                return null;
+            }
+        }
+
+        ///// <summary>
+        ///// Get Patient name and test details
+        ///// </summary>
+        ///// <param name="Id">Sample Number</param>
+        ///// <returns></returns>
+        //[AllowAnonymous]
+        //[HttpGet]
+        //public string Get(string Id)
+        //{
+        //    try
+        //    {
+        //        var testRequests = testRequestDetails.GetTestRequestsBySampleNo(Id);
+        //        if (testRequests == null)
+        //        {
+        //            return string.Empty;
+        //        }
+
+        //        var sample = testRequests.FirstOrDefault();
+        //        var sampleNumber = sample.SampleNo;
+
+
+        //        var patientDetail = sample.Patient;
+        //        if (patientDetail == null)
+        //        {
+        //            return string.Empty;
+        //        }
+
+        //        string annotationText = string.Empty;
+        //        string patient = $"{patientDetail.Name} {Convert.ToString(patientDetail.Age.ToString("0"))} {patientDetail.Gender.Substring(0, 1)}<br />";
+
+        //        //var groupname = Helper.GetGroupName(sample.SampleNo);
+
+        //        //var tests = string.Empty;
+        //        //foreach (var test in testRequests)
+        //        //{
+        //        //    tests = $"{tests},{test.HISTestName}";
+        //        //}
+        //        //tests = tests.Trim(',');
+        //        var test = testRequests.FirstOrDefault();
+        //        annotationText = $"{patient}#{test?.BedNo}#{test?.IPNo}#{test.MRNo}";
+
+        //        //var image = Helper.GeneratedBarcode(sampleNumber, annotationText);
+
+        //        return annotationText;
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        logger.LogException(e);
+        //        return null;
+        //    }
+        //}
     }
 }

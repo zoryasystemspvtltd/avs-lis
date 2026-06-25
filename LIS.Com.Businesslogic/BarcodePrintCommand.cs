@@ -36,7 +36,7 @@ namespace LIS.Com.Businesslogic
             try
             {
                 //InitAPI(serverUrl, apiKey);
-                string apiName = $"NewSample";
+                string apiName = $"BarCode";
                 var response = await api.Get($"api/{apiName}", null, null);
                 var jsonModel = JsonConvert.SerializeObject(response.Result);
                 IEnumerable<TestRequestDetail> items = null;
@@ -57,7 +57,7 @@ namespace LIS.Com.Businesslogic
             try
             {
                // InitAPI(serverUrl, apiKey);
-                string apiName = $"NewSample/{requestNo}";
+                string apiName = $"BarCode/{requestNo}";
                 var response = await api.Get($"api/{apiName}");
                 var jsonModel = JsonConvert.SerializeObject(response.Result);
                 List<TestRequestDetail> items = null;
