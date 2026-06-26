@@ -16,6 +16,12 @@ namespace LIS.DtoModel.Models
         public string HisPatientId { get; set; }
         [MaxLength(100)]
         public string Name { get; set; }
+        [MaxLength(20)]
+        public string PatientPrefix { get; set; }
+        [MaxLength(30)]
+        public string MRNo { get; set; }
+        [MaxLength(30)]
+        public string VisitId { get; set; }
         public decimal Age { get; set; }
         [MaxLength(10)]
         public string Gender { get; set; }        

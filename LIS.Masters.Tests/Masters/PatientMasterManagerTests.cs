@@ -69,5 +69,39 @@ namespace LIS.Masters.Tests.Masters
 
             Services.PatientMaster.Delete(new PatientDetail { Id = id });
         }
+
+        [TestMethod]
+        public void Patient_Duplicate_MRNo_Throws_On_Create()
+        {
+            var suffix = UniqueCode("MR");
+            var mrNo = UniqueCode("MRNO");
+            var patient = MasterTestDataBuilder.Patient(suffix);
+            patient.MRNo = mrNo;
+            var id = Services.PatientMaster.Add(patient);
+
+            var duplicate = MasterTestDataBuilder.Patient("dup-mr");
+            duplicate.MRNo = mrNo.ToLowerInvariant();
+            var ex = Assert.ThrowsException<System.InvalidOperationException>(() => Services.PatientMaster.Add(duplicate));
+            Assert.IsTrue(ex.Message.IndexOf("MR No already exists", System.StringComparison.OrdinalIgnoreCase) >= 0);
+
+            Services.PatientMaster.Delete(new PatientDetail { Id = id });
+        }
+
+        [TestMethod]
+        public void Patient_Duplicate_VisitId_Throws_On_Create()
+        {
+            var suffix = UniqueCode("VIS");
+            var visitId = UniqueCode("VISID");
+            var patient = MasterTestDataBuilder.Patient(suffix);
+            patient.VisitId = visitId;
+            var id = Services.PatientMaster.Add(patient);
+
+            var duplicate = MasterTestDataBuilder.Patient("dup-vis");
+            duplicate.VisitId = visitId.ToLowerInvariant();
+            var ex = Assert.ThrowsException<System.InvalidOperationException>(() => Services.PatientMaster.Add(duplicate));
+            Assert.IsTrue(ex.Message.IndexOf("Visit ID already exists", System.StringComparison.OrdinalIgnoreCase) >= 0);
+
+            Services.PatientMaster.Delete(new PatientDetail { Id = id });
+        }
     }
 }

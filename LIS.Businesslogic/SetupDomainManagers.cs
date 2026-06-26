@@ -548,7 +548,9 @@ namespace LIS.BusinessLogic
                 query = query.Where(p =>
                     (p.Name != null && p.Name.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0) ||
                     (p.Phone != null && p.Phone.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0) ||
-                    (p.HisPatientId != null && p.HisPatientId.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0));
+                    (p.HisPatientId != null && p.HisPatientId.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                    (p.MRNo != null && p.MRNo.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                    (p.VisitId != null && p.VisitId.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0));
             }
 
             var list = query.OrderBy(p => p.Name).ToList();
@@ -572,14 +574,22 @@ namespace LIS.BusinessLogic
 
         public long Add(PatientDetail item)
         {
-            if (string.IsNullOrWhiteSpace(item.Phone))
-            {
-                throw new InvalidOperationException("Phone number is required.");
-            }
+            NormalizePatientFields(item);
+            ValidatePatientRequiredFields(item);
 
             if (string.IsNullOrWhiteSpace(item.HisPatientId))
             {
                 item.HisPatientId = GenerateNextPatientId();
+            }
+
+            if (ExistsDuplicateMrNo(item, null))
+            {
+                throw new InvalidOperationException("MR No already exists.");
+            }
+
+            if (ExistsDuplicateVisitId(item, null))
+            {
+                throw new InvalidOperationException("Visit ID already exists.");
             }
 
             if (ExistsDuplicatePatient(item, null))
@@ -604,9 +614,17 @@ namespace LIS.BusinessLogic
 
         public void Update(PatientDetail item)
         {
-            if (string.IsNullOrWhiteSpace(item.Phone))
+            NormalizePatientFields(item);
+            ValidatePatientRequiredFields(item);
+
+            if (ExistsDuplicateMrNo(item, item.Id))
             {
-                throw new InvalidOperationException("Phone number is required.");
+                throw new InvalidOperationException("MR No already exists.");
+            }
+
+            if (ExistsDuplicateVisitId(item, item.Id))
+            {
+                throw new InvalidOperationException("Visit ID already exists.");
             }
 
             if (ExistsDuplicatePatient(item, item.Id))
@@ -615,6 +633,90 @@ namespace LIS.BusinessLogic
             }
 
             repo.Update(item);
+        }
+
+        private static void NormalizePatientFields(PatientDetail item)
+        {
+            if (item == null)
+            {
+                return;
+            }
+
+            item.PatientPrefix = string.IsNullOrWhiteSpace(item.PatientPrefix)
+                ? null
+                : item.PatientPrefix.Trim();
+            item.MRNo = string.IsNullOrWhiteSpace(item.MRNo)
+                ? null
+                : item.MRNo.Trim();
+            item.VisitId = string.IsNullOrWhiteSpace(item.VisitId)
+                ? null
+                : item.VisitId.Trim();
+            item.Phone = string.IsNullOrWhiteSpace(item.Phone)
+                ? item.Phone
+                : item.Phone.Trim();
+            item.Name = string.IsNullOrWhiteSpace(item.Name)
+                ? item.Name
+                : item.Name.Trim();
+        }
+
+        private static void ValidatePatientRequiredFields(PatientDetail item)
+        {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
+            if (string.IsNullOrWhiteSpace(item.Phone))
+            {
+                throw new InvalidOperationException("Phone number is required.");
+            }
+
+            if (string.IsNullOrWhiteSpace(item.PatientPrefix))
+            {
+                throw new InvalidOperationException("Patient Prefix is required.");
+            }
+
+            if (string.IsNullOrWhiteSpace(item.MRNo))
+            {
+                throw new InvalidOperationException("MR No is required.");
+            }
+
+            if (string.IsNullOrWhiteSpace(item.VisitId))
+            {
+                throw new InvalidOperationException("Visit ID is required.");
+            }
+        }
+
+        private bool ExistsDuplicateMrNo(PatientDetail item, long? excludeId)
+        {
+            if (item == null || string.IsNullOrWhiteSpace(item.MRNo))
+            {
+                return false;
+            }
+
+            var mrNo = item.MRNo.Trim();
+            return repo.Get(p =>
+                p.IsActive &&
+                (!excludeId.HasValue || p.Id != excludeId.Value)).AsEnumerable()
+                .Any(p =>
+                    !string.IsNullOrWhiteSpace(p.MRNo) &&
+                    p.MRNo.Trim().Equals(mrNo, StringComparison.OrdinalIgnoreCase));
+        }
+
+        private bool ExistsDuplicateVisitId(PatientDetail item, long? excludeId)
+        {
+            if (item == null || string.IsNullOrWhiteSpace(item.VisitId))
+            {
+                return false;
+            }
+
+            var visitId = item.VisitId.Trim();
+            return repo.Get(p =>
+                p.IsActive &&
+                (!excludeId.HasValue || p.Id != excludeId.Value)).AsEnumerable()
+                .Any(p =>
+                    !string.IsNullOrWhiteSpace(p.VisitId) &&
+                    p.VisitId.Trim().Equals(visitId, StringComparison.OrdinalIgnoreCase));
         }
 
         private bool ExistsDuplicatePatient(PatientDetail item, long? excludeId)

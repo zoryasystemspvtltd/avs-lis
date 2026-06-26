@@ -81,8 +81,8 @@ namespace LIS.Masters.Tests.Masters
             var grpId = (int)Services.TestGroup.Add(new TestGroupMaster { Code = grpCode, Name = "Group", IsActive = true });
             var catId = (int)Services.TestCategory.Add(new TestCategoryMaster { Code = catCode, Name = "Category", IsActive = true });
 
-            Assert.IsTrue(Services.TestGroup.Get(ListOptionsFactory.Create()).Items.Any(x => x.Id == grpId));
-            Assert.IsTrue(Services.TestCategory.Get(ListOptionsFactory.Create()).Items.Any(x => x.Id == catId));
+            Assert.IsTrue(Services.TestGroup.Get(ListOptionsFactory.Create(search: grpCode)).Items.Any(x => x.Id == grpId));
+            Assert.IsTrue(Services.TestCategory.Get(ListOptionsFactory.Create(search: catCode)).Items.Any(x => x.Id == catId));
 
             Services.TestGroup.Delete(new TestGroupMaster { Id = grpId });
             Services.TestCategory.Delete(new TestCategoryMaster { Id = catId });

@@ -114,7 +114,10 @@ const LOOKUP_FIELDS = {
     { name: 'isActive', label: 'Active', type: 'checkbox' }
   ],
   patient: [
+    { name: 'patientPrefix', label: 'Patient Prefix', type: 'text', required: true },
     { name: 'name', label: 'Patient Name', type: 'text', required: true },
+    { name: 'mrNo', label: 'MR No', type: 'text', required: true },
+    { name: 'visitId', label: 'Visit ID', type: 'text', required: true },
     { name: 'hisPatientId', label: 'Patient ID', type: 'text', readonly: true },
     { name: 'phone', label: 'Phone', type: 'text', required: true },
     { name: 'address', label: 'Address', type: 'text' },

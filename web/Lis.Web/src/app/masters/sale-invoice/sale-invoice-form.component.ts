@@ -74,11 +74,17 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
     });
     this.loadPatients('');
 
+    const navState = this.router.getCurrentNavigation()?.extras?.state as { patientId?: number };
+    const statePatientId = navState?.patientId ?? (history.state?.patientId as number);
+
     if (this.id) {
       this.loadInvoice(+this.id);
     } else {
       this.masterService.getNextInvoiceNo().subscribe(no => this.form.patchValue({ invoiceNo: no }));
       this.addLine();
+      if (statePatientId && +statePatientId > 0) {
+        this.preselectPatient(+statePatientId);
+      }
     }
   }
 
@@ -267,9 +273,28 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
         id: x.id ?? x.Id,
         name: (x.name ?? x.Name ?? '').trim(),
         phone: x.phone ?? x.Phone ?? '',
-        hisPatientId: x.hisPatientId ?? x.HisPatientId ?? ''
+        hisPatientId: x.hisPatientId ?? x.HisPatientId ?? '',
+        mrNo: x.mrNo ?? x.MRNo ?? '',
+        visitId: x.visitId ?? x.VisitId ?? '',
+        patientPrefix: x.patientPrefix ?? x.PatientPrefix ?? ''
       }))
       .filter(x => x.id > 0 && x.name);
+  }
+
+  private preselectPatient(patientId: number): void {
+    this.masterService.getItem('PatientMaster', patientId).subscribe(patient => {
+      if (!patient) {
+        return;
+      }
+      const normalized = this.normalizePatients([patient])[0];
+      if (!normalized) {
+        return;
+      }
+      if (!this.patients.some(p => p.id === normalized.id)) {
+        this.patients = [normalized, ...this.patients];
+      }
+      this.form.patchValue({ patientId: normalized.id });
+    });
   }
 
   private ensureSelectedPatientInList(): void {
@@ -283,7 +308,10 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
         id: patientId,
         name: inv.patientName || `Patient #${patientId}`,
         phone: inv.patientPhone || '',
-        hisPatientId: inv.patientId || ''
+        hisPatientId: inv.patientId || '',
+        mrNo: '',
+        visitId: '',
+        patientPrefix: ''
       }, ...this.patients];
     }
   }
@@ -292,8 +320,9 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
     if (!patient) {
       return '';
     }
-    const extra = patient.phone || patient.hisPatientId || 'N/A';
-    return `${patient.name} (${extra})`;
+    const extra = patient.mrNo || patient.phone || patient.hisPatientId || 'N/A';
+    const prefix = patient.patientPrefix ? `${patient.patientPrefix} ` : '';
+    return `${prefix}${patient.name} (${extra})`;
   }
 
   onTestChange(i: number) {

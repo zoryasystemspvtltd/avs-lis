@@ -486,6 +486,9 @@ export class MasterFormComponent implements OnInit {
     if (patch.HISParamUnit != null && patch.hisParamUnit == null) { patch.hisParamUnit = patch.HISParamUnit; }
     if (patch.HISParamMethod != null && patch.hisParamMethod == null) { patch.hisParamMethod = patch.HISParamMethod; }
     if (patch.LISParamCode != null && patch.lisParamCode == null) { patch.lisParamCode = patch.LISParamCode; }
+    if (patch.MRNo != null && patch.mrNo == null) { patch.mrNo = patch.MRNo; }
+    if (patch.VisitId != null && patch.visitId == null) { patch.visitId = patch.VisitId; }
+    if (patch.PatientPrefix != null && patch.patientPrefix == null) { patch.patientPrefix = patch.PatientPrefix; }
     if (patch.HISRangeCode != null && patch.hisRangeCode == null) { patch.hisRangeCode = patch.HISRangeCode; }
     if (patch.Gender != null && patch.gender == null) { patch.gender = patch.Gender; }
     patch.gender = this.apiName === 'PatientMaster'
@@ -640,6 +643,23 @@ export class MasterFormComponent implements OnInit {
       this.alertService.error('Phone number is required.');
       return;
     }
+    if (this.apiName === 'PatientMaster') {
+      item.patientPrefix = ('' + (item.patientPrefix || '')).trim();
+      item.mrNo = ('' + (item.mrNo || '')).trim();
+      item.visitId = ('' + (item.visitId || '')).trim();
+      if (!item.patientPrefix) {
+        this.alertService.error('Patient Prefix is required.');
+        return;
+      }
+      if (!item.mrNo) {
+        this.alertService.error('MR No is required.');
+        return;
+      }
+      if (!item.visitId) {
+        this.alertService.error('Visit ID is required.');
+        return;
+      }
+    }
     if (this.isParameterMasterScreen) {
       if (!item.hisParamCode) {
         const testId = item.hisTestId;
@@ -673,9 +693,16 @@ export class MasterFormComponent implements OnInit {
       : this.masterService.addItem(this.apiName, item);
 
     req.subscribe(
-      () => {
+      (res) => {
         this.loading = false;
         this.alertService.success('Saved successfully');
+        if (this.apiName === 'PatientMaster' && !this.id) {
+          const newPatientId = res?.result ?? res?.Result;
+          if (newPatientId) {
+            this.router.navigate(['/sale-invoices/create'], { state: { patientId: +newPatientId } });
+            return;
+          }
+        }
         this.router.navigate([this.returnUrl]);
       },
       err => {
