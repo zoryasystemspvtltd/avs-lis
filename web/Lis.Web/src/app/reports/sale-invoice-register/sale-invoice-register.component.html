@@ -44,6 +44,11 @@
         <input type="text" class="form-control input-sm" [(ngModel)]="invoiceNo" placeholder="Partial match"
           (keyup.enter)="search(1)" />
       </div>
+      <div class="filter-field filter-wide">
+        <label>Created By</label>
+        <ng-select [items]="creators" bindLabel="name" bindValue="id" [(ngModel)]="createdById"
+          placeholder="All Users" [clearable]="true" [searchable]="true" class="zorya-report-select"></ng-select>
+      </div>
       <div class="filter-actions">
         <button type="button" class="btn btn-primary btn-sm" (click)="search(1)" [disabled]="loading || exporting">
           <span class="glyphicon glyphicon-search"></span> Search

@@ -19,6 +19,12 @@ export class UserService {
         }));
     }
 
+    getLookup() {
+        return this.http.get<Array<{ id: string; name: string }>>(
+            `${environment.ApplicationServer}/api/Users/Lookup`
+        );
+    }
+
     getById(id: string) {
         return this.http.get<User>(`${environment.ApplicationServer}/api/Users/${id}`)
             .pipe(map(response => {

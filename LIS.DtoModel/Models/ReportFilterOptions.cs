@@ -15,5 +15,9 @@ namespace LIS.DtoModel.Models
         public string CollectorName { get; set; }
         public string Modality { get; set; }
         public string QueueType { get; set; }
+        /// <summary>AspNet user id; resolved to identity name before filtering.</summary>
+        public string CreatedById { get; set; }
+        /// <summary>Resolved username/email matching SaleInvoice.CreatedBy.</summary>
+        public string CreatedByUserName { get; set; }
     }
 }

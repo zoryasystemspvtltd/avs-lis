@@ -1,9 +1,11 @@
+using Lis.Api.Models;
 using Lis.Api.Providers;
 using LIS.BusinessLogic;
 using LIS.DtoModel;
 using LIS.DtoModel.Interfaces;
 using LIS.DtoModel.Models;
 using LIS.Logger;
+using Microsoft.AspNet.Identity;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -19,12 +21,18 @@ namespace Lis.Api.Controllers.Api
     {
         private readonly IReportManager reportManager;
         private readonly ITestReportManager testReportManager;
+        private readonly ApplicationUserManager userManager;
         private readonly ILogger logger;
 
-        public OperationalReportsController(IReportManager reportManager, ITestReportManager testReportManager, ILogger logger)
+        public OperationalReportsController(
+            IReportManager reportManager,
+            ITestReportManager testReportManager,
+            ApplicationUserManager userManager,
+            ILogger logger)
         {
             this.reportManager = reportManager;
             this.testReportManager = testReportManager;
+            this.userManager = userManager;
             this.logger = logger;
         }
 
@@ -67,7 +75,9 @@ namespace Lis.Api.Controllers.Api
         {
             try
             {
-                return reportManager.GetSaleInvoiceRegister(FilterOption);
+                var options = FilterOption;
+                ResolveCreatedByFilter(options);
+                return reportManager.GetSaleInvoiceRegister(options);
             }
             catch (ArgumentException ex)
             {
@@ -200,6 +210,24 @@ namespace Lis.Api.Controllers.Api
         [Route("RadiologistProductivity")]
         [QAuthorize(ModuleName = "RadiologyReports", ModulePermissionTypes = ModulePermissionType.CanView)]
         public ItemList<RadiologistProductivityRow> GetRadiologistProductivity() => RunReport(reportManager.GetRadiologistProductivityReport);
+
+        private void ResolveCreatedByFilter(ReportFilterOptions options)
+        {
+            if (options == null || string.IsNullOrWhiteSpace(options.CreatedById))
+            {
+                return;
+            }
+
+            var user = userManager.FindById(options.CreatedById.Trim());
+            if (user == null)
+            {
+                throw new ArgumentException("Invalid Created By user.");
+            }
+
+            options.CreatedByUserName = !string.IsNullOrWhiteSpace(user.UserName)
+                ? user.UserName.Trim()
+                : user.Email?.Trim();
+        }
 
         private ItemList<T> RunReport<T>(Func<ReportFilterOptions, ItemList<T>> action) where T : class
         {

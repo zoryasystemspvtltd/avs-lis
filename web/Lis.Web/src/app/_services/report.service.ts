@@ -10,6 +10,7 @@ export interface ReportFilter {
   patientId?: number | null;
   referralDoctorId?: number | null;
   invoiceNo?: string;
+  createdById?: string | null;
   currentPage?: number;
   recordPerPage?: number;
   sortColumnName?: string;
@@ -68,6 +69,7 @@ export class ReportService {
       PatientId: filter.patientId || null,
       ReferralDoctorId: filter.referralDoctorId || null,
       InvoiceNo: filter.invoiceNo || null,
+      CreatedById: filter.createdById || null,
       CurrentPage: filter.currentPage || 1,
       RecordPerPage: filter.recordPerPage || 25,
       SortColumnName: filter.sortColumnName || defaultSort,

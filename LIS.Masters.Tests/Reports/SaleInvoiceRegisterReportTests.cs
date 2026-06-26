@@ -81,5 +81,48 @@ namespace LIS.Masters.Tests.Reports
                 i.InvoiceNo != null &&
                 i.InvoiceNo.IndexOf(suffix, StringComparison.OrdinalIgnoreCase) >= 0));
         }
+
+        [TestMethod]
+        public void SaleInvoiceRegister_CreatedByUserName_ReturnsOnlyMatching()
+        {
+            var baseline = Services.Report.GetSaleInvoiceRegister(June2026Options());
+            var sample = baseline.Items.FirstOrDefault(i => !string.IsNullOrWhiteSpace(i.CreatedBy));
+            Assert.IsNotNull(sample, "Need invoice with CreatedBy.");
+
+            var options = June2026Options();
+            options.CreatedByUserName = sample.CreatedBy;
+            var result = Services.Report.GetSaleInvoiceRegister(options);
+            Assert.IsTrue(result.TotalRecord > 0);
+            Assert.IsTrue(result.Items.All(i =>
+                string.Equals(i.CreatedBy, sample.CreatedBy, StringComparison.OrdinalIgnoreCase)));
+        }
+
+        [TestMethod]
+        public void SaleInvoiceRegister_CreatedByUserName_NoMatch_ReturnsEmpty()
+        {
+            var options = June2026Options();
+            options.CreatedByUserName = "non-existent-creator-" + Guid.NewGuid().ToString("N");
+            var result = Services.Report.GetSaleInvoiceRegister(options);
+            Assert.AreEqual(0, result.TotalRecord);
+        }
+
+        [TestMethod]
+        public void SaleInvoiceRegister_CreatedByWithPatientFilter_Combined()
+        {
+            var baseline = Services.Report.GetSaleInvoiceRegister(June2026Options());
+            var sample = baseline.Items.FirstOrDefault(i => !string.IsNullOrWhiteSpace(i.CreatedBy));
+            Assert.IsNotNull(sample, "Need invoice with CreatedBy.");
+
+            var invoice = Services.Db.SaleInvoices.FirstOrDefault(i => i.InvoiceNo == sample.InvoiceNo);
+            Assert.IsNotNull(invoice, "Need invoice row for combined filter test.");
+
+            var options = June2026Options();
+            options.CreatedByUserName = sample.CreatedBy;
+            options.PatientId = invoice.PatientId;
+            var result = Services.Report.GetSaleInvoiceRegister(options);
+            Assert.IsTrue(result.TotalRecord > 0);
+            Assert.IsTrue(result.Items.All(i =>
+                string.Equals(i.CreatedBy, sample.CreatedBy, StringComparison.OrdinalIgnoreCase)));
+        }
     }
 }

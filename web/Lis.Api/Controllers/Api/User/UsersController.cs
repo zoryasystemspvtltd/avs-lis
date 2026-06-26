@@ -35,6 +35,46 @@ namespace QuestionsForU.Authentication.Controllers
 
 
         /// <summary>
+        /// Active users for dropdown lookups (id + display name).
+        /// </summary>
+        [HttpGet]
+        [Route("~/api/Users/Lookup")]
+        [QAuthorize(ModuleName = "Reports", ModulePermissionTypes = ModulePermissionType.CanView)]
+        public IHttpActionResult GetLookup()
+        {
+            var users = userManager.Users
+                .Where(u => !u.IsBlocked)
+                .AsEnumerable()
+                .Select(u => new
+                {
+                    id = u.Id,
+                    name = BuildUserDisplayName(u)
+                })
+                .Where(u => !string.IsNullOrWhiteSpace(u.name))
+                .OrderBy(u => u.name, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            return Ok(users);
+        }
+
+        private static string BuildUserDisplayName(ApplicationUser user)
+        {
+            if (user == null)
+            {
+                return string.Empty;
+            }
+
+            var fullName = string.Join(" ",
+                new[] { user.FirstName, user.LastName }.Where(s => !string.IsNullOrWhiteSpace(s))).Trim();
+            if (!string.IsNullOrWhiteSpace(fullName))
+            {
+                return fullName;
+            }
+
+            return user.Email ?? user.UserName ?? string.Empty;
+        }
+
+        /// <summary>
         /// Get all User list
         /// </summary>
         /// <returns></returns>

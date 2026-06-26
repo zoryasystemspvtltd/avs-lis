@@ -62,6 +62,14 @@ namespace LIS.BusinessLogic
                     i.InvoiceNo.IndexOf(invSearch, StringComparison.OrdinalIgnoreCase) >= 0).ToList();
             }
 
+            if (!string.IsNullOrWhiteSpace(options.CreatedByUserName))
+            {
+                var creator = options.CreatedByUserName.Trim();
+                invoiceList = invoiceList.Where(i =>
+                    i.CreatedBy != null &&
+                    i.CreatedBy.Trim().Equals(creator, StringComparison.OrdinalIgnoreCase)).ToList();
+            }
+
             var rows = invoiceList.Select(i =>
             {
                 patients.TryGetValue(i.PatientId, out var patient);
