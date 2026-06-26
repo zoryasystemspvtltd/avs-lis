@@ -25,9 +25,12 @@ function HeadersFor([string]$token, [string]$apiOptionJson = $null) {
 }
 
 function Get-Items($resp) {
-  if ($resp.Items) { return @($resp.Items) }
-  if ($resp.items) { return @($resp.items) }
-  return @()
+  if ($null -eq $resp) { return @() }
+  $val = $resp.items
+  if ($null -eq $val) { $val = $resp.Items }
+  if ($null -eq $val) { return @() }
+  if ($val -is [System.Array]) { return ,$val }
+  return @($val)
 }
 
 function Get-Total($resp) {
@@ -535,8 +538,9 @@ if ($env:SKIP_REGRESSION -eq '1') {
   Log "REG-01" "Master Regression Suite" "INFO" "Skipped (run run-masters-tests.bat separately)"
 } else {
   $regOut = & "i:\Projects\LIS\avs-lis\Scripts\run-masters-tests.bat" 2>&1 | Out-String
-  if ($regOut -match "Passed:\s+81") {
-    Log "REG-01" "Master Regression Suite" "PASS" "81/81"
+  if ($regOut -match "Test Run Successful") {
+    $passed = if ($regOut -match 'Passed:\s+(\d+)') { $Matches[1] } else { '?' }
+    Log "REG-01" "Master Regression Suite" "PASS" "$passed tests"
   } else {
     Log "REG-01" "Master Regression Suite" "FAIL" (($regOut -split "`n" | Select-Object -Last 5) -join '; ')
   }

@@ -28,6 +28,8 @@ namespace LIS.BusinessLogic
                 throw new ArgumentNullException(nameof(item));
             }
 
+            NormalizeParameter(item);
+
             if (item.HisTestId <= 0)
             {
                 throw new InvalidOperationException("Test is required.");
@@ -53,6 +55,8 @@ namespace LIS.BusinessLogic
 
         public new void Update(HISParameterMaster item)
         {
+            NormalizeParameter(item);
+
             if (ExistsDuplicate(item, item.Id))
             {
                 throw new InvalidOperationException("A parameter with this code already exists for the selected test.");
@@ -94,10 +98,28 @@ namespace LIS.BusinessLogic
                 return false;
             }
 
+            var code = item.HISParamCode.Trim();
             return Repo.Get(p =>
                 p.HisTestId == item.HisTestId &&
-                p.HISParamCode == item.HISParamCode &&
-                (!excludeId.HasValue || p.Id != excludeId.Value)).Any();
+                (!excludeId.HasValue || p.Id != excludeId.Value))
+                .AsEnumerable()
+                .Any(p => !string.IsNullOrWhiteSpace(p.HISParamCode)
+                    && string.Equals(p.HISParamCode.Trim(), code, StringComparison.OrdinalIgnoreCase));
+        }
+
+        private static void NormalizeParameter(HISParameterMaster item)
+        {
+            if (item == null)
+            {
+                return;
+            }
+
+            item.HISParamCode = (item.HISParamCode ?? string.Empty).Trim();
+            item.HISParamDescription = (item.HISParamDescription ?? string.Empty).Trim();
+            item.HISTestCode = (item.HISTestCode ?? string.Empty).Trim();
+            item.HISParamUnit = (item.HISParamUnit ?? string.Empty).Trim();
+            item.HISParamMethod = (item.HISParamMethod ?? string.Empty).Trim();
+            item.LISParamCode = (item.LISParamCode ?? string.Empty).Trim();
         }
 
         public override ItemList<HISParameterMaster> Get(ListOptions option)

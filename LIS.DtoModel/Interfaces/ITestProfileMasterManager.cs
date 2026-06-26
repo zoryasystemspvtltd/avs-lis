@@ -7,6 +7,7 @@ namespace LIS.DtoModel.Interfaces
     {
         TestProfileMaster GetWithDetails(int id);
         TestProfileHierarchyDto GetWithHierarchy(int id);
-        void SaveWithDetails(TestProfileMaster profile, IEnumerable<TestProfileDetail> details);
+        int SaveWithDetails(TestProfileMaster profile, IEnumerable<TestProfileDetail> details);
+        string GetNextProfileCode();
     }
 }

@@ -141,7 +141,7 @@ Write-Host "`n========== PORTAL BUNDLE CHECK =========="
 $bundle = Get-ChildItem "I:\Projects\PROD\AVILIS\PORTAL\main-es2015.*.js" | Sort-Object LastWriteTime -Descending | Select-Object -First 1
 $txt = Get-Content $bundle.FullName -Raw
 UAT "UI" "Test Profile menu/bundle" ($txt -match "Test Profile" -and $txt -match "test-profile-view") $bundle.Name
-UAT "UI" "Invoice profile billing UI" ($txt -match "lineType" -and $txt -match "testProfileId") "sale-invoice profile lines"
+UAT "UI" "Invoice itemType billing UI" ($txt -match "itemType" -and $txt -match "testProfileId") "sale-invoice lines"
 UAT "UI" "Parameter expansion preview" ($txt -match "Parameter Expansion Preview") "form preview"
 
 Write-Host "`n========== ALL ENTERPRISE UAT CHECKS PASSED =========="

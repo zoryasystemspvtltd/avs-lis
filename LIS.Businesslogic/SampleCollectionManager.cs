@@ -52,8 +52,10 @@ namespace LIS.Businesslogic
                 .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
             var requestIds = invoiceDetailRepo.Get(d =>
-                    paidInvoiceIds.Contains(d.SaleInvoiceId) && d.RequestDetailId > 0)
-                .Select(d => d.RequestDetailId)
+                    paidInvoiceIds.Contains(d.SaleInvoiceId) &&
+                    d.RequestDetailId.HasValue &&
+                    d.RequestDetailId.Value > 0)
+                .Select(d => d.RequestDetailId.Value)
                 .ToHashSet();
 
             var requestsByInvoiceNo = requestRepo.Get()

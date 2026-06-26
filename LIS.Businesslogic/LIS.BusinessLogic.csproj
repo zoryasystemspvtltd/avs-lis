@@ -75,6 +75,7 @@
     <Compile Include="QualityControlManager.cs" />
     <Compile Include="ResultManager.cs" />
     <Compile Include="DepartmentManager.cs" />
+    <Compile Include="DepartmentProcessingRouter.cs" />
     <Compile Include="SpecimenManager.cs" />
     <Compile Include="TestMappingMasterManager.cs" />
     <Compile Include="TestParameterManager.cs" />

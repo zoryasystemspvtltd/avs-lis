@@ -66,62 +66,94 @@
       </div>
     </div>
 
-    <div class="table-responsive">
-    <table class="table table-bordered qtable invoice-lines-table">
-      <thead>
-        <tr>
-          <th class="col-test">Test / Profile</th>
-          <th class="col-num text-right">Rate</th>
-          <th class="col-qty text-right">Qty</th>
-          <th class="col-disc-type">Disc. Type</th>
-          <th class="col-num text-right">Discount</th>
-          <th class="col-num text-right">Net</th>
-          <th class="col-action"></th>
-        </tr>
-      </thead>
-      <tbody formArrayName="lines">
-        <tr *ngFor="let line of lines.controls; let i=index" [formGroupName]="i">
-          <td>
-            <select class="form-control input-sm" formControlName="lineType" (change)="onLineTypeChange(i)" style="margin-bottom:4px">
-              <option value="test">Test</option>
-              <option value="profile">Profile</option>
+    <div class="invoice-lines-toolbar">
+      <button type="button" class="btn btn-primary btn-sm add-line-btn" (click)="openAddLineModal()" [disabled]="isCancelled || isInvoiceLocked">
+        <span class="glyphicon glyphicon-plus"></span> Add Line
+      </button>
+      <span class="invoice-lines-hint" *ngIf="lines.controls.length === 0">No items yet — use Add Line to search and add tests or profiles.</span>
+    </div>
+
+    <div formArrayName="lines">
+      <div class="invoice-lines-scroll" *ngIf="lines.controls.length > 0">
+      <table class="table table-bordered qtable invoice-lines-table">
+        <thead>
+          <tr>
+            <th class="col-item-type">Type</th>
+            <th class="col-test">Item</th>
+            <th class="col-dept">Department</th>
+            <th class="col-rate text-right">Rate</th>
+            <th class="col-qty text-right">Qty</th>
+            <th class="col-disc-type">Disc. Type</th>
+            <th class="col-discount text-right">Discount</th>
+            <th class="col-net text-right">Net</th>
+            <th class="col-action"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let line of lines.controls; let i=index" [formGroupName]="i">
+          <td class="col-item-type">
+            <select class="form-control input-sm line-cell-control" formControlName="itemType" (change)="onItemTypeChange(i)">
+              <option *ngFor="let t of itemTypes" [value]="t.value">{{t.label}}</option>
             </select>
-            <select class="form-control input-sm" *ngIf="line.value.lineType === 'profile'" formControlName="testProfileId" (change)="onProfileChange(i)">
-              <option value="">-- Profile --</option>
-              <option *ngFor="let p of profiles" [value]="p.id">{{p.code}} - {{p.name}} ({{p.packageRate | currency:'INR'}})</option>
-            </select>
+          </td>
+          <td class="col-test">
             <ng-select
-              *ngIf="line.value.lineType !== 'profile'"
-              [items]="tests"
-              bindLabel="label"
-              bindValue="id"
-              formControlName="testId"
-              placeholder="Search test by code or name"
+              [items]="lineBillableItems[i] || []"
+              bindLabel="displayLabel"
+              bindValue="key"
+              formControlName="lineItemKey"
+              [placeholder]="isTestLine(i) ? 'Type to search tests or pick from list' : 'Type to search profiles or pick from list'"
               [searchable]="true"
-              [clearable]="false"
-              [loading]="testsLoading"
-              (search)="onTestSearch($event)"
-              (change)="onLineTestChange(i)"
+              [clearable]="true"
+              [loading]="billableItemsLoading && activeBillableLineIndex === i"
+              [minTermLength]="0"
+              [groupBy]="isTestLine(i) ? testGroupByFn : profileGroupByFn"
+              typeToSearchText="Type to filter..."
+              appendTo="body"
+              dropdownPanelClass="sale-invoice-billable-dropdown"
+              notFoundText="No matching items — try a different search"
+              loadingText="Loading items..."
+              (open)="onBillableDropdownOpen(i)"
+              (search)="onBillableSearch($event, i)"
+              (change)="onLineItemChange(i)"
               class="sale-invoice-test-select input-sm">
-              <ng-template ng-label-tmp let-item="item">{{ testOptionLabel(item) }}</ng-template>
-              <ng-template ng-option-tmp let-item="item">{{ testOptionLabel(item) }}</ng-template>
+              <ng-template ng-option-tmp let-item="item">
+                <span class="billable-item-option">{{ item.displayLabel }}</span>
+              </ng-template>
+              <ng-template ng-label-tmp let-item="item">
+                <span>{{ item.displayLabel }}</span>
+              </ng-template>
             </ng-select>
           </td>
-          <td class="text-right"><input type="number" class="form-control input-sm text-right" formControlName="rate" (change)="recalcLine(i)" /></td>
-          <td class="text-right"><input type="number" class="form-control input-sm text-right" formControlName="quantity" (change)="recalcLine(i)" /></td>
-          <td>
-            <select class="form-control input-sm" formControlName="discountType" (change)="recalcLine(i)">
-              <option *ngFor="let dt of discountTypes" [value]="dt">{{dt}}</option>
+          <td class="col-dept col-dept-readonly">
+            <span *ngIf="isTestLine(i)" class="department-readonly" [class.text-muted]="getDepartmentDisplay(i) === '—'">{{ getDepartmentDisplay(i) }}</span>
+            <span *ngIf="!isTestLine(i)" class="text-muted">—</span>
+          </td>
+          <td class="col-rate text-right">
+            <input type="number" class="form-control input-sm text-right line-cell-num" formControlName="rate" (change)="recalcLine(i)" />
+          </td>
+          <td class="col-qty text-right">
+            <input type="number" class="form-control input-sm text-right line-cell-num line-cell-qty" formControlName="quantity" (change)="recalcLine(i)" />
+          </td>
+          <td class="col-disc-type">
+            <select class="form-control input-sm line-cell-control line-cell-disc-type" formControlName="discountType" (change)="recalcLine(i)">
+              <option *ngFor="let dt of discountTypes" [value]="dt">{{ dt === 'Fixed Amount' ? 'Fixed' : 'Percent' }}</option>
             </select>
           </td>
-          <td class="text-right"><input type="number" class="form-control input-sm text-right" formControlName="discountAmount" (change)="recalcLine(i)" /></td>
-          <td class="text-right line-net">{{line.value.netAmount | currency:'INR'}}</td>
-          <td class="text-center"><button type="button" class="btn btn-xs btn-danger" (click)="removeLine(i)" [disabled]="isCancelled" title="Remove line" aria-label="Remove line"><span class="glyphicon glyphicon-remove"></span></button></td>
+          <td class="col-discount text-right">
+            <input type="number" class="form-control input-sm text-right line-cell-num" formControlName="discountAmount" (change)="recalcLine(i)" />
+          </td>
+          <td class="col-net text-right line-net">{{line.value.netAmount | currency:'INR'}}</td>
+          <td class="col-action text-center">
+            <button type="button" class="btn btn-xs btn-danger" (click)="removeLine(i)" [disabled]="isCancelled" title="Remove line" aria-label="Remove line">
+              <span class="glyphicon glyphicon-remove"></span>
+            </button>
+          </td>
         </tr>
-      </tbody>
-    </table>
+        </tbody>
+      </table>
+      </div>
     </div>
-    <button type="button" class="btn btn-default btn-sm" (click)="addLine()" [disabled]="isCancelled">+ Add Test</button>
 
     <div class="invoice-totals-panel">
       <table class="table table-condensed invoice-totals-table">
@@ -137,9 +169,30 @@
             </td>
           </tr>
           <tr><td>Tax</td><td class="text-right">{{form.value.taxAmount | currency:'INR'}}</td></tr>
-          <tr class="totals-net-row"><td><strong>Net Amount</strong></td><td class="text-right"><strong>{{form.value.netAmount | currency:'INR'}}</strong></td></tr>
-          <tr *ngIf="form.value.paidAmount"><td>Paid</td><td class="text-right">{{form.value.paidAmount | currency:'INR'}}</td></tr>
-          <tr *ngIf="form.value.dueAmount"><td>Due</td><td class="text-right">{{form.value.dueAmount | currency:'INR'}}</td></tr>
+          <tr class="totals-net-row"><td><strong>Net Amount (Invoice Total)</strong></td><td class="text-right"><strong>{{form.value.netAmount | currency:'INR'}}</strong></td></tr>
+          <tr>
+            <td>Paid Amount</td>
+            <td class="text-right">
+              <input type="number" min="0" step="0.01" class="form-control input-sm text-right inline-paid-input"
+                formControlName="paidAmount" (change)="onPaidAmountChange()"
+                [readonly]="isCancelled || isInvoiceLocked || form.value.paymentStatus === 0 || form.value.paymentStatus === 2" />
+            </td>
+          </tr>
+          <tr><td>Outstanding Amount</td><td class="text-right">{{form.value.dueAmount | currency:'INR'}}</td></tr>
+          <tr>
+            <td>Payment Status</td>
+            <td class="text-right payment-status-cell">
+              <select class="form-control input-sm payment-status-select"
+                formControlName="paymentStatus"
+                (change)="onPaymentStatusChange()"
+                [disabled]="isCancelled || isInvoiceLocked">
+                <option *ngFor="let ps of paymentStatuses" [ngValue]="ps.value">{{ps.label}}</option>
+              </select>
+              <span class="label payment-status-badge" [ngClass]="form.value.paymentStatus | paymentStatusClass">
+                {{form.value.paymentStatus | paymentStatusLabel}}
+              </span>
+            </td>
+          </tr>
         </tbody>
       </table>
     </div>
@@ -147,12 +200,97 @@
     <div class="form-group invoice-actions">
       <button type="button" class="btn btn-primary" (click)="onSubmit(false)" [disabled]="loading || saving || isCancelled">Save Draft</button>
       <button type="button" class="btn btn-success" (click)="onSubmit(true)" [disabled]="loading || saving || isCancelled">Confirm</button>
-      <button type="button" class="btn btn-info" (click)="markPaid()" *ngIf="form.value.id && !isPaid && !isCancelled" [disabled]="loading || saving">Mark Paid</button>
+      <button type="button" class="btn btn-info" (click)="markPaid()" *ngIf="form.value.id && !isInvoiceLocked && !isCancelled" [disabled]="loading || saving">Mark Paid</button>
       <button type="button" class="btn btn-warning" (click)="cancelInvoice()" *ngIf="form.value.id && !isCancelled" [disabled]="loading || saving">Cancel Invoice</button>
       <button type="button" class="btn btn-default" (click)="back()">Back</button>
       <a *ngIf="form.value.id" class="btn btn-default" [routerLink]="['/sale-invoices/print', form.value.id]">Print</a>
     </div>
   </form>
+
+  <!-- Add line modal (outside form — avoids submit/z-index issues) -->
+  <div *ngIf="showAddLineModal && !isPrintView" class="modal fade sale-invoice-add-line-modal in" role="dialog" aria-labelledby="addLineModalTitle">
+    <div class="sale-invoice-modal-backdrop" (click)="closeAddLineModal()"></div>
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" (click)="closeAddLineModal()" aria-label="Close">&times;</button>
+          <h4 class="modal-title" id="addLineModalTitle">Add invoice line</h4>
+          <p class="modal-subtitle">Search and select a test or profile. Department is assigned automatically for tests.</p>
+        </div>
+        <div class="modal-body">
+          <div class="add-line-type-toggle" role="group" aria-label="Item type">
+            <button type="button"
+              class="type-pill"
+              [class.active]="modalItemType === 'test'"
+              (click)="onModalItemTypeChange('test')">
+              Test
+            </button>
+            <button type="button"
+              class="type-pill"
+              [class.active]="modalItemType === 'profile'"
+              (click)="onModalItemTypeChange('profile')">
+              Profile
+            </button>
+          </div>
+
+          <div class="form-group add-line-search-group">
+            <label>{{ modalItemType === 'test' ? 'Search test' : 'Search profile' }}</label>
+            <ng-select
+              *ngIf="showAddLineModal"
+              [items]="modalActiveItems"
+              bindLabel="displayLabel"
+              bindValue="key"
+              [ngModel]="modalSelectedKey"
+              (ngModelChange)="onModalItemSelected($event)"
+              [ngModelOptions]="{standalone: true}"
+              [placeholder]="modalItemType === 'test' ? 'Type to search tests or pick from list' : 'Type to search profiles or pick from list'"
+              [searchable]="true"
+              [clearable]="true"
+              [loading]="modalSearchLoading"
+              [minTermLength]="0"
+              [searchFn]="modalServerSearchFn"
+              typeToSearchText="Type to filter..."
+              dropdownPanelClass="sale-invoice-billable-dropdown sale-invoice-modal-dropdown"
+              [notFoundText]="modalItemType === 'test' ? 'No matching tests — try a different search' : 'No matching profiles — try a different search'"
+              [loadingText]="modalItemType === 'test' ? 'Loading tests...' : 'Loading profiles...'"
+              (open)="onModalSelectOpen()"
+              (search)="onModalBillableSearch($event)"
+              class="sale-invoice-modal-select">
+              <ng-template ng-option-tmp let-item="item">
+                <span class="billable-item-option">{{ item.displayLabel }}</span>
+              </ng-template>
+              <ng-template ng-label-tmp let-item="item">
+                <span>{{ item.displayLabel }}</span>
+              </ng-template>
+            </ng-select>
+            <p class="modal-items-hint text-muted" *ngIf="!modalTestLoading && modalItemType === 'test' && modalTestItems.length === 0">
+              No tests found for this invoice date. Check active rates or try searching by code or name.
+            </p>
+            <p class="modal-items-hint text-muted" *ngIf="!modalProfileLoading && modalItemType === 'profile' && modalProfileItems.length === 0">
+              No profiles found. Try a different search or confirm profiles are active.
+            </p>
+          </div>
+
+          <div class="add-line-preview" *ngIf="modalSelectedItem">
+            <div class="preview-row">
+              <span class="preview-label">Selected</span>
+              <span class="preview-value">{{ modalSelectedItemPreview }}</span>
+            </div>
+            <div class="preview-row" *ngIf="modalItemType === 'test'">
+              <span class="preview-label">Department</span>
+              <span class="preview-value preview-dept">{{ modalDepartmentPreview }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" (click)="closeAddLineModal()">Cancel</button>
+          <button type="button" class="btn btn-primary" (click)="submitAddLineModal()" [disabled]="!modalSelectedItem || modalSearchLoading">
+            Add to invoice
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <div *ngIf="isPrintView && invoiceDto" class="print-body">
     <div class="print-toolbar no-print">

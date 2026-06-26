@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { first } from 'rxjs/operators';
@@ -12,7 +12,7 @@ import { environment } from '../../../environments/environment';
     templateUrl: 'login.component.html'
 })
 
-export class LoginComponent implements OnInit {
+export class LoginComponent implements OnInit, OnDestroy {
     loginForm: FormGroup;
     loading: boolean = false;
     submitted: boolean = false;
@@ -71,10 +71,14 @@ export class LoginComponent implements OnInit {
         });
     }
     ngOnInit() {
-        
+        document.body.classList.add('auth-page');
 
         // get return url from route parameters or default to '/'
         this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
+    }
+
+    ngOnDestroy() {
+        document.body.classList.remove('auth-page');
     }
 
     // convenience getter for easy access to form fields

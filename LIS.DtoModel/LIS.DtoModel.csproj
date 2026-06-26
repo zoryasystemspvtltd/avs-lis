@@ -91,6 +91,7 @@
     <Compile Include="Models\DTO\Masters\SampleTypeMaster.cs" />
     <Compile Include="Models\DTO\Masters\ContainerMaster.cs" />
     <Compile Include="Models\DTO\SaleInvoice\SaleInvoiceDto.cs" />
+    <Compile Include="Models\DTO\SaleInvoice\BillableItemLookup.cs" />
     <Compile Include="Interfaces\IMasterCrudManager.cs" />
     <Compile Include="Interfaces\ITestRateMasterManager.cs" />
     <Compile Include="Interfaces\ISaleInvoiceManager.cs" />
@@ -108,6 +109,7 @@
     <Compile Include="Models\TestResultEdit\TestResultEditDtos.cs" />
     <Compile Include="Models\Reports\TestBookingRegisterRow.cs" />
     <Compile Include="Interfaces\ITestProfileMasterManager.cs" />
+    <Compile Include="Models\DepartmentProcessingCategories.cs" />
     <Compile Include="Models\DTO\Mapping\Department.cs" />
     <Compile Include="Models\DTO\Mapping\EquipmentHeartBeat.cs" />
     <Compile Include="Models\DTO\Mapping\EquipmentMaster.cs" />
@@ -133,7 +135,7 @@
     <Compile Include="Models\ItemList.cs" />
     <Compile Include="Models\ListOptions.cs" />
     <Compile Include="Models\NameValue.cs" />
-    <Compile Include="Models\Parameter.cs" />
+    <Compile Include="Models\ProfileDiagnosticAuditRow.cs" />
     <Compile Include="Models\TCPIPSettings.cs" />
     <Compile Include="Models\PortSettings.cs" />
     <Compile Include="Models\NewOrder.cs" />

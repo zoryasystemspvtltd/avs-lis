@@ -237,8 +237,7 @@
                 <button type="button" *ngIf="schemma.isTechnician" class="btn btn-primary" (click)="editAll(3);" data-dismiss="modal" >Verified and ready for doctor's approval</button>
                 <button type="button" *ngIf="schemma.isTechnician" class="btn btn-default" (click)="editAll(4);" data-dismiss="modal" >Reject</button>
                 <button type="button" *ngIf="schemma.isTechnician" class="btn btn-default" (click)="editAll(0);" data-dismiss="modal" >Reject & Re-Run Sample</button>
-                <button type="button" *ngIf="schemma.isDoctor" class="btn btn-primary" (click)="editAll(5);" data-dismiss="modal" >Approve &
-                    Send</button>
+                <button type="button" *ngIf="schemma.isDoctor" class="btn btn-primary" (click)="editAll(5);" data-dismiss="modal">Approve</button>
                 <button type="button" *ngIf="schemma.isDoctor" class="btn btn-default" (click)="editAll(3);" data-dismiss="modal" >Ask for Second Opinion</button>
                 <button type="button" *ngIf="schemma.isDoctor" class="btn btn-default" (click)="editAll(6);" data-dismiss="modal" >Reject</button>
                 <button type="button" *ngIf="schemma.isRejected" class="btn btn-default" (click)="editAll(0);" data-dismiss="modal" >Re-Run Sample</button>

@@ -63,6 +63,21 @@ namespace Lis.Api.Controllers.Api
         }
 
         [HttpGet]
+        [Route("GetAll")]
+        public IEnumerable<Departments> GetAll()
+        {
+            try
+            {
+                return manager.Get();
+            }
+            catch (Exception e)
+            {
+                logger.LogException(e);
+                return Enumerable.Empty<Departments>();
+            }
+        }
+
+        [HttpGet]
         [Route("{id}")]
         public Departments Get(string id)
         {

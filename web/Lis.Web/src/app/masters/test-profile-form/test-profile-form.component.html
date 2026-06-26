@@ -49,7 +49,7 @@
           <td>
             <select class="form-control" formControlName="testId" (change)="onTestChange(i)">
               <option [ngValue]="null">-- Select Test --</option>
-              <option *ngFor="let t of tests" [ngValue]="t.id">{{t.hisTestCode}} - {{t.hisTestCodeDescription}}</option>
+              <option *ngFor="let t of tests" [ngValue]="testId(t)">{{ testLabel(t) }}</option>
             </select>
           </td>
           <td><input type="number" class="form-control" formControlName="quantity" min="1" (change)="recalcPackageRate(); refreshParameterPreview()" /></td>

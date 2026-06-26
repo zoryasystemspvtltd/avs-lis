@@ -2,8 +2,9 @@ export const MASTER_LIST_SCHEMAS: { [key: string]: any } = {
   department: {
     url: 'departments', heading: 'Department Master', module: 'Department', hideAction: true, hideCreate: false,
     elements: [
-      { heading: 'Code', fieldName: 'code', sortable: true, width: '20%', type: 'link_search' },
-      { heading: 'Name', fieldName: 'name', sortable: true, width: '80%', type: 'label' }
+      { heading: 'Code', fieldName: 'code', sortable: true, width: '15%', type: 'link_search' },
+      { heading: 'Name', fieldName: 'name', sortable: true, width: '45%', type: 'label' },
+      { heading: 'Processing Category', fieldName: 'processingCategory', sortable: true, width: '25%', type: 'label' }
     ]
   },
   specimen: {

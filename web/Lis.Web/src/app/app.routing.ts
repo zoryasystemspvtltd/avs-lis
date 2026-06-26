@@ -55,7 +55,11 @@ const LOOKUP_FIELDS = {
   ],
   department: [
     { name: 'code', label: 'Code', type: 'text', required: true },
-    { name: 'name', label: 'Name', type: 'text', required: true }
+    { name: 'name', label: 'Name', type: 'text', required: true },
+    { name: 'processingCategory', label: 'Processing Category', type: 'select', required: true, options: [
+      { value: 'Laboratory', label: 'Laboratory' },
+      { value: 'Diagnostic', label: 'Diagnostic' }
+    ]}
   ],
   specimen: [
     { name: 'code', label: 'Code', type: 'text', required: true },

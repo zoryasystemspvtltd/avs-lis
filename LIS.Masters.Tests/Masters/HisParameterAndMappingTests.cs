@@ -101,6 +101,36 @@ namespace LIS.Masters.Tests.Masters
         }
 
         [TestMethod]
+        public void HisParameter_Duplicate_Code_For_Same_Test_Blocked()
+        {
+            var testId = EnsureTestId();
+            var test = Services.HisTest.GetTestById(testId);
+            var paramCode = UniqueCode("DUPP");
+
+            var param = new HISParameterMaster
+            {
+                HisTestId = testId,
+                HISTestCode = test.HISTestCode,
+                HISParamCode = paramCode,
+                HISParamDescription = "Param " + paramCode
+            };
+            var paramId = (int)Services.HisParameter.Add(param);
+            Assert.IsTrue(paramId > 0);
+
+            var duplicate = new HISParameterMaster
+            {
+                HisTestId = testId,
+                HISTestCode = test.HISTestCode,
+                HISParamCode = paramCode,
+                HISParamDescription = "Duplicate " + paramCode
+            };
+            var ex = Assert.ThrowsException<InvalidOperationException>(() => Services.HisParameter.Add(duplicate));
+            Assert.IsTrue(ex.Message.IndexOf("already exists", StringComparison.OrdinalIgnoreCase) >= 0);
+
+            Services.HisParameter.Delete(new HISParameterMaster { Id = paramId });
+        }
+
+        [TestMethod]
         public void TestMapping_Create_Update_No_Duplicate_For_Same_Equipment()
         {
             var testId = EnsureTestId();

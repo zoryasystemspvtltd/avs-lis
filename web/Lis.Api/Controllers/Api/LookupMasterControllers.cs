@@ -5,6 +5,7 @@ using LIS.DtoModel.Models;
 using LIS.Logger;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
@@ -186,6 +187,20 @@ namespace Lis.Api.Controllers.Api
         [HttpGet, Route("GetAll")]
         public IEnumerable<TestProfileMaster> GetAllRecords() => FetchAllActiveCore();
 
+        [HttpGet, Route("NextProfileCode")]
+        public IHttpActionResult GetNextProfileCode()
+        {
+            try
+            {
+                return Ok(new { code = profileManager.GetNextProfileCode() });
+            }
+            catch (Exception e)
+            {
+                Logger.LogException(e);
+                return InternalServerError(e);
+            }
+        }
+
         [QAuthorize(ModuleName = "Masters", ModulePermissionTypes = ModulePermissionType.CanAdd | ModulePermissionType.CanEdit)]
         [HttpPost, Route("")]
         public override HttpResponseMessage Post(TestProfileMaster profile)
@@ -197,8 +212,14 @@ namespace Lis.Api.Controllers.Api
                     return Request.CreateResponse(HttpStatusCode.PreconditionFailed, ModelState);
                 }
 
-                profileManager.SaveWithDetails(profile, profile?.ProfileDetails);
-                var response = ResponseMgr.CreateResponse(HttpStatusCode.OK, "Profile saved successfully", null, profile.Id);
+                var details = profile?.ProfileDetails;
+                if (details == null || !details.Any())
+                {
+                    return Request.CreateResponse(HttpStatusCode.PreconditionFailed, "At least one test line is required.");
+                }
+
+                var savedId = profileManager.SaveWithDetails(profile, details);
+                var response = ResponseMgr.CreateResponse(HttpStatusCode.OK, "Profile saved successfully", null, savedId);
                 return Request.CreateResponse(HttpStatusCode.OK, response);
             }
             catch (Exception e)
@@ -218,8 +239,14 @@ namespace Lis.Api.Controllers.Api
                     return Request.CreateResponse(HttpStatusCode.PreconditionFailed, ModelState);
                 }
 
-                profileManager.SaveWithDetails(item, item?.ProfileDetails);
-                var response = ResponseMgr.CreateResponse(HttpStatusCode.OK, "Profile updated successfully", null, item.Id);
+                var details = item?.ProfileDetails;
+                if (details == null || !details.Any())
+                {
+                    return Request.CreateResponse(HttpStatusCode.PreconditionFailed, "At least one test line is required.");
+                }
+
+                var savedId = profileManager.SaveWithDetails(item, details);
+                var response = ResponseMgr.CreateResponse(HttpStatusCode.OK, "Profile updated successfully", null, savedId);
                 return Request.CreateResponse(HttpStatusCode.OK, response);
             }
             catch (Exception e)

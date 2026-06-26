@@ -35,11 +35,369 @@
   min-height: 30px;
 }
 
+.sale-invoice-page .invoice-lines-table td {
+  overflow: visible;
+}
+
+::ng-deep .sale-invoice-billable-dropdown {
+  z-index: 1060 !important;
+}
+
+::ng-deep .sale-invoice-billable-dropdown .ng-optgroup {
+  padding: 6px 10px 4px;
+  background: rgba(26, 127, 140, 0.08);
+  border-top: 1px solid #d4e8ec;
+  font-weight: 600;
+  font-size: 12px;
+  color: #155f69;
+}
+
+::ng-deep .sale-invoice-billable-dropdown .billable-item-option {
+  font-size: 13px;
+}
+
+.sale-invoice-page .invoice-lines-scroll {
+  margin-bottom: 4px;
+}
+
+.sale-invoice-page .invoice-lines-table {
+  table-layout: fixed;
+  width: 100%;
+  margin-bottom: 0;
+}
+
+.sale-invoice-page .invoice-lines-table th,
+.sale-invoice-page .invoice-lines-table td {
+  padding: 8px 6px !important;
+  vertical-align: middle;
+  overflow: hidden;
+}
+
+.sale-invoice-page .invoice-lines-table .col-item-type {
+  width: 88px;
+}
+
+.sale-invoice-page .invoice-lines-table .col-test {
+  width: auto;
+}
+
+/* Department kept in DOM for data binding; hidden in grid to save horizontal space */
+.sale-invoice-page .invoice-lines-table .col-dept {
+  display: none !important;
+  width: 0;
+  padding: 0 !important;
+  border: none !important;
+}
+
+.sale-invoice-page .invoice-lines-table .col-rate {
+  width: 100px;
+}
+
+.sale-invoice-page .invoice-lines-table .col-qty {
+  width: 72px;
+}
+
+.sale-invoice-page .invoice-lines-table .col-disc-type {
+  width: 132px;
+}
+
+.sale-invoice-page .invoice-lines-table .col-discount {
+  width: 100px;
+}
+
+.sale-invoice-page .invoice-lines-table .col-net {
+  width: 112px;
+}
+
+.sale-invoice-page .invoice-lines-table .col-action {
+  width: 40px;
+  padding-left: 4px !important;
+  padding-right: 4px !important;
+}
+
+.sale-invoice-page .invoice-lines-table .line-cell-num,
+.sale-invoice-page .invoice-lines-table .line-cell-control {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  height: 30px;
+  padding: 4px 6px;
+  font-size: 13px;
+  line-height: 1.3;
+}
+
+.sale-invoice-page .invoice-lines-table .line-cell-disc-type {
+  font-size: 12px;
+  padding-left: 5px;
+  padding-right: 18px;
+}
+
+.sale-invoice-page .invoice-lines-table .line-cell-qty {
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+.sale-invoice-page .invoice-lines-table .department-readonly {
+  display: block;
+  padding: 5px 6px;
+  min-height: 30px;
+  line-height: 1.35;
+  background: #f7fafb;
+  border: 1px solid #e2ecef;
+  border-radius: 3px;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sale-invoice-page .col-dept-readonly {
+  min-width: 0;
+  vertical-align: middle;
+}
+
+.sale-invoice-page .payment-status-cell {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.sale-invoice-page .payment-status-select {
+  max-width: 160px;
+  display: inline-block;
+}
+
+.sale-invoice-page .payment-status-badge {
+  font-size: 11px;
+  margin: 0;
+}
+
+.sale-invoice-page .invoice-lines-toolbar {
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.sale-invoice-page .add-line-btn {
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.sale-invoice-page .invoice-lines-hint {
+  font-size: 13px;
+  color: #5a6c75;
+}
+
+/* Add-line modal */
+body.sale-invoice-modal-open,
+body.modal-open.sale-invoice-modal-open {
+  overflow: hidden;
+}
+
+.sale-invoice-add-line-modal {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 2000;
+  display: block;
+  overflow: visible;
+  outline: 0;
+}
+
+.sale-invoice-modal-backdrop {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1;
+  background: rgba(15, 35, 42, 0.45);
+}
+
+.sale-invoice-add-line-modal .modal-dialog {
+  position: relative;
+  z-index: 2;
+  margin: 8vh auto;
+  pointer-events: auto;
+}
+
+.sale-invoice-add-line-modal .modal-content {
+  border: none;
+  border-radius: 10px;
+  box-shadow: 0 16px 48px rgba(15, 35, 42, 0.18);
+  overflow: visible;
+}
+
+.sale-invoice-add-line-modal .modal-body {
+  padding: 20px 22px 8px;
+  overflow: visible;
+}
+
+.sale-invoice-add-line-modal .modal-header {
+  background: linear-gradient(135deg, #1a7f8c 0%, #155f69 100%);
+  color: #fff;
+  border: none;
+  padding: 18px 20px 14px;
+}
+
+.sale-invoice-add-line-modal .modal-header .close {
+  color: #fff;
+  opacity: 0.85;
+  text-shadow: none;
+  margin-top: 2px;
+}
+
+.sale-invoice-add-line-modal .modal-title {
+  margin: 0;
+  font-weight: 600;
+  font-size: 18px;
+}
+
+.sale-invoice-add-line-modal .modal-subtitle {
+  margin: 6px 0 0;
+  font-size: 13px;
+  opacity: 0.9;
+  font-weight: 400;
+}
+
+.sale-invoice-add-line-modal .add-line-type-toggle {
+  display: inline-flex;
+  gap: 0;
+  padding: 3px;
+  background: #eef5f7;
+  border-radius: 8px;
+  margin-bottom: 18px;
+}
+
+.sale-invoice-add-line-modal .type-pill {
+  border: none;
+  background: transparent;
+  color: #4a6570;
+  padding: 8px 22px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 13px;
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.sale-invoice-add-line-modal .type-pill.active {
+  background: #fff;
+  color: #155f69;
+  box-shadow: 0 1px 4px rgba(15, 35, 42, 0.12);
+}
+
+.sale-invoice-add-line-modal .add-line-search-group label {
+  font-weight: 600;
+  color: #1a3a42;
+  margin-bottom: 6px;
+}
+
+.sale-invoice-add-line-modal .modal-items-hint {
+  margin: 8px 0 0;
+  font-size: 12px;
+}
+
+.sale-invoice-add-line-modal .sale-invoice-modal-select {
+  width: 100%;
+  position: relative;
+  z-index: 3;
+}
+
+.sale-invoice-add-line-modal ::ng-deep .sale-invoice-modal-dropdown.ng-dropdown-panel {
+  z-index: 2100 !important;
+}
+
+.sale-invoice-add-line-modal ::ng-deep .ng-dropdown-panel {
+  z-index: 2100 !important;
+}
+
+.sale-invoice-add-line-modal .sale-invoice-modal-select .ng-select-container {
+  min-height: 38px;
+  border-radius: 6px;
+}
+
+.sale-invoice-add-line-modal .add-line-preview {
+  margin-top: 16px;
+  padding: 12px 14px;
+  background: #f7fafb;
+  border: 1px solid #e2ecef;
+  border-radius: 8px;
+}
+
+.sale-invoice-add-line-modal .preview-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  padding: 4px 0;
+}
+
+.sale-invoice-add-line-modal .preview-row + .preview-row {
+  border-top: 1px solid #e8f0f2;
+  margin-top: 6px;
+  padding-top: 10px;
+}
+
+.sale-invoice-add-line-modal .preview-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #5a6c75;
+}
+
+.sale-invoice-add-line-modal .preview-value {
+  font-size: 14px;
+  color: #1a3a42;
+  text-align: right;
+  flex: 1;
+}
+
+.sale-invoice-add-line-modal .preview-dept {
+  color: #155f69;
+  font-weight: 600;
+}
+
+.sale-invoice-add-line-modal .modal-footer {
+  border-top: 1px solid #e8f0f2;
+  padding: 14px 20px;
+  background: #fafcfd;
+}
+
+::ng-deep .sale-invoice-modal-dropdown.ng-dropdown-panel {
+  z-index: 2100 !important;
+  pointer-events: auto;
+}
+
+::ng-deep .sale-invoice-billable-dropdown .ng-dropdown-panel-items {
+  max-height: 280px;
+}
+
+::ng-deep .sale-invoice-billable-dropdown .ng-option {
+  padding: 8px 12px;
+}
+
+::ng-deep .sale-invoice-billable-dropdown .ng-option-marked {
+  background: rgba(26, 127, 140, 0.12);
+}
+
 .sale-invoice-page .total-discount-cell {
   display: flex;
   gap: 6px;
   justify-content: flex-end;
   align-items: center;
+}
+
+.sale-invoice-page .inline-paid-input {
+  display: inline-block;
+  width: 140px;
+  margin-left: auto;
 }
 
 .sale-invoice-page .inline-discount-type {
@@ -52,25 +410,11 @@
   display: inline-block;
 }
 
-.sale-invoice-page .invoice-lines-table th.col-test {
-  min-width: 220px;
-}
-
-.sale-invoice-page .invoice-lines-table .col-num {
-  width: 100px;
-}
-
-.sale-invoice-page .invoice-lines-table .col-qty {
-  width: 70px;
-}
-
-.sale-invoice-page .invoice-lines-table .col-action {
-  width: 44px;
-}
-
 .sale-invoice-page .line-net {
   white-space: nowrap;
   vertical-align: middle;
+  font-size: 13px;
+  padding-right: 8px !important;
 }
 
 .sale-invoice-page .invoice-totals-panel {

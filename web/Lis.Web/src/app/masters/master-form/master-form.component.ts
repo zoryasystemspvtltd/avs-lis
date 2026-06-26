@@ -28,7 +28,9 @@ export class MasterFormComponent implements OnInit {
   methods: any[] = [];
   units: any[] = [];
   parameterOptions: any[] = [];
+  existingParameters: any[] = [];
   lookupsLoaded = false;
+  readonly parameterDuplicateMessage = 'A parameter with this code already exists for the selected test.';
 
   constructor(
     private route: ActivatedRoute,
@@ -82,7 +84,10 @@ export class MasterFormComponent implements OnInit {
       this.loadTestRateLookups();
     } else     if (this.apiName === 'HisParameterMaster' || this.apiName === 'HisParameterRangeMaster' || this.apiName === 'TestMappingMaster') {
       this.loadSetupLookups();
-    } else if (this.apiName === 'Department' || this.apiName === 'Unit' || this.apiName === 'Method' || this.apiName === 'Specimens') {
+    } else     if (this.apiName === 'Department' || this.apiName === 'Unit' || this.apiName === 'Method' || this.apiName === 'Specimens') {
+      if (!this.id && this.apiName === 'Department') {
+        this.form.patchValue({ processingCategory: 'Laboratory' });
+      }
       if (this.id) {
         this.masterService.getItem(this.apiName, this.id).subscribe(item => {
           if (item) {
@@ -220,6 +225,11 @@ export class MasterFormComponent implements OnInit {
     const requests: { [key: string]: Observable<any> } = {
       tests: this.masterService.getLookupList('HisTest')
     };
+    if (this.apiName === 'HisParameterMaster') {
+      requests.existingParams = this.masterService.getItems('HisParameterMaster', {
+        RecordPerPage: 2000, CurrentPage: 1, SortColumnName: 'HISParamCode', SortDirection: true
+      });
+    }
     if (this.isParameterMasterScreen) {
       requests.units = this.masterService.getLookupList('Unit');
       requests.methods = this.masterService.getLookupList('Method');
@@ -240,6 +250,9 @@ export class MasterFormComponent implements OnInit {
         }
         if (data.methods) {
           this.methods = (data.methods || []).filter(m => m.isActive !== false);
+        }
+        if (data.existingParams) {
+          this.existingParameters = (data.existingParams.items || data.existingParams.Items || data.existingParams) || [];
         }
         if (data.params) {
           this.hisParameters = (data.params.items || data.params.Items || data.params) || [];
@@ -319,6 +332,30 @@ export class MasterFormComponent implements OnInit {
     if (this.isTestParameterScreen || this.isParameterMasterScreen) {
       this.onHisTestSelected();
     }
+  }
+
+  private validateParameterDuplicate(item: any): string | null {
+    if (this.apiName !== 'HisParameterMaster') {
+      return null;
+    }
+
+    const testId = +(item.hisTestId ?? item.HisTestId ?? 0);
+    const code = ('' + (item.hisParamCode ?? item.HISParamCode ?? '')).trim();
+    if (!testId || !code) {
+      return null;
+    }
+
+    const excludeId = this.id ? +this.id : 0;
+    const duplicate = (this.existingParameters || []).some(p => {
+      const pTestId = +(p.hisTestId ?? p.HisTestId ?? 0);
+      const pCode = ('' + (p.hisParamCode ?? p.HISParamCode ?? '')).trim();
+      const pId = +(p.id ?? p.Id ?? 0);
+      return pTestId === testId
+        && pCode.toLowerCase() === code.toLowerCase()
+        && pId !== excludeId;
+    });
+
+    return duplicate ? this.parameterDuplicateMessage : null;
   }
 
   loadParameterCatalog(afterLoad?: () => void) {
@@ -468,6 +505,7 @@ export class MasterFormComponent implements OnInit {
     const patch: any = Object.assign({}, item);
     if (patch.Code != null && patch.code == null) { patch.code = patch.Code; }
     if (patch.Name != null && patch.name == null) { patch.name = patch.Name; }
+    if (patch.ProcessingCategory != null && patch.processingCategory == null) { patch.processingCategory = patch.ProcessingCategory; }
     if (patch.effectiveStart) { patch.effectiveStart = this.toDateInput(patch.effectiveStart); }
     if (patch.effectiveEnd) { patch.effectiveEnd = this.toDateInput(patch.effectiveEnd); }
     if (patch.dateOfBirth) { patch.dateOfBirth = this.toDateInput(patch.dateOfBirth); }
@@ -671,6 +709,13 @@ export class MasterFormComponent implements OnInit {
         item.lisParamCode = item.hisParamCode;
       }
     }
+
+    const parameterDuplicateError = this.validateParameterDuplicate(item);
+    if (parameterDuplicateError) {
+      this.alertService.error(parameterDuplicateError);
+      return;
+    }
+
     if (this.apiName === 'TestRate') {
       const rt = +item.rateType;
       if (rt !== 1) { item.corporateId = null; }

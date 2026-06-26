@@ -16,11 +16,16 @@ namespace LIS.BusinessLogic
         private readonly ModuleRepo<SaleInvoiceDetail> detailRepo;
         private readonly ModuleRepo<PatientDetail> patientRepo;
         private readonly ModuleRepo<TestRequestDetail> testRequestRepo;
+        private readonly ModuleRepo<RadiologyRequestDetail> radiologyRequestRepo;
         private readonly ModuleRepo<HisTestMaster> testRepo;
+        private readonly ModuleRepo<Departments> departmentRepo;
+        private readonly ModuleRepo<TestRateMaster> rateRepo;
         private readonly ITestRateMasterManager rateManager;
         private readonly ITestProfileMasterManager profileManager;
         private readonly IModuleIdentity identity;
         private readonly ILogger logger;
+        private readonly GenericUnitOfWork unitOfWork;
+        private readonly DepartmentProcessingRouter processingRouter;
 
         public SaleInvoiceManager(
             ILogger logger,
@@ -33,11 +38,16 @@ namespace LIS.BusinessLogic
             this.identity = identity;
             this.rateManager = rateManager;
             this.profileManager = profileManager;
+            this.unitOfWork = unitOfWork;
             invoiceRepo = new ModuleRepo<SaleInvoice>(logger, identity, unitOfWork);
             detailRepo = new ModuleRepo<SaleInvoiceDetail>(logger, identity, unitOfWork);
             patientRepo = new ModuleRepo<PatientDetail>(logger, identity, unitOfWork);
             testRequestRepo = new ModuleRepo<TestRequestDetail>(logger, identity, unitOfWork);
+            radiologyRequestRepo = new ModuleRepo<RadiologyRequestDetail>(logger, identity, unitOfWork);
             testRepo = new ModuleRepo<HisTestMaster>(logger, identity, unitOfWork);
+            departmentRepo = new ModuleRepo<Departments>(logger, identity, unitOfWork);
+            rateRepo = new ModuleRepo<TestRateMaster>(logger, identity, unitOfWork);
+            processingRouter = new DepartmentProcessingRouter(departmentRepo);
         }
 
         public SaleInvoiceDto GetById(long id)
@@ -118,7 +128,128 @@ namespace LIS.BusinessLogic
             return result;
         }
 
+        public ItemList<BillableItemLookup> GetBillableItems(ListOptions option, DateTime? invoiceDate = null)
+        {
+            option = option ?? new ListOptions();
+            var pageSize = option.RecordPerPage > 0 ? option.RecordPerPage : 50;
+            var page = option.CurrentPage > 0 ? option.CurrentPage : 1;
+            var search = (option.SearchText ?? string.Empty).Trim();
+            var asOf = (invoiceDate ?? DateTime.Today).Date;
+            var itemType = (option.BillableItemType ?? string.Empty).Trim();
+            var departmentCode = (option.DepartmentCode ?? string.Empty).Trim();
+            var includeProfiles = string.IsNullOrEmpty(itemType) ||
+                string.Equals(itemType, "profile", StringComparison.OrdinalIgnoreCase);
+            var includeTests = string.IsNullOrEmpty(itemType) ||
+                string.Equals(itemType, "test", StringComparison.OrdinalIgnoreCase);
+
+            var ratedTestIds = rateRepo.Get(r =>
+                    r.IsActive &&
+                    r.EffectiveStart <= asOf &&
+                    r.EffectiveEnd >= asOf)
+                .Select(r => r.TestId)
+                .Distinct()
+                .ToList();
+
+            var items = new List<BillableItemLookup>();
+
+            if (includeProfiles && string.IsNullOrEmpty(departmentCode))
+            {
+                var profilePageSize = string.IsNullOrEmpty(search) ? pageSize : 0;
+                var profileOptions = new ListOptions
+                {
+                    RecordPerPage = profilePageSize > 0 ? profilePageSize : 25,
+                    CurrentPage = 1,
+                    SearchText = search,
+                    SortColumnName = "Name",
+                    SortDirection = true
+                };
+                var profileResult = profileManager.Get(profileOptions);
+                foreach (var profile in (profileResult?.Items ?? Enumerable.Empty<TestProfileMaster>()).Where(p => p.IsActive))
+                {
+                    items.Add(new BillableItemLookup
+                    {
+                        Key = $"profile:{profile.Id}",
+                        Label = $"[Profile] {profile.Code} - {profile.Name} ({profile.PackageRate})",
+                        ItemType = "profile",
+                        TestProfileId = profile.Id
+                    });
+                }
+            }
+
+            if (includeTests && ratedTestIds.Any())
+            {
+                var testQuery = testRepo.Get(t => t.IsActive && ratedTestIds.Contains(t.Id));
+                if (!string.IsNullOrEmpty(departmentCode))
+                {
+                    var deptLower = departmentCode.ToLower();
+                    testQuery = testQuery.Where(t =>
+                        t.DepartmentCode != null &&
+                        t.DepartmentCode.ToLower() == deptLower);
+                }
+
+                if (!string.IsNullOrEmpty(search))
+                {
+                    var searchLower = search.ToLower();
+                    testQuery = testQuery.Where(t =>
+                        (t.HISTestCode != null && t.HISTestCode.ToLower().Contains(searchLower)) ||
+                        (t.HISTestCodeDescription != null && t.HISTestCodeDescription.ToLower().Contains(searchLower)));
+                }
+
+                var testTake = string.IsNullOrEmpty(search) ? Math.Max(pageSize, 50) : 200;
+                var tests = testQuery
+                    .OrderBy(t => t.HISTestCode)
+                    .Take(testTake)
+                    .ToList();
+
+                foreach (var test in tests)
+                {
+                    items.Add(new BillableItemLookup
+                    {
+                        Key = $"test:{test.Id}",
+                        Label = $"{test.HISTestCode} - {test.HISTestCodeDescription}",
+                        ItemType = "test",
+                        TestId = test.Id,
+                        DepartmentCode = test.DepartmentCode
+                    });
+                }
+            }
+
+            var sorted = items
+                .OrderBy(i => i.Label, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            var total = sorted.Count;
+            var paged = sorted
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            return new ItemList<BillableItemLookup>
+            {
+                TotalRecord = total,
+                Items = paged
+            };
+        }
+
         public long Save(SaleInvoiceDto dto)
+        {
+            using (var transaction = unitOfWork.BeginTransaction())
+            {
+                try
+                {
+                    var id = SaveCore(dto);
+                    transaction.Commit();
+                    return id;
+                }
+                catch
+                {
+                    transaction.Rollback();
+                    throw;
+                }
+            }
+        }
+
+        private long SaveCore(SaleInvoiceDto dto)
         {
             if (dto?.Invoice == null)
             {
@@ -209,20 +340,15 @@ namespace LIS.BusinessLogic
                 var id = invoiceRepo.Add(header);
                 header.Id = id;
 
+                PersistInvoiceDetails(id, lines, now);
                 LinkTestRequestsToLines(header, lines, header.InvoiceNo);
+                LinkRadiologyRequestsToLines(header, lines, header.InvoiceNo, now);
+                UpdateDetailRequestLinks(lines);
 
-                foreach (var line in lines)
+                if ((!header.RequestDetailId.HasValue || header.RequestDetailId <= 0) &&
+                    lines.Any(l => l.RequestDetailId.HasValue && l.RequestDetailId > 0))
                 {
-                    line.SaleInvoiceId = id;
-                    line.CreatedOn = now;
-                    line.CreatedBy = identity?.ActivityMember;
-                    line.IsActive = true;
-                    detailRepo.Add(line);
-                }
-
-                if ((!header.RequestDetailId.HasValue || header.RequestDetailId <= 0) && lines.Any(l => l.RequestDetailId > 0))
-                {
-                    header.RequestDetailId = lines.First(l => l.RequestDetailId > 0).RequestDetailId;
+                    header.RequestDetailId = lines.First(l => l.RequestDetailId.HasValue && l.RequestDetailId > 0).RequestDetailId;
                     invoiceRepo.Update(header);
                 }
 
@@ -252,27 +378,35 @@ namespace LIS.BusinessLogic
                 detailRepo.Delete(old);
             }
 
+            PersistInvoiceDetails(existingHeader.Id, lines, now);
             LinkTestRequestsToLines(existingHeader, lines, existingHeader.InvoiceNo);
+            LinkRadiologyRequestsToLines(existingHeader, lines, existingHeader.InvoiceNo, now);
+            UpdateDetailRequestLinks(lines);
 
-            foreach (var line in lines)
+            if ((!existingHeader.RequestDetailId.HasValue || existingHeader.RequestDetailId <= 0) &&
+                lines.Any(l => l.RequestDetailId.HasValue && l.RequestDetailId > 0))
             {
-                line.SaleInvoiceId = existingHeader.Id;
-                line.CreatedOn = now;
-                line.CreatedBy = identity?.ActivityMember;
-                line.IsActive = true;
-                detailRepo.Add(line);
-            }
-
-            if ((!existingHeader.RequestDetailId.HasValue || existingHeader.RequestDetailId <= 0) && lines.Any(l => l.RequestDetailId > 0))
-            {
-                existingHeader.RequestDetailId = lines.First(l => l.RequestDetailId > 0).RequestDetailId;
+                existingHeader.RequestDetailId = lines.First(l => l.RequestDetailId.HasValue && l.RequestDetailId > 0).RequestDetailId;
                 invoiceRepo.Update(existingHeader);
             }
 
             return existingHeader.Id;
         }
 
-        public void UpdateStatus(long id, int invoiceStatus, int paymentStatus)
+        private void PersistInvoiceDetails(long invoiceId, List<SaleInvoiceDetail> lines, DateTime now)
+        {
+            foreach (var line in lines)
+            {
+                line.SaleInvoiceId = invoiceId;
+                line.CreatedOn = now;
+                line.CreatedBy = identity?.ActivityMember;
+                line.IsActive = true;
+                line.RequestDetailId = null;
+                line.Id = detailRepo.Add(line);
+            }
+        }
+
+        public void UpdateStatus(long id, int invoiceStatus, int paymentStatus, decimal? paidAmount = null)
         {
             var invoice = invoiceRepo.Get(id);
             if (invoice == null)
@@ -286,17 +420,41 @@ namespace LIS.BusinessLogic
             }
 
             invoice.InvoiceStatus = invoiceStatus;
-            invoice.PaymentStatus = paymentStatus;
-            invoice.IsActive = true;
             invoice.ModifiedOn = DateTime.Now;
             invoice.ModifiedBy = identity?.ActivityMember;
 
-            if (paymentStatus == (int)PaymentStatusType.Paid)
+            if (paidAmount.HasValue)
             {
+                if (paidAmount.Value < 0)
+                {
+                    throw new ArgumentException("Paid amount cannot be negative.");
+                }
+
+                if (paidAmount.Value > invoice.NetAmount)
+                {
+                    throw new ArgumentException("Paid amount cannot exceed net amount.");
+                }
+
+                invoice.PaidAmount = paidAmount.Value;
+            }
+            else if (paymentStatus == (int)PaymentStatusType.Paid)
+            {
+                invoice.PaidAmount = invoice.NetAmount;
+            }
+
+            ApplyPaymentStatus(invoice);
+            if (paymentStatus == (int)PaymentStatusType.Paid && invoice.PaymentStatus != (int)PaymentStatusType.Paid)
+            {
+                invoice.PaymentStatus = (int)PaymentStatusType.Paid;
                 invoice.PaidAmount = invoice.NetAmount;
                 invoice.DueAmount = 0;
             }
+            else if (!paidAmount.HasValue && paymentStatus != (int)PaymentStatusType.Paid)
+            {
+                invoice.PaymentStatus = paymentStatus;
+            }
 
+            invoice.IsActive = true;
             invoiceRepo.Update(invoice);
         }
 
@@ -329,11 +487,6 @@ namespace LIS.BusinessLogic
                     continue;
                 }
 
-                if (line.RequestDetailId > 0 && testRequestRepo.Get(line.RequestDetailId) != null)
-                {
-                    continue;
-                }
-
                 var test = testRepo.Get(line.TestId);
                 if (test == null)
                 {
@@ -341,45 +494,96 @@ namespace LIS.BusinessLogic
                         $"Test id {line.TestId} was not found in HIS Test master.");
                 }
 
-                var request = testRequestRepo.Get(t =>
-                    t.PatientId == invoice.PatientId &&
-                    t.HISTestCode == test.HISTestCode &&
-                    t.HISRequestNo == reqNo).FirstOrDefault();
-
-                if (request == null)
+                if (processingRouter.IsDiagnosticTest(test))
                 {
-                    var sampleNo = !string.IsNullOrWhiteSpace(line.SampleNo)
-                        ? line.SampleNo
-                        : $"{reqNo}-{test.HISTestCode}";
-
-                    request = new TestRequestDetail
-                    {
-                        PatientId = invoice.PatientId,
-                        HISTestCode = test.HISTestCode,
-                        HISTestName = test.HISTestCodeDescription,
-                        HISRequestNo = reqNo,
-                        HISRequestId = reqNo,
-                        SampleNo = sampleNo,
-                        SampleCollectionDate = now,
-                        SampleReceivedDate = now,
-                        SpecimenCode = test.HISSpecimenCode,
-                        SpecimenName = test.HISSpecimenName,
-                        ReportStatus = ReportStatusType.New,
-                        CreatedOn = now,
-                        CreatedBy = identity?.ActivityMember
-                    };
-
-                    request.Id = testRequestRepo.Add(request);
+                    continue;
                 }
 
+                if (line.RequestDetailId.HasValue && line.RequestDetailId > 0 &&
+                    testRequestRepo.Get(line.RequestDetailId.Value) != null)
+                {
+                    continue;
+                }
+
+                var request = EnsureTestRequest(invoice, test, line, reqNo, now);
                 line.RequestDetailId = request.Id;
 
-                if (line.RequestDetailId <= 0)
+                if (!line.RequestDetailId.HasValue || line.RequestDetailId <= 0)
                 {
                     throw new InvalidOperationException(
                         $"Could not link test request for test id {line.TestId}.");
                 }
             }
+        }
+
+        private void LinkRadiologyRequestsToLines(
+            SaleInvoice invoice,
+            List<SaleInvoiceDetail> lines,
+            string requestNo,
+            DateTime now)
+        {
+            if (invoice == null || invoice.PatientId <= 0 || lines == null)
+            {
+                return;
+            }
+
+            var reqNo = string.IsNullOrWhiteSpace(requestNo) ? $"INV{invoice.Id}" : requestNo;
+
+            foreach (var line in lines.Where(l => l.TestId > 0 && (!l.TestProfileId.HasValue || l.TestProfileId <= 0)))
+            {
+                var test = testRepo.Get(line.TestId);
+                if (test == null || !processingRouter.IsDiagnosticTest(test))
+                {
+                    continue;
+                }
+
+                EnsureRadiologyRequest(invoice, test, reqNo, now);
+            }
+        }
+
+        private void UpdateDetailRequestLinks(List<SaleInvoiceDetail> lines)
+        {
+            if (lines == null)
+            {
+                return;
+            }
+
+            foreach (var line in lines)
+            {
+                if (line.Id <= 0 || !line.RequestDetailId.HasValue || line.RequestDetailId <= 0)
+                {
+                    continue;
+                }
+
+                var stored = detailRepo.Get(line.Id);
+                if (stored == null)
+                {
+                    continue;
+                }
+
+                stored.RequestDetailId = line.RequestDetailId;
+                detailRepo.Update(stored);
+            }
+        }
+
+        private static string ResolveRadiologyModality(HisTestMaster test)
+        {
+            var name = test?.HISSpecimenName ?? test?.HISSpecimenCode ?? test?.HISTestCodeDescription ?? "General";
+            return name.Length > 30 ? name.Substring(0, 30) : name;
+        }
+
+        private string ResolveRadiologyDepartment(HisTestMaster test)
+        {
+            if (test == null || string.IsNullOrWhiteSpace(test.DepartmentCode))
+            {
+                return "Radiology";
+            }
+
+            var dept = departmentRepo.Get(d =>
+                d.Code != null && d.Code.Equals(test.DepartmentCode, StringComparison.OrdinalIgnoreCase))
+                .FirstOrDefault();
+
+            return !string.IsNullOrWhiteSpace(dept?.Name) ? dept.Name : "Radiology";
         }
 
         public string GenerateInvoiceNo()
@@ -450,7 +654,40 @@ namespace LIS.BusinessLogic
             header.DiscountAmount = lines.Sum(l => l.DiscountAmount);
             header.TaxAmount = lines.Sum(l => l.TaxAmount);
             header.NetAmount = lines.Sum(l => l.NetAmount);
-            header.DueAmount = header.NetAmount - header.PaidAmount;
+            ApplyPaymentStatus(header);
+        }
+
+        private static void ApplyPaymentStatus(SaleInvoice header)
+        {
+            if (header == null)
+            {
+                return;
+            }
+
+            if (header.PaidAmount < 0)
+            {
+                throw new ArgumentException("Paid amount cannot be negative.");
+            }
+
+            if (header.PaidAmount > header.NetAmount)
+            {
+                throw new ArgumentException("Paid amount cannot exceed net amount.");
+            }
+
+            if (header.PaidAmount <= 0)
+            {
+                header.PaymentStatus = (int)PaymentStatusType.Unpaid;
+            }
+            else if (header.PaidAmount >= header.NetAmount)
+            {
+                header.PaymentStatus = (int)PaymentStatusType.Paid;
+            }
+            else
+            {
+                header.PaymentStatus = (int)PaymentStatusType.Partial;
+            }
+
+            header.DueAmount = Math.Round(header.NetAmount - header.PaidAmount, 2);
         }
 
         private void EnrichHeader(SaleInvoice invoice)
@@ -535,6 +772,7 @@ namespace LIS.BusinessLogic
                 if (test != null)
                 {
                     line.TestName = $"{test.HISTestCode} - {test.HISTestCodeDescription}";
+                    line.DepartmentCode = test.DepartmentCode;
                 }
             }
         }
@@ -574,7 +812,7 @@ namespace LIS.BusinessLogic
                 return;
             }
 
-            long firstRequestId = 0;
+            long firstLabRequestId = 0;
             foreach (var detail in profile.ProfileDetails)
             {
                 var test = testRepo.Get(detail.TestId);
@@ -583,46 +821,97 @@ namespace LIS.BusinessLogic
                     continue;
                 }
 
+                processingRouter.EnsureLaboratoryTest(test, "a test profile");
+
                 for (var i = 0; i < Math.Max(1, detail.Quantity); i++)
                 {
-                    var request = testRequestRepo.Get(t =>
-                        t.PatientId == invoice.PatientId &&
-                        t.HISTestCode == test.HISTestCode &&
-                        t.HISRequestNo == requestNo).FirstOrDefault();
-
-                    if (request == null)
+                    var request = EnsureTestRequest(invoice, test, line, requestNo, now);
+                    if (firstLabRequestId <= 0)
                     {
-                        var sampleNo = $"{requestNo}-{test.HISTestCode}";
-                        request = new TestRequestDetail
-                        {
-                            PatientId = invoice.PatientId,
-                            HISTestCode = test.HISTestCode,
-                            HISTestName = test.HISTestCodeDescription,
-                            HISRequestNo = requestNo,
-                            HISRequestId = requestNo,
-                            SampleNo = sampleNo,
-                            SampleCollectionDate = now,
-                            SampleReceivedDate = now,
-                            SpecimenCode = test.HISSpecimenCode,
-                            SpecimenName = test.HISSpecimenName,
-                            ReportStatus = ReportStatusType.New,
-                            CreatedOn = now,
-                            CreatedBy = identity?.ActivityMember
-                        };
-                        request.Id = testRequestRepo.Add(request);
-                    }
-
-                    if (firstRequestId <= 0)
-                    {
-                        firstRequestId = request.Id;
+                        firstLabRequestId = request.Id;
                     }
                 }
             }
 
-            if (firstRequestId > 0)
+            if (firstLabRequestId > 0)
             {
-                line.RequestDetailId = firstRequestId;
+                line.RequestDetailId = firstLabRequestId;
             }
+        }
+
+        private TestRequestDetail EnsureTestRequest(
+            SaleInvoice invoice,
+            HisTestMaster test,
+            SaleInvoiceDetail line,
+            string requestNo,
+            DateTime now)
+        {
+            var reqNo = string.IsNullOrWhiteSpace(requestNo) ? $"INV{invoice.Id}" : requestNo;
+            var request = testRequestRepo.Get(t =>
+                t.PatientId == invoice.PatientId &&
+                t.HISTestCode == test.HISTestCode &&
+                t.HISRequestNo == reqNo).FirstOrDefault();
+
+            if (request != null)
+            {
+                return request;
+            }
+
+            var sampleNo = !string.IsNullOrWhiteSpace(line?.SampleNo)
+                ? line.SampleNo
+                : $"{reqNo}-{test.HISTestCode}";
+
+            request = new TestRequestDetail
+            {
+                PatientId = invoice.PatientId,
+                HISTestCode = test.HISTestCode,
+                HISTestName = test.HISTestCodeDescription,
+                HISRequestNo = reqNo,
+                HISRequestId = reqNo,
+                SampleNo = sampleNo,
+                SampleCollectionDate = now,
+                SampleReceivedDate = now,
+                SpecimenCode = test.HISSpecimenCode,
+                SpecimenName = test.HISSpecimenName,
+                ReportStatus = ReportStatusType.New,
+                CreatedOn = now,
+                CreatedBy = identity?.ActivityMember
+            };
+            request.Id = testRequestRepo.Add(request);
+            return request;
+        }
+
+        private void EnsureRadiologyRequest(SaleInvoice invoice, HisTestMaster test, string requestNo, DateTime now)
+        {
+            var reqNo = string.IsNullOrWhiteSpace(requestNo) ? $"INV{invoice.Id}" : requestNo;
+            var existing = radiologyRequestRepo.Get(r =>
+                r.PatientId == invoice.PatientId &&
+                r.HISRequestNo == reqNo &&
+                r.HISTestCode == test.HISTestCode).FirstOrDefault();
+
+            if (existing != null)
+            {
+                return;
+            }
+
+            var modality = ResolveRadiologyModality(test);
+            var rad = new RadiologyRequestDetail
+            {
+                PatientId = invoice.PatientId,
+                HISRequestNo = reqNo,
+                AccessionNo = $"{reqNo}-{test.HISTestCode}",
+                HISTestCode = test.HISTestCode,
+                HISTestName = test.HISTestCodeDescription,
+                Modality = modality,
+                Department = ResolveRadiologyDepartment(test),
+                ReportStatus = RadiologyReportStatus.Pending,
+                CreatedOn = now,
+                ModifiedOn = now,
+                CreatedBy = identity?.ActivityMember ?? "system",
+                ModifiedBy = identity?.ActivityMember ?? "system"
+            };
+
+            radiologyRequestRepo.Add(rad);
         }
 
         private static SaleInvoice ToListItem(SaleInvoice invoice)

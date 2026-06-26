@@ -73,6 +73,22 @@ namespace Lis.Api.Controllers.Api
         }
 
         [HttpGet]
+        [Route("BillableItems")]
+        public ItemList<BillableItemLookup> GetBillableItems(DateTime? invoiceDate = null)
+        {
+            try
+            {
+                var result = manager.GetBillableItems(ApiOption, invoiceDate);
+                return result ?? new ItemList<BillableItemLookup> { TotalRecord = 0, Items = new List<BillableItemLookup>() };
+            }
+            catch (Exception e)
+            {
+                logger.LogException(e);
+                return new ItemList<BillableItemLookup> { TotalRecord = 0, Items = new List<BillableItemLookup>() };
+            }
+        }
+
+        [HttpGet]
         [Route("{id:long}")]
         public SaleInvoiceDto Get(long id)
         {
@@ -128,7 +144,7 @@ namespace Lis.Api.Controllers.Api
         {
             try
             {
-                manager.UpdateStatus(request.Id, request.InvoiceStatus, request.PaymentStatus);
+                manager.UpdateStatus(request.Id, request.InvoiceStatus, request.PaymentStatus, request.PaidAmount);
                 var response = responseMgr.CreateResponse(HttpStatusCode.OK, "Status updated successfully", null, null);
                 return Request.CreateResponse(HttpStatusCode.OK, response);
             }
@@ -163,5 +179,6 @@ namespace Lis.Api.Controllers.Api
         public long Id { get; set; }
         public int InvoiceStatus { get; set; }
         public int PaymentStatus { get; set; }
+        public decimal? PaidAmount { get; set; }
     }
 }

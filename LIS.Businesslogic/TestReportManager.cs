@@ -245,8 +245,8 @@ namespace LIS.BusinessLogic
             var merged = new Dictionary<long, TestRequestDetail>();
 
             var requestIds = detailRepo.Get()
-                .Where(d => d.SaleInvoiceId == invoice.Id && d.IsActive && d.RequestDetailId > 0)
-                .Select(d => d.RequestDetailId)
+                .Where(d => d.SaleInvoiceId == invoice.Id && d.IsActive && d.RequestDetailId.HasValue && d.RequestDetailId.Value > 0)
+                .Select(d => d.RequestDetailId.Value)
                 .Distinct()
                 .ToList();
 

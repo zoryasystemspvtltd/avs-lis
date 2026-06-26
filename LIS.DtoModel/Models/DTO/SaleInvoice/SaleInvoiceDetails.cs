@@ -39,9 +39,16 @@ namespace LIS.DtoModel.Models
         public decimal NetAmount { get; set; } = 0;
         
         [ForeignKey("TestRequestDetail")]
-        public long RequestDetailId { get; set; }
+        public long? RequestDetailId { get; set; }
         [JsonIgnore]
         public virtual TestRequestDetail TestRequestDetail { get; set; }
+
+        /// <summary>Legacy UI field — not used for routing.</summary>
+        [NotMapped]
+        public string LineType { get; set; }
+
+        [NotMapped]
+        public string DepartmentCode { get; set; }
 
         [MaxLength(30)]
         public string SampleNo { get; set; }

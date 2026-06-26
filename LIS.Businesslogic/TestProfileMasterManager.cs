@@ -13,6 +13,8 @@ namespace LIS.BusinessLogic
     {
         private readonly ModuleRepo<TestProfileDetail> detailRepo;
         private readonly ModuleRepo<HisTestMaster> testRepo;
+        private readonly ModuleRepo<Departments> departmentRepo;
+        private readonly DepartmentProcessingRouter processingRouter;
         private readonly ModuleRepo<HISParameterMaster> parameterRepo;
         private readonly ModuleRepo<HISParameterRangMaster> rangeRepo;
 
@@ -21,6 +23,8 @@ namespace LIS.BusinessLogic
         {
             detailRepo = new ModuleRepo<TestProfileDetail>(logger, identity, uow);
             testRepo = new ModuleRepo<HisTestMaster>(logger, identity, uow);
+            departmentRepo = new ModuleRepo<Departments>(logger, identity, uow);
+            processingRouter = new DepartmentProcessingRouter(departmentRepo);
             parameterRepo = new ModuleRepo<HISParameterMaster>(logger, identity, uow);
             rangeRepo = new ModuleRepo<HISParameterRangMaster>(logger, identity, uow);
         }
@@ -74,7 +78,7 @@ namespace LIS.BusinessLogic
             return dto;
         }
 
-        public void SaveWithDetails(TestProfileMaster profile, IEnumerable<TestProfileDetail> details)
+        public int SaveWithDetails(TestProfileMaster profile, IEnumerable<TestProfileDetail> details)
         {
             var lineItems = (details ?? Enumerable.Empty<TestProfileDetail>()).ToList();
             ValidateProfile(profile, lineItems);
@@ -96,11 +100,36 @@ namespace LIS.BusinessLogic
 
             foreach (var detail in lineItems)
             {
+                detail.Id = 0;
                 detail.TestProfileId = (int)id;
                 detail.TestProfileMaster = null;
                 detail.HisTestMaster = null;
                 detailRepo.Add(detail);
             }
+
+            return profile.Id;
+        }
+
+        public string GetNextProfileCode()
+        {
+            var max = 0;
+            foreach (var code in Repo.Get().Select(p => p.Code))
+            {
+                if (string.IsNullOrWhiteSpace(code))
+                {
+                    continue;
+                }
+
+                var trimmed = code.Trim();
+                if (trimmed.Length >= 4
+                    && trimmed.StartsWith("PKG", StringComparison.OrdinalIgnoreCase)
+                    && int.TryParse(trimmed.Substring(3), out var n))
+                {
+                    max = Math.Max(max, n);
+                }
+            }
+
+            return $"PKG{(max + 1).ToString().PadLeft(4, '0')}";
         }
 
         private void ValidateProfile(TestProfileMaster profile, List<TestProfileDetail> lineItems)
@@ -163,7 +192,43 @@ namespace LIS.BusinessLogic
                 {
                     throw new InvalidOperationException($"Test '{test.HISTestCode}' is inactive and cannot be added to a profile.");
                 }
+
+                processingRouter.EnsureLaboratoryTest(test, "a test profile");
             }
+        }
+
+        /// <summary>Reports profiles that contain tests from Diagnostic departments.</summary>
+        public List<ProfileDiagnosticAuditRow> AuditProfilesWithDiagnosticTests()
+        {
+            var violations = new List<ProfileDiagnosticAuditRow>();
+            var profiles = Repo.Get().ToList();
+
+            foreach (var profile in profiles)
+            {
+                var details = detailRepo.Get(d => d.TestProfileId == profile.Id).ToList();
+                foreach (var detail in details)
+                {
+                    var test = testRepo.Get(detail.TestId);
+                    if (test == null || !processingRouter.IsDiagnosticTest(test))
+                    {
+                        continue;
+                    }
+
+                    violations.Add(new ProfileDiagnosticAuditRow
+                    {
+                        ProfileId = profile.Id,
+                        ProfileCode = profile.Code,
+                        ProfileName = profile.Name,
+                        TestId = test.Id,
+                        TestCode = test.HISTestCode,
+                        TestName = test.HISTestCodeDescription,
+                        DepartmentCode = test.DepartmentCode,
+                        ProcessingCategory = processingRouter.GetProcessingCategory(test)
+                    });
+                }
+            }
+
+            return violations;
         }
 
         private List<TestProfileTestNodeDto> BuildTestHierarchy(IEnumerable<TestProfileDetail> details)
