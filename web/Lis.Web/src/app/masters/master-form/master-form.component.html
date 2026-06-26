@@ -2,6 +2,7 @@
   <form [formGroup]="form" (ngSubmit)="onSubmit()">
     <h3>{{title}} {{id ? '(Edit)' : '(Create)'}}</h3>
     <hr />
+    <alert></alert>
 
     <ng-container *ngFor="let field of visibleFields()">
       <div class="row" *ngIf="field.type !== 'checkbox'">

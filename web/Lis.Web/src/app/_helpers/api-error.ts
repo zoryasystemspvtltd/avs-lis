@@ -11,6 +11,17 @@ export function extractApiError(err: any, fallback = 'Operation failed'): string
   const body = err.error !== undefined && err.status != null ? err.error : err;
   if (typeof body === 'string') {
     const text = body.trim();
+    if (text.startsWith('{') || text.startsWith('[')) {
+      try {
+        const parsed = JSON.parse(text);
+        const parsedMessage = parsed?.message || parsed?.Message;
+        if (parsedMessage) {
+          return parsedMessage;
+        }
+      } catch {
+        // use raw text below
+      }
+    }
     return text || fallback;
   }
 

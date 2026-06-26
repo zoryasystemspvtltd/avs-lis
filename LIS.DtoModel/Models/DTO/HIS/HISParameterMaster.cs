@@ -11,6 +11,7 @@ namespace LIS.DtoModel.Models
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [JsonProperty("id")]
         public int Id { get; set; }
 
         [JsonProperty("hisTestCode")]

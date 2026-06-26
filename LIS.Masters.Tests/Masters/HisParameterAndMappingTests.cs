@@ -1,3 +1,5 @@
+using LIS.BusinessLogic;
+using LIS.DtoModel.Interfaces;
 using LIS.DtoModel.Models;
 using LIS.Masters.Tests.Infrastructure;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -101,7 +103,7 @@ namespace LIS.Masters.Tests.Masters
         }
 
         [TestMethod]
-        public void HisParameter_Duplicate_Code_For_Same_Test_Blocked()
+        public void HisParameter_Duplicate_Code_Globally_Blocked()
         {
             var testId = EnsureTestId();
             var test = Services.HisTest.GetTestById(testId);
@@ -117,15 +119,116 @@ namespace LIS.Masters.Tests.Masters
             var paramId = (int)Services.HisParameter.Add(param);
             Assert.IsTrue(paramId > 0);
 
-            var duplicate = new HISParameterMaster
+            var duplicateCode = new HISParameterMaster
             {
                 HisTestId = testId,
                 HISTestCode = test.HISTestCode,
                 HISParamCode = paramCode,
                 HISParamDescription = "Duplicate " + paramCode
             };
-            var ex = Assert.ThrowsException<InvalidOperationException>(() => Services.HisParameter.Add(duplicate));
-            Assert.IsTrue(ex.Message.IndexOf("already exists", StringComparison.OrdinalIgnoreCase) >= 0);
+            var ex = Assert.ThrowsException<InvalidOperationException>(() => Services.HisParameter.Add(duplicateCode));
+            Assert.AreEqual(HisParameterMasterManager.ParameterCodeExistsMessage, ex.Message);
+
+            var duplicateCodeCase = new HISParameterMaster
+            {
+                HisTestId = testId,
+                HISTestCode = test.HISTestCode,
+                HISParamCode = paramCode.ToLowerInvariant(),
+                HISParamDescription = "Another " + paramCode
+            };
+            ex = Assert.ThrowsException<InvalidOperationException>(() => Services.HisParameter.Add(duplicateCodeCase));
+            Assert.AreEqual(HisParameterMasterManager.ParameterCodeExistsMessage, ex.Message);
+
+            Services.HisParameter.Delete(new HISParameterMaster { Id = paramId });
+        }
+
+        [TestMethod]
+        public void HisParameter_Duplicate_Description_Globally_Blocked()
+        {
+            var testId = EnsureTestId();
+            var test = Services.HisTest.GetTestById(testId);
+            var paramCode = UniqueCode("DESC");
+            var description = "Haemoglobin " + paramCode;
+
+            var param = new HISParameterMaster
+            {
+                HisTestId = testId,
+                HISTestCode = test.HISTestCode,
+                HISParamCode = paramCode,
+                HISParamDescription = description
+            };
+            var paramId = (int)Services.HisParameter.Add(param);
+            Assert.IsTrue(paramId > 0);
+
+            var duplicateDescription = new HISParameterMaster
+            {
+                HisTestId = testId,
+                HISTestCode = test.HISTestCode,
+                HISParamCode = UniqueCode("NEW"),
+                HISParamDescription = description.ToUpperInvariant()
+            };
+            var ex = Assert.ThrowsException<InvalidOperationException>(() => Services.HisParameter.Add(duplicateDescription));
+            Assert.AreEqual(HisParameterMasterManager.ParameterDescriptionExistsMessage, ex.Message);
+
+            Services.HisParameter.Delete(new HISParameterMaster { Id = paramId });
+        }
+
+        [TestMethod]
+        public void HisParameter_Edit_Without_Change_Succeeds()
+        {
+            var testId = EnsureTestId();
+            var test = Services.HisTest.GetTestById(testId);
+            var paramCode = UniqueCode("EDIT");
+
+            var param = new HISParameterMaster
+            {
+                HisTestId = testId,
+                HISTestCode = test.HISTestCode,
+                HISParamCode = paramCode,
+                HISParamDescription = "Edit " + paramCode,
+                HISParamUnit = "mg/dL"
+            };
+            var paramId = (int)Services.HisParameter.Add(param);
+            Assert.IsTrue(paramId > 0);
+
+            var loaded = Services.HisParameter.GetById(paramId);
+            loaded.HISParamUnit = "g/dL";
+            Services.HisParameter.Update(loaded);
+
+            var reloaded = Services.HisParameter.GetById(paramId);
+            Assert.AreEqual("g/dL", reloaded.HISParamUnit);
+            Assert.AreEqual(paramCode, reloaded.HISParamCode);
+
+            Services.HisParameter.Delete(new HISParameterMaster { Id = paramId });
+        }
+
+        [TestMethod]
+        public void HisParameter_Add_Through_Interface_Uses_Validation()
+        {
+            var testId = EnsureTestId();
+            var test = Services.HisTest.GetTestById(testId);
+            var paramCode = UniqueCode("IFC");
+            var manager = Services.HisParameter as IMasterCrudManager<HISParameterMaster>;
+            Assert.IsNotNull(manager);
+
+            var paramId = (int)manager.Add(new HISParameterMaster
+            {
+                HisTestId = testId,
+                HISTestCode = test.HISTestCode,
+                HISParamCode = paramCode,
+                HISParamDescription = "Interface " + paramCode
+            });
+            Assert.IsTrue(paramId > 0);
+
+            var duplicate = new HISParameterMaster
+            {
+                HisTestId = testId,
+                HISTestCode = test.HISTestCode,
+                HISParamCode = paramCode,
+                HISParamDescription = "Dup " + paramCode
+            };
+            var ex = Assert.ThrowsException<InvalidOperationException>(() => manager.Add(duplicate));
+            Assert.AreEqual(HisParameterMasterManager.ParameterCodeExistsMessage, ex.Message);
 
             Services.HisParameter.Delete(new HISParameterMaster { Id = paramId });
         }

@@ -5,12 +5,17 @@ using LIS.DtoModel.Models;
 using LIS.Logger;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 
 namespace LIS.BusinessLogic
 {
     public class HisParameterMasterManager : MasterCrudManager<HISParameterMaster>, IMasterCrudManager<HISParameterMaster>
     {
+        public const string ParameterCodeExistsMessage = "Parameter Code already exists.";
+        public const string ParameterDescriptionExistsMessage = "Description already exists.";
+        public const string ParameterCombinationExistsMessage = "Parameter Code and Description combination already exists.";
+
         private readonly ModuleRepo<HisTestMaster> testRepo;
         private readonly ModuleRepo<HISParameterRangMaster> rangeRepo;
 
@@ -21,7 +26,7 @@ namespace LIS.BusinessLogic
             rangeRepo = new ModuleRepo<HISParameterRangMaster>(logger, identity, uow);
         }
 
-        public new long Add(HISParameterMaster item)
+        public override long Add(HISParameterMaster item)
         {
             if (item == null)
             {
@@ -35,10 +40,7 @@ namespace LIS.BusinessLogic
                 throw new InvalidOperationException("Test is required.");
             }
 
-            if (ExistsDuplicate(item, null))
-            {
-                throw new InvalidOperationException("A parameter with this code already exists for the selected test.");
-            }
+            ValidateParameterUniqueness(item, null);
 
             item.CreatedOn = DateTime.Now;
             if (item.HisTestId > 0 && string.IsNullOrEmpty(item.HISTestCode))
@@ -53,14 +55,11 @@ namespace LIS.BusinessLogic
             return base.Add(item);
         }
 
-        public new void Update(HISParameterMaster item)
+        public override void Update(HISParameterMaster item)
         {
             NormalizeParameter(item);
 
-            if (ExistsDuplicate(item, item.Id))
-            {
-                throw new InvalidOperationException("A parameter with this code already exists for the selected test.");
-            }
+            ValidateParameterUniqueness(item, item.Id);
 
             if (item.HisTestId > 0)
             {
@@ -91,20 +90,50 @@ namespace LIS.BusinessLogic
             }
         }
 
-        private bool ExistsDuplicate(HISParameterMaster item, int? excludeId)
+        private void ValidateParameterUniqueness(HISParameterMaster item, int? excludeId)
         {
-            if (item == null || string.IsNullOrWhiteSpace(item.HISParamCode))
+            if (item == null)
             {
-                return false;
+                return;
             }
 
-            var code = item.HISParamCode.Trim();
-            return Repo.Get(p =>
-                p.HisTestId == item.HisTestId &&
-                (!excludeId.HasValue || p.Id != excludeId.Value))
-                .AsEnumerable()
-                .Any(p => !string.IsNullOrWhiteSpace(p.HISParamCode)
-                    && string.Equals(p.HISParamCode.Trim(), code, StringComparison.OrdinalIgnoreCase));
+            var code = item.HISParamCode;
+            var description = item.HISParamDescription;
+
+            if (string.IsNullOrWhiteSpace(code))
+            {
+                throw new InvalidOperationException("Parameter Code is required.");
+            }
+
+            if (string.IsNullOrWhiteSpace(description))
+            {
+                throw new InvalidOperationException("Description is required.");
+            }
+
+            var candidates = UnitOfWork.Context.Set<HISParameterMaster>()
+                .AsNoTracking()
+                .Where(p => !excludeId.HasValue || p.Id != excludeId.Value)
+                .ToList();
+
+            if (candidates.Any(p => !string.IsNullOrWhiteSpace(p.HISParamCode)
+                && string.Equals(p.HISParamCode.Trim(), code, StringComparison.OrdinalIgnoreCase)))
+            {
+                throw new InvalidOperationException(ParameterCodeExistsMessage);
+            }
+
+            if (candidates.Any(p => !string.IsNullOrWhiteSpace(p.HISParamDescription)
+                && string.Equals(p.HISParamDescription.Trim(), description, StringComparison.OrdinalIgnoreCase)))
+            {
+                throw new InvalidOperationException(ParameterDescriptionExistsMessage);
+            }
+
+            if (candidates.Any(p => !string.IsNullOrWhiteSpace(p.HISParamCode)
+                && !string.IsNullOrWhiteSpace(p.HISParamDescription)
+                && string.Equals(p.HISParamCode.Trim(), code, StringComparison.OrdinalIgnoreCase)
+                && string.Equals(p.HISParamDescription.Trim(), description, StringComparison.OrdinalIgnoreCase)))
+            {
+                throw new InvalidOperationException(ParameterCombinationExistsMessage);
+            }
         }
 
         private static void NormalizeParameter(HISParameterMaster item)

@@ -30,7 +30,9 @@ export class MasterFormComponent implements OnInit {
   parameterOptions: any[] = [];
   existingParameters: any[] = [];
   lookupsLoaded = false;
-  readonly parameterDuplicateMessage = 'A parameter with this code already exists for the selected test.';
+  readonly parameterCodeExistsMessage = 'Parameter Code already exists.';
+  readonly parameterDescriptionExistsMessage = 'Description already exists.';
+  readonly parameterCombinationExistsMessage = 'Parameter Code and Description combination already exists.';
 
   constructor(
     private route: ActivatedRoute,
@@ -339,23 +341,41 @@ export class MasterFormComponent implements OnInit {
       return null;
     }
 
-    const testId = +(item.hisTestId ?? item.HisTestId ?? 0);
     const code = ('' + (item.hisParamCode ?? item.HISParamCode ?? '')).trim();
-    if (!testId || !code) {
+    const description = ('' + (item.hisParamDescription ?? item.HISParamDescription ?? '')).trim();
+    if (!code && !description) {
       return null;
     }
 
     const excludeId = this.id ? +this.id : 0;
-    const duplicate = (this.existingParameters || []).some(p => {
-      const pTestId = +(p.hisTestId ?? p.HisTestId ?? 0);
-      const pCode = ('' + (p.hisParamCode ?? p.HISParamCode ?? '')).trim();
+    const candidates = (this.existingParameters || []).filter(p => {
       const pId = +(p.id ?? p.Id ?? 0);
-      return pTestId === testId
-        && pCode.toLowerCase() === code.toLowerCase()
-        && pId !== excludeId;
+      return pId !== excludeId;
     });
 
-    return duplicate ? this.parameterDuplicateMessage : null;
+    const matchesCode = (p: any, value: string) => {
+      const pCode = ('' + (p.hisParamCode ?? p.HISParamCode ?? '')).trim();
+      return pCode && pCode.toLowerCase() === value.toLowerCase();
+    };
+
+    const matchesDescription = (p: any, value: string) => {
+      const pDesc = ('' + (p.hisParamDescription ?? p.HISParamDescription ?? '')).trim();
+      return pDesc && pDesc.toLowerCase() === value.toLowerCase();
+    };
+
+    if (code && candidates.some(p => matchesCode(p, code))) {
+      return this.parameterCodeExistsMessage;
+    }
+
+    if (description && candidates.some(p => matchesDescription(p, description))) {
+      return this.parameterDescriptionExistsMessage;
+    }
+
+    if (code && description && candidates.some(p => matchesCode(p, code) && matchesDescription(p, description))) {
+      return this.parameterCombinationExistsMessage;
+    }
+
+    return null;
   }
 
   loadParameterCatalog(afterLoad?: () => void) {
