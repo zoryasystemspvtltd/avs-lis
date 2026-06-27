@@ -4,29 +4,33 @@
    ============================================================================= */
 
 :root {
-  --zorya-primary: #1a7f8c;
-  --zorya-primary-dark: #155f69;
-  --zorya-primary-light: #36b1c1;
-  --zorya-primary-soft: #e8f4f6;
-  --zorya-accent: #846a1d;
-  --zorya-accent-soft: #f5f0e6;
-  --zorya-accent-light: #c9a84a;
-  --zorya-bg: #f0f4f6;
-  --zorya-bg-alt: #e8eef1;
+  --zorya-primary: #125d74;
+  --zorya-primary-dark: #0e4a5c;
+  --zorya-primary-light: #1a7a96;
+  --zorya-primary-soft: #e8f2f5;
+  --zorya-accent: #e9b513;
+  --zorya-accent-soft: #faf6e8;
+  --zorya-accent-light: #f0d56a;
+  --zorya-accent-border: rgba(233, 181, 19, 0.45);
+  --zorya-bg: #eef2f4;
+  --zorya-bg-alt: #e4eaed;
   --zorya-surface: #ffffff;
-  --zorya-border: #d8e6ea;
-  --zorya-border-light: #ecf2f4;
-  --zorya-text: #2d3a42;
-  --zorya-text-muted: #6b7c85;
-  --zorya-shadow-sm: 0 1px 3px rgba(21, 95, 105, 0.06);
-  --zorya-shadow-md: 0 4px 16px rgba(21, 95, 105, 0.08);
-  --zorya-radius: 8px;
-  --zorya-radius-sm: 6px;
-  --zorya-header-h: 56px;
-  --zorya-sidebar-w: 248px;
-  --zorya-content-max: 1280px;
-  --zorya-form-max: 860px;
+  --zorya-border: #e9d9a8;
+  --zorya-border-light: #f3ecd4;
+  --zorya-text: #2a3439;
+  --zorya-text-muted: #5c6b73;
+  --zorya-shadow-sm: 0 1px 2px rgba(18, 93, 116, 0.06);
+  --zorya-shadow-md: 0 3px 12px rgba(18, 93, 116, 0.08);
+  --zorya-radius: 6px;
+  --zorya-radius-sm: 4px;
+  --zorya-header-h: 52px;
+  --zorya-sidebar-w: 232px;
+  --zorya-content-max: none;
+  --zorya-form-max: 920px;
   --zorya-font: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --zorya-table-row-pad: 8px 10px;
+  --zorya-table-head-pad: 9px 10px;
+  --zorya-field-height: 32px;
 }
 
 /* ---- Base ---- */
@@ -34,8 +38,8 @@ body {
   background-color: var(--zorya-bg);
   color: var(--zorya-text);
   font-family: var(--zorya-font);
-  font-size: 14px;
-  line-height: 1.5;
+  font-size: 13px;
+  line-height: 1.45;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -447,7 +451,7 @@ a:focus {
   background: var(--zorya-primary-soft) !important;
   color: var(--zorya-primary-dark) !important;
   font-weight: 600;
-  border-left-color: var(--zorya-primary) !important;
+  border-left-color: var(--zorya-accent) !important;
   box-shadow: none !important;
 }
 
@@ -487,7 +491,7 @@ a:focus {
    ============================================================================= */
 .container-main.qcontent {
   background-color: var(--zorya-bg);
-  padding: 16px 20px 20px;
+  padding: 10px 14px 14px;
   min-height: calc(100vh - var(--zorya-header-h));
   box-sizing: border-box;
   display: flex;
@@ -534,12 +538,12 @@ a:focus {
 /* Page cards — list pages, forms, dashboards */
 .container-main .content {
   background: var(--zorya-surface);
-  border: 1px solid var(--zorya-border);
+  border: 1px solid var(--zorya-accent-border);
   border-radius: var(--zorya-radius);
-  padding: 20px 24px 24px;
+  padding: 14px 16px 16px;
   box-shadow: var(--zorya-shadow-sm);
-  margin: 0 auto 8px;
-  max-width: var(--zorya-content-max);
+  margin: 0 0 8px;
+  max-width: 100%;
   width: 100%;
   box-sizing: border-box;
 }
@@ -549,12 +553,12 @@ a:focus {
 }
 
 .container-main .content h1 {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 600;
   color: var(--zorya-primary-dark);
-  margin: 0 0 18px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--zorya-border-light);
+  margin: 0 0 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--zorya-accent-border);
   letter-spacing: -0.02em;
 }
 
@@ -605,12 +609,12 @@ a:focus {
   background: var(--zorya-primary-soft) !important;
   color: var(--zorya-primary-dark) !important;
   border: none !important;
-  border-bottom: 2px solid var(--zorya-primary) !important;
+  border-bottom: 2px solid var(--zorya-accent) !important;
   font-weight: 600;
-  font-size: 12px;
+  font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  padding: 12px 10px !important;
+  padding: var(--zorya-table-head-pad) !important;
   vertical-align: middle;
 }
 
@@ -633,7 +637,7 @@ a:focus {
 
 .qtable .table > tbody > tr > td,
 .content .table > tbody > tr > td {
-  padding: 11px 10px !important;
+  padding: var(--zorya-table-row-pad) !important;
   vertical-align: middle;
   border-top: 1px solid var(--zorya-border-light) !important;
   color: var(--zorya-text);
@@ -641,15 +645,11 @@ a:focus {
 }
 
 .qtable .table-striped > tbody > tr:nth-of-type(odd) {
-  background-color: rgba(26, 127, 140, 0.03);
-}
-
-.qtable .table-striped > tbody > tr:nth-of-type(even) {
-  background-color: var(--zorya-surface);
+  background-color: rgba(18, 93, 116, 0.025);
 }
 
 .qtable .table > tbody > tr:hover {
-  background-color: rgba(54, 177, 193, 0.06) !important;
+  background-color: rgba(18, 93, 116, 0.06) !important;
 }
 
 .content h4.pagination,
@@ -666,8 +666,8 @@ a:focus {
 .btn {
   border-radius: var(--zorya-radius-sm);
   font-weight: 500;
-  font-size: 13px;
-  padding: 7px 14px;
+  font-size: 12px;
+  padding: 6px 12px;
   transition: all 0.15s ease;
 }
 
@@ -680,7 +680,7 @@ a:focus {
 .btn-primary:focus {
   background-color: var(--zorya-primary-dark);
   border-color: var(--zorya-primary-dark);
-  box-shadow: 0 2px 8px rgba(26, 127, 140, 0.25);
+  box-shadow: 0 2px 6px rgba(18, 93, 116, 0.22);
 }
 
 .btn-default-alternet,
@@ -731,18 +731,19 @@ a:focus {
    ============================================================================= */
 .form-control {
   border-radius: var(--zorya-radius-sm);
-  border: 1px solid var(--zorya-border);
+  border: 1px solid var(--zorya-accent-border);
   box-shadow: none;
   height: auto;
-  min-height: 36px;
-  padding: 8px 12px;
-  font-size: 14px;
+  min-height: var(--zorya-field-height);
+  padding: 5px 10px;
+  font-size: 13px;
   color: var(--zorya-text);
 }
 
 .form-control:focus {
-  border-color: var(--zorya-primary-light);
-  box-shadow: 0 0 0 3px rgba(54, 177, 193, 0.15);
+  border-color: var(--zorya-accent);
+  box-shadow: 0 0 0 2px rgba(233, 181, 19, 0.22);
+  outline: none;
 }
 
 .input-group-addon {
@@ -773,26 +774,26 @@ a:focus {
 
 .avilis-form-page {
   background: var(--zorya-surface);
-  border: 1px solid var(--zorya-border);
+  border: 1px solid var(--zorya-accent-border);
   border-radius: var(--zorya-radius);
-  padding: 22px 28px 26px;
+  padding: 14px 18px 16px;
   box-shadow: var(--zorya-shadow-sm);
   box-sizing: border-box;
 }
 
 .avilis-form-page > form > h3,
 .avilis-form-page form > h3 {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 600;
   color: var(--zorya-primary-dark);
-  margin: 0 0 8px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--zorya-border-light);
+  margin: 0 0 6px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--zorya-accent-border);
 }
 
 .avilis-form-page > form > hr,
 .avilis-form-page form > hr {
-  margin: 0 0 18px;
+  margin: 0 0 12px;
   border-color: var(--zorya-border-light);
 }
 
@@ -803,7 +804,7 @@ a:focus {
 .avilis-form-page .row {
   margin-left: 0;
   margin-right: 0;
-  margin-bottom: 14px;
+  margin-bottom: 8px;
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
@@ -859,24 +860,24 @@ a:focus {
 /* ng-select */
 .ng-select .ng-select-container {
   border-radius: var(--zorya-radius-sm);
-  border-color: var(--zorya-border);
-  min-height: 36px;
+  border-color: var(--zorya-accent-border);
+  min-height: var(--zorya-field-height);
 }
 
 /* =============================================================================
    NAV TABS (sample filters)
    ============================================================================= */
 .nav-tabs {
-  border-bottom: 2px solid var(--zorya-border-light);
-  margin-bottom: 16px;
+  border-bottom: 2px solid var(--zorya-accent-border);
+  margin-bottom: 12px;
 }
 
 .nav-tabs > li > a {
   border-radius: var(--zorya-radius-sm) var(--zorya-radius-sm) 0 0;
   color: var(--zorya-text-muted);
   font-weight: 500;
-  font-size: 13px;
-  padding: 10px 14px;
+  font-size: 12px;
+  padding: 8px 12px;
 }
 
 .nav-tabs > li > a:hover {
@@ -890,7 +891,7 @@ a:focus {
 .nav-tabs > li.active > a:focus {
   color: var(--zorya-primary-dark) !important;
   background: var(--zorya-surface) !important;
-  border: 1px solid var(--zorya-border) !important;
+  border: 1px solid var(--zorya-accent-border) !important;
   border-bottom-color: var(--zorya-surface) !important;
   font-weight: 600;
 }
@@ -899,16 +900,16 @@ a:focus {
    PANELS / ALERTS
    ============================================================================= */
 .panel-default {
-  border-color: var(--zorya-border);
+  border-color: var(--zorya-accent-border);
   border-radius: var(--zorya-radius);
   box-shadow: var(--zorya-shadow-sm);
 }
 
 .panel-head-area {
   background: var(--zorya-primary-soft);
-  border: 1px solid var(--zorya-border);
+  border: 1px solid var(--zorya-accent-border);
   border-radius: var(--zorya-radius-sm);
-  padding: 12px 16px;
+  padding: 8px 12px;
 }
 
 .alert {
@@ -927,15 +928,18 @@ a:focus {
    ============================================================================= */
 .pagination > li > a {
   color: var(--zorya-primary);
-  border-color: var(--zorya-border);
+  border-color: var(--zorya-accent-border);
   border-radius: var(--zorya-radius-sm);
   margin: 0 2px;
+  padding: 5px 10px;
+  font-size: 12px;
 }
 
 .pagination > .active > a,
 .pagination > .active > span {
   background-color: var(--zorya-primary);
-  border-color: var(--zorya-primary-dark);
+  border-color: var(--zorya-accent);
+  color: #fff;
 }
 
 /* =============================================================================
@@ -1132,37 +1136,38 @@ body.auth-page app-footer .avilis-portal-footer {
 .zorya-chart-wrap,
 .avilis-stat-card {
   background: var(--zorya-surface);
-  border: 1px solid var(--zorya-border);
+  border: 1px solid var(--zorya-accent-border);
   border-radius: var(--zorya-radius);
-  padding: 16px 18px 12px;
-  margin-bottom: 20px;
+  padding: 12px 14px 10px;
+  margin-bottom: 12px;
   box-shadow: var(--zorya-shadow-sm);
-  min-height: 320px;
+  min-height: 280px;
   overflow: hidden;
 }
 
 .zorya-chart-wrap .demo-chart,
 .zorya-chart-wrap > div {
-  min-height: 300px;
-  height: 300px;
+  min-height: 260px;
+  height: 260px;
 }
 
 .avilis-dashboard .row > [class*="col-"] {
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .avilis-dashboard-welcome {
   background: linear-gradient(135deg, var(--zorya-primary) 0%, var(--zorya-primary-dark) 100%);
   color: #fff;
   border-radius: var(--zorya-radius);
-  padding: 20px 24px;
-  margin-bottom: 20px;
+  padding: 14px 18px;
+  margin-bottom: 12px;
   box-shadow: var(--zorya-shadow-md);
+  border-left: 4px solid var(--zorya-accent);
 }
 
 .avilis-dashboard-welcome h2 {
-  margin: 0 0 6px;
-  font-size: 20px;
+  margin: 0 0 4px;
+  font-size: 18px;
   font-weight: 600;
   color: #fff;
   border: none;
@@ -1171,8 +1176,25 @@ body.auth-page app-footer .avilis-portal-footer {
 
 .avilis-dashboard-welcome p {
   margin: 0;
-  opacity: 0.9;
-  font-size: 14px;
+  opacity: 0.92;
+  font-size: 13px;
+}
+
+.dashboard-divider {
+  border: none;
+  border-top: 1px solid var(--zorya-accent-border);
+  margin: 10px 0;
+}
+
+/* Dashboard uses full content width */
+.avilis-dashboard .his-sample-dashboard,
+.avilis-dashboard .panel-head-area,
+.avilis-dashboard .table-responsive {
+  width: 100%;
+}
+
+.avilis-dashboard .panel-head-area {
+  margin-bottom: 8px;
 }
 
 /* =============================================================================
@@ -1232,7 +1254,7 @@ body.sale-invoice-print-mode .container-main.qcontent {
   .container-main.qcontent.content-with-sidebar {
     margin-left: 0;
     width: 100%;
-    padding: 12px 12px 16px;
+    padding: 8px 10px 12px;
   }
 
   #sidenav.sidenav:not(.hidden) {
@@ -1244,11 +1266,11 @@ body.sale-invoice-print-mode .container-main.qcontent {
   }
 
   .container-main .content {
-    padding: 16px;
+    padding: 12px;
   }
 
   .avilis-form-page {
-    padding: 16px;
+    padding: 12px;
   }
 
   .avilis-form-page .row > .form-grid-stye.col-sm-2,
@@ -1268,6 +1290,27 @@ body.sale-invoice-print-mode .container-main.qcontent {
   .qnavbar .navbar-collapse {
     flex-direction: column;
     align-items: stretch;
+  }
+}
+
+@media (min-width: 1280px) {
+  .container-main.qcontent {
+    padding: 10px 16px 14px;
+  }
+
+  .container-main .content,
+  .avilis-dashboard {
+    max-width: 100%;
+  }
+}
+
+@media (min-width: 1600px) {
+  .avilis-form-page:not(.sale-invoice-page) {
+    max-width: 980px;
+  }
+
+  .sale-invoice-page.avilis-form-page {
+    max-width: 1100px;
   }
 }
 

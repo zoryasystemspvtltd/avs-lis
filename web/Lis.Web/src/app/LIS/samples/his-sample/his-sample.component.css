@@ -1,5 +1,5 @@
 .his-sample-dashboard {
-  margin-bottom: 20px;
+  margin-bottom: 12px;
 }
 
 .his-sample-heading {
@@ -10,26 +10,27 @@
 
 .his-sample-heading .panel-title {
   margin: 0;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
+  color: var(--zorya-primary-dark);
 }
 
 .his-sample-status,
 .his-sample-empty {
   text-align: center;
-  padding: 20px 12px;
-  color: #666;
+  padding: 14px 10px;
+  color: var(--zorya-text-muted);
 }
 
 .his-sample-empty .glyphicon-inbox {
-  font-size: 28px;
+  font-size: 24px;
   display: block;
-  margin-bottom: 10px;
-  color: #999;
+  margin-bottom: 8px;
+  color: var(--zorya-primary-light);
 }
 
 .his-sample-empty p {
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .his-sample-alert {
@@ -41,7 +42,18 @@
 }
 
 .his-sample-table th {
-  font-size: 12px;
+  font-size: 11px;
   text-transform: uppercase;
-  color: #666;
+  color: var(--zorya-primary-dark);
+  padding: 8px 10px !important;
+}
+
+.his-sample-table td {
+  padding: 7px 10px !important;
+  font-size: 13px;
+}
+
+.his-sample-dashboard .panel-head-area {
+  margin-top: 0;
+  margin-bottom: 8px;
 }

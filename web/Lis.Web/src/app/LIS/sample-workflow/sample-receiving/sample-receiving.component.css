@@ -1,13 +1,13 @@
-.filter-panel { margin-bottom: 16px; }
-.filter-actions { margin-top: 12px; }
+.filter-panel { margin-bottom: 10px; }
+.filter-actions { margin-top: 8px; }
 .modal.in { background: rgba(0,0,0,0.4); }
-.workflow-loading, .workflow-empty { padding: 16px 0; }
+.workflow-loading, .workflow-empty { padding: 12px 0; }
 .workflow-pager {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  margin-top: 12px;
+  gap: 10px;
+  margin-top: 8px;
 }
-.list-pager-info { font-size: 14px; color: #666; }
+.list-pager-info { font-size: 12px; color: var(--zorya-text-muted); }
