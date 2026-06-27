@@ -2,6 +2,7 @@ using LIS.DtoModel.Interfaces;
 using LIS.DtoModel.Models;
 using LIS.Masters.Tests.Infrastructure;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.Linq;
 
 namespace LIS.Masters.Tests.Masters
@@ -24,6 +25,20 @@ namespace LIS.Masters.Tests.Masters
             loaded.Name = "Updated " + code;
             manager.Update(loaded);
             Assert.AreEqual("Updated " + code, manager.GetById(id).Name);
+
+            var partialUpdate = new ReferralDoctorMaster
+            {
+                Id = id,
+                Code = code,
+                Name = "Partial " + code,
+                Phone = "9999888877",
+                IsActive = true
+            };
+            manager.Update(partialUpdate);
+            var afterPartial = manager.GetById(id);
+            Assert.AreEqual("Partial " + code, afterPartial.Name);
+            Assert.AreEqual("9999888877", afterPartial.Phone);
+            Assert.IsTrue(afterPartial.CreatedOn > DateTime.MinValue, "CreatedOn must be preserved on edit");
 
             var list = manager.Get(ListOptionsFactory.Create(search: code));
             Assert.IsTrue(list.Items.Any(i => i.Code == code));

@@ -43,7 +43,7 @@ export class LeftNavMenuComponent implements OnInit {
     ]);
     this.expandSetup = this.matchesAny(path, ['/departments', '/units', '/methods', '/equipments', '/equipment-heartbeat']);
     this.expandMaster = this.matchesAny(path, [
-      '/test-profiles', '/test-master', '/specimens', '/test-rates', '/corporates',
+      '/test-profiles', '/test-master', '/specimens', '/test-rates', '/referral-doctors', '/corporates',
       '/test-mappings', '/test-parameters', '/his-parameters', '/his-parameter-ranges'
     ]);
     this.expandTransaction = this.matchesAny(path, ['/patient-master', '/sale-invoices']);

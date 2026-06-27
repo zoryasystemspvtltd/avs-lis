@@ -42,6 +42,23 @@ namespace LIS.Masters.Tests.Masters
         }
 
         [TestMethod]
+        public void Patient_Create_With_Empty_HisPatientId_Auto_Generates()
+        {
+            var suffix = UniqueCode("AUTO");
+            var patient = MasterTestDataBuilder.Patient(suffix);
+            patient.HisPatientId = null;
+
+            var id = Services.PatientMaster.Add(patient);
+            Assert.IsTrue(id > 0);
+
+            var loaded = Services.PatientMaster.GetById(id);
+            Assert.IsFalse(string.IsNullOrWhiteSpace(loaded.HisPatientId));
+            Assert.IsTrue(loaded.HisPatientId.StartsWith("PAT"));
+
+            Services.PatientMaster.Delete(new PatientDetail { Id = id });
+        }
+
+        [TestMethod]
         public void Patient_Duplicate_HisPatientId_Throws_On_Create()
         {
             var suffix = UniqueCode("DUP");

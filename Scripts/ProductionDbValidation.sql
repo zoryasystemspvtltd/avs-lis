@@ -1,5 +1,5 @@
 -- AVILIS Production DB validation queries
-USE AVSLIS;
+USE ZoryaLMS;
 SET NOCOUNT ON;
 
 PRINT '=== SERUM Specimen ===';

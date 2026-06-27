@@ -340,10 +340,9 @@ namespace LIS.BusinessLogic
                 var id = invoiceRepo.Add(header);
                 header.Id = id;
 
-                PersistInvoiceDetails(id, lines, now);
                 LinkTestRequestsToLines(header, lines, header.InvoiceNo);
                 LinkRadiologyRequestsToLines(header, lines, header.InvoiceNo, now);
-                UpdateDetailRequestLinks(lines);
+                PersistInvoiceDetails(id, lines, now);
 
                 if ((!header.RequestDetailId.HasValue || header.RequestDetailId <= 0) &&
                     lines.Any(l => l.RequestDetailId.HasValue && l.RequestDetailId > 0))
@@ -378,10 +377,9 @@ namespace LIS.BusinessLogic
                 detailRepo.Delete(old);
             }
 
-            PersistInvoiceDetails(existingHeader.Id, lines, now);
             LinkTestRequestsToLines(existingHeader, lines, existingHeader.InvoiceNo);
             LinkRadiologyRequestsToLines(existingHeader, lines, existingHeader.InvoiceNo, now);
-            UpdateDetailRequestLinks(lines);
+            PersistInvoiceDetails(existingHeader.Id, lines, now);
 
             if ((!existingHeader.RequestDetailId.HasValue || existingHeader.RequestDetailId <= 0) &&
                 lines.Any(l => l.RequestDetailId.HasValue && l.RequestDetailId > 0))
@@ -401,7 +399,6 @@ namespace LIS.BusinessLogic
                 line.CreatedOn = now;
                 line.CreatedBy = identity?.ActivityMember;
                 line.IsActive = true;
-                line.RequestDetailId = null;
                 line.Id = detailRepo.Add(line);
             }
         }
@@ -541,31 +538,6 @@ namespace LIS.BusinessLogic
             }
         }
 
-        private void UpdateDetailRequestLinks(List<SaleInvoiceDetail> lines)
-        {
-            if (lines == null)
-            {
-                return;
-            }
-
-            foreach (var line in lines)
-            {
-                if (line.Id <= 0 || !line.RequestDetailId.HasValue || line.RequestDetailId <= 0)
-                {
-                    continue;
-                }
-
-                var stored = detailRepo.Get(line.Id);
-                if (stored == null)
-                {
-                    continue;
-                }
-
-                stored.RequestDetailId = line.RequestDetailId;
-                detailRepo.Update(stored);
-            }
-        }
-
         private static string ResolveRadiologyModality(HisTestMaster test)
         {
             var name = test?.HISSpecimenName ?? test?.HISSpecimenCode ?? test?.HISTestCodeDescription ?? "General";
@@ -610,6 +582,9 @@ namespace LIS.BusinessLogic
 
         private void Recalculate(SaleInvoice header, List<SaleInvoiceDetail> lines)
         {
+            var headerDiscountInput = header?.DiscountAmount ?? 0m;
+            var headerDiscountType = header?.DiscountType;
+
             foreach (var line in lines)
             {
                 if (line.TestProfileId.HasValue && line.TestProfileId > 0)
@@ -651,10 +626,38 @@ namespace LIS.BusinessLogic
             }
 
             header.GrossAmount = lines.Sum(l => l.Amount);
-            header.DiscountAmount = lines.Sum(l => l.DiscountAmount);
             header.TaxAmount = lines.Sum(l => l.TaxAmount);
-            header.NetAmount = lines.Sum(l => l.NetAmount);
+            header.DiscountAmount = ResolveInvoiceDiscount(
+                header.GrossAmount,
+                lines.Sum(l => l.DiscountAmount),
+                headerDiscountType,
+                headerDiscountInput);
+            header.NetAmount = Math.Round(header.GrossAmount - header.DiscountAmount + header.TaxAmount, 2);
             ApplyPaymentStatus(header);
+        }
+
+        /// <summary>
+        /// Matches sale-invoice-form recalc(): header discount overrides line discounts when set.
+        /// </summary>
+        private static decimal ResolveInvoiceDiscount(
+            decimal grossAmount,
+            decimal lineDiscountTotal,
+            string discountType,
+            decimal discountInput)
+        {
+            if (string.Equals(discountType, "Percentage", StringComparison.OrdinalIgnoreCase))
+            {
+                return discountInput > 0
+                    ? Math.Round(grossAmount * discountInput / 100m, 2)
+                    : 0m;
+            }
+
+            if (discountInput > 0)
+            {
+                return discountInput;
+            }
+
+            return lineDiscountTotal;
         }
 
         private static void ApplyPaymentStatus(SaleInvoice header)

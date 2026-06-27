@@ -20,6 +20,7 @@
               [type]="field.type === 'number' ? 'number' : (field.type === 'date' ? 'date' : 'text')"
               class="form-control" [formControlName]="field.name"
               [readonly]="isFieldReadonly(field)"
+              [attr.placeholder]="apiName === 'PatientMaster' && field.name === 'hisPatientId' && !id ? 'Assigned automatically on save' : null"
               (change)="field.name === 'dateOfBirth' && apiName === 'PatientMaster' ? onPatientDobChange() : null"
               (input)="field.name === 'age' && apiName === 'PatientMaster' ? onPatientAgeChange() : null" />
           </div>

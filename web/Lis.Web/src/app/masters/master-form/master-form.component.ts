@@ -98,11 +98,7 @@ export class MasterFormComponent implements OnInit {
         });
       }
     } else if (!this.id && this.apiName === 'PatientMaster') {
-      this.masterService.getNextPatientId().subscribe(pid => {
-        if (pid) {
-          this.form.patchValue({ hisPatientId: pid });
-        }
-      });
+      this.assignNextPatientId();
     } else if (this.id) {
       this.masterService.getItem(this.apiName, this.id).subscribe(item => {
         if (item) {
@@ -298,6 +294,19 @@ export class MasterFormComponent implements OnInit {
         }
       },
       () => this.alertService.error('Failed to load lookup data.')
+    );
+  }
+
+  private assignNextPatientId() {
+    this.masterService.getNextPatientId().subscribe(
+      pid => {
+        if (pid) {
+          this.form.patchValue({ hisPatientId: pid });
+        }
+      },
+      () => {
+        this.form.patchValue({ hisPatientId: '' });
+      }
     );
   }
 
@@ -525,6 +534,9 @@ export class MasterFormComponent implements OnInit {
     const patch: any = Object.assign({}, item);
     if (patch.Code != null && patch.code == null) { patch.code = patch.Code; }
     if (patch.Name != null && patch.name == null) { patch.name = patch.Name; }
+    if (patch.Phone != null && patch.phone == null) { patch.phone = patch.Phone; }
+    if (patch.Email != null && patch.email == null) { patch.email = patch.Email; }
+    if (patch.Address != null && patch.address == null) { patch.address = patch.Address; }
     if (patch.ProcessingCategory != null && patch.processingCategory == null) { patch.processingCategory = patch.ProcessingCategory; }
     if (patch.effectiveStart) { patch.effectiveStart = this.toDateInput(patch.effectiveStart); }
     if (patch.effectiveEnd) { patch.effectiveEnd = this.toDateInput(patch.effectiveEnd); }
@@ -548,6 +560,12 @@ export class MasterFormComponent implements OnInit {
     if (patch.VisitId != null && patch.visitId == null) { patch.visitId = patch.VisitId; }
     if (patch.PatientPrefix != null && patch.patientPrefix == null) { patch.patientPrefix = patch.PatientPrefix; }
     if (patch.HISRangeCode != null && patch.hisRangeCode == null) { patch.hisRangeCode = patch.HISRangeCode; }
+    if (patch.HISRangeValue != null && patch.hisRangeValue == null) { patch.hisRangeValue = patch.HISRangeValue; }
+    if (patch.AgeFrom != null && patch.ageFrom == null) { patch.ageFrom = patch.AgeFrom; }
+    if (patch.AgeTo != null && patch.ageTo == null) { patch.ageTo = patch.AgeTo; }
+    if (patch.AgeType != null && patch.ageType == null) { patch.ageType = patch.AgeType; }
+    if (patch.MinValue != null && patch.minValue == null) { patch.minValue = patch.MinValue; }
+    if (patch.MaxValue != null && patch.maxValue == null) { patch.maxValue = patch.MaxValue; }
     if (patch.Gender != null && patch.gender == null) { patch.gender = patch.Gender; }
     patch.gender = this.apiName === 'PatientMaster'
       ? this.normalizePatientGenderForForm(patch.gender)
@@ -693,10 +711,6 @@ export class MasterFormComponent implements OnInit {
     if (this.isParameterPickerScreen) {
       delete item.hisParameterPicker;
     }
-    if (this.apiName === 'PatientMaster' && !item.hisPatientId) {
-      this.alertService.error('Patient ID is required.');
-      return;
-    }
     if (this.apiName === 'PatientMaster' && !('' + (item.phone || '')).trim()) {
       this.alertService.error('Phone number is required.');
       return;
@@ -716,6 +730,9 @@ export class MasterFormComponent implements OnInit {
       if (!item.visitId) {
         this.alertService.error('Visit ID is required.');
         return;
+      }
+      if (!this.id && !('' + (item.hisPatientId || '')).trim()) {
+        delete item.hisPatientId;
       }
     }
     if (this.isParameterMasterScreen) {

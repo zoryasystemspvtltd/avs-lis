@@ -1,9 +1,9 @@
 -- =============================================================================
 -- FULL DATABASE INSERT — populates ALL operational tables with demo rows
--- Database: AVSLIS | Safe to re-run (skips existing keys)
+-- Database: ZoryaLMS | Safe to re-run (skips existing keys)
 -- Run: sqlcmd -S .\SQLEXPRESS -d AVSLIS -i SeedFullDatabaseInsert.sql
 -- =============================================================================
-USE AVSLIS;
+USE ZoryaLMS;
 GO
 
 SET NOCOUNT ON;

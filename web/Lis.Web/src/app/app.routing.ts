@@ -122,7 +122,7 @@ const LOOKUP_FIELDS = {
     { name: 'name', label: 'Patient Name', type: 'text', required: true },
     { name: 'mrNo', label: 'MR No', type: 'text', required: true },
     { name: 'visitId', label: 'Visit ID', type: 'text', required: true },
-    { name: 'hisPatientId', label: 'Patient ID', type: 'text', readonly: true },
+    { name: 'hisPatientId', label: 'Patient ID (auto-generated)', type: 'text', readonly: true },
     { name: 'phone', label: 'Phone', type: 'text', required: true },
     { name: 'address', label: 'Address', type: 'text' },
     { name: 'gender', label: 'Gender', type: 'select', required: true, options: [

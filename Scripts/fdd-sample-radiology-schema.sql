@@ -1,5 +1,5 @@
 -- FDD: Sample Collection, Sample Receiving, Radiology Report Entry
--- Run against AVSLIS database before deploying API.
+-- Run against ZoryaLMS database before deploying API.
 
 IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID(N'TestRequestDetails') AND name = N'CollectedBy')
     ALTER TABLE TestRequestDetails ADD CollectedBy NVARCHAR(80) NULL;

@@ -103,6 +103,106 @@ namespace LIS.Masters.Tests.Masters
         }
 
         [TestMethod]
+        public void HisParameterRange_Edit_Through_Interface_Preserves_Code_And_Updates()
+        {
+            var testId = EnsureTestId();
+            var test = Services.HisTest.GetTestById(testId);
+            var paramId = (int)Services.HisParameter.Add(new HISParameterMaster
+            {
+                HisTestId = testId,
+                HISTestCode = test.HISTestCode,
+                HISParamCode = UniqueCode("RNGP"),
+                HISParamDescription = "Range parent " + UniqueCode("RNGP")
+            });
+
+            var rangeId = (int)Services.HisParameterRange.Add(new HISParameterRangMaster
+            {
+                HisParameterId = paramId,
+                HISRangeValue = "Normal",
+                Gender = "Male",
+                AgeFrom = 0,
+                AgeTo = 99,
+                MinValue = 10,
+                MaxValue = 20
+            });
+
+            var original = Services.HisParameterRange.GetById(rangeId);
+            Assert.IsFalse(string.IsNullOrWhiteSpace(original.HISRangeCode));
+
+            var manager = Services.HisParameterRange as IMasterCrudManager<HISParameterRangMaster>;
+            Assert.IsNotNull(manager);
+
+            var apiPayload = new HISParameterRangMaster
+            {
+                Id = rangeId,
+                HisParameterId = paramId,
+                HISRangeCode = string.Empty,
+                HISRangeValue = "High",
+                Gender = "Female",
+                AgeFrom = 18,
+                AgeTo = 65,
+                AgeType = "Years",
+                MinValue = 21,
+                MaxValue = 30
+            };
+
+            manager.Update(apiPayload);
+
+            var updated = Services.HisParameterRange.GetById(rangeId);
+            Assert.AreEqual(original.HISRangeCode, updated.HISRangeCode);
+            Assert.AreEqual("High", updated.HISRangeValue);
+            Assert.AreEqual("Female", updated.Gender);
+            Assert.AreEqual(18m, updated.AgeFrom);
+            Assert.AreEqual(65m, updated.AgeTo);
+            Assert.AreEqual("Years", updated.AgeType);
+            Assert.AreEqual(21m, updated.MinValue);
+            Assert.AreEqual(30m, updated.MaxValue);
+
+            Services.HisParameterRange.Delete(new HISParameterRangMaster { Id = rangeId });
+            Services.HisParameter.Delete(new HISParameterMaster { Id = paramId });
+        }
+
+        [TestMethod]
+        public void HisParameterRange_Edit_After_Load_Does_Not_Attach_Conflict()
+        {
+            var testId = EnsureTestId();
+            var test = Services.HisTest.GetTestById(testId);
+            var paramId = (int)Services.HisParameter.Add(new HISParameterMaster
+            {
+                HisTestId = testId,
+                HISTestCode = test.HISTestCode,
+                HISParamCode = UniqueCode("RNGE"),
+                HISParamDescription = "Range edit " + UniqueCode("RNGE")
+            });
+
+            var rangeId = (int)Services.HisParameterRange.Add(new HISParameterRangMaster
+            {
+                HisParameterId = paramId,
+                HISRangeValue = "Low",
+                Gender = "Both",
+                MinValue = 1,
+                MaxValue = 5
+            });
+
+            var loaded = Services.HisParameterRange.GetById(rangeId);
+            var manager = Services.HisParameterRange as IMasterCrudManager<HISParameterRangMaster>;
+            Assert.IsNotNull(manager);
+
+            loaded.HISRangeValue = "Critical Low";
+            loaded.MinValue = 0.5m;
+            loaded.MaxValue = 2.5m;
+            manager.Update(loaded);
+
+            var reloaded = Services.HisParameterRange.GetById(rangeId);
+            Assert.AreEqual("Critical Low", reloaded.HISRangeValue);
+            Assert.AreEqual(0.5m, reloaded.MinValue);
+            Assert.AreEqual(2.5m, reloaded.MaxValue);
+
+            Services.HisParameterRange.Delete(new HISParameterRangMaster { Id = rangeId });
+            Services.HisParameter.Delete(new HISParameterMaster { Id = paramId });
+        }
+
+        [TestMethod]
         public void HisParameter_Duplicate_Code_Globally_Blocked()
         {
             var testId = EnsureTestId();

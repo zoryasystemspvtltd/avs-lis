@@ -14,6 +14,8 @@ namespace LIS.Businesslogic
         private readonly ModuleRepo<TestRequestDetail> requestRepo;
         private readonly ModuleRepo<PatientDetail> patientRepo;
         private readonly ModuleRepo<SampleRejectionReasonMaster> rejectionRepo;
+        private readonly ModuleRepo<SaleInvoice> invoiceRepo;
+        private readonly ModuleRepo<SaleInvoiceDetail> invoiceDetailRepo;
         private readonly ITestRequestDetailsManager testRequestManager;
         private readonly IModuleIdentity identity;
 
@@ -28,17 +30,23 @@ namespace LIS.Businesslogic
             requestRepo = new ModuleRepo<TestRequestDetail>(logger, identity, uow);
             patientRepo = new ModuleRepo<PatientDetail>(logger, identity, uow);
             rejectionRepo = new ModuleRepo<SampleRejectionReasonMaster>(logger, identity, uow);
+            invoiceRepo = new ModuleRepo<SaleInvoice>(logger, identity, uow);
+            invoiceDetailRepo = new ModuleRepo<SaleInvoiceDetail>(logger, identity, uow);
         }
 
         public ItemList<SampleWorkflowQueueRow> GetReceivingQueue(SampleWorkflowSearchOptions options)
         {
             options = options ?? new SampleWorkflowSearchOptions();
+            var eligibleRequestIds = SampleWorkflowInvoiceEligibility.GetEligibleRequestIds(
+                invoiceRepo, invoiceDetailRepo, requestRepo);
             var patients = patientRepo.Get().ToDictionary(p => p.Id, p => p);
 
             var query = requestRepo.Get(r =>
                 !string.IsNullOrEmpty(r.CollectedBy) &&
                 (r.ReceivedBy == null || r.ReceivedBy == "") &&
-                r.ReportStatus == ReportStatusType.New);
+                r.ReportStatus == ReportStatusType.New)
+                .ToList()
+                .Where(r => eligibleRequestIds.Contains(r.Id));
 
             var rows = ApplySearch(query.ToList(), patients, options)
                 .Select(r => MapRow(r, patients, "Awaiting Receiving"))
@@ -69,6 +77,12 @@ namespace LIS.Businesslogic
                 throw new InvalidOperationException("Sample must be collected before receiving.");
             }
 
+            if (!SampleWorkflowInvoiceEligibility.IsRequestEligible(
+                request.Id, invoiceRepo, invoiceDetailRepo, requestRepo))
+            {
+                throw new InvalidOperationException(SampleWorkflowInvoiceEligibility.NotConfirmedMessage);
+            }
+
             var patients = patientRepo.Get().ToDictionary(p => p.Id, p => p);
             var status = string.IsNullOrWhiteSpace(request.ReceivedBy) ? "Awaiting Receiving" : "Received";
             return MapRow(request, patients, status);
@@ -92,15 +106,18 @@ namespace LIS.Businesslogic
                 throw new InvalidOperationException("Barcode does not exist.");
             }
 
-            if (!string.IsNullOrWhiteSpace(action.BarcodeNumber) &&
-                !request.SampleNo.Equals(action.BarcodeNumber.Trim(), StringComparison.OrdinalIgnoreCase))
-            {
-                throw new InvalidOperationException("Barcode does not match the selected order.");
-            }
+            SampleWorkflowInvoiceEligibility.EnsureRequestEligible(
+                request.Id, invoiceRepo, invoiceDetailRepo, requestRepo);
 
             if (string.IsNullOrWhiteSpace(request.CollectedBy))
             {
                 throw new InvalidOperationException("Sample must be collected before receiving.");
+            }
+
+            if (!string.IsNullOrWhiteSpace(action.BarcodeNumber) &&
+                !request.SampleNo.Equals(action.BarcodeNumber.Trim(), StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException("Barcode does not match the selected order.");
             }
 
             if (!string.IsNullOrWhiteSpace(request.ReceivedBy))
@@ -136,6 +153,9 @@ namespace LIS.Businesslogic
             {
                 throw new InvalidOperationException("Barcode does not exist.");
             }
+
+            SampleWorkflowInvoiceEligibility.EnsureRequestEligible(
+                request.Id, invoiceRepo, invoiceDetailRepo, requestRepo);
 
             if (string.IsNullOrWhiteSpace(request.CollectedBy))
             {

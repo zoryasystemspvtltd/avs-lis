@@ -2,7 +2,7 @@
 -- Remove CRUD-prefixed test data (reverse dependency order)
 -- Safe: only deletes rows matching CRUD-* identifiers
 -- =============================================================================
-USE AVSLIS;
+USE ZoryaLMS;
 GO
 
 SET NOCOUNT ON;

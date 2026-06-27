@@ -1,12 +1,14 @@
 -- Seed LIS master/billing modules and grant Administrator full access (existing databases).
--- Run against AVSLIS database after migrations.
+-- Run against ZoryaLMS database after migrations.
 
-DECLARE @AppId INT = (SELECT TOP 1 Id FROM ClientApplication WHERE AccessKey = 'DUMMY');
+DECLARE @AppId INT = (SELECT TOP 1 Id FROM ClientApplication WHERE AccessKey = 'DXI800');
+IF @AppId IS NULL
+    SET @AppId = (SELECT TOP 1 Id FROM ClientApplication WHERE AccessKey = 'DUMMY');
 DECLARE @AdminRoleId NVARCHAR(128) = (SELECT TOP 1 Id FROM AspNetRoles WHERE Name = 'Administrator');
 
 IF @AppId IS NULL OR @AdminRoleId IS NULL
 BEGIN
-    RAISERROR('ClientApplication (DUMMY) or Administrator role not found. Adjust script for your environment.', 16, 1);
+    RAISERROR('ClientApplication (DXI800/DUMMY) or Administrator role not found. Adjust script for your environment.', 16, 1);
     RETURN;
 END
 

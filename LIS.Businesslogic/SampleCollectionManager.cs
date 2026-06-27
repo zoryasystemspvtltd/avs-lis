@@ -36,49 +36,16 @@ namespace LIS.Businesslogic
             invoiceDetailRepo = new ModuleRepo<SaleInvoiceDetail>(logger, identity, uow);
         }
 
-        private HashSet<long> GetPaidInvoiceRequestIds()
-        {
-            var paidInvoices = invoiceRepo.Get(i =>
-                i.IsActive && i.InvoiceStatus == (int)InvoiceStatusType.Paid).ToList();
-            if (!paidInvoices.Any())
-            {
-                return new HashSet<long>();
-            }
-
-            var paidInvoiceIds = paidInvoices.Select(i => i.Id).ToHashSet();
-            var paidInvoiceNos = paidInvoices
-                .Select(i => i.InvoiceNo)
-                .Where(n => !string.IsNullOrWhiteSpace(n))
-                .ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-            var requestIds = invoiceDetailRepo.Get(d =>
-                    paidInvoiceIds.Contains(d.SaleInvoiceId) &&
-                    d.RequestDetailId.HasValue &&
-                    d.RequestDetailId.Value > 0)
-                .Select(d => d.RequestDetailId.Value)
-                .ToHashSet();
-
-            var requestsByInvoiceNo = requestRepo.Get()
-                .Where(r => !string.IsNullOrWhiteSpace(r.HISRequestNo) && paidInvoiceNos.Contains(r.HISRequestNo))
-                .Select(r => r.Id);
-
-            foreach (var id in requestsByInvoiceNo)
-            {
-                requestIds.Add(id);
-            }
-
-            return requestIds;
-        }
-
         public ItemList<SampleWorkflowQueueRow> GetPendingQueue(SampleWorkflowSearchOptions options)
         {
             options = options ?? new SampleWorkflowSearchOptions();
-            var paidRequestIds = GetPaidInvoiceRequestIds();
+            var eligibleRequestIds = SampleWorkflowInvoiceEligibility.GetEligibleRequestIds(
+                invoiceRepo, invoiceDetailRepo, requestRepo);
             var query = requestRepo.Get(r =>
                 r.ReportStatus == ReportStatusType.New &&
                 (r.CollectedBy == null || r.CollectedBy == ""))
                 .ToList()
-                .Where(r => paidRequestIds.Contains(r.Id));
+                .Where(r => eligibleRequestIds.Contains(r.Id));
 
             var patients = patientRepo.Get().ToDictionary(p => p.Id, p => p);
             var rows = ApplySearch(query.ToList(), patients, options)
@@ -105,6 +72,12 @@ namespace LIS.Businesslogic
                 throw new InvalidOperationException("Order not found for the given barcode.");
             }
 
+            if (!SampleWorkflowInvoiceEligibility.IsRequestEligible(
+                request.Id, invoiceRepo, invoiceDetailRepo, requestRepo))
+            {
+                throw new InvalidOperationException(SampleWorkflowInvoiceEligibility.NotConfirmedMessage);
+            }
+
             var patients = patientRepo.Get().ToDictionary(p => p.Id, p => p);
             var status = string.IsNullOrWhiteSpace(request.CollectedBy) ? "Pending" : "Collected";
             return MapRow(request, patients, status);
@@ -114,6 +87,8 @@ namespace LIS.Businesslogic
         {
             ValidateCollectionAction(action);
             var request = GetRequestOrThrow(action.TestRequestId);
+            SampleWorkflowInvoiceEligibility.EnsureRequestEligible(
+                request.Id, invoiceRepo, invoiceDetailRepo, requestRepo);
 
             if (!string.IsNullOrWhiteSpace(request.CollectedBy))
             {
@@ -151,6 +126,8 @@ namespace LIS.Businesslogic
             }
 
             var request = GetRequestOrThrow(action.TestRequestId);
+            SampleWorkflowInvoiceEligibility.EnsureRequestEligible(
+                request.Id, invoiceRepo, invoiceDetailRepo, requestRepo);
             var reason = ResolveRejectionReason(action);
             request.ReportStatus = ReportStatusType.FinallyRejected;
             request.CollectedRemarks = string.IsNullOrWhiteSpace(action.Remarks)

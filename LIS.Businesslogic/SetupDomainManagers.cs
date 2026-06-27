@@ -215,7 +215,7 @@ namespace LIS.BusinessLogic
             return $"R{(max + 1).ToString("D7", System.Globalization.CultureInfo.InvariantCulture)}";
         }
 
-        public new long Add(HISParameterRangMaster item)
+        public override long Add(HISParameterRangMaster item)
         {
             if (item == null)
             {
@@ -242,11 +242,16 @@ namespace LIS.BusinessLogic
             return base.Add(item);
         }
 
-        public new void Update(HISParameterRangMaster item)
+        public override void Update(HISParameterRangMaster item)
         {
             if (item == null || item.Id <= 0)
             {
                 throw new ArgumentException("Invalid parameter range record.");
+            }
+
+            if (item.HisParameterId <= 0)
+            {
+                throw new InvalidOperationException("Parameter is required.");
             }
 
             var existing = Repo.Get(item.Id);
@@ -255,12 +260,16 @@ namespace LIS.BusinessLogic
                 throw new InvalidOperationException("Parameter range record not found.");
             }
 
-            if (!string.IsNullOrWhiteSpace(existing.HISRangeCode))
-            {
-                item.HISRangeCode = existing.HISRangeCode;
-            }
+            existing.HISRangeValue = item.HISRangeValue;
+            existing.Gender = item.Gender;
+            existing.AgeFrom = item.AgeFrom;
+            existing.AgeTo = item.AgeTo;
+            existing.AgeType = item.AgeType;
+            existing.MinValue = item.MinValue;
+            existing.MaxValue = item.MaxValue;
+            existing.HisParameterId = item.HisParameterId;
 
-            base.Update(item);
+            base.Update(existing);
         }
 
         public override ItemList<HISParameterRangMaster> Get(ListOptions option)
@@ -298,7 +307,7 @@ namespace LIS.BusinessLogic
             }
         }
 
-        public new void Delete(HISParameterRangMaster item)
+        public override void Delete(HISParameterRangMaster item)
         {
             if (item?.Id > 0)
             {
@@ -619,8 +628,20 @@ namespace LIS.BusinessLogic
 
         public string GenerateNextPatientId()
         {
-            var count = repo.Get().Count() + 1;
-            return $"PAT{count:D5}";
+            var max = 0;
+            foreach (var code in repo.Get().Select(p => p.HisPatientId).Where(c => !string.IsNullOrWhiteSpace(c)))
+            {
+                var trimmed = code.Trim();
+                if (trimmed.Length > 3 &&
+                    trimmed.StartsWith("PAT", StringComparison.OrdinalIgnoreCase) &&
+                    int.TryParse(trimmed.Substring(3), out var num) &&
+                    num > max)
+                {
+                    max = num;
+                }
+            }
+
+            return $"PAT{(max + 1).ToString("D5", System.Globalization.CultureInfo.InvariantCulture)}";
         }
 
         public long Add(PatientDetail item)
@@ -665,8 +686,19 @@ namespace LIS.BusinessLogic
 
         public void Update(PatientDetail item)
         {
+            if (item == null || item.Id <= 0)
+            {
+                throw new ArgumentException("Invalid patient record.");
+            }
+
             NormalizePatientFields(item);
             ValidatePatientRequiredFields(item);
+
+            var existing = repo.Get(item.Id);
+            if (existing == null)
+            {
+                throw new InvalidOperationException("Patient record not found.");
+            }
 
             if (ExistsDuplicateMrNo(item, item.Id))
             {
@@ -683,7 +715,18 @@ namespace LIS.BusinessLogic
                 throw new InvalidOperationException("Patient already exists.");
             }
 
-            repo.Update(item);
+            existing.Name = item.Name;
+            existing.PatientPrefix = item.PatientPrefix;
+            existing.MRNo = item.MRNo;
+            existing.VisitId = item.VisitId;
+            existing.Phone = item.Phone;
+            existing.Address = item.Address;
+            existing.Gender = item.Gender;
+            existing.Age = item.Age;
+            existing.DateOfBirth = item.DateOfBirth;
+            existing.IsActive = item.IsActive;
+
+            repo.Update(existing);
         }
 
         private static void NormalizePatientFields(PatientDetail item)

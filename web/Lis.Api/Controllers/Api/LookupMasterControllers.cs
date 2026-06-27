@@ -23,6 +23,15 @@ namespace Lis.Api.Controllers.Api
 
         [HttpGet, Route("GetAll")]
         public IEnumerable<ReferralDoctorMaster> GetAllRecords() => FetchAllActiveCore();
+
+        [HttpPost, Route("")]
+        public override HttpResponseMessage Post(ReferralDoctorMaster item) => base.Post(item);
+
+        [HttpPost, Route("Put")]
+        public override HttpResponseMessage Put(ReferralDoctorMaster item) => base.Put(item);
+
+        [HttpPost, Route("Delete")]
+        public override HttpResponseMessage Delete(ReferralDoctorMaster item) => base.Delete(item);
     }
 
     [RoutePrefix("api/Corporate")]

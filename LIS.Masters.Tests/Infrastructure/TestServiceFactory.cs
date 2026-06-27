@@ -11,7 +11,7 @@ using System;
 namespace LIS.Masters.Tests.Infrastructure
 {
     /// <summary>
-    /// Wires managers against the configured AVSLIS database (integration tests).
+    /// Wires managers against the configured ZoryaLMS database (integration tests).
     /// </summary>
     public sealed class TestServiceFactory : IDisposable
     {
@@ -41,6 +41,9 @@ namespace LIS.Masters.Tests.Infrastructure
         public TestMappingCrudManager TestMapping { get; }
         public EquipmentManager Equipment { get; }
         public ReportManager Report { get; }
+        public TestRequestDetailsManager TestRequest { get; }
+        public SampleCollectionManager SampleCollection { get; }
+        public SampleReceivingManager SampleReceiving { get; }
 
         private TestServiceFactory(ApplicationDBContext db)
         {
@@ -70,6 +73,9 @@ namespace LIS.Masters.Tests.Infrastructure
             TestMapping = new TestMappingCrudManager(Logger, Identity, Uow);
             Equipment = new EquipmentManager(Logger, Identity, Uow);
             Report = new ReportManager(Logger, Identity, Uow);
+            TestRequest = new TestRequestDetailsManager(Logger, Identity, Uow, new TestFileHandler());
+            SampleCollection = new SampleCollectionManager(Logger, Identity, Uow, TestRequest);
+            SampleReceiving = new SampleReceivingManager(Logger, Identity, Uow, TestRequest);
         }
 
         public static bool TryCreate(out TestServiceFactory factory, out string error)
