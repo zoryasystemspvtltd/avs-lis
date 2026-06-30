@@ -109,8 +109,7 @@ namespace LIS.BusinessLogic
                     query = query.Where(p =>
                         (p.SampleNo != null && p.SampleNo.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0)
                         || (p.HISTestName != null && p.HISTestName.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0)
-                        || (p.HISRequestNo != null && p.HISRequestNo.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0)
-                        || (p.IPNo != null && p.IPNo.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0)
+                        || (p.HISRequestNo != null && p.HISRequestNo.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0)                        
                         || (patientsById.TryGetValue(p.PatientId, out var pat) && pat.Name != null
                             && pat.Name.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0));
                 }
@@ -312,10 +311,7 @@ namespace LIS.BusinessLogic
                             SpecimenCode = order.SpecimenCode,
                             SpecimenName = order.SpecimenName,
                             HISRequestNo = order.HISRequestNo,
-                            HISRequestId = $"R{order.HISRequestNo}",
-                            BedNo = order.BedNo,
-                            IPNo = order.IPNo,
-                            MRNo = order.MRNo,
+                            HISRequestId = $"R{order.HISRequestNo}",                           
                             DepartmentId = departmentId,
                             Department = department
                         };

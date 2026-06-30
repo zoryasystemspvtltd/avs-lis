@@ -27,7 +27,7 @@ namespace BarcodePrint
 
             //Find the Location of Header Cell.
             Point headerCellLocation = this.dataGridView1.GetCellDisplayRectangle(0, -1, true).Location;
-         
+
             //Place the Header CheckBox in the Location of the Header Cell.
             headerCheckBox.Location = new Point(headerCellLocation.X + 8, headerCellLocation.Y + 2);
             headerCheckBox.BackColor = Color.White;
@@ -40,7 +40,7 @@ namespace BarcodePrint
             //Assign Click event to the DataGridView Cell.
             dataGridView1.CellContentClick += new DataGridViewCellEventHandler(DataGridView_CellClick);
         }
-        
+
         private async Task LoadData()
         {
             var testlist = await BarcodePrintCommand.LisDOM.GetAllNewSampleDetails();
@@ -51,11 +51,11 @@ namespace BarcodePrint
                 BarCode br = new BarCode
                 {
                     BarcodeNo = item.SampleNo,
-                    PatientName = item.Patient.Name,
+                    PatientName = item.PatientName,
                     TestName = item.HISTestName,
                     CollectionDate = item.SampleCollectionDate,
-                    BedNo = item.BedNo,
-                    IPNo = item.IPNo,
+                    MRNo = item.MRNo,
+                    VisitId = item.VisitId,
                     LabNo = item.HISRequestNo,
                     GroupName = Helper.GetGroupName(item.SampleNo)
                 };
@@ -179,8 +179,8 @@ namespace BarcodePrint
                             PatientName = row.Cells["PatientName"].Value == null ? "" : row.Cells["PatientName"].Value.ToString(),
                             CollectionDate = Convert.ToDateTime(row.Cells["CollectionDate"].Value),
                             TestName = row.Cells["TestName"].Value == null ? "" : row.Cells["TestName"].Value.ToString(),
-                            BedNo = row.Cells["BedNo"].Value == null ? "" : row.Cells["BedNo"].Value.ToString(),
-                            IPNo = row.Cells["IPNo"].Value == null ? "" : row.Cells["IPNo"].Value.ToString(),
+                            MRNo = row.Cells["MRNo"].Value == null ? "" : row.Cells["MRNo"].Value.ToString(),
+                            VisitId = row.Cells["VisitId"].Value == null ? "" : row.Cells["VisitId"].Value.ToString(),
                             LabNo = row.Cells["LabNo"].Value.ToString(),
                             GroupName = Helper.GetGroupName(row.Cells["BarcodeNo"].Value.ToString())
                         };
@@ -225,7 +225,7 @@ namespace BarcodePrint
         private void GenerateBarcodePRN(List<BarCode> barcodePrintList)
         {
             try
-            { 
+            {
                 foreach (var item in barcodePrintList)
                 {
                     // Read Master PRN File
@@ -241,9 +241,9 @@ namespace BarcodePrint
                     barcodeString = barcodeString.Replace("<SAMPLENO>", item.BarcodeNo);
                     barcodeString = barcodeString.Replace("<PATIENTNAME>", item.PatientName);
                     barcodeString = barcodeString.Replace("<GROUPNAME>", item.GroupName);
-                    barcodeString = barcodeString.Replace("<BEDNO>", item.BedNo);
+                    barcodeString = barcodeString.Replace("<MRNO>", item.MRNo);
                     barcodeString = barcodeString.Replace("<COLLECTIONDATE>", item.CollectionDate.ToString("dd MMM yyyy"));
-                    barcodeString = barcodeString.Replace("<PATIENTNO>", item.IPNo);
+                    barcodeString = barcodeString.Replace("<PATIENTNO>", item.VisitId);
 
                     string filename = item.BarcodeNo + DateTime.Now.Ticks + ".prn";
                     string fn = Application.StartupPath.ToString() + @"\Data\" + filename;
@@ -259,9 +259,9 @@ namespace BarcodePrint
                     w1.Close();
                     fs.Close();
 
-                    PrintBarCode(filename);                    
+                    PrintBarCode(filename);
                 }
-               
+
             }
             catch (Exception ex)
             {
@@ -290,11 +290,11 @@ namespace BarcodePrint
                     BarCode br = new BarCode
                     {
                         BarcodeNo = item.SampleNo,
-                        PatientName = item.Patient.Name,
+                        PatientName = item.PatientName,
                         TestName = item.HISTestName,
                         CollectionDate = item.SampleCollectionDate,
-                        BedNo = item.BedNo,
-                        IPNo = item.IPNo,
+                        MRNo = item.MRNo,
+                        VisitId = item.VisitId,
                         LabNo = item.HISRequestNo,
                         GroupName = Helper.GetGroupName(item.SampleNo)
                     };

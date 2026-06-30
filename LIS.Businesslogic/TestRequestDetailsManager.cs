@@ -258,15 +258,11 @@ namespace LIS.Businesslogic
                 SpecimenName = testOldReqDetail.SpecimenName,
                 ReportStatus = ReportStatusType.New,
                 PatientId = patientId,
-                BedNo = testOldReqDetail.BedNo,
                 Department = testOldReqDetail.Department,
                 DepartmentId = testOldReqDetail.DepartmentId,
                 HISRequestId = testOldReqDetail.HISRequestId,
                 HISRequestNo = testOldReqDetail.HISRequestNo,
-                IPNo = testOldReqDetail.IPNo,
                 LISTestCode = testOldReqDetail.LISTestCode,
-                MRNo = testOldReqDetail.MRNo
-
             };
 
             var testRequsDetailstId = testRequestDetailsRepo.Add(testRequestDetail);
@@ -490,7 +486,6 @@ namespace LIS.Businesslogic
                                   p.SampleCollectionDate,
                                   p.SampleReceivedDate,
                                   p.SampleNo,
-                                  p.BedNo,
                                   m.EquipmentId,
                                   p.CreatedBy,
                                   p.CreatedOn,
@@ -503,7 +498,6 @@ namespace LIS.Businesslogic
                                   SampleCollectionDate = u.SampleCollectionDate,
                                   SampleReceivedDate = u.SampleReceivedDate,
                                   SampleNo = u.SampleNo,
-                                  BedNo = u.BedNo,
                                   LISTestCode = u.LISTestCode,
                                   SpecimenName = u.SpecimenName,
                                   CreatedBy = u.CreatedBy,
@@ -513,7 +507,41 @@ namespace LIS.Businesslogic
 
             return requestDetails;
         }
+        public IEnumerable<BarCodeDto> GetBarCodeSamples(ReportStatusType status)
+        {
+            var requestDetails = new List<BarCodeDto>();
 
+            var testRequestDetails = testRequestDetailsRepo
+                                        .Get(p => p.ReportStatus == status);
+
+            var patients = patientRepo.Get(p => p.IsActive == true);
+
+            requestDetails = (from p in testRequestDetails
+                              join tq in patients on p.PatientId equals tq.Id
+                              select new
+                              {
+                                  p.PatientId,
+                                  p.SampleCollectionDate,
+                                  p.HISRequestNo,
+                                  p.HISTestName,
+                                  p.SampleNo,
+                                  tq.MRNo,
+                                  tq.VisitId,
+                                  tq.Name
+                              }).AsEnumerable().Distinct().Select(u => new BarCodeDto
+                              {
+                                  PatientId = u.PatientId,
+                                  SampleCollectionDate = u.SampleCollectionDate,
+                                  SampleNo = u.SampleNo,
+                                  HISTestName = u.HISTestName,
+                                  HISRequestNo = u.HISRequestNo,
+                                  PatientName = u.Name,
+                                  MRNo = u.MRNo,
+                                  VisitId = u.VisitId,
+                              }).OrderByDescending(p => p.SampleCollectionDate).ToList();
+
+            return requestDetails;
+        }
         public IEnumerable<TestRequestDetail> GetAllNewSamples(ReportStatusType status)
         {
             var requestDetails = new List<TestRequestDetail>();
@@ -532,8 +560,6 @@ namespace LIS.Businesslogic
                                   p.HISRequestNo,
                                   p.HISTestName,
                                   p.SampleNo,
-                                  p.BedNo,
-                                  p.IPNo,
                                   tq
                               }).AsEnumerable().Distinct().Select(u => new TestRequestDetail
                               {
@@ -542,8 +568,6 @@ namespace LIS.Businesslogic
                                   SampleNo = u.SampleNo,
                                   HISTestName = u.HISTestName,
                                   HISRequestNo = u.HISRequestNo,
-                                  BedNo = u.BedNo,
-                                  IPNo = u.IPNo,
                                   Patient = u.tq
                               }).OrderByDescending(p => p.SampleCollectionDate).ToList();
 
@@ -558,10 +582,10 @@ namespace LIS.Businesslogic
                                         .Get(p => p.HISRequestNo.Equals(RequestNo
                                                         , StringComparison.OrdinalIgnoreCase)
                                                   && p.ReportStatus == status);
-            
+
             var patients = patientRepo.Get(p => p.IsActive == true);
 
-            requestDetails = (from p in testRequestDetails 
+            requestDetails = (from p in testRequestDetails
                               join tq in patients on p.PatientId equals tq.Id
                               select new
                               {
@@ -570,8 +594,6 @@ namespace LIS.Businesslogic
                                   p.HISRequestNo,
                                   p.HISTestName,
                                   p.SampleNo,
-                                  p.BedNo,
-                                  p.IPNo,
                                   tq
                               }).AsEnumerable().Select(u => new TestRequestDetail
                               {
@@ -580,9 +602,45 @@ namespace LIS.Businesslogic
                                   SampleNo = u.SampleNo,
                                   HISTestName = u.HISTestName,
                                   HISRequestNo = u.HISRequestNo,
-                                  BedNo = u.BedNo,
-                                  IPNo = u.IPNo,
                                   Patient = u.tq
+                              }).ToList();
+
+            return requestDetails;
+        }
+
+        public IEnumerable<BarCodeDto> GetBarCodeSamplesByRequestNo(string RequestNo, ReportStatusType status)
+        {
+            var requestDetails = new List<BarCodeDto>();
+
+            var testRequestDetails = testRequestDetailsRepo
+                                        .Get(p => p.HISRequestNo.Equals(RequestNo
+                                                        , StringComparison.OrdinalIgnoreCase)
+                                                  && p.ReportStatus == status);
+
+            var patients = patientRepo.Get(p => p.IsActive == true);
+
+            requestDetails = (from p in testRequestDetails
+                              join tq in patients on p.PatientId equals tq.Id
+                              select new
+                              {
+                                  p.PatientId,
+                                  p.SampleCollectionDate,
+                                  p.HISRequestNo,
+                                  p.HISTestName,
+                                  p.SampleNo,
+                                  tq.MRNo,
+                                  tq.VisitId,
+                                  tq.Name
+                              }).AsEnumerable().Select(u => new BarCodeDto
+                              {
+                                  PatientId = u.PatientId,
+                                  SampleCollectionDate = u.SampleCollectionDate,
+                                  SampleNo = u.SampleNo,
+                                  HISTestName = u.HISTestName,
+                                  HISRequestNo = u.HISRequestNo,
+                                  PatientName = u.Name,
+                                  MRNo = u.MRNo,
+                                  VisitId = u.VisitId,
                               }).ToList();
 
             return requestDetails;

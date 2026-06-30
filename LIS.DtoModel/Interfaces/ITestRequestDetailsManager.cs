@@ -11,7 +11,9 @@ namespace LIS.DtoModel.Interfaces
         IEnumerable<TestRequestDetail> Get(long Id);
         IEnumerable<TestRequestDetail> GetBySampleNo(string SampleNo);
         IEnumerable<TestRequestDetail> GetAllNewSamples(ReportStatusType status);
+        IEnumerable<BarCodeDto> GetBarCodeSamples(ReportStatusType status);
         IEnumerable<TestRequestDetail> GetByHisRequestNo(string RequestNo, ReportStatusType status);
+        IEnumerable<BarCodeDto> GetBarCodeSamplesByRequestNo(string RequestNo, ReportStatusType status);
         bool IsPanelTest(string SampleNo, string LisHostCode);
         List<TestRequestDetail> GetRequestDetails(string SampleNo, string lisTestCode);
         void Delete(TestRequestDetail testRequestDetail);

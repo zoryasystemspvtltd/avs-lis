@@ -31,7 +31,7 @@ namespace LIS.Com.Businesslogic
         {
             this.api = new CommunicationChannel(serverUrl, apiKey);
         }
-        public async Task<IEnumerable<TestRequestDetail>> GetAllNewSampleDetails()
+        public async Task<IEnumerable<BarCodeDto>> GetAllNewSampleDetails()
         {
             try
             {
@@ -39,10 +39,10 @@ namespace LIS.Com.Businesslogic
                 string apiName = $"BarCode";
                 var response = await api.Get($"api/{apiName}", null, null);
                 var jsonModel = JsonConvert.SerializeObject(response.Result);
-                IEnumerable<TestRequestDetail> items = null;
+                IEnumerable<BarCodeDto> items = null;
                 if (jsonModel.Length > 0)
                 {
-                    items = JsonConvert.DeserializeObject<IEnumerable<TestRequestDetail>>(jsonModel);
+                    items = JsonConvert.DeserializeObject<IEnumerable<BarCodeDto>>(jsonModel);
                 }
                 return items;
             }
@@ -52,7 +52,7 @@ namespace LIS.Com.Businesslogic
             }
         }
 
-        public async Task<List<TestRequestDetail>> GetSampleDetails(string requestNo)
+        public async Task<List<BarCodeDto>> GetSampleDetails(string requestNo)
         {
             try
             {
@@ -60,10 +60,10 @@ namespace LIS.Com.Businesslogic
                 string apiName = $"BarCode/{requestNo}";
                 var response = await api.Get($"api/{apiName}");
                 var jsonModel = JsonConvert.SerializeObject(response.Result);
-                List<TestRequestDetail> items = null;
+                List<BarCodeDto> items = null;
                 if (jsonModel.Length > 0)
                 {
-                    items = JsonConvert.DeserializeObject<List<TestRequestDetail>>(jsonModel);
+                    items = JsonConvert.DeserializeObject<List<BarCodeDto>>(jsonModel);
                 }
                 return items;
             }

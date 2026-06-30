@@ -1,11 +1,9 @@
-﻿using LIS.BusinessLogic.Helper;
-using LIS.DtoModel.Interfaces;
+﻿using LIS.DtoModel.Interfaces;
 using LIS.DtoModel.Models;
 using LIS.Logger;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Web.Http;
 
 namespace Lis.Api.Controllers.Api
@@ -31,11 +29,11 @@ namespace Lis.Api.Controllers.Api
 
         [AllowAnonymous]
         [HttpGet]
-        public IEnumerable<TestRequestDetail> Get()
+        public IEnumerable<BarCodeDto> Get()
         {
             try
             {
-                var testDetails = testRequestDetails.GetAllNewSamples(ReportStatusType.New);
+                var testDetails = testRequestDetails.GetBarCodeSamples(ReportStatusType.New);
 
                 var responseStrign = JsonConvert.SerializeObject(testDetails);
                 logger.LogInfo($"Get Sample Response: {responseStrign}");
@@ -50,13 +48,13 @@ namespace Lis.Api.Controllers.Api
 
         [AllowAnonymous]
         [HttpGet]
-        public IEnumerable<TestRequestDetail> Get(string Id)
+        public IEnumerable<BarCodeDto> Get(string Id)
         {
             try
             {
                 logger.LogInfo($"Get RequestNo Request: {Id}");
 
-                var testDetails = testRequestDetails.GetByHisRequestNo(Id, ReportStatusType.New);
+                var testDetails = testRequestDetails.GetBarCodeSamplesByRequestNo(Id, ReportStatusType.New);
 
                 var responseStrign = JsonConvert.SerializeObject(testDetails);
                 logger.LogInfo($"Get Sample Response: {responseStrign}");
@@ -120,5 +118,6 @@ namespace Lis.Api.Controllers.Api
         //        return null;
         //    }
         //}
-    }
+    }   
+   
 }

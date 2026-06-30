@@ -35,7 +35,7 @@ namespace LIS.DtoModel.Models
         public string ReceivedBy { get; set; }
         [MaxLength(500)]
         public string ReceivedRemarks { get; set; }
-        public ReportStatusType ReportStatus { get; set; }        
+        public ReportStatusType ReportStatus { get; set; }
         [MaxLength(20)]
         public string IPNo { get; set; }
         [MaxLength(20)]
@@ -68,5 +68,19 @@ namespace LIS.DtoModel.Models
 
         [JsonIgnore]
         public virtual IEnumerable<TestParameter> TestParameters { get; set; }
+    }
+
+    public class BarCodeDto
+    {       
+        public string SampleNo { get; set; }       
+        public string HISTestName { get; set; } 
+        public string SpecimenName { get; set; }
+        public string PatientName { get; set; }
+        public DateTime SampleCollectionDate { get; set; }
+        public string MRNo { get; set; }
+        public string VisitId { get; set; }        
+        public string HISRequestNo { get; set; }
+        public string Department { get; set; }
+        public long PatientId { get; set; }
     }
 }
