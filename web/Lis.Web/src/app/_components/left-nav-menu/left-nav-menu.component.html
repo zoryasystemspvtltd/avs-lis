@@ -30,7 +30,14 @@
                             <tr *ngIf="hasAccess('RadiologyReportEntry',63)">
                                 <td><span class="glyphicon glyphicon-picture nav-icon"></span><a routerLink="/radiology-report-entry" routerLinkActive="active-menu-link">Radiology Report Entry</a></td>
                             </tr>
+                            <tr *ngIf="hasAccess('RadiologyDoctorApprovals',63)">
+                                <td><span class="glyphicon glyphicon-check nav-icon"></span><a routerLink="/radiology-doctor-approvals" routerLinkActive="active-menu-link">Radiology Doctor Approval</a></td>
+                            </tr>
+                            <tr *ngIf="hasAccess('RadiologyDoctorApprovals',63)">
+                                <td><span class="glyphicon glyphicon-ok-circle nav-icon"></span><a routerLink="/radiology-approved-reports" routerLinkActive="active-menu-link">Approved Radiology Reports</a></td>
+                            </tr>
                             <tr *ngIf="hasAccess('Reports',2) || hasAccess('Reports',4) || hasAccess('Reports',63)">
+                                <td><span class="glyphicon glyphicon-flask nav-icon"></span><a routerLink="/lab-result-entry" routerLinkActive="active-menu-link">Lab Result Entry</a></td>
                                 <td><span class="glyphicon glyphicon-edit nav-icon"></span><a routerLink="/edit-test-results" routerLinkActive="active-menu-link">Edit Test Results</a></td>
                             </tr>
                             <tr *ngIf="hasAccess('Reports',63)">
@@ -138,6 +145,9 @@
                             </tr>
                             <tr *ngIf="hasReportAccess()">
                                 <td><span class="glyphicon glyphicon-print nav-icon"></span><a routerLink="/reports/test-report" routerLinkActive="active-menu-link">Diagnostic Report</a></td>
+                            </tr>
+                            <tr *ngIf="hasAccess('RadiologyReports',63) || hasReportAccess()">
+                                <td><span class="glyphicon glyphicon-print nav-icon"></span><a routerLink="/reports/radiology-report" routerLinkActive="active-menu-link">Radiology Report Print</a></td>
                             </tr>
                             <tr *ngIf="hasReportAccess()">
                                 <td><span class="glyphicon glyphicon-tint nav-icon"></span><a routerLink="/reports/collection-summary" routerLinkActive="active-menu-link">Collection Summary</a></td>

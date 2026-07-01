@@ -44,6 +44,7 @@ namespace LIS.Masters.Tests.Infrastructure
         public TestRequestDetailsManager TestRequest { get; }
         public SampleCollectionManager SampleCollection { get; }
         public SampleReceivingManager SampleReceiving { get; }
+        public RadiologyReportManager RadiologyReport { get; }
 
         private TestServiceFactory(ApplicationDBContext db)
         {
@@ -76,6 +77,7 @@ namespace LIS.Masters.Tests.Infrastructure
             TestRequest = new TestRequestDetailsManager(Logger, Identity, Uow, new TestFileHandler());
             SampleCollection = new SampleCollectionManager(Logger, Identity, Uow, TestRequest);
             SampleReceiving = new SampleReceivingManager(Logger, Identity, Uow, TestRequest);
+            RadiologyReport = new RadiologyReportManager(Logger, Identity, Uow);
         }
 
         public static bool TryCreate(out TestServiceFactory factory, out string error)

@@ -33,10 +33,11 @@ export class JwtInterceptor implements HttpInterceptor {
         }
         else {
             if (currentUser && currentUser.accessToken) {
-                if (request.url == 'api/FileUpload') {
+                const isMultipartUpload = request.url.indexOf('DoctorSignature') >= 0
+                    || request.url.indexOf('FileUpload') >= 0;
+                if (isMultipartUpload) {
                     request = request.clone({
                         setHeaders: {
-                            //'Content-Type': 'application/json',
                             'accessKey': this.authenticationService.selectedApplication,
                             'Authorization': `Bearer ${currentUser.accessToken}`
                         }

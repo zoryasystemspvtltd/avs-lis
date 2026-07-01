@@ -28,7 +28,7 @@ body {
     z-index: 1000;
     top: 52px;
     left: 0;
-    background-color: #ffffff;
+    background-color: #003c4f;
     overflow-x: hidden;
     overflow-y: auto;
     padding: 0;
@@ -42,7 +42,7 @@ body {
 .nav-button {
     cursor: pointer;
     margin-left: -15px;
-    background-color: #125d74;
+    background-color: #003c4f;
     padding: 6px;
     height: 30px;
     border-top-right-radius: 5px;

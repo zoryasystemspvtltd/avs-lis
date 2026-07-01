@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { AuthenticationToken } from '../../../_models';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { UserService, AuthenticationService, AlertService } from '../../../_services';
@@ -9,7 +9,7 @@ import { ActivatedRoute, Router } from '@angular/router';
   templateUrl: './users-create.component.html',
   styleUrls: ['./users-create.component.css']
 })
-export class UsersCreateComponent implements OnInit {
+export class UsersCreateComponent implements OnInit, OnDestroy {
 
   id: string;
   private user: AuthenticationToken;
@@ -23,6 +23,13 @@ export class UsersCreateComponent implements OnInit {
   public message: string;
   profileitem: any;
   item: any = {};
+  signatureFile: File = null;
+  signaturePreviewUrl: string = null;
+  signatureError: string = null;
+
+  private readonly allowedSignatureExtensions = ['.png', '.jpg', '.jpeg'];
+  private readonly maxSignatureSizeBytes = 2 * 1024 * 1024;
+
   constructor(private userService: UserService,
     private authenticationService: AuthenticationService,
     private route: ActivatedRoute,
@@ -34,6 +41,10 @@ export class UsersCreateComponent implements OnInit {
     this.user = this.authenticationService.currentUserValue;
     this.getProfileItemDetails();
 
+  }
+
+  ngOnDestroy() {
+    this.revokeSignaturePreview();
   }
 
   getProfileItemDetails() {
@@ -83,21 +94,111 @@ export class UsersCreateComponent implements OnInit {
       first_name: ['', Validators.required],
       last_name: ['', Validators.required],
       phone_number: [''],
+      doctor_designation: [''],
       roles: [this.item.roles],
       applications: [this.item.applications]
     });
   }
 
+  isDoctorRoleSelected(): boolean {
+    return this.item?.roles?.some(role => role.isInRole && role.name === 'Doctor');
+  }
+
+  updateDoctorValidators() {
+    if (!this.addUserForm) {
+      return;
+    }
+
+    const designation = this.addUserForm.get('doctor_designation');
+    if (this.isDoctorRoleSelected()) {
+      designation.setValidators([Validators.required, Validators.maxLength(100)]);
+    } else {
+      designation.clearValidators();
+      designation.setValue('');
+      this.clearSignatureSelection();
+    }
+    designation.updateValueAndValidity();
+  }
+
+  onSignatureSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input?.files?.[0];
+    this.signatureError = null;
+
+    if (!file) {
+      this.clearSignatureSelection();
+      return;
+    }
+
+    const extension = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+    if (!this.allowedSignatureExtensions.includes(extension)) {
+      this.signatureError = 'Doctor signature must be a PNG or JPG image.';
+      this.clearSignatureSelection();
+      input.value = '';
+      return;
+    }
+
+    if (file.size > this.maxSignatureSizeBytes) {
+      this.signatureError = 'Doctor signature must not exceed 2 MB.';
+      this.clearSignatureSelection();
+      input.value = '';
+      return;
+    }
+
+    this.signatureFile = file;
+    this.revokeSignaturePreview();
+    this.signaturePreviewUrl = URL.createObjectURL(file);
+  }
+
+  clearSignatureSelection() {
+    this.signatureFile = null;
+    this.revokeSignaturePreview();
+  }
+
+  revokeSignaturePreview() {
+    if (this.signaturePreviewUrl) {
+      URL.revokeObjectURL(this.signaturePreviewUrl);
+      this.signaturePreviewUrl = null;
+    }
+  }
+
   onSubmit() {
     this.submitted = true;
-    // stop here if form is invalid
+    this.signatureError = null;
+    this.updateDoctorValidators();
+
     if (this.addUserForm.invalid) {
       return;
     }
+
+    if (this.isDoctorRoleSelected() && !this.signatureFile) {
+      this.signatureError = 'Doctor signature is required for Doctor users.';
+      return;
+    }
+
     let item = this.addUserForm.value;
-    item.applications =this.item.applications;
+    item.applications = this.item.applications;
+    item.roles = this.item.roles;
+    item.doctor_designation = item.doctor_designation ? item.doctor_designation.trim() : null;
+
+    this.loading = true;
     this.userService.addUser(item)
       .subscribe(data => {
+        const userId = data.id;
+        if (this.isDoctorRoleSelected() && this.signatureFile) {
+          this.userService.uploadDoctorSignature(userId, this.signatureFile)
+            .subscribe(() => {
+              this.loading = false;
+              this.router.navigate(['/users']);
+            }, (error) => {
+              this.loading = false;
+              this.message = error?.message || 'User created but doctor signature upload failed.';
+              this.alertService.error(this.message);
+              this.router.navigate(['/users', 'edit', userId]);
+            });
+          return;
+        }
+
         this.loading = false;
         this.router.navigate(['/users']);
       },
@@ -116,8 +217,6 @@ export class UsersCreateComponent implements OnInit {
             this.alertService.error(this.message);
           }
         });
-
-    this.loading = true;
   }
 
   hasAccess(): boolean {
@@ -143,6 +242,15 @@ export class UsersCreateComponent implements OnInit {
     return false;
   }
 
+  isInValidMaxLength(field: string) {
+    if (this.submitted) {
+      if (this.f[field].errors && this.f[field].errors.maxlength) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   onCheckApplication(event: any) {
     this.item.applications.forEach(app => {
       if (app.key == event.target.getAttribute('data-key')) {
@@ -156,7 +264,8 @@ export class UsersCreateComponent implements OnInit {
       if (role.id == event.target.getAttribute('data-id')) {
         role.isInRole = event.target.checked;
       }
-    })
+    });
+    this.updateDoctorValidators();
   }
 
 

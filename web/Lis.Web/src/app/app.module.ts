@@ -48,10 +48,12 @@ import { TestDetailsComponent } from './LIS/testMaster/test-details/test-details
 import { TestCreateComponent } from './LIS/testMaster/test-create/test-create.component';
 import { TestEditComponent } from './LIS/testMaster/test-edit/test-edit.component';
 import { MasterListComponent, MasterFormComponent, SaleInvoiceFormComponent, TestProfileFormComponent, TestProfileViewComponent } from './masters';
-import { SaleInvoiceRegisterComponent, TestBookingRegisterComponent, TestReportComponent, FddReportComponent } from './reports';
+import { SaleInvoiceRegisterComponent, TestBookingRegisterComponent, TestReportComponent, FddReportComponent, RadiologyReportPrintComponent } from './reports';
 import { SampleCollectionComponent } from './LIS/sample-workflow/sample-collection/sample-collection.component';
 import { SampleReceivingComponent } from './LIS/sample-workflow/sample-receiving/sample-receiving.component';
 import { RadiologyReportEntryComponent } from './LIS/radiology/radiology-report-entry/radiology-report-entry.component';
+import { RadiologyDoctorApprovalComponent } from './LIS/radiology/radiology-doctor-approval/radiology-doctor-approval.component';
+import { RadiologyApprovedReportsComponent } from './LIS/radiology/radiology-approved-reports/radiology-approved-reports.component';
 
 export const options: Partial<IConfig> | (() => Partial<IConfig>) = null;
 
@@ -153,10 +155,13 @@ export const options: Partial<IConfig> | (() => Partial<IConfig>) = null;
     SaleInvoiceRegisterComponent,
     TestBookingRegisterComponent,
     TestReportComponent,
+    RadiologyReportPrintComponent,
     FddReportComponent,
     SampleCollectionComponent,
     SampleReceivingComponent,
-    RadiologyReportEntryComponent
+    RadiologyReportEntryComponent,
+    RadiologyDoctorApprovalComponent,
+    RadiologyApprovedReportsComponent
   ],
   imports: [
     BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),

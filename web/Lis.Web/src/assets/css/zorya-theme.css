@@ -6,6 +6,8 @@
 :root {
   --zorya-primary: #125d74;
   --zorya-primary-dark: #0e4a5c;
+  --zorya-menu-bg: #003c4f;
+  --zorya-menu-bg-hover: #004a61;
   --zorya-primary-light: #1a7a96;
   --zorya-primary-soft: #e8f2f5;
   --zorya-accent: #e9b513;
@@ -219,9 +221,9 @@ a:focus {
    ============================================================================= */
 .sidenav,
 #sidenav.sidenav {
-  background: var(--zorya-surface) !important;
-  border-right: 1px solid var(--zorya-border) !important;
-  box-shadow: 2px 0 12px rgba(21, 95, 105, 0.04) !important;
+  background: var(--zorya-menu-bg) !important;
+  border-right: 1px solid rgba(0, 0, 0, 0.2) !important;
+  box-shadow: 2px 0 12px rgba(0, 60, 79, 0.25) !important;
   width: var(--zorya-sidebar-w) !important;
   padding: 0 !important;
   top: var(--zorya-header-h) !important;
@@ -252,7 +254,7 @@ a:focus {
   flex-shrink: 0;
   position: relative;
   padding: 10px 10px 6px;
-  border-bottom: 1px solid var(--zorya-border-light);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 #sidenav.sidenav .sidenav-menu-scroll {
@@ -277,8 +279,8 @@ a:focus {
 #sidenav.sidenav .equipment-status-strip {
   flex-shrink: 0;
   padding: 8px 10px 10px;
-  border-top: 1px solid var(--zorya-border-light);
-  background: var(--zorya-bg);
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.15);
   clear: both;
 }
 
@@ -288,7 +290,7 @@ a:focus {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: var(--zorya-text-muted);
+  color: rgba(255, 255, 255, 0.65);
   margin-bottom: 6px;
 }
 
@@ -315,18 +317,18 @@ a:focus {
 
 .sidenav .nav-button,
 #sidenav .nav-button {
-  background: var(--zorya-primary-soft) !important;
-  color: var(--zorya-primary) !important;
-  border: 1px solid var(--zorya-border);
+  background: var(--zorya-menu-bg-hover) !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 #sidenav.sidenav .closebtn {
-  color: var(--zorya-text-muted);
+  color: rgba(255, 255, 255, 0.75);
   font-size: 22px;
 }
 
 #sidenav.sidenav .closebtn:hover {
-  color: var(--zorya-primary);
+  color: #fff;
 }
 
 #sidenav.sidenav .panel-group {
@@ -357,10 +359,10 @@ a:focus {
   font-weight: 600 !important;
   text-transform: none;
   letter-spacing: 0;
-  color: var(--zorya-primary-dark) !important;
+  color: rgba(255, 255, 255, 0.95) !important;
   border-radius: var(--zorya-radius-sm);
-  background: var(--zorya-bg);
-  border: 1px solid var(--zorya-border-light);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   text-decoration: none !important;
   line-height: 1.3;
   white-space: nowrap;
@@ -369,15 +371,15 @@ a:focus {
 }
 
 #sidenav.sidenav .panel-default > .panel-heading a:hover {
-  background: var(--zorya-primary-soft);
-  border-color: var(--zorya-border);
+  background: var(--zorya-menu-bg-hover);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 #sidenav.sidenav .panel-default > .panel-heading .glyphicon {
   flex: 0 0 16px;
   width: 16px;
   margin-right: 0 !important;
-  color: var(--zorya-primary);
+  color: var(--zorya-accent-light);
   font-size: 13px;
   text-align: center;
   line-height: 1;
@@ -407,7 +409,7 @@ a:focus {
 #sidenav.sidenav .panel-body .nav-icon,
 #sidenav.sidenav .panel-body .glyphicon.nav-icon,
 #sidenav.sidenav .nav-placeholder {
-  color: var(--zorya-accent) !important;
+  color: rgba(255, 255, 255, 0.88) !important;
   opacity: 1 !important;
   font-size: 13px;
   font-weight: 500;
@@ -422,7 +424,7 @@ a:focus {
   text-align: center;
   line-height: 1;
   font-size: 13px;
-  color: var(--zorya-primary) !important;
+  color: var(--zorya-accent-light) !important;
   align-self: center;
 }
 
@@ -442,14 +444,14 @@ a:focus {
 
 #sidenav.sidenav .panel-body a:hover,
 #sidenav.sidenav .panel-body a:focus {
-  background: var(--zorya-accent-soft) !important;
-  color: var(--zorya-accent) !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #fff !important;
   border-left-color: var(--zorya-accent-light);
 }
 
 #sidenav.sidenav .panel-body a.active-menu-link {
-  background: var(--zorya-primary-soft) !important;
-  color: var(--zorya-primary-dark) !important;
+  background: rgba(255, 255, 255, 0.14) !important;
+  color: #fff !important;
   font-weight: 600;
   border-left-color: var(--zorya-accent) !important;
   box-shadow: none !important;
@@ -463,7 +465,7 @@ a:focus {
 #sidenav.sidenav .nav-placeholder {
   padding: 8px 12px;
   font-style: italic;
-  color: var(--zorya-text-muted) !important;
+  color: rgba(255, 255, 255, 0.55) !important;
 }
 
 #sidenav.sidenav .sidenav-header-bar ng-select,
@@ -1392,3 +1394,31 @@ body.sale-invoice-print-mode .container-main.qcontent {
     padding-bottom: 0 !important;
   }
 }
+
+.patient-identity-banner {
+  background: #f4f8fa;
+  border: 1px solid #d5e3ea;
+  border-left: 4px solid #125d74;
+  padding: 10px 14px;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.field-help-icon {
+  color: #125d74;
+  margin-left: 6px;
+  cursor: help;
+}
+
+.total-discount-percent,
+.total-discount-rupee {
+  display: inline-block;
+  margin-left: 8px;
+  font-size: 12px;
+  color: #555;
+}
+
+.test-rate-test-select .ng-select-container {
+  min-height: 34px;
+}
+

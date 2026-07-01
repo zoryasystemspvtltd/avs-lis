@@ -239,6 +239,7 @@
     <Compile Include="Migrations\202604270642026_fresh.Designer.cs">
       <DependentUpon>202604270642026_fresh.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202606281200000_DoctorDesignationSignature.cs" />
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\ClientApplication.cs" />
     <Compile Include="Models\ModuleIdentity.cs" />
@@ -273,6 +274,7 @@
     </Compile>
     <Compile Include="Providers\ApplicationOAuthProvider.cs" />
     <Compile Include="Providers\AuthRepository.cs" />
+    <Compile Include="Providers\DoctorSignatureStorage.cs" />
     <Compile Include="Providers\ExtensionMethods.cs" />
     <Compile Include="Providers\Helper.cs" />
     <Compile Include="Providers\QAuthorize.cs" />

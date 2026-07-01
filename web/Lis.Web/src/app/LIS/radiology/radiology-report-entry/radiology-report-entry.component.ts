@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
 import { AlertService } from '../../../_services/alert.service';
 import { SampleWorkflowService } from '../../../_services/sample-workflow.service';
 import { extractApiError } from '../../../_helpers/api-error';
@@ -22,15 +21,13 @@ export class RadiologyReportEntryComponent implements OnInit {
   findings = '';
   impression = '';
   recommendation = '';
-  digitalSignature = '';
   selectedId: number = null;
   reportDetail: any = null;
   showEntry = false;
 
   constructor(
     private workflowService: SampleWorkflowService,
-    private alertService: AlertService,
-    private router: Router
+    private alertService: AlertService
   ) { }
 
   ngOnInit(): void {
@@ -103,26 +100,7 @@ export class RadiologyReportEntryComponent implements OnInit {
       submitForReview
     }).subscribe(
       () => {
-        this.alertService.success(submitForReview ? 'Submitted for review.' : 'Draft saved.');
-        this.showEntry = false;
-        this.search();
-      },
-      err => this.alertService.error(extractApiError(err))
-    );
-  }
-
-  authorize(release: boolean): void {
-    if (!this.digitalSignature.trim()) {
-      this.alertService.error('Digital signature is required.');
-      return;
-    }
-    this.workflowService.authorizeRadiologyReport({
-      radiologyRequestId: this.selectedId,
-      digitalSignature: this.digitalSignature,
-      release
-    }).subscribe(
-      () => {
-        this.alertService.success(release ? 'Report released.' : 'Report authorized.');
+        this.alertService.success(submitForReview ? 'Submitted for doctor approval.' : 'Draft saved.');
         this.showEntry = false;
         this.search();
       },

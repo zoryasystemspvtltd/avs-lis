@@ -227,6 +227,8 @@ namespace LIS.BusinessLogic
                 throw new InvalidOperationException("Parameter is required.");
             }
 
+            NormalizeAgeType(item);
+
             if (string.IsNullOrWhiteSpace(item.HISRangeCode))
             {
                 item.HISRangeCode = GenerateNextRangeCode();
@@ -254,6 +256,8 @@ namespace LIS.BusinessLogic
                 throw new InvalidOperationException("Parameter is required.");
             }
 
+            NormalizeAgeType(item);
+
             var existing = Repo.Get(item.Id);
             if (existing == null)
             {
@@ -270,6 +274,28 @@ namespace LIS.BusinessLogic
             existing.HisParameterId = item.HisParameterId;
 
             base.Update(existing);
+        }
+
+        private static void NormalizeAgeType(HISParameterRangMaster item)
+        {
+            if (item == null || string.IsNullOrWhiteSpace(item.AgeType))
+            {
+                return;
+            }
+
+            var normalized = item.AgeType.Trim();
+            if (normalized.Equals("Years", StringComparison.OrdinalIgnoreCase))
+            {
+                normalized = "Year";
+            }
+
+            if (!normalized.Equals("Year", StringComparison.OrdinalIgnoreCase) &&
+                !normalized.Equals("Month", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException("Age Type must be Year or Month.");
+            }
+
+            item.AgeType = normalized;
         }
 
         public override ItemList<HISParameterRangMaster> Get(ListOptions option)
@@ -628,20 +654,35 @@ namespace LIS.BusinessLogic
 
         public string GenerateNextPatientId()
         {
+            return GenerateNextCode("PAT", 5, repo.Get().Select(p => p.HisPatientId));
+        }
+
+        public string GenerateNextMrNo()
+        {
+            return GenerateNextCode("MR", 5, repo.Get().Select(p => p.MRNo));
+        }
+
+        public string GenerateNextVisitId()
+        {
+            return GenerateNextCode("VIS", 5, repo.Get().Select(p => p.VisitId));
+        }
+
+        private static string GenerateNextCode(string prefix, int digits, IEnumerable<string> codes)
+        {
             var max = 0;
-            foreach (var code in repo.Get().Select(p => p.HisPatientId).Where(c => !string.IsNullOrWhiteSpace(c)))
+            foreach (var code in codes.Where(c => !string.IsNullOrWhiteSpace(c)))
             {
                 var trimmed = code.Trim();
-                if (trimmed.Length > 3 &&
-                    trimmed.StartsWith("PAT", StringComparison.OrdinalIgnoreCase) &&
-                    int.TryParse(trimmed.Substring(3), out var num) &&
+                if (trimmed.Length > prefix.Length &&
+                    trimmed.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) &&
+                    int.TryParse(trimmed.Substring(prefix.Length), out var num) &&
                     num > max)
                 {
                     max = num;
                 }
             }
 
-            return $"PAT{(max + 1).ToString("D5", System.Globalization.CultureInfo.InvariantCulture)}";
+            return $"{prefix}{(max + 1).ToString($"D{digits}", System.Globalization.CultureInfo.InvariantCulture)}";
         }
 
         public long Add(PatientDetail item)
@@ -652,6 +693,16 @@ namespace LIS.BusinessLogic
             if (string.IsNullOrWhiteSpace(item.HisPatientId))
             {
                 item.HisPatientId = GenerateNextPatientId();
+            }
+
+            if (string.IsNullOrWhiteSpace(item.MRNo))
+            {
+                item.MRNo = GenerateNextMrNo();
+            }
+
+            if (string.IsNullOrWhiteSpace(item.VisitId))
+            {
+                item.VisitId = GenerateNextVisitId();
             }
 
             if (ExistsDuplicateMrNo(item, null))
@@ -767,7 +818,7 @@ namespace LIS.BusinessLogic
 
             if (string.IsNullOrWhiteSpace(item.PatientPrefix))
             {
-                throw new InvalidOperationException("Patient Prefix is required.");
+                throw new InvalidOperationException("Salutation is required.");
             }
 
             if (string.IsNullOrWhiteSpace(item.MRNo))

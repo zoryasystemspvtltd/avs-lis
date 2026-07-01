@@ -152,13 +152,14 @@ export const MASTER_LIST_SCHEMAS: { [key: string]: any } = {
   patientMaster: {
     url: 'patient-master', heading: 'Patient Master', module: 'PatientMaster', hideAction: true,
     elements: [
-      { heading: 'Name', fieldName: 'name', sortable: true, width: '20%', type: 'link' },
+      { heading: 'Patient No', fieldName: 'hisPatientId', sortable: true, width: '14%', type: 'link' },
+      { heading: 'Patient Name', fieldName: 'name', sortable: true, width: '22%', type: 'label' },
+      { heading: 'Salutation', fieldName: 'patientPrefix', sortable: false, width: '10%', type: 'label' },
       { heading: 'MR No', fieldName: 'mrNo', sortable: true, width: '12%', type: 'label' },
       { heading: 'Visit ID', fieldName: 'visitId', sortable: false, width: '12%', type: 'label' },
       { heading: 'Phone', fieldName: 'phone', sortable: false, width: '12%', type: 'label' },
       { heading: 'Gender', fieldName: 'gender', sortable: false, width: '10%', type: 'label' },
       { heading: 'Age', fieldName: 'age', sortable: false, width: '10%', type: 'label' },
-      { heading: 'External ID', fieldName: 'hisPatientId', sortable: false, width: '15%', type: 'label' },
       { heading: 'Active', fieldName: 'isActive', sortable: false, width: '10%', type: 'label' }
     ]
   },

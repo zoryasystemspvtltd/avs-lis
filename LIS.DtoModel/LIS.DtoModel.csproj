@@ -104,6 +104,7 @@
     <Compile Include="Models\SampleWorkflowReportRows.cs" />
     <Compile Include="Models\Reports\SaleInvoiceRegisterRow.cs" />
     <Compile Include="Models\Reports\DiagnosticTestReportDto.cs" />
+    <Compile Include="Models\Reports\DiagnosticRadiologyReportDto.cs" />
     <Compile Include="Interfaces\ITestReportManager.cs" />
     <Compile Include="Interfaces\ITestResultEditManager.cs" />
     <Compile Include="Models\TestResultEdit\TestResultEditDtos.cs" />

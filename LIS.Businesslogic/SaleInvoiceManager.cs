@@ -850,6 +850,7 @@ namespace LIS.BusinessLogic
             DateTime now)
         {
             var reqNo = string.IsNullOrWhiteSpace(requestNo) ? $"INV{invoice.Id}" : requestNo;
+            var specimenCode = test.HISSpecimenCode?.Trim();
             var request = testRequestRepo.Get(t =>
                 t.PatientId == invoice.PatientId &&
                 t.HISTestCode == test.HISTestCode &&
@@ -860,9 +861,21 @@ namespace LIS.BusinessLogic
                 return request;
             }
 
+            var sharedSample = string.IsNullOrWhiteSpace(specimenCode)
+                ? null
+                : testRequestRepo.Get(t =>
+                        t.HISRequestNo == reqNo &&
+                        t.SpecimenCode == specimenCode)
+                    .AsEnumerable()
+                    .Where(t => !string.IsNullOrWhiteSpace(t.SampleNo))
+                    .Select(t => t.SampleNo)
+                    .FirstOrDefault();
+
             var sampleNo = !string.IsNullOrWhiteSpace(line?.SampleNo)
                 ? line.SampleNo
-                : $"{reqNo}-{test.HISTestCode}";
+                : (!string.IsNullOrWhiteSpace(sharedSample)
+                    ? sharedSample
+                    : $"{reqNo}-{specimenCode}");
 
             request = new TestRequestDetail
             {

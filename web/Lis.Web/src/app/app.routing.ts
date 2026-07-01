@@ -22,11 +22,13 @@ import { TestDetailsComponent } from './LIS/testMaster/test-details/test-details
 import { TestCreateComponent } from './LIS/testMaster/test-create/test-create.component';
 import { TestEditComponent } from './LIS/testMaster/test-edit/test-edit.component';
 import { MasterListComponent, MasterFormComponent, SaleInvoiceFormComponent, TestProfileFormComponent, TestProfileViewComponent } from './masters';
-import { SaleInvoiceRegisterComponent, TestBookingRegisterComponent, TestReportComponent, FddReportComponent } from './reports';
+import { SaleInvoiceRegisterComponent, TestBookingRegisterComponent, TestReportComponent, FddReportComponent, RadiologyReportPrintComponent } from './reports';
 import { ListEquipmentHeartbeatComponent } from './LIS';
 import { SampleCollectionComponent } from './LIS/sample-workflow/sample-collection/sample-collection.component';
 import { SampleReceivingComponent } from './LIS/sample-workflow/sample-receiving/sample-receiving.component';
 import { RadiologyReportEntryComponent } from './LIS/radiology/radiology-report-entry/radiology-report-entry.component';
+import { RadiologyDoctorApprovalComponent } from './LIS/radiology/radiology-doctor-approval/radiology-doctor-approval.component';
+import { RadiologyApprovedReportsComponent } from './LIS/radiology/radiology-approved-reports/radiology-approved-reports.component';
 
 const LOOKUP_FIELDS = {
   codeName: [
@@ -56,7 +58,7 @@ const LOOKUP_FIELDS = {
   department: [
     { name: 'code', label: 'Code', type: 'text', required: true },
     { name: 'name', label: 'Name', type: 'text', required: true },
-    { name: 'processingCategory', label: 'Processing Category', type: 'select', required: true, options: [
+    { name: 'processingCategory', label: 'Processing Category', type: 'select', required: true, help: 'Laboratory: automated or manual laboratory tests. Diagnostic: radiology, sonography, CT, MRI, and similar imaging studies.', options: [
       { value: 'Laboratory', label: 'Laboratory' },
       { value: 'Diagnostic', label: 'Diagnostic' }
     ]}
@@ -104,7 +106,11 @@ const LOOKUP_FIELDS = {
     ]},
     { name: 'ageFrom', label: 'Age From', type: 'number' },
     { name: 'ageTo', label: 'Age To', type: 'number' },
-    { name: 'ageType', label: 'Age Type', type: 'text' },
+    { name: 'ageType', label: 'Age Type', type: 'select', options: [
+      { value: '', label: '-- Select Age Type --' },
+      { value: 'Year', label: 'Year' },
+      { value: 'Month', label: 'Month' }
+    ]},
     { name: 'minValue', label: 'Min Value', type: 'number' },
     { name: 'maxValue', label: 'Max Value', type: 'number' }
   ],
@@ -118,11 +124,19 @@ const LOOKUP_FIELDS = {
     { name: 'isActive', label: 'Active', type: 'checkbox' }
   ],
   patient: [
-    { name: 'patientPrefix', label: 'Patient Prefix', type: 'text', required: true },
+    { name: 'hisPatientId', label: 'Patient Number', type: 'text', readonly: true },
+    { name: 'patientPrefix', label: 'Salutation', type: 'select', required: true, options: [
+      { value: '', label: '-- Select Salutation --' },
+      { value: 'Mr.', label: 'Mr.' },
+      { value: 'Mrs.', label: 'Mrs.' },
+      { value: 'Miss', label: 'Miss' },
+      { value: 'Master', label: 'Master' },
+      { value: 'Dr.', label: 'Dr.' },
+      { value: 'Prof.', label: 'Prof.' }
+    ]},
     { name: 'name', label: 'Patient Name', type: 'text', required: true },
-    { name: 'mrNo', label: 'MR No', type: 'text', required: true },
-    { name: 'visitId', label: 'Visit ID', type: 'text', required: true },
-    { name: 'hisPatientId', label: 'Patient ID (auto-generated)', type: 'text', readonly: true },
+    { name: 'mrNo', label: 'MR Number', type: 'text', readonly: true },
+    { name: 'visitId', label: 'Visit ID', type: 'text', readonly: true },
     { name: 'phone', label: 'Phone', type: 'text', required: true },
     { name: 'address', label: 'Address', type: 'text' },
     { name: 'gender', label: 'Gender', type: 'select', required: true, options: [
@@ -185,6 +199,7 @@ const appRoutes: Routes = [
 
     { path: 'samples', component: ListRawSampleComponent, canActivate: [AuthGuard] },
     { path: 'edit-test-results', component: EditTestResultsComponent, canActivate: [AuthGuard] },
+    { path: 'lab-result-entry', component: EditTestResultsComponent, canActivate: [AuthGuard] },
     { path: 'samples/create', component: CreateSampleComponent, canActivate: [AuthGuard] },
     { path: 'samples/edit/:id', component: EditSampleComponent, canActivate: [AuthGuard] },
     { path: 'samples/:id', component: RawSampleDetailsComponent, canActivate: [AuthGuard] },
@@ -287,10 +302,13 @@ const appRoutes: Routes = [
     { path: 'reports/sale-invoice-register', component: SaleInvoiceRegisterComponent, canActivate: [AuthGuard] },
     { path: 'reports/test-booking-register', component: TestBookingRegisterComponent, canActivate: [AuthGuard] },
     { path: 'reports/test-report', component: TestReportComponent, canActivate: [AuthGuard] },
+    { path: 'reports/radiology-report', component: RadiologyReportPrintComponent, canActivate: [AuthGuard] },
 
     { path: 'sample-collection', component: SampleCollectionComponent, canActivate: [AuthGuard] },
     { path: 'sample-receiving', component: SampleReceivingComponent, canActivate: [AuthGuard] },
     { path: 'radiology-report-entry', component: RadiologyReportEntryComponent, canActivate: [AuthGuard] },
+    { path: 'radiology-doctor-approvals', component: RadiologyDoctorApprovalComponent, canActivate: [AuthGuard] },
+    { path: 'radiology-approved-reports', component: RadiologyApprovedReportsComponent, canActivate: [AuthGuard] },
 
     { path: 'reports/collection-summary', component: FddReportComponent, data: {
       title: 'Collection Summary', endpoint: 'CollectionSummary', defaultSort: 'CollectionDate', exportName: 'CollectionSummary',

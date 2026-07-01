@@ -75,8 +75,20 @@ export class SampleWorkflowService {
     return this.fetchList('RadiologyReport/PendingQueue', options);
   }
 
+  getRadiologyDoctorApprovalQueue(options: WorkflowSearchOptions): Observable<{ items: any[]; totalRecord: number }> {
+    return this.fetchList('RadiologyReport/DoctorApprovalQueue', options);
+  }
+
+  getRadiologyApprovedQueue(options: WorkflowSearchOptions): Observable<{ items: any[]; totalRecord: number }> {
+    return this.fetchList('RadiologyReport/ApprovedQueue', options);
+  }
+
   getRadiologyReport(id: number): Observable<any> {
     return this.http.get<any>(`${this.baseUrl}/api/RadiologyReport/${id}`);
+  }
+
+  getRadiologyDoctorApprovalReport(id: number): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/api/RadiologyReport/DoctorApproval/${id}`);
   }
 
   saveRadiologyReport(payload: any): Observable<any> {

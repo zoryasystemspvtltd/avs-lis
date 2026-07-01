@@ -39,6 +39,14 @@ export class ReportService {
     return this.http.get<any>(`${this.baseUrl}/api/Reports/TestReport?labNo=${encodeURIComponent(labNo)}`);
   }
 
+  getRadiologyPrintAccessions(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/api/Reports/RadiologyPrintAccessions`);
+  }
+
+  getRadiologyReport(radiologyRequestId: number): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/api/Reports/RadiologyReport?radiologyRequestId=${radiologyRequestId}`);
+  }
+
   getFddReport(endpoint: string, filter: ReportFilter & { collectorName?: string; modality?: string }): Observable<{ items: any[]; totalRecord: number }> {
     const option = {
       FromDate: filter.fromDate,

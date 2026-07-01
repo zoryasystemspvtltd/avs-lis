@@ -2,6 +2,7 @@
 using Microsoft.AspNet.Identity.EntityFramework;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -21,6 +22,7 @@ namespace QuestionsForU.Authentication.Controllers
 {
     public class UsersController : ApiController
     {
+        private const string DoctorRoleName = "Doctor";
         private Lis.Api.Models.IdentityDbContext dbContext;
 
         private ApplicationUserManager userManager;
@@ -150,6 +152,8 @@ namespace QuestionsForU.Authentication.Controllers
                 dob = user.DOB,
                 area_of_interest = user.AreaOfInterest,
                 qualification = user.Qualification,
+                doctor_designation = user.DoctorDesignation,
+                doctor_signature_path = user.DoctorSignaturePath,
                 address = user.Address,
                 zip = user.Zip,
                 roles = new List<dynamic>(),
@@ -197,6 +201,16 @@ namespace QuestionsForU.Authentication.Controllers
                 return Request.CreateResponse(HttpStatusCode.PreconditionFailed, ModelState.ToKeyValuePair());
             }
 
+            var doctorValidationError = ValidateDoctorFields(value, null, true);
+            if (!string.IsNullOrWhiteSpace(doctorValidationError))
+            {
+                return Request.CreateResponse(HttpStatusCode.PreconditionFailed, new
+                {
+                    Status = false,
+                    Message = doctorValidationError
+                });
+            }
+
             var user = new ApplicationUser();
             user.UserName = value.email;
             user.FirstName = value.first_name;
@@ -213,6 +227,7 @@ namespace QuestionsForU.Authentication.Controllers
             user.State = value.state;
             user.Address = value.address;
             user.Zip = value.zip;
+            ApplyDoctorFields(user, value);
 
             // Providing default password for the newly created user with EmailConfirmed = false
             // Depending on the condition EmailConfirmed = false, user will be prompted to change password.
@@ -296,6 +311,8 @@ namespace QuestionsForU.Authentication.Controllers
                 first_name = user.FirstName,
                 last_name = user.LastName,
                 phone_number = user.PhoneNumber,
+                doctor_designation = user.DoctorDesignation,
+                doctor_signature_path = user.DoctorSignaturePath,
                 roles = value.roles
             };
         }
@@ -357,6 +374,17 @@ namespace QuestionsForU.Authentication.Controllers
             {
                 throw new HttpResponseException(HttpStatusCode.NotFound);
             }
+
+            var doctorValidationError = ValidateDoctorFields(value, update, false);
+            if (!string.IsNullOrWhiteSpace(doctorValidationError))
+            {
+                return Request.CreateResponse(HttpStatusCode.PreconditionFailed, new
+                {
+                    Status = false,
+                    Message = doctorValidationError
+                });
+            }
+
             update.FirstName = value.first_name;
             update.LastName = value.last_name;
             update.Email = value.email;
@@ -373,6 +401,7 @@ namespace QuestionsForU.Authentication.Controllers
             update.State = value.state;
             update.Address = value.address;
             update.Zip = value.zip;
+            ApplyDoctorFields(update, value);
 
             update.Roles.Clear();
             foreach (var role in value.roles)
@@ -433,7 +462,9 @@ namespace QuestionsForU.Authentication.Controllers
                     first_name = update.FirstName,
                     last_name = update.LastName,
                     locked = update.LockoutEnabled,
-                    email_confirmed = update.EmailConfirmed
+                    email_confirmed = update.EmailConfirmed,
+                    doctor_designation = update.DoctorDesignation,
+                    doctor_signature_path = update.DoctorSignaturePath
                 };
             }
             else
@@ -461,7 +492,167 @@ namespace QuestionsForU.Authentication.Controllers
             dbContext.UserApplicationMappings.RemoveRange(maps);
             dbContext.SaveChanges();
 
+            DoctorSignatureStorage.DeletePhysicalFile(user.DoctorSignaturePath);
             userManager.Delete(user);
+        }
+
+        [HttpPost]
+        [Route("~/api/Users/{id}/DoctorSignature")]
+        [QAuthorize(ModuleName = "Users", ModulePermissionTypes = ModulePermissionType.CanEdit)]
+        public IHttpActionResult PostDoctorSignature(string id)
+        {
+            var user = userManager.FindById(id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            if (!userManager.IsInRole(user.Id, DoctorRoleName))
+            {
+                return Content(HttpStatusCode.PreconditionFailed, new
+                {
+                    Status = false,
+                    Message = "Doctor signature can only be uploaded for Doctor users."
+                });
+            }
+
+            var file = HttpContext.Current?.Request?.Files?["file"];
+            if (file == null && HttpContext.Current?.Request?.Files?.Count > 0)
+            {
+                file = HttpContext.Current.Request.Files[0];
+            }
+
+            string validationError;
+            if (!DoctorSignatureStorage.TryValidate(file, out validationError))
+            {
+                return Content(HttpStatusCode.PreconditionFailed, new
+                {
+                    Status = false,
+                    Message = validationError
+                });
+            }
+
+            try
+            {
+                var relativePath = DoctorSignatureStorage.SaveSignature(user.Id, file, user.DoctorSignaturePath);
+                user.DoctorSignaturePath = relativePath;
+                var result = userManager.Update(user);
+                if (!result.Succeeded)
+                {
+                    DoctorSignatureStorage.DeletePhysicalFile(relativePath);
+                    return Content(HttpStatusCode.PreconditionFailed, new
+                    {
+                        Status = false,
+                        Message = string.Join(" ", result.Errors)
+                    });
+                }
+
+                return Ok(new
+                {
+                    doctor_signature_path = user.DoctorSignaturePath
+                });
+            }
+            catch (Exception ex)
+            {
+                return Content(HttpStatusCode.InternalServerError, new
+                {
+                    Status = false,
+                    Message = ex.Message
+                });
+            }
+        }
+
+        [HttpGet]
+        [Route("~/api/Users/{id}/DoctorSignature")]
+        [QAuthorize(ModuleName = "Users", ModulePermissionTypes = ModulePermissionType.CanView)]
+        public IHttpActionResult GetDoctorSignature(string id)
+        {
+            var user = userManager.FindById(id);
+            if (user == null || string.IsNullOrWhiteSpace(user.DoctorSignaturePath))
+            {
+                return NotFound();
+            }
+
+            var physicalPath = DoctorSignatureStorage.ResolvePhysicalPath(user.DoctorSignaturePath);
+            if (physicalPath == null)
+            {
+                return NotFound();
+            }
+
+            var extension = Path.GetExtension(physicalPath).ToLowerInvariant();
+            var contentType = extension == ".png" ? "image/png" : "image/jpeg";
+            var stream = new FileStream(physicalPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+            var response = new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StreamContent(stream)
+            };
+            response.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(contentType);
+            return ResponseMessage(response);
+        }
+
+        private bool IsDoctorRoleSelected(User value)
+        {
+            if (value?.roles == null)
+            {
+                return false;
+            }
+
+            foreach (var role in value.roles.Where(r => r.IsInRole))
+            {
+                var roleEntity = dbContext.Roles.FirstOrDefault(p => p.Id == role.Id);
+                if (roleEntity != null
+                    && roleEntity.Name.Equals(DoctorRoleName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+
+                if (!string.IsNullOrWhiteSpace(role.Name)
+                    && role.Name.Equals(DoctorRoleName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private string ValidateDoctorFields(User value, ApplicationUser existingUser, bool isCreate)
+        {
+            var isDoctor = IsDoctorRoleSelected(value);
+            if (!isDoctor)
+            {
+                return null;
+            }
+
+            var designation = value.doctor_designation == null
+                ? null
+                : value.doctor_designation.Trim();
+            if (string.IsNullOrWhiteSpace(designation))
+            {
+                return "Doctor designation is required for Doctor users.";
+            }
+
+            if (designation.Length > 100)
+            {
+                return "Doctor designation must not exceed 100 characters.";
+            }
+
+            return null;
+        }
+
+        private void ApplyDoctorFields(ApplicationUser user, User value)
+        {
+            if (IsDoctorRoleSelected(value))
+            {
+                user.DoctorDesignation = value.doctor_designation == null
+                    ? null
+                    : value.doctor_designation.Trim();
+                return;
+            }
+
+            DoctorSignatureStorage.DeletePhysicalFile(user.DoctorSignaturePath);
+            user.DoctorDesignation = null;
+            user.DoctorSignaturePath = null;
         }
 
         private string GetRandomText(string text)
@@ -497,6 +688,8 @@ namespace QuestionsForU.Authentication.Controllers
         public DateTime? dob { get; set; }
         public string area_of_interest { get; set; }
         public string qualification { get; set; }
+        public string doctor_designation { get; set; }
+        public string doctor_signature_path { get; set; }
         public string country { get; set; }
         public string state { get; set; }
         public string address { get; set; }

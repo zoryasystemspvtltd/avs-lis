@@ -12,7 +12,7 @@
   top: 6px;
   right: 8px;  font-size: 20px;
   margin-top: 0;
-  color: #6b7c85;
+  color: rgba(255, 255, 255, 0.75);
   background: transparent;
   border: none;
   line-height: 1;
@@ -21,8 +21,8 @@
 }
 
 .closebtn:hover {
-  color: #1a7f8c;
-  background: #e8f4f6;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
 }
 
 @media screen and (max-width: 600px) {

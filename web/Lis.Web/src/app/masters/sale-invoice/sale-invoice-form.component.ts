@@ -117,6 +117,7 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
       notes: [''],
       paymentType: ['Cash'],
       discountType: ['Fixed Amount'],
+      headerDiscountValue: [0],
       lines: this.fb.array([])
     });
 
@@ -157,6 +158,26 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
     return this.modalItemType === 'profile' ? this.modalProfileItems : this.modalTestItems;
   }
 
+  get totalDiscountPercentLabel(): string {
+    const gross = +this.form?.get('grossAmount')?.value || 0;
+    const disc = +this.form?.get('discountAmount')?.value || 0;
+    if (!gross || !disc) {
+      return '';
+    }
+    const pct = Math.round((disc / gross) * 10000) / 100;
+    return `(${pct}%)`;
+  }
+
+  get printDiscountPercentLabel(): string {
+    const gross = +this.invoiceDto?.invoice?.grossAmount || 0;
+    const disc = +this.invoiceDto?.invoice?.discountAmount || 0;
+    if (!gross || !disc) {
+      return '';
+    }
+    const pct = Math.round((disc / gross) * 10000) / 100;
+    return ` (${pct}%)`;
+  }
+
   get isCancelled(): boolean { return this.form?.value?.invoiceStatus === 3; }
   /** Invoice locked (paid/cancelled workflow) — not payment status on draft. */
   get isInvoiceLocked(): boolean { return this.isCancelled || this.form?.value?.invoiceStatus === 2; }
@@ -167,10 +188,17 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
       if (dto?.invoice) {
         const inv = dto.invoice;
         inv.invoiceDate = inv.invoiceDate ? inv.invoiceDate.substring(0, 10) : '';
+        const gross = +inv.grossAmount || 0;
+        const disc = +inv.discountAmount || 0;
+        let headerDiscountValue = disc;
+        if ((inv.discountType || 'Fixed Amount') === 'Percentage' && gross > 0) {
+          headerDiscountValue = Math.round((disc / gross) * 10000) / 100;
+        }
         this.form.patchValue({
           ...inv,
           paymentType: inv.paymentType || 'Cash',
-          discountType: inv.discountType || 'Fixed Amount'
+          discountType: inv.discountType || 'Fixed Amount',
+          headerDiscountValue
         });
         this.lines.clear();
         (dto.details || []).forEach(line => {
@@ -1076,7 +1104,7 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
     });
 
     const headerType = this.form.get('discountType')?.value || 'Fixed Amount';
-    const headerDiscInput = +this.form.get('discountAmount')?.value || 0;
+    const headerDiscInput = +this.form.get('headerDiscountValue')?.value || 0;
     let totalDisc = lineDisc;
     if (headerType === 'Percentage') {
       totalDisc = this.computeDiscount(gross, 'Percentage', headerDiscInput);

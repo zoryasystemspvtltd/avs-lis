@@ -277,6 +277,22 @@ namespace Lis.Api.Controllers.Api
         }
 
         [HttpGet]
+        [Route("NextMrNo")]
+        public IHttpActionResult NextMrNo()
+        {
+            try { return Ok(new { mrNo = manager.GenerateNextMrNo() }); }
+            catch (Exception e) { logger.LogException(e); return Ok(new { mrNo = "" }); }
+        }
+
+        [HttpGet]
+        [Route("NextVisitId")]
+        public IHttpActionResult NextVisitId()
+        {
+            try { return Ok(new { visitId = manager.GenerateNextVisitId() }); }
+            catch (Exception e) { logger.LogException(e); return Ok(new { visitId = "" }); }
+        }
+
+        [HttpGet]
         [Route("GetAll")]
         public IEnumerable<PatientDetail> GetAll()
         {

@@ -114,6 +114,54 @@ namespace LIS.Masters.Tests.Workflows
             Services.TestRate.Delete(new TestRateMaster { Id = rateId });
         }
 
+        [TestMethod]
+        public void Invoice_Same_Specimen_Reuses_Specimen_Barcode()
+        {
+            var suffix = Guid.NewGuid().ToString("N").Substring(0, 8);
+            var patientId = Services.PatientMaster.Add(MasterTestDataBuilder.Patient(suffix));
+            var specimen = Services.Specimen.Get().Cast<HISSpecimenMaster>().First();
+            var dept = Services.Department.Get().Cast<Departments>().First();
+            var testCode1 = UniqueCode("T1");
+            var testCode2 = UniqueCode("T2");
+            var testId1 = (int)Services.HisTest.Add(MasterTestDataBuilder.HisTest(testCode1, dept.Code, specimen.Code));
+            var testId2 = (int)Services.HisTest.Add(MasterTestDataBuilder.HisTest(testCode2, dept.Code, specimen.Code));
+            var rateId1 = (int)Services.TestRate.Add(MasterTestDataBuilder.StandardRate(testId1, 150m));
+            var rateId2 = (int)Services.TestRate.Add(MasterTestDataBuilder.StandardRate(testId2, 175m));
+            var invoiceNo = UniqueCode("INV");
+
+            var dto = new SaleInvoiceDto
+            {
+                Invoice = new SaleInvoice
+                {
+                    InvoiceNo = invoiceNo,
+                    InvoiceDate = DateTime.Today,
+                    PatientId = patientId,
+                    InvoiceStatus = (int)InvoiceStatusType.Draft,
+                    PaymentStatus = (int)PaymentStatusType.Unpaid,
+                    IsActive = true
+                },
+                Details = new List<SaleInvoiceDetail>
+                {
+                    new SaleInvoiceDetail { TestId = testId1, Quantity = 1, Rate = 0, RequestDetailId = 0 },
+                    new SaleInvoiceDetail { TestId = testId2, Quantity = 1, Rate = 0, RequestDetailId = 0 }
+                }
+            };
+
+            Services.SaleInvoice.Save(dto);
+
+            var requests = Services.Db.TestRequestDetails
+                .Where(r => r.PatientId == patientId && r.HISRequestNo == invoiceNo)
+                .ToList();
+
+            Assert.AreEqual(2, requests.Count);
+            Assert.IsFalse(string.IsNullOrWhiteSpace(requests[0].SampleNo));
+            Assert.AreEqual(requests[0].SampleNo, requests[1].SampleNo);
+            Assert.AreEqual($"{invoiceNo}-{specimen.Code}", requests[0].SampleNo);
+
+            Services.TestRate.Delete(new TestRateMaster { Id = rateId1 });
+            Services.TestRate.Delete(new TestRateMaster { Id = rateId2 });
+        }
+
         private static SaleInvoiceDto BuildMinimalInvoice(string invoiceNo, long patientId, int testId)
         {
             return new SaleInvoiceDto

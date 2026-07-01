@@ -1,8 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { AuthenticationToken } from '../../../_models';
 import { UserService, AuthenticationService, AlertService } from '../../../_services';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ɵINTERNAL_BROWSER_DYNAMIC_PLATFORM_PROVIDERS } from '@angular/platform-browser-dynamic';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 
 @Component({
@@ -10,7 +9,7 @@ import { FormGroup, FormBuilder, Validators } from '@angular/forms';
   templateUrl: './users-edit.component.html',
   styleUrls: ['./users-edit.component.css']
 })
-export class UsersEditComponent implements OnInit {
+export class UsersEditComponent implements OnInit, OnDestroy {
 
   id: string;
   private user: AuthenticationToken;
@@ -23,6 +22,12 @@ export class UsersEditComponent implements OnInit {
   editUserForm: FormGroup;
   validationError:any[]=[];
   public message: string;
+  signatureFile: File = null;
+  signaturePreviewUrl: string = null;
+  signatureError: string = null;
+
+  private readonly allowedSignatureExtensions = ['.png', '.jpg', '.jpeg'];
+  private readonly maxSignatureSizeBytes = 2 * 1024 * 1024;
 
   constructor(private userService: UserService,
     private authenticationService: AuthenticationService,
@@ -37,40 +42,144 @@ export class UsersEditComponent implements OnInit {
     this.sub = this.route.params.subscribe(params => {
       this.isLoaded = false;
       this.id = params['id'];
-      // In a real app: dispatch action to load the details here.
       this.getProfileItemDetails();
     });
 
   }
 
+  ngOnDestroy() {
+    this.revokeSignaturePreview();
+  }
+
   initForms() {
     this.item.is_blocked = (this.item.status == 1)?true:false;
-    let dob = (this.item.dob != null)?this.item.dob.substring(0,10):null;
     this.editUserForm = this.formBuilder.group({
       id: [this.item.id, Validators.required],
       email: [this.item.email, [Validators.required,Validators.email]],
       first_name: [this.item.first_name, Validators.required],
       last_name: [this.item.last_name, Validators.required],
       phone_number: [this.item.phone_number],
+      doctor_designation: [this.item.doctor_designation || ''],
       roles: [this.item.roles],
       applications: [this.item.applications]
     });
+    this.updateDoctorValidators();
+    this.loadExistingSignaturePreview();
+  }
+
+  isDoctorRoleSelected(): boolean {
+    return this.item?.roles?.some(role => role.isInRole && role.name === 'Doctor');
+  }
+
+  updateDoctorValidators() {
+    if (!this.editUserForm) {
+      return;
+    }
+
+    const designation = this.editUserForm.get('doctor_designation');
+    if (this.isDoctorRoleSelected()) {
+      designation.setValidators([Validators.required, Validators.maxLength(100)]);
+    } else {
+      designation.clearValidators();
+      designation.setValue('');
+      this.clearSignatureSelection();
+    }
+    designation.updateValueAndValidity();
+  }
+
+  loadExistingSignaturePreview() {
+    if (!this.item?.doctor_signature_path) {
+      return;
+    }
+
+    this.userService.getDoctorSignatureBlob(this.id)
+      .subscribe(blob => {
+        this.revokeSignaturePreview();
+        this.signaturePreviewUrl = URL.createObjectURL(blob);
+      });
+  }
+
+  onSignatureSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input?.files?.[0];
+    this.signatureError = null;
+
+    if (!file) {
+      return;
+    }
+
+    const extension = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+    if (!this.allowedSignatureExtensions.includes(extension)) {
+      this.signatureError = 'Doctor signature must be a PNG or JPG image.';
+      input.value = '';
+      return;
+    }
+
+    if (file.size > this.maxSignatureSizeBytes) {
+      this.signatureError = 'Doctor signature must not exceed 2 MB.';
+      input.value = '';
+      return;
+    }
+
+    this.signatureFile = file;
+    this.revokeSignaturePreview();
+    this.signaturePreviewUrl = URL.createObjectURL(file);
+  }
+
+  clearSignatureSelection() {
+    this.signatureFile = null;
+    if (!this.item?.doctor_signature_path) {
+      this.revokeSignaturePreview();
+    } else {
+      this.loadExistingSignaturePreview();
+    }
+  }
+
+  revokeSignaturePreview() {
+    if (this.signaturePreviewUrl) {
+      URL.revokeObjectURL(this.signaturePreviewUrl);
+      this.signaturePreviewUrl = null;
+    }
   }
 
   onSubmit() {
     this.submitted = true;
-    // stop here if form is invalid
+    this.signatureError = null;
+    this.updateDoctorValidators();
+
     if (this.editUserForm.invalid) {
       return;
     }
+
+    if (this.isDoctorRoleSelected() && !this.signatureFile && !this.item.doctor_signature_path) {
+      this.signatureError = 'Doctor signature is required for Doctor users.';
+      return;
+    }
+
     let item = this.editUserForm.value;
     item.applications = this.item.applications;
+    item.roles = this.item.roles;
     item.is_blocked = this.isUserBlocked;
     item.locked = this.isUserLocked;  
     item.email_confirmed = this.isUserEmailConfirmed;
+    item.doctor_designation = item.doctor_designation ? item.doctor_designation.trim() : null;
 
+    this.loading = true;
     this.userService.editUser(item)
     .subscribe(data => { 
+        if (this.isDoctorRoleSelected() && this.signatureFile) {
+          this.userService.uploadDoctorSignature(this.id, this.signatureFile)
+            .subscribe(() => {
+              this.loading = false;
+              this.router.navigate(['/users']);
+            }, (error) => {
+              this.loading = false;
+              this.message = error?.message || 'User saved but doctor signature upload failed.';
+              this.alertService.error(this.message);
+            });
+          return;
+        }
+
         this.loading = false;
         this.router.navigate(['/users']);
       },
@@ -81,8 +190,6 @@ export class UsersEditComponent implements OnInit {
         this.message = (message != "") ? message : 'Data not saved.';
         this.alertService.error(this.message);
       });
-
-    this.loading = true;
   }
 
   getProfileItemDetails() {
@@ -146,6 +253,15 @@ export class UsersEditComponent implements OnInit {
     return false;
   }
 
+  isInValidMaxLength(field: string) {
+    if (this.submitted) {
+      if (this.f[field].errors && this.f[field].errors.maxlength) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   onCheckApplication(event:any){
     this.item.applications.forEach(app=>{
       if(app.key == event.target.getAttribute('data-key')){
@@ -159,7 +275,8 @@ export class UsersEditComponent implements OnInit {
       if(role.id == event.target.getAttribute('data-id')){
         role.isInRole = event.target.checked;
       }
-    })
+    });
+    this.updateDoctorValidators();
   }
 
   isUserLocked:boolean;

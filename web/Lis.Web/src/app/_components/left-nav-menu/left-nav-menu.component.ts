@@ -38,7 +38,8 @@ export class LeftNavMenuComponent implements OnInit {
     const path = (url || '').split('?')[0].toLowerCase();
     this.expandWorkingBoard = this.matchesAny(path, [
       '/samples', '/sample-collection', '/sample-receiving', '/radiology-report-entry',
-      '/edit-test-results', '/technicianapprovals', '/doctorapprovals', '/approvedsamples',
+      '/radiology-doctor-approvals', '/radiology-approved-reports',
+      '/edit-test-results', '/lab-result-entry', '/technicianapprovals', '/doctorapprovals', '/approvedsamples',
       '/rejectedsamples', '/quality-controls'
     ]);
     this.expandSetup = this.matchesAny(path, ['/departments', '/units', '/methods', '/equipments', '/equipment-heartbeat']);

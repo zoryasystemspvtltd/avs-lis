@@ -7,13 +7,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace LIS.Businesslogic
+namespace LIS.BusinessLogic
 {
     public class RadiologyReportManager : IRadiologyReportManager
     {
         private readonly ModuleRepo<RadiologyRequestDetail> requestRepo;
         private readonly ModuleRepo<RadiologyResultDetail> resultRepo;
         private readonly ModuleRepo<PatientDetail> patientRepo;
+        private readonly ModuleRepo<SaleInvoice> invoiceRepo;
         private readonly IModuleIdentity identity;
 
         public RadiologyReportManager(ILogger logger, IModuleIdentity identity, GenericUnitOfWork uow)
@@ -22,17 +23,62 @@ namespace LIS.Businesslogic
             requestRepo = new ModuleRepo<RadiologyRequestDetail>(logger, identity, uow);
             resultRepo = new ModuleRepo<RadiologyResultDetail>(logger, identity, uow);
             patientRepo = new ModuleRepo<PatientDetail>(logger, identity, uow);
+            invoiceRepo = new ModuleRepo<SaleInvoice>(logger, identity, uow);
         }
 
         public ItemList<RadiologyQueueRow> GetPendingQueue(SampleWorkflowSearchOptions options)
         {
-            options = options ?? new SampleWorkflowSearchOptions();
-            var patients = patientRepo.Get().ToDictionary(p => p.Id, p => p);
-            var requests = requestRepo.Get(r =>
-                r.ReportStatus == RadiologyReportStatus.Pending ||
-                r.ReportStatus == RadiologyReportStatus.Draft ||
-                r.ReportStatus == RadiologyReportStatus.UnderReview).ToList();
+            return BuildQueue(options, RadiologyReportStatus.Pending, RadiologyReportStatus.Draft);
+        }
 
+        public ItemList<RadiologyQueueRow> GetDoctorApprovalQueue(SampleWorkflowSearchOptions options)
+        {
+            return BuildQueue(options, RadiologyReportStatus.UnderReview);
+        }
+
+        public ItemList<RadiologyQueueRow> GetApprovedQueue(SampleWorkflowSearchOptions options)
+        {
+            return BuildQueue(options, RadiologyReportStatus.Authorized, RadiologyReportStatus.Released);
+        }
+
+        private ItemList<RadiologyQueueRow> BuildQueue(SampleWorkflowSearchOptions options, params RadiologyReportStatus[] statuses)
+        {
+            options = options ?? new SampleWorkflowSearchOptions();
+            var statusSet = new HashSet<RadiologyReportStatus>(statuses);
+            var patients = patientRepo.Get().ToDictionary(p => p.Id, p => p);
+            var requests = requestRepo.Get().AsEnumerable()
+                .Where(r => statusSet.Contains(r.ReportStatus))
+                .ToList();
+
+            requests = ApplySearchFilters(requests, options, patients);
+
+            var rows = requests.Select(r =>
+            {
+                patients.TryGetValue(r.PatientId, out var patient);
+                return new RadiologyQueueRow
+                {
+                    Id = r.Id,
+                    HisRequestNo = r.HISRequestNo,
+                    AccessionNo = r.AccessionNo,
+                    HisPatientId = patient?.HisPatientId,
+                    PatientName = patient?.Name,
+                    TestName = r.HISTestName,
+                    Modality = r.Modality,
+                    Department = r.Department,
+                    Status = FormatStatus(r.ReportStatus),
+                    CreatedOn = r.CreatedOn,
+                    CreatedBy = r.CreatedBy
+                };
+            }).ToList();
+
+            return Paginate(rows, options, "CreatedOn");
+        }
+
+        private static List<RadiologyRequestDetail> ApplySearchFilters(
+            List<RadiologyRequestDetail> requests,
+            SampleWorkflowSearchOptions options,
+            Dictionary<long, PatientDetail> patients)
+        {
             if (!string.IsNullOrWhiteSpace(options.Modality))
             {
                 var modality = options.Modality.Trim();
@@ -61,26 +107,7 @@ namespace LIS.Businesslogic
                         p.Name.IndexOf(text, StringComparison.OrdinalIgnoreCase) >= 0)).ToList();
             }
 
-            var rows = requests.Select(r =>
-            {
-                patients.TryGetValue(r.PatientId, out var patient);
-                return new RadiologyQueueRow
-                {
-                    Id = r.Id,
-                    HisRequestNo = r.HISRequestNo,
-                    AccessionNo = r.AccessionNo,
-                    HisPatientId = patient?.HisPatientId,
-                    PatientName = patient?.Name,
-                    TestName = r.HISTestName,
-                    Modality = r.Modality,
-                    Department = r.Department,
-                    Status = FormatStatus(r.ReportStatus),
-                    CreatedOn = r.CreatedOn,
-                    CreatedBy = r.CreatedBy
-                };
-            }).ToList();
-
-            return Paginate(rows, options, "CreatedOn");
+            return requests;
         }
 
         public RadiologyReportDetailDto GetReport(long radiologyRequestId)
@@ -232,10 +259,9 @@ namespace LIS.Businesslogic
                 throw new InvalidOperationException("Radiology request not found.");
             }
 
-            if (header.ReportStatus != RadiologyReportStatus.UnderReview &&
-                header.ReportStatus != RadiologyReportStatus.Draft)
+            if (header.ReportStatus != RadiologyReportStatus.UnderReview)
             {
-                throw new InvalidOperationException("Report is not in a reviewable state.");
+                throw new InvalidOperationException("Report is not pending doctor approval.");
             }
 
             var result = resultRepo.Get(r => r.RadiologyRequestId == header.Id).FirstOrDefault();
@@ -259,6 +285,117 @@ namespace LIS.Businesslogic
             header.ModifiedOn = now;
             header.ModifiedBy = user;
             requestRepo.Update(header);
+        }
+
+        public List<RadiologyPrintAccessionOption> GetPrintableAccessions()
+        {
+            var patients = patientRepo.Get().ToDictionary(p => p.Id, p => p);
+            var invoices = invoiceRepo.Get().ToDictionary(i => i.InvoiceNo, i => i, StringComparer.OrdinalIgnoreCase);
+
+            return requestRepo.Get().AsEnumerable()
+                .Where(r => r.ReportStatus == RadiologyReportStatus.Authorized ||
+                            r.ReportStatus == RadiologyReportStatus.Released)
+                .Where(r =>
+                {
+                    if (string.IsNullOrWhiteSpace(r.HISRequestNo)) { return false; }
+                    if (!invoices.TryGetValue(r.HISRequestNo.Trim(), out var invoice)) { return false; }
+                    return invoice.InvoiceStatus != (int)InvoiceStatusType.Cancelled &&
+                           invoice.PaymentStatus == (int)PaymentStatusType.Paid;
+                })
+                .Select(r =>
+                {
+                    patients.TryGetValue(r.PatientId, out var patient);
+                    var label = $"{r.AccessionNo} — {patient?.Name} — {r.HISTestName}";
+                    return new RadiologyPrintAccessionOption
+                    {
+                        RadiologyRequestId = r.Id,
+                        AccessionNo = r.AccessionNo,
+                        InvoiceNo = r.HISRequestNo,
+                        PatientName = patient?.Name,
+                        TestName = r.HISTestName,
+                        DisplayLabel = label
+                    };
+                })
+                .OrderBy(o => o.AccessionNo)
+                .ToList();
+        }
+
+        public DiagnosticRadiologyReportDto GetRadiologyReportForPrint(long radiologyRequestId)
+        {
+            if (radiologyRequestId <= 0)
+            {
+                throw new TestReportValidationException("Radiology request is required.");
+            }
+
+            var request = requestRepo.Get(radiologyRequestId);
+            if (request == null)
+            {
+                throw new TestReportValidationException("Radiology request not found.");
+            }
+
+            if (request.ReportStatus != RadiologyReportStatus.Authorized &&
+                request.ReportStatus != RadiologyReportStatus.Released)
+            {
+                throw new TestReportValidationException("Radiology report must be authorized or released before printing.");
+            }
+
+            var invoice = string.IsNullOrWhiteSpace(request.HISRequestNo)
+                ? null
+                : invoiceRepo.Get(i => i.InvoiceNo == request.HISRequestNo).FirstOrDefault();
+
+            if (invoice == null)
+            {
+                throw new TestReportValidationException("Invoice not found for this radiology request.");
+            }
+
+            if (invoice.InvoiceStatus == (int)InvoiceStatusType.Cancelled)
+            {
+                throw new TestReportValidationException("Invoice is cancelled. Radiology report cannot be printed.");
+            }
+
+            if (invoice.PaymentStatus != (int)PaymentStatusType.Paid)
+            {
+                throw new TestReportValidationException("Payment pending. Radiology report can only be printed after full payment.");
+            }
+
+            var result = resultRepo.Get(r => r.RadiologyRequestId == request.Id).FirstOrDefault();
+            if (result == null ||
+                string.IsNullOrWhiteSpace(result.Findings) ||
+                string.IsNullOrWhiteSpace(result.Impression))
+            {
+                throw new TestReportValidationException("Report findings and impression are required for printing.");
+            }
+
+            var patient = patientRepo.Get(request.PatientId);
+            if (patient == null)
+            {
+                throw new TestReportValidationException("Patient record not found.");
+            }
+
+            return new DiagnosticRadiologyReportDto
+            {
+                Header = new DiagnosticRadiologyReportHeader
+                {
+                    AccessionNo = request.AccessionNo,
+                    InvoiceNo = request.HISRequestNo,
+                    PatientName = patient.Name,
+                    PatientId = patient.HisPatientId,
+                    Age = patient.Age,
+                    Gender = patient.Gender,
+                    TestName = request.HISTestName,
+                    Modality = request.Modality,
+                    Department = request.Department,
+                    ReportStatus = FormatStatus(request.ReportStatus),
+                    ReportDate = result.AuthorizedOn ?? result.ModifiedOn,
+                    AuthorizedBy = result.AuthorizedBy,
+                    AuthorizedOn = result.AuthorizedOn,
+                    DigitalSignature = result.DigitalSignature
+                },
+                ClinicalHistory = result.ClinicalHistory,
+                Findings = result.Findings,
+                Impression = result.Impression,
+                Recommendation = result.Recommendation
+            };
         }
 
         private static string FormatStatus(RadiologyReportStatus status)

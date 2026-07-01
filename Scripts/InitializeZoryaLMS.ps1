@@ -62,7 +62,9 @@ if ($LASTEXITCODE -ne 0) { throw "IIS access grant failed." }
 
 Write-Host "[8/9] Seeding masters and demo data..."
 $seedScripts = @(
-    "add-patient-mr-visit-prefix.sql",
+    "ensure-serum-specimen.sql",
+    "add-doctor-designation-signature.sql",
+    "add-radiology-doctor-approvals-module.sql",
     "sale-invoice-detail-requestdetail-nullable.sql",
     "fdd-sample-radiology-schema.sql",
     "SeedMasterModules.sql",

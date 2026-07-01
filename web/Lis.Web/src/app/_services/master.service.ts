@@ -76,6 +76,42 @@ export class MasterService {
     );
   }
 
+  getNextMrNo(): Observable<string> {
+    return this.http.get<any>(`${this.baseUrl}/api/PatientMaster/NextMrNo`).pipe(
+      map(r => (typeof r === 'string' ? r : r?.mrNo || r?.MRNo || '')),
+      catchError(() => of(''))
+    );
+  }
+
+  getNextVisitId(): Observable<string> {
+    return this.http.get<any>(`${this.baseUrl}/api/PatientMaster/NextVisitId`).pipe(
+      map(r => (typeof r === 'string' ? r : r?.visitId || r?.VisitId || '')),
+      catchError(() => of(''))
+    );
+  }
+
+  searchHisTests(searchText: string, recordPerPage = 50): Observable<any[]> {
+    const option = {
+      RecordPerPage: recordPerPage,
+      CurrentPage: 1,
+      SortColumnName: 'HISTestCode',
+      SortDirection: true,
+      SearchText: searchText || ''
+    };
+    return this.getItems('HisTest', option).pipe(
+      map(response => {
+        if (Array.isArray(response)) {
+          return response;
+        }
+        if (response && (response.items || response.Items)) {
+          return response.items || response.Items;
+        }
+        return [];
+      }),
+      catchError(() => of([]))
+    );
+  }
+
   getNextRequestNo(): Observable<string> {
     return this.http.get<any>(`${this.baseUrl}/api/NewSample/NextRequestNo`).pipe(
       map(r => (typeof r === 'string' ? r : r?.requestNo || r?.RequestNo || '')),

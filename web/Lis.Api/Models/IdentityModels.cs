@@ -38,6 +38,12 @@ namespace Lis.Api.Models
         [StringLength(256)]
         public string Qualification { get; set; }
 
+        [StringLength(100)]
+        public string DoctorDesignation { get; set; }
+
+        [StringLength(300)]
+        public string DoctorSignaturePath { get; set; }
+
         public bool IsBlocked { get; internal set; }
 
         public async Task<ClaimsIdentity> GenerateUserIdentityAsync(UserManager<ApplicationUser> manager, string authenticationType)
@@ -54,6 +60,7 @@ namespace Lis.Api.Models
         public IdentityDbContext()
            : base("DefaultConnection", throwIfV1Schema: false)
         {
+            Database.SetInitializer<IdentityDbContext>(null);
         }
 
         public virtual DbSet<RoleModuleMappings> RoleModuleMappings { get; set; }

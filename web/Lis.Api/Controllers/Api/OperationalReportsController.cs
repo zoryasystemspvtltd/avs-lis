@@ -21,17 +21,20 @@ namespace Lis.Api.Controllers.Api
     {
         private readonly IReportManager reportManager;
         private readonly ITestReportManager testReportManager;
+        private readonly IRadiologyReportManager radiologyReportManager;
         private readonly ApplicationUserManager userManager;
         private readonly ILogger logger;
 
         public OperationalReportsController(
             IReportManager reportManager,
             ITestReportManager testReportManager,
+            IRadiologyReportManager radiologyReportManager,
             ApplicationUserManager userManager,
             ILogger logger)
         {
             this.reportManager = reportManager;
             this.testReportManager = testReportManager;
+            this.radiologyReportManager = radiologyReportManager;
             this.userManager = userManager;
             this.logger = logger;
         }
@@ -153,6 +156,44 @@ namespace Lis.Api.Controllers.Api
             {
                 logger.LogException(ex);
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "Unable to load test report."));
+            }
+        }
+
+        [HttpGet]
+        [Route("RadiologyPrintAccessions")]
+        [QAuthorize(ModuleName = "RadiologyReports", ModulePermissionTypes = ModulePermissionType.CanView)]
+        public IHttpActionResult GetRadiologyPrintAccessions()
+        {
+            try
+            {
+                return Ok(radiologyReportManager.GetPrintableAccessions());
+            }
+            catch (Exception ex)
+            {
+                logger.LogException(ex);
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "Unable to load radiology accessions."));
+            }
+        }
+
+        [HttpGet]
+        [Route("RadiologyReport")]
+        [QAuthorize(ModuleName = "RadiologyReports", ModulePermissionTypes = ModulePermissionType.CanView)]
+        public IHttpActionResult GetRadiologyReport(long radiologyRequestId)
+        {
+            try
+            {
+                var report = radiologyReportManager.GetRadiologyReportForPrint(radiologyRequestId);
+                return Ok(report);
+            }
+            catch (TestReportValidationException ex)
+            {
+                logger.LogError(ex.Message);
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ex.Message));
+            }
+            catch (Exception ex)
+            {
+                logger.LogException(ex);
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "Unable to load radiology report."));
             }
         }
 

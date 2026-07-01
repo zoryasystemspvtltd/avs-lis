@@ -19,3 +19,9 @@
   margin-top: 12px;
 }
 .entry-actions .btn { margin-right: 8px; margin-bottom: 8px; }
+.radiology-print-area { display: none; }
+body.radiology-print-mode .container-fluid > *:not(.radiology-print-area) { display: none !important; }
+body.radiology-print-mode .radiology-print-area {
+  display: block !important;
+  padding: 24px;
+}

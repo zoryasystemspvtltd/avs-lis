@@ -69,7 +69,8 @@ INSERT INTO @Modules (Name, Url, [Order], IsSystem) VALUES
     (N'SampleCollection', N'/sample-collection', 20, 0),
     (N'SampleReceiving', N'/sample-receiving', 21, 0),
     (N'RadiologyReportEntry', N'/radiology-report-entry', 22, 0),
-    (N'RadiologyReports', N'/reports/radiology', 23, 0);
+    (N'RadiologyReports', N'/reports/radiology', 23, 0),
+    (N'RadiologyDoctorApprovals', N'/radiology-doctor-approvals', 24, 0);
 
 INSERT INTO UserModules (Name, Url, [Order], ApplicationId, IsSyatem)
 SELECT m.Name, m.Url, m.[Order], @AppId, m.IsSystem

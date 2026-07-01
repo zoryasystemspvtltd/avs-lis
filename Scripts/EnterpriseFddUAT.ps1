@@ -26,6 +26,7 @@ function HeadersFor([string]$token, [string]$apiOptionJson = $null) {
 
 function Get-Items($resp) {
   if ($null -eq $resp) { return @() }
+  if ($resp -is [System.Array]) { return ,$resp }
   $val = $resp.items
   if ($null -eq $val) { $val = $resp.Items }
   if ($null -eq $val) { return @() }
@@ -34,6 +35,8 @@ function Get-Items($resp) {
 }
 
 function Get-Total($resp) {
+  if ($null -eq $resp) { return 0 }
+  if ($resp -is [System.Array]) { return $resp.Count }
   if ($null -ne $resp.TotalRecord) { return [int]$resp.TotalRecord }
   if ($null -ne $resp.totalRecord) { return [int]$resp.totalRecord }
   return (Get-Items $resp).Count
@@ -65,14 +68,14 @@ function Expect-ApiError([scriptblock]$block, [string]$needle) {
 
 function SqlScalar([string]$q) {
   $query = 'SET NOCOUNT ON; ' + $q
-  $out = & sqlcmd -S '.\SQLEXPRESS' -d AVSLIS -E -h -1 -W -Q $query 2>&1
+  $out = & sqlcmd -S '.\SQLEXPRESS' -d ZoryaLMS -E -h -1 -W -Q $query 2>&1
   if ($LASTEXITCODE -ne 0) { throw ('SQL failed: ' + $out) }
   return ($out | Where-Object { $_ -and $_.ToString().Trim() -ne '' } | Select-Object -First 1).ToString().Trim()
 }
 
 function SqlRow([string]$q) {
   $query = 'SET NOCOUNT ON; ' + $q
-  $lines = & sqlcmd -S '.\SQLEXPRESS' -d AVSLIS -E -h -1 -W -s "`t" -Q $query 2>&1
+  $lines = & sqlcmd -S '.\SQLEXPRESS' -d ZoryaLMS -E -h -1 -W -s "`t" -Q $query 2>&1
   if ($LASTEXITCODE -ne 0) { throw ('SQL failed: ' + $lines) }
   $line = $lines | Where-Object { $_ -and $_.ToString().Trim() -ne '' } | Select-Object -First 1
   return $line
@@ -184,9 +187,16 @@ try {
   if ([int]$orderCount -gt 1) { throw "Barcode spans multiple orders: orderCount=$orderCount" }
   $rowCount = SqlScalar "SELECT COUNT(*) FROM TestRequestDetails WHERE SampleNo = '$barcode'"
   if ([int]$rowCount -lt 1) { throw "Barcode not found in DB" }
-  $barcodeApi = Invoke-RestMethod -Method Get -Uri "$baseApi/api/BarCode?Id=$([uri]::EscapeDataString($barcode))" -Headers @{ accesskey = "DXI800" }
-  if (-not $barcodeApi) { throw "Barcode print annotation API empty" }
-  Log "SC-05" "Barcode Validation" "PASS" "Unique barcode, print API returns annotation"
+  # BarCode print API applies to pending (New) samples only — validate on a pending row
+  $pendingBarOpt = '{"RecordPerPage":1,"CurrentPage":1}'
+  $pendingBarQ = Invoke-RestMethod -Method Get -Uri "$baseApi/api/SampleCollection/PendingQueue" -Headers (HeadersFor $adminToken $pendingBarOpt)
+  $pendingBarRow = (Get-Items $pendingBarQ)[0]
+  $pendingReqId = Get-RowId $pendingBarRow
+  $pendingOrderNo = if ($pendingBarRow.HisRequestNo) { $pendingBarRow.HisRequestNo } elseif ($pendingBarRow.hisRequestNo) { $pendingBarRow.hisRequestNo } else { $null }
+  if (-not $pendingOrderNo) { throw "Pending row missing invoice/order number for barcode print API" }
+  $barcodeApi = Invoke-RestMethod -Method Get -Uri "$baseApi/api/BarCode?Id=$([uri]::EscapeDataString($pendingOrderNo))" -Headers @{ accesskey = "DXI800" }
+  if (-not $barcodeApi -or @(Get-Items $barcodeApi).Count -lt 1) { throw "Barcode print annotation API empty for pending order $pendingOrderNo" }
+  Log "SC-05" "Barcode Validation" "PASS" "Unique barcode persisted; print API OK for pending sample"
 } catch {
   Log "SC-05" "Barcode Validation" "FAIL" $_.Exception.Message
 }
@@ -253,20 +263,17 @@ try {
   Log "SR-03" "Receiving Before Collection Time" "FAIL" $_.Exception.Message
 }
 
-# SR-04 Rejection with RJ01 and RJ03
+# SR-04 Rejection with RJ01 and RJ03 (use receiving queue — collected, not yet received)
 $rejectIds = @()
+$rejectUsedIds = @()
 try {
   foreach ($code in @("RJ01", "RJ03")) {
-    $pOpt = '{"RecordPerPage":1,"CurrentPage":1}'
-    $row = (Get-Items (Invoke-RestMethod -Method Get -Uri "$baseApi/api/SampleCollection/PendingQueue" -Headers (HeadersFor $adminToken $pOpt)))[0]
-    if (-not $row) { throw "No pending sample for rejection test $code" }
+    $recvOpt = '{"RecordPerPage":50,"CurrentPage":1}'
+    $rows = Get-Items (Invoke-RestMethod -Method Get -Uri "$baseApi/api/SampleReceiving/Queue" -Headers (HeadersFor $adminToken $recvOpt))
+    $row = $rows | Where-Object { $rejectUsedIds -notcontains (Get-RowId $_) } | Select-Object -First 1
+    if (-not $row) { throw "No distinct collected sample in receiving queue for rejection test $code" }
     $rid = Get-RowId $row
-    $cDt = (Get-Date).AddMinutes(-20).ToString("yyyy-MM-ddTHH:mm:ss")
-    Invoke-RestMethod -Method Post -Uri "$baseApi/api/SampleCollection/Collect" -Headers (HeadersFor $adminToken) -ContentType "application/json" -Body (@{
-      testRequestId = $rid; collectionDateTime = $cDt; remarks = "$uatTag collect for reject $code"
-    } | ConvertTo-Json) | Out-Null
-    $collectedBy = SqlScalar ('SELECT ISNULL(CollectedBy,'''') FROM TestRequestDetails WHERE Id = ' + $rid)
-    if (-not $collectedBy) { throw "Collect failed before reject for $code" }
+    $rejectUsedIds += $rid
     Invoke-RestMethod -Method Post -Uri "$baseApi/api/SampleReceiving/Reject" -Headers (HeadersFor $adminToken) -ContentType "application/json" -Body (@{
       testRequestId = $rid; rejectionReasonCode = $code; remarks = "$uatTag reject $code"
     } | ConvertTo-Json) | Out-Null
@@ -344,17 +351,28 @@ try {
 Write-Host "`n--- PHASE 5: Radiology ---" -ForegroundColor Cyan
 
 $patientId = SqlScalar "SELECT TOP 1 Id FROM PatientDetails WHERE IsActive = 1 ORDER BY Id"
+$paidInvoiceNos = @()
+$invQuery = "SELECT TOP 2 InvoiceNo FROM SaleInvoice WHERE PaymentStatus = 2 AND InvoiceStatus <> 3 ORDER BY Id DESC"
+$invLines = & sqlcmd -S '.\SQLEXPRESS' -d ZoryaLMS -E -h -1 -W -Q "SET NOCOUNT ON; $invQuery" 2>&1
+if ($LASTEXITCODE -eq 0) {
+  $paidInvoiceNos = @($invLines | Where-Object { $_ -and $_.ToString().Trim() -ne '' } | ForEach-Object { $_.ToString().Trim() })
+}
+if ($paidInvoiceNos.Count -lt 1) { throw "No paid sale invoice found for radiology print linkage (create/pay an invoice first)" }
+if ($paidInvoiceNos.Count -lt 2) { $paidInvoiceNos += $paidInvoiceNos[0] }
 $radIds = @()
 
 try {
-  foreach ($mod in @(@{ Mod = "X-Ray"; Test = "Chest X-Ray UAT"; Req = "UATXR01" }, @{ Mod = "Ultrasound"; Test = "Abdominal Ultrasound UAT"; Req = "UATUS01" })) {
+  $modIdx = 0
+  foreach ($mod in @(@{ Mod = "X-Ray"; Test = "Chest X-Ray UAT" }, @{ Mod = "Ultrasound"; Test = "Abdominal Ultrasound UAT" })) {
+    $hisReq = $paidInvoiceNos[$modIdx]
+    $modIdx++
     $create = @{
       PatientId = [long]$patientId
       Modality = $mod.Mod
       HISTestName = $mod.Test
       HISTestCode = ("RAD" + (Get-Random -Maximum 99999))
       Department = "Radiology"
-      HISRequestNo = $mod.Req
+      HISRequestNo = $hisReq
     } | ConvertTo-Json
     $cr = Invoke-RestMethod -Method Post -Uri "$baseApi/api/RadiologyReport" -Headers (HeadersFor $adminToken) -ContentType "application/json" -Body $create
     $radIds += [long]$cr.id
@@ -412,6 +430,20 @@ try {
   Log "RAD-04" "Submit for Review" "FAIL" $_.Exception.Message
 }
 
+# Doctor approval queue (separate from entry pending queue)
+try {
+  $docOpt = (@{ RecordPerPage = 50; CurrentPage = 1 } | ConvertTo-Json -Compress)
+  $docQ = Invoke-RestMethod -Method Get -Uri "$baseApi/api/RadiologyReport/DoctorApprovalQueue" -Headers (HeadersFor $adminToken $docOpt)
+  $docIds = (Get-Items $docQ) | ForEach-Object { [long](Get-RowId $_) }
+  if ($docIds -notcontains $radId) { throw "Submitted study $radId not in DoctorApprovalQueue" }
+  $pendAfter = Invoke-RestMethod -Method Get -Uri "$baseApi/api/RadiologyReport/PendingQueue" -Headers (HeadersFor $adminToken $docOpt)
+  $pendIds = (Get-Items $pendAfter) | ForEach-Object { [long](Get-RowId $_) }
+  if ($pendIds -contains $radId) { throw "Under-review study $radId still in PendingQueue" }
+  Log "RAD-04b" "Doctor Approval Queue" "PASS" "Under-review routed to DoctorApprovalQueue only"
+} catch {
+  Log "RAD-04b" "Doctor Approval Queue" "FAIL" $_.Exception.Message
+}
+
 # Authorize
 try {
   $auth = @{ radiologyRequestId = $radId; digitalSignature = "Dr. UAT Authorized"; release = $false } | ConvertTo-Json
@@ -466,6 +498,31 @@ try {
   Log "RAD-08" "Report Content/Print Data" "FAIL" $_.Exception.Message
 }
 
+# Operational print API (diagnostic radiology report DTO)
+try {
+  $accOpt = (@{ RecordPerPage = 50; CurrentPage = 1 } | ConvertTo-Json -Compress)
+  $acc = Invoke-RestMethod -Method Get -Uri "$baseApi/api/Reports/RadiologyPrintAccessions" -Headers (HeadersFor $adminToken $accOpt)
+  if ((Get-Total $acc) -lt 1) { throw "No printable accessions after release workflow" }
+  $print = Invoke-RestMethod -Method Get -Uri "$baseApi/api/Reports/RadiologyReport?radiologyRequestId=$radId" -Headers (HeadersFor $adminToken)
+  $pFn = if ($print.Findings) { $print.Findings } else { $print.findings }
+  $pIm = if ($print.Impression) { $print.Impression } else { $print.impression }
+  if (-not $pFn -or -not $pIm) { throw "RadiologyReport print DTO missing findings/impression" }
+  Log "RAD-09" "Radiology Print API" "PASS" "Print accessions + report DTO OK for id=$radId"
+} catch {
+  Log "RAD-09" "Radiology Print API" "FAIL" $_.Exception.Message
+}
+
+# Approved queue after authorization
+try {
+  $apprOpt = (@{ RecordPerPage = 50; CurrentPage = 1 } | ConvertTo-Json -Compress)
+  $apprQ = Invoke-RestMethod -Method Get -Uri "$baseApi/api/RadiologyReport/ApprovedQueue" -Headers (HeadersFor $adminToken $apprOpt)
+  $apprIds = (Get-Items $apprQ) | ForEach-Object { [long](Get-RowId $_) }
+  if ($apprIds -notcontains $radId -or $apprIds -notcontains $radId2) { throw "Authorized/released studies missing from ApprovedQueue" }
+  Log "RAD-10" "Approved Reports Queue" "PASS" "Authorized + released studies listed"
+} catch {
+  Log "RAD-10" "Approved Reports Queue" "FAIL" $_.Exception.Message
+}
+
 # Radiology reports
 $radReports = @(
   @{ Id = "RPT-R1"; Name = "Pending Radiology"; Ep = "PendingRadiology" },
@@ -491,9 +548,9 @@ try {
 SELECT COUNT(*) FROM UserModules um
 INNER JOIN ClientApplication ca ON ca.Id = um.ApplicationId
 WHERE ca.AccessKey = 'DXI800'
-  AND um.Name IN ('SampleCollection','SampleReceiving','RadiologyReportEntry','RadiologyReports')
+  AND um.Name IN ('SampleCollection','SampleReceiving','RadiologyReportEntry','RadiologyReports','RadiologyDoctorApprovals')
 "@
-  if ([int]$mods -ne 4) { throw "Expected 4 FDD modules seeded, got $mods" }
+  if ([int]$mods -ne 5) { throw "Expected 5 FDD modules seeded, got $mods" }
 
   # Technician role module access check via DB
   $techAccess = SqlScalar @"
@@ -508,11 +565,11 @@ WHERE r.Name = 'Technician' AND um.Name = 'SampleCollection'
 SELECT COUNT(*) FROM RoleModuleMappings rm
 INNER JOIN UserModules um ON um.Id = rm.ModuleId
 INNER JOIN AspNetRoles r ON r.Id = rm.RoleId
-WHERE r.Name = 'Administrator' AND um.Name IN ('SampleCollection','RadiologyReportEntry')
+WHERE r.Name = 'Administrator' AND um.Name IN ('SampleCollection','RadiologyReportEntry','RadiologyDoctorApprovals')
 "@
-  if ([int]$adminMap -lt 2) { throw "Administrator missing FDD module grants" }
+  if ([int]$adminMap -lt 3) { throw "Administrator missing FDD module grants" }
 
-  Log "SEC-01" "Module Permissions Seeded" "PASS" "4 modules, Administrator granted"
+  Log "SEC-01" "Module Permissions Seeded" "PASS" "5 modules, Administrator granted"
   Log "SEC-02" "Technician Role Mapping" $(if ([int]$techAccess -gt 0) { "PASS" } else { "WARN" }) "Technician SampleCollection maps=$techAccess (assign via Roles UI if 0)"
 } catch {
   Log "SEC-01" "Security Validation" "FAIL" $_.Exception.Message

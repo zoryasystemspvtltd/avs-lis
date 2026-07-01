@@ -141,7 +141,7 @@ namespace LIS.Masters.Tests.Masters
                 Gender = "Female",
                 AgeFrom = 18,
                 AgeTo = 65,
-                AgeType = "Years",
+                AgeType = "Year",
                 MinValue = 21,
                 MaxValue = 30
             };
@@ -154,7 +154,7 @@ namespace LIS.Masters.Tests.Masters
             Assert.AreEqual("Female", updated.Gender);
             Assert.AreEqual(18m, updated.AgeFrom);
             Assert.AreEqual(65m, updated.AgeTo);
-            Assert.AreEqual("Years", updated.AgeType);
+            Assert.AreEqual("Year", updated.AgeType);
             Assert.AreEqual(21m, updated.MinValue);
             Assert.AreEqual(30m, updated.MaxValue);
 

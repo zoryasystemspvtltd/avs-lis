@@ -1,0 +1,212 @@
+[
+  {
+    "id": "UI-NAV-01",
+    "name": "/login",
+    "status": "PASS",
+    "detail": "Login page render"
+  },
+  {
+    "id": "UI-CHROME-LOGIN",
+    "name": "CHROME login",
+    "status": "PASS",
+    "detail": "Authenticated"
+  },
+  {
+    "id": "UI-PAT-01",
+    "name": "/patient-master",
+    "status": "PASS",
+    "detail": "Loaded; no critical console errors"
+  },
+  {
+    "id": "UI-SINV-01",
+    "name": "/sale-invoices",
+    "status": "FAIL",
+    "detail": "Expected one of [Sale Invoice, Invoice]; snippet=laboratory information system\nlms home\nhelp\nwelcome admin@zorya.co.in\nlogout\n×\nworking board\nrecent samples\n\n\nsample col"
+  },
+  {
+    "id": "UI-SINV-02",
+    "name": "/sale-invoices/create",
+    "status": "PASS",
+    "detail": "Loaded; no critical console errors"
+  },
+  {
+    "id": "UI-TR-01",
+    "name": "/test-rates",
+    "status": "FAIL",
+    "detail": "Expected one of [Test Rate, Rate Type]; snippet=laboratory information system\nlms home\nhelp\nwelcome admin@zorya.co.in\nlogout\n×\nworking board\nrecent samples\n\n\nsample col"
+  },
+  {
+    "id": "UI-PARAM-01",
+    "name": "/his-parameter-ranges",
+    "status": "FAIL",
+    "detail": "Expected one of [Parameter Range, Range Code]; snippet=laboratory information system\nlms home\nhelp\nwelcome admin@zorya.co.in\nlogout\n×\nworking board\nrecent samples\n\n\nsample col"
+  },
+  {
+    "id": "UI-SC-01",
+    "name": "/sample-collection",
+    "status": "PASS",
+    "detail": "Loaded; no critical console errors"
+  },
+  {
+    "id": "UI-SR-01",
+    "name": "/sample-receiving",
+    "status": "PASS",
+    "detail": "Loaded; no critical console errors"
+  },
+  {
+    "id": "UI-LRE-01",
+    "name": "/lab-result-entry",
+    "status": "PASS",
+    "detail": "Loaded; no critical console errors"
+  },
+  {
+    "id": "UI-RAD-01",
+    "name": "/radiology-report-entry",
+    "status": "PASS",
+    "detail": "Loaded; no critical console errors"
+  },
+  {
+    "id": "UI-RAD-02",
+    "name": "/radiology-doctor-approvals",
+    "status": "PASS",
+    "detail": "Loaded; no critical console errors"
+  },
+  {
+    "id": "UI-RAD-03",
+    "name": "/radiology-approved-reports",
+    "status": "PASS",
+    "detail": "Loaded; no critical console errors"
+  },
+  {
+    "id": "UI-RAD-04",
+    "name": "/reports/radiology-report",
+    "status": "PASS",
+    "detail": "Loaded; no critical console errors"
+  },
+  {
+    "id": "UI-RPT-01",
+    "name": "/reports/test-report",
+    "status": "PASS",
+    "detail": "Loaded; no critical console errors"
+  },
+  {
+    "id": "UI-RESP-1280",
+    "name": "Responsive 1280px",
+    "status": "PASS",
+    "detail": "No overflow"
+  },
+  {
+    "id": "UI-RESP-1024",
+    "name": "Responsive 1024px",
+    "status": "PASS",
+    "detail": "No overflow"
+  },
+  {
+    "id": "UI-JS-ERR",
+    "name": "Uncaught page errors",
+    "status": "PASS",
+    "detail": "None"
+  },
+  {
+    "id": "UI-EDGE-LOGIN",
+    "name": "EDGE login",
+    "status": "PASS",
+    "detail": "Authenticated"
+  },
+  {
+    "id": "UI-PAT-01",
+    "name": "/patient-master",
+    "status": "PASS",
+    "detail": "Loaded; no critical console errors"
+  },
+  {
+    "id": "UI-SINV-01",
+    "name": "/sale-invoices",
+    "status": "FAIL",
+    "detail": "Expected one of [Sale Invoice, Invoice]; snippet=laboratory information system\nlms home\nhelp\nwelcome admin@zorya.co.in\nlogout\n×\nworking board\nrecent samples\n\n\nsample col"
+  },
+  {
+    "id": "UI-SINV-02",
+    "name": "/sale-invoices/create",
+    "status": "PASS",
+    "detail": "Loaded; no critical console errors"
+  },
+  {
+    "id": "UI-TR-01",
+    "name": "/test-rates",
+    "status": "FAIL",
+    "detail": "Expected one of [Test Rate, Rate Type]; snippet=laboratory information system\nlms home\nhelp\nwelcome admin@zorya.co.in\nlogout\n×\nworking board\nrecent samples\n\n\nsample col"
+  },
+  {
+    "id": "UI-PARAM-01",
+    "name": "/his-parameter-ranges",
+    "status": "FAIL",
+    "detail": "Expected one of [Parameter Range, Range Code]; snippet=laboratory information system\nlms home\nhelp\nwelcome admin@zorya.co.in\nlogout\n×\nworking board\nrecent samples\n\n\nsample col"
+  },
+  {
+    "id": "UI-SC-01",
+    "name": "/sample-collection",
+    "status": "PASS",
+    "detail": "Loaded; no critical console errors"
+  },
+  {
+    "id": "UI-SR-01",
+    "name": "/sample-receiving",
+    "status": "PASS",
+    "detail": "Loaded; no critical console errors"
+  },
+  {
+    "id": "UI-LRE-01",
+    "name": "/lab-result-entry",
+    "status": "PASS",
+    "detail": "Loaded; no critical console errors"
+  },
+  {
+    "id": "UI-RAD-01",
+    "name": "/radiology-report-entry",
+    "status": "PASS",
+    "detail": "Loaded; no critical console errors"
+  },
+  {
+    "id": "UI-RAD-02",
+    "name": "/radiology-doctor-approvals",
+    "status": "PASS",
+    "detail": "Loaded; no critical console errors"
+  },
+  {
+    "id": "UI-RAD-03",
+    "name": "/radiology-approved-reports",
+    "status": "PASS",
+    "detail": "Loaded; no critical console errors"
+  },
+  {
+    "id": "UI-RAD-04",
+    "name": "/reports/radiology-report",
+    "status": "PASS",
+    "detail": "Loaded; no critical console errors"
+  },
+  {
+    "id": "UI-RPT-01",
+    "name": "/reports/test-report",
+    "status": "PASS",
+    "detail": "Loaded; no critical console errors"
+  },
+  {
+    "id": "UI-RESP-1280",
+    "name": "Responsive 1280px",
+    "status": "PASS",
+    "detail": "No overflow"
+  },
+  {
+    "id": "UI-RESP-1024",
+    "name": "Responsive 1024px",
+    "status": "PASS",
+    "detail": "No overflow"
+  },
+  {
+    "id": "UI-JS-ERR",
+    "name": "Uncaught page errors",
+    "status": "PASS",
+    "detail": "None"
+  }
+]

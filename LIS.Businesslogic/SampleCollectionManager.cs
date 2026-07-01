@@ -155,11 +155,34 @@ namespace LIS.Businesslogic
                 return request.SampleNo;
             }
 
-            var barcode = $"{request.HISRequestNo}-{request.HISTestCode}";
+            var specimenCode = ResolveSpecimenCode(request);
+            if (string.IsNullOrWhiteSpace(specimenCode))
+            {
+                throw new ArgumentException("Specimen code is required for barcode generation.");
+            }
+
+            var orderNo = request.HISRequestNo;
+            var shared = requestRepo.Get(r =>
+                    r.HISRequestNo == orderNo &&
+                    r.SpecimenCode == specimenCode)
+                .AsEnumerable()
+                .Where(r => !string.IsNullOrWhiteSpace(r.SampleNo))
+                .Select(r => r.SampleNo)
+                .FirstOrDefault();
+
+            var barcode = !string.IsNullOrWhiteSpace(shared)
+                ? shared
+                : $"{orderNo}-{specimenCode}";
+
             ValidateBarcodeUnique(barcode, request.Id, request);
             request.SampleNo = barcode;
             requestRepo.Update(request);
             return barcode;
+        }
+
+        private static string ResolveSpecimenCode(TestRequestDetail request)
+        {
+            return request?.SpecimenCode?.Trim();
         }
 
         private void ValidateCollectionAction(SampleCollectionAction action)

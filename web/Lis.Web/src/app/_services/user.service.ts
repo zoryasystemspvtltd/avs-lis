@@ -72,6 +72,22 @@ export class UserService {
         }));
     }
 
+    uploadDoctorSignature(userId: string, file: File) {
+        const formData = new FormData();
+        formData.append('file', file, file.name);
+        return this.http.post<{ doctor_signature_path: string }>(
+            `${environment.ApplicationServer}/api/Users/${userId}/DoctorSignature`,
+            formData
+        );
+    }
+
+    getDoctorSignatureBlob(userId: string) {
+        return this.http.get(
+            `${environment.ApplicationServer}/api/Users/${userId}/DoctorSignature`,
+            { responseType: 'blob' }
+        );
+    }
+
     getRoleById(id:string) {
         return this.http.get<any>(`${environment.ApplicationServer}/api/roles/${id}`)
             .pipe(map(response => {

@@ -1,0 +1,21 @@
+.filter-panel { margin-bottom: 16px; }
+.entry-panel { margin-top: 12px; }
+.entry-panel-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.filter-actions-col { padding-top: 22px; }
+.workflow-loading, .workflow-empty { padding: 16px 0; }
+.workflow-pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+}
+.entry-actions .btn { margin-right: 8px; margin-bottom: 8px; }
+.report-readonly { white-space: pre-wrap; min-height: 2em; background: #f9f9f9; padding: 8px; border-radius: 4px; }

@@ -4,10 +4,19 @@
     <hr />
     <alert></alert>
 
+    <div class="patient-identity-banner" *ngIf="apiName === 'PatientMaster'">
+      <strong>Patient Number:</strong> {{form.get('hisPatientId')?.value || 'Assigned on save'}}
+      &nbsp;|&nbsp;
+      <strong>Patient Name:</strong> {{patientDisplayName}}
+    </div>
+    <br *ngIf="apiName === 'PatientMaster'" />
+
     <ng-container *ngFor="let field of visibleFields()">
       <div class="row" *ngIf="field.type !== 'checkbox'">
         <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye">
-          <label>{{field.label}}<span class="error" *ngIf="field.required">*</span></label>
+          <label>{{field.label}}<span class="error" *ngIf="field.required">*</span>
+            <span *ngIf="field.help" class="glyphicon glyphicon-info-sign field-help-icon" [attr.title]="field.help"></span>
+          </label>
         </div>
         <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
           <select *ngIf="isUnitOrMethodDropdown(field)" class="form-control" [formControlName]="field.name">
@@ -36,6 +45,34 @@
         </div>
       </div>
       <br *ngIf="field.type !== 'checkbox'" />
+
+      <ng-container *ngIf="isParameterMasterScreen && field.name === 'hisParamCode'">
+        <div class="row">
+          <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Test<span class="error">*</span></label></div>
+          <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
+            <ng-select
+              [items]="testRateOptions"
+              bindLabel="displayLabel"
+              bindValue="id"
+              formControlName="hisTestId"
+              placeholder="Type to search tests..."
+              [searchable]="true"
+              [clearable]="true"
+              [loading]="testRateSearchLoading"
+              [minTermLength]="0"
+              typeToSearchText="Type to filter tests..."
+              appendTo="body"
+              notFoundText="No matching tests"
+              loadingText="Loading tests..."
+              (open)="onTestRateDropdownOpen()"
+              (search)="onTestRateSearch($event)"
+              class="test-rate-test-select">
+            </ng-select>
+            <span *ngIf="submitted && f.hisTestId?.invalid" class="error">Test is required.</span>
+          </div>
+        </div>
+        <br />
+      </ng-container>
     </ng-container>
 
     <ng-container *ngIf="apiName === 'TestRate'">
@@ -43,10 +80,24 @@
       <div class="row">
         <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Test<span class="error">*</span></label></div>
         <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
-          <select class="form-control" formControlName="testId" [disabled]="!lookupsLoaded">
-            <option [ngValue]="null">-- Select Test --</option>
-            <option *ngFor="let t of tests" [ngValue]="t.id">{{t.hisTestCode}} - {{t.hisTestCodeDescription}}</option>
-          </select>
+          <ng-select
+            [items]="testRateOptions"
+            bindLabel="displayLabel"
+            bindValue="id"
+            formControlName="testId"
+            placeholder="Type to search tests..."
+            [searchable]="true"
+            [clearable]="true"
+            [loading]="testRateSearchLoading"
+            [minTermLength]="0"
+            typeToSearchText="Type to filter tests..."
+            appendTo="body"
+            notFoundText="No matching tests"
+            loadingText="Loading tests..."
+            (open)="onTestRateDropdownOpen()"
+            (search)="onTestRateSearch($event)"
+            class="test-rate-test-select">
+          </ng-select>
           <span *ngIf="submitted && f.testId?.invalid" class="error">Test is required.</span>
         </div>
         <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Rate Type</label></div>
@@ -97,7 +148,7 @@
     </ng-container>
 
     <ng-container *ngIf="apiName === 'HisParameterMaster'">
-      <div class="row">
+      <div class="row" *ngIf="isTestParameterScreen">
         <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Test<span class="error">*</span></label></div>
         <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
           <select class="form-control" formControlName="hisTestId" [disabled]="!lookupsLoaded" (change)="onHisTestIdChanged()">
@@ -106,7 +157,7 @@
           </select>
         </div>
       </div>
-      <br />
+      <br *ngIf="isTestParameterScreen" />
       <ng-container *ngIf="isParameterPickerScreen">
         <div class="row">
           <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Parameter<span class="error">*</span></label></div>

@@ -58,6 +58,54 @@ namespace Lis.Api.Controllers.Api
         }
 
         [HttpGet]
+        [Route("DoctorApprovalQueue")]
+        [QAuthorize(ModuleName = "RadiologyDoctorApprovals", ModulePermissionTypes = ModulePermissionType.CanView)]
+        public ItemList<RadiologyQueueRow> GetDoctorApprovalQueue()
+        {
+            try
+            {
+                return manager.GetDoctorApprovalQueue(SearchOptions);
+            }
+            catch (Exception ex)
+            {
+                logger.LogException(ex);
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ex.Message));
+            }
+        }
+
+        [HttpGet]
+        [Route("ApprovedQueue")]
+        [QAuthorize(ModuleName = "RadiologyDoctorApprovals", ModulePermissionTypes = ModulePermissionType.CanView)]
+        public ItemList<RadiologyQueueRow> GetApprovedQueue()
+        {
+            try
+            {
+                return manager.GetApprovedQueue(SearchOptions);
+            }
+            catch (Exception ex)
+            {
+                logger.LogException(ex);
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ex.Message));
+            }
+        }
+
+        [HttpGet]
+        [Route("DoctorApproval/{id:long}")]
+        [QAuthorize(ModuleName = "RadiologyDoctorApprovals", ModulePermissionTypes = ModulePermissionType.CanView)]
+        public RadiologyReportDetailDto GetDoctorApprovalReport(long id)
+        {
+            try
+            {
+                return manager.GetReport(id);
+            }
+            catch (Exception ex)
+            {
+                logger.LogException(ex);
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ex.Message));
+            }
+        }
+
+        [HttpGet]
         [Route("{id:long}")]
         [QAuthorize(ModuleName = "RadiologyReportEntry", ModulePermissionTypes = ModulePermissionType.CanView)]
         public RadiologyReportDetailDto GetReport(long id)
@@ -109,7 +157,7 @@ namespace Lis.Api.Controllers.Api
 
         [HttpPost]
         [Route("Authorize")]
-        [QAuthorize(ModuleName = "RadiologyReportEntry", ModulePermissionTypes = ModulePermissionType.CanAuthorize)]
+        [QAuthorize(ModuleName = "RadiologyDoctorApprovals", ModulePermissionTypes = ModulePermissionType.CanAuthorize)]
         public IHttpActionResult Authorize(RadiologyAuthorizeRequest request)
         {
             try
