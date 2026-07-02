@@ -3,7 +3,7 @@
     using System;
     using System.Data.Entity.Migrations;
     
-    public partial class fresh : DbMigration
+    public partial class Fresh : DbMigration
     {
         public override void Up()
         {
@@ -93,6 +93,7 @@
                     {
                         Code = c.String(nullable: false, maxLength: 15),
                         Name = c.String(nullable: false, maxLength: 55),
+                        ProcessingCategory = c.String(nullable: false, maxLength: 20),
                     })
                 .PrimaryKey(t => t.Code);
             
@@ -199,15 +200,63 @@
                         Id = c.Long(nullable: false, identity: true),
                         HisPatientId = c.String(maxLength: 20),
                         Name = c.String(maxLength: 100),
+                        PatientPrefix = c.String(maxLength: 20),
+                        MRNo = c.String(maxLength: 30),
+                        VisitId = c.String(maxLength: 30),
                         Age = c.Decimal(nullable: false, precision: 18, scale: 2),
                         Gender = c.String(maxLength: 10),
                         Phone = c.String(maxLength: 15),
+                        Address = c.String(maxLength: 500),
                         IsActive = c.Boolean(nullable: false),
                         DateOfBirth = c.DateTime(nullable: false),
                         CreatedBy = c.String(maxLength: 80),
                         CreatedOn = c.DateTime(nullable: false),
                     })
                 .PrimaryKey(t => t.Id);
+            
+            CreateTable(
+                "dbo.RadiologyRequestDetail",
+                c => new
+                    {
+                        Id = c.Long(nullable: false, identity: true),
+                        PatientId = c.Long(nullable: false),
+                        HISRequestNo = c.String(maxLength: 20),
+                        AccessionNo = c.String(maxLength: 30),
+                        Modality = c.String(maxLength: 30),
+                        HISTestCode = c.String(maxLength: 20),
+                        HISTestName = c.String(maxLength: 100),
+                        Department = c.String(maxLength: 80),
+                        ReportStatus = c.Int(nullable: false),
+                        CreatedBy = c.String(maxLength: 80),
+                        CreatedOn = c.DateTime(nullable: false),
+                        ModifiedBy = c.String(maxLength: 80),
+                        ModifiedOn = c.DateTime(nullable: false),
+                    })
+                .PrimaryKey(t => t.Id)
+                .ForeignKey("dbo.PatientDetails", t => t.PatientId)
+                .Index(t => t.PatientId);
+            
+            CreateTable(
+                "dbo.RadiologyResultDetail",
+                c => new
+                    {
+                        Id = c.Long(nullable: false, identity: true),
+                        RadiologyRequestId = c.Long(nullable: false),
+                        ClinicalHistory = c.String(),
+                        Findings = c.String(),
+                        Impression = c.String(),
+                        Recommendation = c.String(),
+                        AuthorizedBy = c.String(maxLength: 80),
+                        AuthorizedOn = c.DateTime(),
+                        DigitalSignature = c.String(maxLength: 200),
+                        CreatedBy = c.String(maxLength: 80),
+                        CreatedOn = c.DateTime(nullable: false),
+                        ModifiedBy = c.String(maxLength: 80),
+                        ModifiedOn = c.DateTime(nullable: false),
+                    })
+                .PrimaryKey(t => t.Id)
+                .ForeignKey("dbo.RadiologyRequestDetail", t => t.RadiologyRequestId)
+                .Index(t => t.RadiologyRequestId);
             
             CreateTable(
                 "dbo.ReferralDoctorMaster",
@@ -234,13 +283,14 @@
                         Id = c.Long(nullable: false, identity: true),
                         SaleInvoiceId = c.Long(nullable: false),
                         TestId = c.Int(nullable: false),
+                        TestProfileId = c.Int(),
                         Rate = c.Decimal(nullable: false, precision: 18, scale: 2),
                         Quantity = c.Int(nullable: false),
                         Amount = c.Decimal(nullable: false, precision: 18, scale: 2),
                         DiscountAmount = c.Decimal(nullable: false, precision: 18, scale: 2),
                         TaxAmount = c.Decimal(nullable: false, precision: 18, scale: 2),
                         NetAmount = c.Decimal(nullable: false, precision: 18, scale: 2),
-                        RequestDetailId = c.Long(nullable: false),
+                        RequestDetailId = c.Long(),
                         SampleNo = c.String(maxLength: 30),
                         CreatedBy = c.String(),
                         CreatedOn = c.DateTime(nullable: false),
@@ -301,10 +351,11 @@
                         SpecimenName = c.String(maxLength: 100),
                         CreatedBy = c.String(maxLength: 80),
                         CreatedOn = c.DateTime(nullable: false),
+                        CollectedBy = c.String(maxLength: 80),
+                        CollectedRemarks = c.String(maxLength: 500),
+                        ReceivedBy = c.String(maxLength: 80),
+                        ReceivedRemarks = c.String(maxLength: 500),
                         ReportStatus = c.Int(nullable: false),
-                        IPNo = c.String(maxLength: 20),
-                        BedNo = c.String(maxLength: 20),
-                        MRNo = c.String(maxLength: 20),
                         HISRequestId = c.String(maxLength: 20),
                         HISRequestNo = c.String(maxLength: 20),
                         DepartmentId = c.String(maxLength: 20),
@@ -315,6 +366,22 @@
                 .ForeignKey("dbo.PatientDetails", t => t.PatientId)
                 .Index(t => new { t.SampleNo, t.HISTestCode, t.ReportStatus }, unique: true)
                 .Index(t => t.PatientId);
+            
+            CreateTable(
+                "dbo.SampleRejectionReasonMaster",
+                c => new
+                    {
+                        Id = c.Int(nullable: false, identity: true),
+                        Code = c.String(nullable: false, maxLength: 20),
+                        Name = c.String(nullable: false, maxLength: 100),
+                        Category = c.String(nullable: false, maxLength: 30),
+                        IsActive = c.Boolean(nullable: false),
+                        CreatedBy = c.String(maxLength: 80),
+                        CreatedOn = c.DateTime(nullable: false),
+                        ModifiedBy = c.String(maxLength: 80),
+                        ModifiedOn = c.DateTime(nullable: false),
+                    })
+                .PrimaryKey(t => t.Id);
             
             CreateTable(
                 "dbo.SampleTypeMaster",
@@ -539,6 +606,8 @@
             DropForeignKey("dbo.TestRequestDetails", "PatientId", "dbo.PatientDetails");
             DropForeignKey("dbo.SaleInvoice", "PatientId", "dbo.PatientDetails");
             DropForeignKey("dbo.SaleInvoiceDetail", "TestId", "dbo.HISTestMaster");
+            DropForeignKey("dbo.RadiologyResultDetail", "RadiologyRequestId", "dbo.RadiologyRequestDetail");
+            DropForeignKey("dbo.RadiologyRequestDetail", "PatientId", "dbo.PatientDetails");
             DropForeignKey("dbo.HISParameterRangMaster", "HisParameterId", "dbo.HISParameterMaster");
             DropForeignKey("dbo.HISParameterMaster", "HisTestId", "dbo.HISTestMaster");
             DropForeignKey("dbo.HISTestMaster", "DepartmentCode", "dbo.Department");
@@ -560,6 +629,8 @@
             DropIndex("dbo.SaleInvoiceDetail", new[] { "RequestDetailId" });
             DropIndex("dbo.SaleInvoiceDetail", new[] { "TestId" });
             DropIndex("dbo.SaleInvoiceDetail", new[] { "SaleInvoiceId" });
+            DropIndex("dbo.RadiologyResultDetail", new[] { "RadiologyRequestId" });
+            DropIndex("dbo.RadiologyRequestDetail", new[] { "PatientId" });
             DropIndex("dbo.HISParameterRangMaster", new[] { "HisParameterId" });
             DropIndex("dbo.HISTestMaster", new[] { "DepartmentCode" });
             DropIndex("dbo.HISParameterMaster", new[] { "HisTestId" });
@@ -576,10 +647,13 @@
             DropTable("dbo.TestGroupMaster");
             DropTable("dbo.TestCategoryMaster");
             DropTable("dbo.SampleTypeMaster");
+            DropTable("dbo.SampleRejectionReasonMaster");
             DropTable("dbo.TestRequestDetails");
             DropTable("dbo.SaleInvoice");
             DropTable("dbo.SaleInvoiceDetail");
             DropTable("dbo.ReferralDoctorMaster");
+            DropTable("dbo.RadiologyResultDetail");
+            DropTable("dbo.RadiologyRequestDetail");
             DropTable("dbo.PatientDetails");
             DropTable("dbo.MethodMaster");
             DropTable("dbo.HISSpecimenMaster");

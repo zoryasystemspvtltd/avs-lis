@@ -36,12 +36,7 @@ namespace LIS.DtoModel.Models
         [MaxLength(500)]
         public string ReceivedRemarks { get; set; }
         public ReportStatusType ReportStatus { get; set; }
-        [MaxLength(20)]
-        public string IPNo { get; set; }
-        [MaxLength(20)]
-        public string BedNo { get; set; }
-        [MaxLength(20)]
-        public string MRNo { get; set; }
+        
         [MaxLength(20)]
         public string HISRequestId { get; set; }
         [MaxLength(20)]
