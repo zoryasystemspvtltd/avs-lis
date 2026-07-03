@@ -66,6 +66,7 @@ $seedScripts = @(
     "add-doctor-designation-signature.sql",
     "add-radiology-doctor-approvals-module.sql",
     "sale-invoice-detail-requestdetail-nullable.sql",
+    "add-saleinvoice-discount-tax-fields.sql",
     "fdd-sample-radiology-schema.sql",
     "SeedMasterModules.sql",
     "SeedSampleData.sql",

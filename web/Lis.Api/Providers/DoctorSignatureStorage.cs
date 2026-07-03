@@ -133,6 +133,25 @@ namespace Lis.Api.Providers
             }
         }
 
+        /// <summary>
+        /// Reads a stored signature and returns it as an inline base64 data URI
+        /// (e.g. "data:image/png;base64,...") suitable for embedding in reports.
+        /// Returns null when the path is empty or the file cannot be resolved.
+        /// </summary>
+        public static string GetSignatureDataUri(string relativePath)
+        {
+            var physicalPath = ResolvePhysicalPath(relativePath);
+            if (physicalPath == null)
+            {
+                return null;
+            }
+
+            var extension = Path.GetExtension(physicalPath).ToLowerInvariant();
+            var contentType = extension == ".png" ? "image/png" : "image/jpeg";
+            var bytes = File.ReadAllBytes(physicalPath);
+            return string.Format("data:{0};base64,{1}", contentType, Convert.ToBase64String(bytes));
+        }
+
         public static string ResolvePhysicalPath(string relativePath)
         {
             if (string.IsNullOrWhiteSpace(relativePath))

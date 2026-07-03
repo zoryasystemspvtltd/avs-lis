@@ -83,6 +83,13 @@ export class SampleService {
             }));
     }
 
+    getCurrentDoctorSignature() {
+        return this.http.get<any>(`${environment.ApplicationServer}/api/Users/CurrentDoctorSignature`)
+            .pipe(map(response => {
+                return response;
+            }));
+    }
+
     createNewSample(item: any) {
         return this.http.post<any>(`${environment.ApplicationServer}/api/newsample/`, item)
             .pipe(map(response => {

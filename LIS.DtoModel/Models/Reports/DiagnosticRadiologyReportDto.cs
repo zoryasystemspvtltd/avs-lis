@@ -27,6 +27,9 @@ namespace LIS.DtoModel.Models
         public string AuthorizedBy { get; set; }
         public DateTime? AuthorizedOn { get; set; }
         public string DigitalSignature { get; set; }
+        public string AuthorizedByName { get; set; }
+        public string AuthorizedByDesignation { get; set; }
+        public string AuthorizedBySignatureImage { get; set; }
     }
 
     public class RadiologyPrintAccessionOption

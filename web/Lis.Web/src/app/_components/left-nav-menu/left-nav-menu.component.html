@@ -37,7 +37,9 @@
                                 <td><span class="glyphicon glyphicon-ok-circle nav-icon"></span><a routerLink="/radiology-approved-reports" routerLinkActive="active-menu-link">Approved Radiology Reports</a></td>
                             </tr>
                             <tr *ngIf="hasAccess('Reports',2) || hasAccess('Reports',4) || hasAccess('Reports',63)">
-                                <td><span class="glyphicon glyphicon-flask nav-icon"></span><a routerLink="/lab-result-entry" routerLinkActive="active-menu-link">Lab Result Entry</a></td>
+                                <td><span class="glyphicon glyphicon-list-alt nav-icon"></span><a routerLink="/lab-result-entry" routerLinkActive="active-menu-link">Lab Result Entry</a></td>
+                            </tr>
+                            <tr *ngIf="hasAccess('Reports',2) || hasAccess('Reports',4) || hasAccess('Reports',63)">
                                 <td><span class="glyphicon glyphicon-edit nav-icon"></span><a routerLink="/edit-test-results" routerLinkActive="active-menu-link">Edit Test Results</a></td>
                             </tr>
                             <tr *ngIf="hasAccess('Reports',63)">

@@ -141,7 +141,15 @@
             </select>
           </td>
           <td class="col-discount text-right">
-            <input type="number" class="form-control input-sm text-right line-cell-num" formControlName="discountAmount" (change)="recalcLine(i)" />
+            <div class="line-discount-cell">
+              <input type="number" min="0" step="0.01" class="form-control input-sm text-right line-cell-num"
+                formControlName="discountValue" (change)="recalcLine(i)"
+                [placeholder]="line.value.discountType === 'Percentage' ? '%' : '₹'" />
+              <span class="line-discount-computed"
+                *ngIf="line.value.discountType === 'Percentage' && lineDiscountAmount(i) > 0">
+                = {{ lineDiscountAmount(i) | currency:'INR' }}
+              </span>
+            </div>
           </td>
           <td class="col-net text-right line-net">{{line.value.netAmount | currency:'INR'}}</td>
           <td class="col-action text-center">
@@ -165,12 +173,20 @@
               <select class="form-control input-sm inline-discount-type" formControlName="discountType" (change)="onTotalDiscountChange()">
                 <option *ngFor="let dt of discountTypes" [value]="dt">{{dt}}</option>
               </select>
-              <input type="number" class="form-control input-sm text-right inline-discount-value" formControlName="headerDiscountValue" (change)="onTotalDiscountChange()" />
-              <span class="total-discount-rupee" *ngIf="form.value.discountAmount">{{form.value.discountAmount | currency:'INR'}}</span>
-              <span class="total-discount-percent" *ngIf="totalDiscountPercentLabel">{{totalDiscountPercentLabel}}</span>
+              <input type="number" min="0" step="0.01" class="form-control input-sm text-right inline-discount-value"
+                formControlName="headerDiscountValue" (change)="onTotalDiscountChange()"
+                [placeholder]="form.value.discountType === 'Percentage' ? '%' : '₹'" />
+              <span class="total-discount-rupee" *ngIf="form.value.discountAmount">= {{form.value.discountAmount | currency:'INR'}}</span>
             </td>
           </tr>
-          <tr><td>Tax</td><td class="text-right">{{form.value.taxAmount | currency:'INR'}}</td></tr>
+          <tr>
+            <td>Tax</td>
+            <td class="text-right">
+              <input type="number" min="0" step="0.01" class="form-control input-sm text-right inline-tax-input"
+                formControlName="taxAmount" (change)="onTaxChange()"
+                [readonly]="isCancelled || isInvoiceLocked" placeholder="₹" />
+            </td>
+          </tr>
           <tr class="totals-net-row"><td><strong>Net Amount (Invoice Total)</strong></td><td class="text-right"><strong>{{form.value.netAmount | currency:'INR'}}</strong></td></tr>
           <tr>
             <td>Paid Amount</td>
@@ -345,7 +361,6 @@
             <th class="text-right col-rate">Rate</th>
             <th class="text-right col-qty">Qty</th>
             <th class="text-right col-disc">Discount</th>
-            <th class="text-right col-tax">Tax</th>
             <th class="text-right col-net">Net Amount</th>
           </tr>
         </thead>
@@ -354,8 +369,7 @@
             <td>{{getLineDescription(d)}}</td>
             <td class="text-right">{{d.rate | currency:'INR'}}</td>
             <td class="text-right">{{d.quantity}}</td>
-            <td class="text-right">{{d.discountAmount | currency:'INR'}}</td>
-            <td class="text-right">{{d.taxAmount | currency:'INR'}}</td>
+            <td class="text-right">{{d.discountAmount | currency:'INR'}}{{getLineDiscountLabel(d)}}</td>
             <td class="text-right">{{d.netAmount | currency:'INR'}}</td>
           </tr>
         </tbody>
@@ -367,7 +381,7 @@
         <table class="print-summary-table">
           <tr><td>Gross Amount</td><td class="text-right">{{invoiceDto.invoice.grossAmount | currency:'INR'}}</td></tr>
           <tr><td>Total Discount</td><td class="text-right">{{invoiceDto.invoice.discountAmount | currency:'INR'}}{{printDiscountPercentLabel}}</td></tr>
-          <tr><td>Total Tax</td><td class="text-right">{{invoiceDto.invoice.taxAmount | currency:'INR'}}</td></tr>
+          <tr *ngIf="invoiceDto.invoice.taxAmount"><td>Total Tax</td><td class="text-right">{{invoiceDto.invoice.taxAmount | currency:'INR'}}</td></tr>
           <tr class="print-summary-net"><td><strong>Net Amount</strong></td><td class="text-right"><strong>{{invoiceDto.invoice.netAmount | currency:'INR'}}</strong></td></tr>
           <tr *ngIf="invoiceDto.invoice.paidAmount"><td>Paid Amount</td><td class="text-right">{{invoiceDto.invoice.paidAmount | currency:'INR'}}</td></tr>
           <tr *ngIf="invoiceDto.invoice.dueAmount"><td>Due Amount</td><td class="text-right">{{invoiceDto.invoice.dueAmount | currency:'INR'}}</td></tr>

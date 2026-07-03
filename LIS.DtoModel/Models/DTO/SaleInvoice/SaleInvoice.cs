@@ -40,6 +40,13 @@ namespace LIS.DtoModel.Models
 
         public decimal DiscountAmount { get; set; }
 
+        /// <summary>Header discount type: "Percentage" or "Fixed Amount".</summary>
+        [MaxLength(20)]
+        public string DiscountType { get; set; }
+
+        /// <summary>Raw header discount input the user keyed in (percent when type=Percentage, else rupee value).</summary>
+        public decimal DiscountValue { get; set; }
+
         public decimal TaxAmount { get; set; }
 
         public decimal NetAmount { get; set; }
@@ -58,9 +65,6 @@ namespace LIS.DtoModel.Models
 
         [NotMapped]
         public string PaymentType { get; set; }
-
-        [NotMapped]
-        public string DiscountType { get; set; }
 
         public DateTime CreatedOn { get; set; }
 

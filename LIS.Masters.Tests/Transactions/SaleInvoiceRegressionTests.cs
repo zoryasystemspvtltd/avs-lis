@@ -46,8 +46,10 @@ namespace LIS.Masters.Tests.Transactions
             var test2 = EnsureTestWithRate(250m, out rateId2);
 
             var dto = BuildDraft(patientId,
-                new SaleInvoiceDetail { TestId = test1, Quantity = 2, Rate = 0, DiscountAmount = 5m, TaxAmount = 2m },
-                new SaleInvoiceDetail { TestId = test2, Quantity = 1, Rate = 0, TaxAmount = 10m });
+                new SaleInvoiceDetail { TestId = test1, Quantity = 2, Rate = 0, DiscountAmount = 5m },
+                new SaleInvoiceDetail { TestId = test2, Quantity = 1, Rate = 0 });
+            // Tax is entered once at the invoice level (no longer per line).
+            dto.Invoice.TaxAmount = 12m;
 
             var id = Services.SaleInvoice.Save(dto);
             var loaded = Services.SaleInvoice.GetById(id);
@@ -57,6 +59,7 @@ namespace LIS.Masters.Tests.Transactions
             Assert.AreEqual(12m, loaded.Invoice.TaxAmount);
             Assert.AreEqual(457m, loaded.Invoice.NetAmount);
             Assert.AreEqual(2, loaded.Details.Count());
+            Assert.IsTrue(loaded.Details.All(d => d.TaxAmount == 0m), "Line tax must be zero; tax is invoice-level.");
 
             Services.SaleInvoice.Cancel(id);
             Services.TestRate.Delete(new TestRateMaster { Id = rateId1 });
@@ -80,8 +83,8 @@ namespace LIS.Masters.Tests.Transactions
 
             Assert.AreEqual(400m, loaded.Invoice.GrossAmount);
             Assert.AreEqual(75m, loaded.Invoice.DiscountAmount);
-            Assert.AreEqual(20m, loaded.Invoice.TaxAmount);
-            Assert.AreEqual(345m, loaded.Invoice.NetAmount);
+            Assert.AreEqual(0m, loaded.Invoice.TaxAmount);
+            Assert.AreEqual(325m, loaded.Invoice.NetAmount);
 
             Services.SaleInvoice.Cancel(id);
             Services.TestRate.Delete(new TestRateMaster { Id = rateId });
@@ -104,8 +107,8 @@ namespace LIS.Masters.Tests.Transactions
 
             Assert.AreEqual(400m, loaded.Invoice.GrossAmount);
             Assert.AreEqual(40m, loaded.Invoice.DiscountAmount);
-            Assert.AreEqual(20m, loaded.Invoice.TaxAmount);
-            Assert.AreEqual(380m, loaded.Invoice.NetAmount);
+            Assert.AreEqual(0m, loaded.Invoice.TaxAmount);
+            Assert.AreEqual(360m, loaded.Invoice.NetAmount);
 
             Services.SaleInvoice.Cancel(id);
             Services.TestRate.Delete(new TestRateMaster { Id = rateId });
@@ -270,8 +273,11 @@ namespace LIS.Masters.Tests.Transactions
         }
 
         [TestMethod]
-        public void SaleInvoice_Rate_Master_Auto_Applies_Tax_When_Line_Tax_Zero()
+        public void SaleInvoice_Rate_Master_Tax_Is_Not_Auto_Applied()
         {
+            // Per CX request: tax must NOT be auto-calculated from the rate master.
+            // A rate carrying TaxPercent should still produce zero tax on the invoice
+            // unless an explicit line TaxAmount is supplied.
             var patientId = CreatePatient();
             var testId = CreateIsolatedTest();
             var rate = MasterTestDataBuilder.StandardRate(testId, 200m);
@@ -282,8 +288,97 @@ namespace LIS.Masters.Tests.Transactions
                 new SaleInvoiceDetail { TestId = testId, Quantity = 1, Rate = 0 }));
 
             var loaded = Services.SaleInvoice.GetById(id);
-            Assert.AreEqual(24m, loaded.Invoice.TaxAmount);
-            Assert.AreEqual(224m, loaded.Invoice.NetAmount);
+            Assert.AreEqual(0m, loaded.Invoice.TaxAmount);
+            Assert.AreEqual(200m, loaded.Invoice.NetAmount);
+
+            Services.SaleInvoice.Cancel(id);
+            Services.TestRate.Delete(new TestRateMaster { Id = rateId });
+        }
+
+        [TestMethod]
+        public void SaleInvoice_Manual_Invoice_Level_Tax_Is_Preserved()
+        {
+            // Per CX request: tax is keyed in at the invoice level and must be persisted as-is.
+            var patientId = CreatePatient();
+            var rateId = 0;
+            var testId = EnsureTestWithRate(500m, out rateId);
+            var dto = BuildDraft(patientId, new SaleInvoiceDetail { TestId = testId, Quantity = 1, Rate = 0 });
+            dto.Invoice.TaxAmount = 90m;
+
+            var id = Services.SaleInvoice.Save(dto);
+            var loaded = Services.SaleInvoice.GetById(id);
+
+            Assert.AreEqual(90m, loaded.Invoice.TaxAmount);
+            Assert.AreEqual(590m, loaded.Invoice.NetAmount);
+            Assert.IsTrue(loaded.Details.All(d => d.TaxAmount == 0m), "Tax is invoice-level; lines carry no tax.");
+
+            Services.SaleInvoice.Cancel(id);
+            Services.TestRate.Delete(new TestRateMaster { Id = rateId });
+        }
+
+        [TestMethod]
+        public void SaleInvoice_Line_Percentage_Discount_Computes_And_RoundTrips()
+        {
+            var patientId = CreatePatient();
+            var rateId = 0;
+            var testId = EnsureTestWithRate(1000m, out rateId);
+            var dto = BuildDraft(patientId,
+                new SaleInvoiceDetail { TestId = testId, Quantity = 1, Rate = 0, DiscountType = "Percentage", DiscountValue = 10m });
+
+            var id = Services.SaleInvoice.Save(dto);
+            var loaded = Services.SaleInvoice.GetById(id);
+            var line = loaded.Details.First();
+
+            Assert.AreEqual("Percentage", line.DiscountType);
+            Assert.AreEqual(10m, line.DiscountValue);
+            Assert.AreEqual(100m, line.DiscountAmount);
+            Assert.AreEqual(900m, line.NetAmount);
+            Assert.AreEqual(900m, loaded.Invoice.NetAmount);
+
+            Services.SaleInvoice.Cancel(id);
+            Services.TestRate.Delete(new TestRateMaster { Id = rateId });
+        }
+
+        [TestMethod]
+        public void SaleInvoice_Line_Fixed_Discount_Value_RoundTrips()
+        {
+            var patientId = CreatePatient();
+            var rateId = 0;
+            var testId = EnsureTestWithRate(1000m, out rateId);
+            var dto = BuildDraft(patientId,
+                new SaleInvoiceDetail { TestId = testId, Quantity = 1, Rate = 0, DiscountType = "Fixed Amount", DiscountValue = 150m });
+
+            var id = Services.SaleInvoice.Save(dto);
+            var loaded = Services.SaleInvoice.GetById(id);
+            var line = loaded.Details.First();
+
+            Assert.AreEqual("Fixed Amount", line.DiscountType);
+            Assert.AreEqual(150m, line.DiscountValue);
+            Assert.AreEqual(150m, line.DiscountAmount);
+            Assert.AreEqual(850m, line.NetAmount);
+
+            Services.SaleInvoice.Cancel(id);
+            Services.TestRate.Delete(new TestRateMaster { Id = rateId });
+        }
+
+        [TestMethod]
+        public void SaleInvoice_Header_Percentage_Discount_Uses_DiscountValue_And_RoundTrips()
+        {
+            var patientId = CreatePatient();
+            var rateId = 0;
+            var testId = EnsureTestWithRate(200m, out rateId);
+            var dto = BuildDraft(patientId, new SaleInvoiceDetail { TestId = testId, Quantity = 4, Rate = 0 });
+            dto.Invoice.DiscountType = "Percentage";
+            dto.Invoice.DiscountValue = 10m;
+
+            var id = Services.SaleInvoice.Save(dto);
+            var loaded = Services.SaleInvoice.GetById(id);
+
+            Assert.AreEqual(800m, loaded.Invoice.GrossAmount);
+            Assert.AreEqual("Percentage", loaded.Invoice.DiscountType);
+            Assert.AreEqual(10m, loaded.Invoice.DiscountValue);
+            Assert.AreEqual(80m, loaded.Invoice.DiscountAmount);
+            Assert.AreEqual(720m, loaded.Invoice.NetAmount);
 
             Services.SaleInvoice.Cancel(id);
             Services.TestRate.Delete(new TestRateMaster { Id = rateId });
@@ -313,7 +408,7 @@ namespace LIS.Masters.Tests.Transactions
 
             var edited = Services.SaleInvoice.GetById(id);
             Assert.AreEqual(invoiceNo, edited.Invoice.InvoiceNo);
-            Assert.AreEqual(305m, edited.Invoice.NetAmount);
+            Assert.AreEqual(300m, edited.Invoice.NetAmount);
 
             Services.SaleInvoice.Cancel(id);
             Services.TestRate.Delete(new TestRateMaster { Id = rateId });

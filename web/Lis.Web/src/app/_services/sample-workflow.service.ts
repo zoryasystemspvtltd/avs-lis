@@ -99,6 +99,10 @@ export class SampleWorkflowService {
     return this.http.post(`${this.baseUrl}/api/RadiologyReport/Authorize`, payload);
   }
 
+  getCurrentDoctorSignature(): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/api/Users/CurrentDoctorSignature`);
+  }
+
   createRadiologyRequest(payload: any): Observable<any> {
     return this.http.post(`${this.baseUrl}/api/RadiologyReport`, payload);
   }

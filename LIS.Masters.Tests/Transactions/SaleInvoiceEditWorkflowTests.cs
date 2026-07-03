@@ -129,9 +129,11 @@ namespace LIS.Masters.Tests.Transactions
                 },
                 Details = new List<SaleInvoiceDetail>
                 {
-                    new SaleInvoiceDetail { TestId = testId, Quantity = 2, Rate = 0, DiscountAmount = 10m, TaxAmount = 5m }
+                    new SaleInvoiceDetail { TestId = testId, Quantity = 2, Rate = 0, DiscountAmount = 10m }
                 }
             };
+            // Tax is entered once at the invoice level (no longer per line).
+            dto.Invoice.TaxAmount = 5m;
 
             var id = Services.SaleInvoice.Save(dto);
             var loaded = Services.SaleInvoice.GetById(id);
@@ -139,7 +141,8 @@ namespace LIS.Masters.Tests.Transactions
 
             Assert.AreEqual(200m, line.Rate);
             Assert.AreEqual(400m, line.Amount);
-            Assert.AreEqual(395m, line.NetAmount);
+            Assert.AreEqual(390m, line.NetAmount);
+            Assert.AreEqual(0m, line.TaxAmount);
             Assert.AreEqual(400m, loaded.Invoice.GrossAmount);
             Assert.AreEqual(10m, loaded.Invoice.DiscountAmount);
             Assert.AreEqual(5m, loaded.Invoice.TaxAmount);

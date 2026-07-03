@@ -237,7 +237,9 @@ export class TestReportComponent implements OnInit, OnDestroy {
         font-weight: 600;
       }
       .report-footer-sign { margin-top: 1.5mm; font-size: 7.5pt; }
-      .report-footer-approved { flex: 1; }
+      .report-footer-approved { flex: 1; display: flex; flex-direction: column; align-items: flex-start; }
+      .report-footer-approved-name { display: block; }
+      .report-signature-img { max-height: 12mm; max-width: 45mm; display: block; margin-bottom: 1mm; }
       .report-print-body {
         padding: 42mm var(--diag-side-margin) 19mm var(--diag-side-margin);
       }
@@ -323,7 +325,10 @@ export class TestReportComponent implements OnInit, OnDestroy {
         corporate: header.corporate ?? header.Corporate,
         collectionDate: header.collectionDate ?? header.CollectionDate,
         reportDate: header.reportDate ?? header.ReportDate,
-        approvedBy: header.approvedBy ?? header.ApprovedBy
+        approvedBy: header.approvedBy ?? header.ApprovedBy,
+        approvedByName: header.approvedByName ?? header.ApprovedByName,
+        approvedByDesignation: header.approvedByDesignation ?? header.ApprovedByDesignation,
+        approvedBySignatureImage: header.approvedBySignatureImage ?? header.ApprovedBySignatureImage
       },
       profileGroups,
       sections

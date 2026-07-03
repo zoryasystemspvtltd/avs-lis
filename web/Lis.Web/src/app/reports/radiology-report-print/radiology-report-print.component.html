@@ -85,10 +85,14 @@
       <div class="narrative-body">{{ report.recommendation }}</div>
     </section>
     <footer class="report-footer">
-      <div *ngIf="report.header.authorizedBy"><strong>Authorized by:</strong> {{ report.header.authorizedBy }}
+      <div *ngIf="report.header.authorizedBySignatureImage" class="report-signature-wrap">
+        <img [src]="report.header.authorizedBySignatureImage" class="report-signature-img" alt="Signature" />
+      </div>
+      <div *ngIf="report.header.authorizedBy"><strong>Authorized by:</strong> {{ report.header.authorizedByName || report.header.authorizedBy }}<span
+          *ngIf="report.header.authorizedByDesignation">, {{ report.header.authorizedByDesignation }}</span>
         <span *ngIf="report.header.authorizedOn"> on {{ report.header.authorizedOn | date:'dd/MM/yyyy HH:mm' }}</span>
       </div>
-      <div *ngIf="report.header.digitalSignature"><strong>Signature:</strong> {{ report.header.digitalSignature }}</div>
+      <div *ngIf="!report.header.authorizedBySignatureImage && report.header.digitalSignature"><strong>Signature:</strong> {{ report.header.digitalSignature }}</div>
       <div class="report-footer-disclaimer">Computer-generated radiology report. Results relate only to the examination performed.</div>
     </footer>
   </div>

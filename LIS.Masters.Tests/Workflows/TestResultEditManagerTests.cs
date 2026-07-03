@@ -62,6 +62,26 @@ namespace LIS.Masters.Tests.Workflows
         }
 
         [TestMethod]
+        public void Search_Combines_Criteria_With_Or_Not_And()
+        {
+            var sample = EnsureEditableSample();
+            var manager = CreateManager();
+
+            // Sample No matches, Patient Name is deliberately non-matching.
+            // With AND this would return nothing; with OR the sample must still appear.
+            var rows = manager.Search(new TestResultEditSearchOptions
+            {
+                SampleNo = sample.sampleNo,
+                PatientName = "__no_such_patient_" + Guid.NewGuid().ToString("N")
+            });
+
+            Assert.IsTrue(
+                rows.Any(r => r.SampleNo != null &&
+                    r.SampleNo.Equals(sample.sampleNo, StringComparison.OrdinalIgnoreCase)),
+                "OR search should return the sample matched by Sample No even when the Patient Name term does not match.");
+        }
+
+        [TestMethod]
         public void GetBySampleNo_Loads_Parameters_And_Allows_Edit_When_ReportGenerated()
         {
             var sample = EnsureEditableSample();

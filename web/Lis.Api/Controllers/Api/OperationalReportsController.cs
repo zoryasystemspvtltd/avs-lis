@@ -145,6 +145,7 @@ namespace Lis.Api.Controllers.Api
             try
             {
                 var report = testReportManager.GetDiagnosticTestReport(labNo, invoiceNo);
+                EnrichLabApprover(report);
                 return Ok(report);
             }
             catch (TestReportValidationException ex)
@@ -183,6 +184,7 @@ namespace Lis.Api.Controllers.Api
             try
             {
                 var report = radiologyReportManager.GetRadiologyReportForPrint(radiologyRequestId);
+                EnrichRadiologyApprover(report);
                 return Ok(report);
             }
             catch (TestReportValidationException ex)
@@ -251,6 +253,74 @@ namespace Lis.Api.Controllers.Api
         [Route("RadiologistProductivity")]
         [QAuthorize(ModuleName = "RadiologyReports", ModulePermissionTypes = ModulePermissionType.CanView)]
         public ItemList<RadiologistProductivityRow> GetRadiologistProductivity() => RunReport(reportManager.GetRadiologistProductivityReport);
+
+        /// <summary>
+        /// Resolves the approving doctor (by username/email captured at approval time)
+        /// and fills their display name, designation and inline signature image so the
+        /// printed diagnostic report shows the same signature captured in User management.
+        /// </summary>
+        private void EnrichLabApprover(DiagnosticTestReportDto report)
+        {
+            var header = report?.Header;
+            if (header == null || string.IsNullOrWhiteSpace(header.ApprovedBy))
+            {
+                return;
+            }
+
+            var user = ResolveUserByName(header.ApprovedBy);
+            if (user == null)
+            {
+                return;
+            }
+
+            header.ApprovedByName = BuildDisplayName(user, header.ApprovedBy);
+            header.ApprovedByDesignation = user.DoctorDesignation;
+            header.ApprovedBySignatureImage = DoctorSignatureStorage.GetSignatureDataUri(user.DoctorSignaturePath);
+        }
+
+        private void EnrichRadiologyApprover(DiagnosticRadiologyReportDto report)
+        {
+            var header = report?.Header;
+            if (header == null || string.IsNullOrWhiteSpace(header.AuthorizedBy))
+            {
+                return;
+            }
+
+            var user = ResolveUserByName(header.AuthorizedBy);
+            if (user == null)
+            {
+                return;
+            }
+
+            header.AuthorizedByName = BuildDisplayName(user, header.AuthorizedBy);
+            header.AuthorizedByDesignation = user.DoctorDesignation;
+            header.AuthorizedBySignatureImage = DoctorSignatureStorage.GetSignatureDataUri(user.DoctorSignaturePath);
+        }
+
+        private ApplicationUser ResolveUserByName(string userNameOrEmail)
+        {
+            var key = (userNameOrEmail ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(key))
+            {
+                return null;
+            }
+
+            try
+            {
+                return userManager.FindByName(key) ?? userManager.FindByEmail(key);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex.Message);
+                return null;
+            }
+        }
+
+        private static string BuildDisplayName(ApplicationUser user, string fallback)
+        {
+            var name = string.Format("{0} {1}", user.FirstName, user.LastName).Trim();
+            return string.IsNullOrWhiteSpace(name) ? fallback : name;
+        }
 
         private void ResolveCreatedByFilter(ReportFilterOptions options)
         {

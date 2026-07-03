@@ -78,6 +78,13 @@
   white-space: nowrap;
 }
 
+.test-report-page .report-signature-img {
+  max-height: 48px;
+  max-width: 200px;
+  display: block;
+  margin-bottom: 3px;
+}
+
 .test-report-page .report-meta-table {
   width: 100%;
   border-collapse: collapse;
@@ -250,6 +257,14 @@ body.test-report-print-mode .report-footer-sign {
 .diagnostic-report-print-doc .report-footer-approved,
 body.test-report-print-mode .report-footer-approved {
   flex: 1;
+}
+
+.diagnostic-report-print-doc .report-signature-img,
+body.test-report-print-mode .report-signature-img {
+  max-height: 12mm;
+  max-width: 45mm;
+  display: block;
+  margin-bottom: 1mm;
 }
 
 .diagnostic-report-print-doc .report-print-body,

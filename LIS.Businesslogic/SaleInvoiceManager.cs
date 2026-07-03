@@ -582,8 +582,15 @@ namespace LIS.BusinessLogic
 
         private void Recalculate(SaleInvoice header, List<SaleInvoiceDetail> lines)
         {
-            var headerDiscountInput = header?.DiscountAmount ?? 0m;
             var headerDiscountType = header?.DiscountType;
+            // Raw header discount input the user keyed in. Fall back to the persisted
+            // DiscountAmount for legacy callers that only send the computed value.
+            var headerDiscountInput = (header != null && header.DiscountValue > 0)
+                ? header.DiscountValue
+                : (header?.DiscountAmount ?? 0m);
+
+            // Tax is entered manually at the invoice level (per CX request) - never auto-derived.
+            var headerTax = header?.TaxAmount ?? 0m;
 
             foreach (var line in lines)
             {
@@ -610,30 +617,49 @@ namespace LIS.BusinessLogic
                     if (rate != null)
                     {
                         line.Rate = rate.Rate;
-                        if (line.DiscountAmount == 0 && rate.DiscountPercent > 0)
-                        {
-                            line.DiscountAmount = Math.Round(line.Rate * line.Quantity * rate.DiscountPercent / 100m, 2);
-                        }
-                        if (line.TaxAmount == 0 && rate.TaxPercent > 0)
-                        {
-                            line.TaxAmount = Math.Round(line.Rate * line.Quantity * rate.TaxPercent / 100m, 2);
-                        }
                     }
                 }
 
                 line.Amount = Math.Round(line.Rate * line.Quantity, 2);
-                line.NetAmount = Math.Round(line.Amount - line.DiscountAmount + line.TaxAmount, 2);
+
+                // Line discount: compute the rupee amount from the keyed-in type/value.
+                // Legacy callers that only set DiscountAmount (no DiscountValue/Type) are honoured as-is.
+                var lineDiscountInput = line.DiscountValue > 0 ? line.DiscountValue : line.DiscountAmount;
+                if (!string.IsNullOrWhiteSpace(line.DiscountType) || line.DiscountValue > 0)
+                {
+                    line.DiscountAmount = ComputeDiscount(line.Amount, line.DiscountType, lineDiscountInput);
+                }
+
+                // Tax is not carried at the line level; it is entered once at the invoice level.
+                line.TaxAmount = 0m;
+                line.NetAmount = Math.Round(line.Amount - line.DiscountAmount, 2);
             }
 
             header.GrossAmount = lines.Sum(l => l.Amount);
-            header.TaxAmount = lines.Sum(l => l.TaxAmount);
             header.DiscountAmount = ResolveInvoiceDiscount(
                 header.GrossAmount,
                 lines.Sum(l => l.DiscountAmount),
                 headerDiscountType,
                 headerDiscountInput);
+            header.TaxAmount = headerTax < 0 ? 0m : Math.Round(headerTax, 2);
             header.NetAmount = Math.Round(header.GrossAmount - header.DiscountAmount + header.TaxAmount, 2);
             ApplyPaymentStatus(header);
+        }
+
+        /// <summary>Resolves a discount amount in rupees from a keyed-in type and value.</summary>
+        private static decimal ComputeDiscount(decimal amount, string discountType, decimal discountInput)
+        {
+            if (discountInput <= 0)
+            {
+                return 0m;
+            }
+
+            if (string.Equals(discountType, "Percentage", StringComparison.OrdinalIgnoreCase))
+            {
+                return Math.Round(amount * discountInput / 100m, 2);
+            }
+
+            return Math.Round(discountInput, 2);
         }
 
         /// <summary>
@@ -713,6 +739,8 @@ namespace LIS.BusinessLogic
             existing.PatientId = incoming.PatientId;
             existing.GrossAmount = incoming.GrossAmount;
             existing.DiscountAmount = incoming.DiscountAmount;
+            existing.DiscountType = incoming.DiscountType;
+            existing.DiscountValue = incoming.DiscountValue;
             existing.TaxAmount = incoming.TaxAmount;
             existing.NetAmount = incoming.NetAmount;
             existing.PaidAmount = incoming.PaidAmount;
@@ -997,8 +1025,10 @@ namespace LIS.BusinessLogic
                 {
                     invoice.PaymentType = kv[1];
                 }
-                else if (kv[0] == "DiscountType")
+                else if (kv[0] == "DiscountType" && string.IsNullOrWhiteSpace(invoice.DiscountType))
                 {
+                    // Legacy backfill only: DiscountType is now a real column. Older invoices
+                    // stored it in the notes meta, so honour that when the column is empty.
                     invoice.DiscountType = kv[1];
                 }
             }
@@ -1026,10 +1056,7 @@ namespace LIS.BusinessLogic
                 parts.Add("PaymentType=" + invoice.PaymentType.Trim());
             }
 
-            if (!string.IsNullOrWhiteSpace(invoice.DiscountType))
-            {
-                parts.Add("DiscountType=" + invoice.DiscountType.Trim());
-            }
+            // DiscountType is persisted as a real column now, so it is no longer encoded into notes.
 
             if (!parts.Any())
             {

@@ -21,6 +21,7 @@ export class RadiologyDoctorApprovalComponent implements OnInit {
   selectedId: number = null;
   reportDetail: any = null;
   showDetail = false;
+  doctorSignature: { name?: string; designation?: string; signatureDataUri?: string; hasSignature?: boolean } = {};
 
   constructor(
     private workflowService: SampleWorkflowService,
@@ -30,6 +31,21 @@ export class RadiologyDoctorApprovalComponent implements OnInit {
 
   ngOnInit(): void {
     this.search();
+    this.loadDoctorSignature();
+  }
+
+  loadDoctorSignature(): void {
+    this.workflowService.getCurrentDoctorSignature().subscribe(
+      sig => {
+        this.doctorSignature = {
+          name: sig?.name ?? sig?.Name,
+          designation: sig?.designation ?? sig?.Designation,
+          signatureDataUri: sig?.signature_data_uri ?? sig?.signatureDataUri,
+          hasSignature: sig?.has_signature ?? sig?.hasSignature ?? false
+        };
+      },
+      () => { this.doctorSignature = {}; }
+    );
   }
 
   search(page: number = 1): void {
@@ -74,13 +90,14 @@ export class RadiologyDoctorApprovalComponent implements OnInit {
   }
 
   authorize(release: boolean): void {
-    if (!this.digitalSignature.trim()) {
-      this.alertService.error('Digital signature is required.');
+    const signatureText = this.buildSignatureText();
+    if (!signatureText) {
+      this.alertService.error('Your account has no name or signature configured. Contact the administrator.');
       return;
     }
     this.workflowService.authorizeRadiologyReport({
       radiologyRequestId: this.selectedId,
-      digitalSignature: this.digitalSignature,
+      digitalSignature: signatureText,
       release
     }).subscribe(
       () => {
@@ -90,6 +107,15 @@ export class RadiologyDoctorApprovalComponent implements OnInit {
       },
       err => this.alertService.error(extractApiError(err))
     );
+  }
+
+  private buildSignatureText(): string {
+    const name = (this.doctorSignature.name || '').trim();
+    const designation = (this.doctorSignature.designation || '').trim();
+    if (!name) {
+      return '';
+    }
+    return designation ? `${name}, ${designation}` : name;
   }
 
   goToPrint(): void {

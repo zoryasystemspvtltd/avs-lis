@@ -157,7 +157,10 @@ export class RadiologyReportPrintComponent implements OnInit, OnDestroy {
         reportDate: h.reportDate ?? h.ReportDate,
         authorizedBy: h.authorizedBy ?? h.AuthorizedBy,
         authorizedOn: h.authorizedOn ?? h.AuthorizedOn,
-        digitalSignature: h.digitalSignature ?? h.DigitalSignature
+        digitalSignature: h.digitalSignature ?? h.DigitalSignature,
+        authorizedByName: h.authorizedByName ?? h.AuthorizedByName,
+        authorizedByDesignation: h.authorizedByDesignation ?? h.AuthorizedByDesignation,
+        authorizedBySignatureImage: h.authorizedBySignatureImage ?? h.AuthorizedBySignatureImage
       },
       clinicalHistory: r?.clinicalHistory ?? r?.ClinicalHistory,
       findings: r?.findings ?? r?.Findings,
@@ -186,6 +189,8 @@ export class RadiologyReportPrintComponent implements OnInit, OnDestroy {
       .narrative-block h4 { margin: 0 0 6px; color: #125d74; }
       .narrative-body { white-space: pre-wrap; line-height: 1.5; }
       .report-footer { margin-top: 24px; border-top: 1px solid #ccc; padding-top: 8px; font-size: 10px; }
+      .report-signature-wrap { margin-bottom: 4px; }
+      .report-signature-img { max-height: 16mm; max-width: 55mm; display: block; }
     `;
   }
 }

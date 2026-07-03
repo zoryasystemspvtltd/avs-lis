@@ -168,14 +168,25 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
     return `(${pct}%)`;
   }
 
-  get printDiscountPercentLabel(): string {
-    const gross = +this.invoiceDto?.invoice?.grossAmount || 0;
-    const disc = +this.invoiceDto?.invoice?.discountAmount || 0;
-    if (!gross || !disc) {
+  /** For print: shows " (10%)" next to a line discount that was entered as a percentage. */
+  getLineDiscountLabel(d: any): string {
+    if (!d || (d.discountType || 'Fixed Amount') !== 'Percentage') {
       return '';
     }
-    const pct = Math.round((disc / gross) * 10000) / 100;
-    return ` (${pct}%)`;
+    const pct = +d.discountValue || 0;
+    return pct > 0 ? ` (${pct}%)` : '';
+  }
+
+  get printDiscountPercentLabel(): string {
+    const inv = this.invoiceDto?.invoice;
+    if (!inv) {
+      return '';
+    }
+    if ((inv.discountType || 'Fixed Amount') === 'Percentage') {
+      const pct = +inv.discountValue || 0;
+      return pct > 0 ? ` (${pct}%)` : '';
+    }
+    return '';
   }
 
   get isCancelled(): boolean { return this.form?.value?.invoiceStatus === 3; }
@@ -190,15 +201,21 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
         inv.invoiceDate = inv.invoiceDate ? inv.invoiceDate.substring(0, 10) : '';
         const gross = +inv.grossAmount || 0;
         const disc = +inv.discountAmount || 0;
-        let headerDiscountValue = disc;
-        if ((inv.discountType || 'Fixed Amount') === 'Percentage' && gross > 0) {
-          headerDiscountValue = Math.round((disc / gross) * 10000) / 100;
+        const discType = inv.discountType || 'Fixed Amount';
+        // Prefer the persisted raw discount input; fall back to inference for legacy rows.
+        let headerDiscountValue = +inv.discountValue || 0;
+        if (!headerDiscountValue) {
+          headerDiscountValue = disc;
+          if (discType === 'Percentage' && gross > 0) {
+            headerDiscountValue = Math.round((disc / gross) * 10000) / 100;
+          }
         }
         this.form.patchValue({
           ...inv,
           paymentType: inv.paymentType || 'Cash',
-          discountType: inv.discountType || 'Fixed Amount',
-          headerDiscountValue
+          discountType: discType,
+          headerDiscountValue,
+          taxAmount: +inv.taxAmount || 0
         });
         this.lines.clear();
         (dto.details || []).forEach(line => {
@@ -243,6 +260,7 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
       quantity: [line?.quantity || 1],
       amount: [line?.amount || 0],
       discountType: [line?.discountType || 'Fixed Amount'],
+      discountValue: [this.resolveLineDiscountValue(line)],
       discountAmount: [line?.discountAmount || 0],
       taxAmount: [line?.taxAmount || 0],
       netAmount: [line?.netAmount || 0],
@@ -250,6 +268,23 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
       testLabel: [line?.testName || '']
     }));
     this.refreshLineBillableItems(this.lines.length - 1);
+  }
+
+  /** Raw discount input for a line: the persisted discountValue, or the legacy fixed amount. */
+  private resolveLineDiscountValue(line?: any): number {
+    if (!line) { return 0; }
+    if (line.discountValue != null && +line.discountValue > 0) {
+      return +line.discountValue;
+    }
+    return +line.discountAmount || 0;
+  }
+
+  /** Computed rupee discount for a line, from its type + keyed-in value. */
+  lineDiscountAmount(i: number): number {
+    const line = this.lines.at(i)?.value;
+    if (!line) { return 0; }
+    const amount = (+line.rate || 0) * (+line.quantity || 1);
+    return this.computeDiscount(amount, line.discountType, +line.discountValue || 0);
   }
 
   removeLine(i: number) {
@@ -387,38 +422,46 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
     }
   }
 
-  onProfileChange(i: number) {
+  onProfileChange(i: number, onComplete?: () => void) {
     const line = this.lines.at(i);
     const profileId = +line.get('testProfileId').value;
-    if (!profileId) { return; }
+    if (!profileId) {
+      onComplete?.();
+      return;
+    }
 
     const duplicate = this.lines.controls.some((c, idx) =>
       idx !== i && c.value.itemType === 'profile' && +c.value.testProfileId === profileId);
     if (duplicate) {
       this.alertService.error('Profile already added to invoice');
       line.patchValue({ testProfileId: null });
+      onComplete?.();
       return;
     }
 
     this.masterService.getProfileHierarchy(profileId).subscribe(profile => {
       if (!profile || profile.isActive === false) {
         this.alertService.error('Selected profile is inactive or unavailable');
-        line.patchValue({ testProfileId: null });
+        line.patchValue({ testProfileId: null, lineItemKey: '', testId: '' });
+        onComplete?.();
         return;
       }
 
       const details = profile.profileDetails || profile.ProfileDetails || [];
-      const firstTestId = details[0]?.testId;
+      const tests = profile.tests || profile.Tests || [];
+      const firstDetail = details[0] || tests[0];
+      const firstTestId = firstDetail?.testId ?? firstDetail?.TestId;
       if (!firstTestId) {
         this.alertService.error('Profile has no tests configured');
-        line.patchValue({ testProfileId: null });
+        line.patchValue({ testProfileId: null, lineItemKey: '', testId: '' });
+        onComplete?.();
         return;
       }
 
-      const amount = +profile.packageRate || 0;
+      const amount = +profile.packageRate || +profile.PackageRate || 0;
       line.patchValue({
         testId: firstTestId,
-        rate: profile.packageRate,
+        rate: profile.packageRate ?? profile.PackageRate,
         quantity: 1,
         amount,
         discountAmount: 0,
@@ -426,6 +469,11 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
         netAmount: amount
       });
       this.recalc();
+      onComplete?.();
+    }, () => {
+      this.alertService.error('Unable to load profile details');
+      line.patchValue({ testProfileId: null, lineItemKey: '', testId: '' });
+      onComplete?.();
     });
   }
 
@@ -806,8 +854,10 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
     });
     const lineIndex = this.lines.length - 1;
     if (item.itemType === 'profile') {
-      this.onProfileChange(lineIndex);
-    } else if (item.testId) {
+      this.onProfileChange(lineIndex, () => this.closeAddLineModal());
+      return;
+    }
+    if (item.testId) {
       this.onLineTestChange(lineIndex);
     }
     this.closeAddLineModal();
@@ -1022,11 +1072,11 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
 
       const qty = line.value.quantity || 1;
       const amount = (rate.rate || 0) * qty;
-      const tax = rate.taxPercent ? Math.round(amount * rate.taxPercent) / 100 : 0;
+      // Tax is not auto-applied from the rate master (per CX request). Lines carry no tax unless explicitly set.
       const disc = rate.discountPercent ? Math.round(amount * rate.discountPercent) / 100 : 0;
       line.patchValue({
         rate: rate.rate,
-        taxAmount: tax,
+        taxAmount: 0,
         discountAmount: disc
       });
       this.recalcLine(i);
@@ -1076,9 +1126,11 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
   recalcLine(i: number) {
     const line = this.lines.at(i).value;
     const amount = (line.rate || 0) * (line.quantity || 1);
-    const discount = this.computeDiscount(amount, line.discountType, line.discountAmount);
-    const net = amount - discount + (line.taxAmount || 0);
-    this.lines.at(i).patchValue({ amount, netAmount: net }, { emitEvent: false });
+    const discount = this.computeDiscount(amount, line.discountType, +line.discountValue || 0);
+    const net = amount - discount;
+    this.lines.at(i).patchValue(
+      { amount, discountAmount: discount, taxAmount: 0, netAmount: net },
+      { emitEvent: false });
     this.recalc();
   }
 
@@ -1093,14 +1145,12 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
   }
 
   recalc(syncPaymentStatusFromPaid = false) {
-    let gross = 0, lineDisc = 0, tax = 0, net = 0;
+    let gross = 0, lineDisc = 0;
     this.lines.controls.forEach(c => {
       const v = c.value;
       const amount = (v.rate || 0) * (v.quantity || 1);
       gross += amount;
-      lineDisc += this.computeDiscount(amount, v.discountType, v.discountAmount);
-      tax += v.taxAmount || 0;
-      net += v.netAmount || 0;
+      lineDisc += this.computeDiscount(amount, v.discountType, +v.discountValue || 0);
     });
 
     const headerType = this.form.get('discountType')?.value || 'Fixed Amount';
@@ -1112,6 +1162,8 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
       totalDisc = headerDiscInput;
     }
 
+    // Tax is entered manually at the invoice level (not auto-calculated).
+    const tax = Math.max(0, +this.form.get('taxAmount')?.value || 0);
     const paid = +this.form.getRawValue().paidAmount || 0;
     const finalNet = gross - totalDisc + tax;
     const patch: Record<string, number> = {
@@ -1161,6 +1213,12 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
     this.recalc();
   }
 
+  onTaxChange(): void {
+    const tax = Math.max(0, +this.form.get('taxAmount')?.value || 0);
+    this.form.patchValue({ taxAmount: tax }, { emitEvent: false });
+    this.recalc();
+  }
+
   private readApiError(err: any): string {
     if (!err) { return 'Save failed'; }
     if (typeof err === 'string') { return err; }
@@ -1184,7 +1242,14 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
       } else if (!this.form.get('invoiceDate')?.valid) {
         this.alertService.error('Invoice date is required');
       } else {
-        this.alertService.error('Please select a test on each line');
+        const pendingProfile = (this.form.getRawValue().lines || []).some(
+          (l: any) => l.itemType === 'profile' && l.testProfileId && !l.testId
+        );
+        this.alertService.error(
+          pendingProfile
+            ? 'Profile line is still loading. Wait a moment and try again.'
+            : 'Please select a test on each line'
+        );
       }
       return;
     }
@@ -1194,7 +1259,8 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
       .filter(l => l.testId || l.testProfileId)
       .map(l => {
         const amount = (+l.rate || 0) * (+l.quantity || 1);
-        const discountAmount = this.computeDiscount(amount, l.discountType, +l.discountAmount || 0);
+        const discountValue = +l.discountValue || 0;
+        const discountAmount = this.computeDiscount(amount, l.discountType, discountValue);
         return {
           id: l.id || 0,
           testId: +l.testId,
@@ -1202,9 +1268,11 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
           rate: +l.rate,
           quantity: +l.quantity,
           amount,
+          discountType: l.discountType || 'Fixed Amount',
+          discountValue,
           discountAmount,
-          taxAmount: +l.taxAmount,
-          netAmount: amount - discountAmount + (+l.taxAmount || 0),
+          taxAmount: 0,
+          netAmount: amount - discountAmount,
           sampleNo: l.sampleNo
         };
       });
@@ -1231,6 +1299,9 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
         invoiceDate: new Date(val.invoiceDate),
         invoiceStatus: confirm ? 1 : (val.invoiceStatus || 0),
         patientId: +val.patientId,
+        discountType: val.discountType || 'Fixed Amount',
+        discountValue: +val.headerDiscountValue || 0,
+        taxAmount: Math.max(0, +val.taxAmount || 0),
         isActive: this.id ? (loadedIsActive !== false) : true
       }),
       details: lineItems

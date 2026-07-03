@@ -30,6 +30,9 @@ namespace LIS.DtoModel.Models
         public DateTime? CollectionDate { get; set; }
         public DateTime? ReportDate { get; set; }
         public string ApprovedBy { get; set; }
+        public string ApprovedByName { get; set; }
+        public string ApprovedByDesignation { get; set; }
+        public string ApprovedBySignatureImage { get; set; }
     }
 
     public class DiagnosticTestReportSection

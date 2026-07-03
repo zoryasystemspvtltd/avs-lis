@@ -1,0 +1,23 @@
+.doctor-approval-signature {
+    margin-bottom: 12px;
+}
+
+.doctor-approval-signature-box {
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 8px;
+    min-height: 70px;
+    display: flex;
+    align-items: center;
+    background: #fafafa;
+}
+
+.doctor-approval-signature-img {
+    max-height: 60px;
+    max-width: 100%;
+}
+
+.doctor-approval-signature-name {
+    margin-top: 4px;
+    font-weight: 600;
+}

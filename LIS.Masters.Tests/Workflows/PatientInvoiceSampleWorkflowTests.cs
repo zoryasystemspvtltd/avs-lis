@@ -162,6 +162,95 @@ namespace LIS.Masters.Tests.Workflows
             Services.TestRate.Delete(new TestRateMaster { Id = rateId2 });
         }
 
+        [TestMethod]
+        public void Invoice_Multiple_Tests_And_Profile_With_Different_Specimens()
+        {
+            var suffix = Guid.NewGuid().ToString("N").Substring(0, 8);
+            var patientId = Services.PatientMaster.Add(MasterTestDataBuilder.Patient(suffix));
+            var dept = Services.Department.Get().Cast<Departments>().First();
+
+            var specimens = Services.Specimen.Get().Where(s => s.IsActive).ToList();
+            var specA = specimens.First();
+            var specB = specimens.Skip(1).FirstOrDefault();
+            if (specB == null)
+            {
+                var newSpecCode = UniqueCode("SPB", 20);
+                Services.Specimen.Add(new HISSpecimenMaster
+                {
+                    Code = newSpecCode,
+                    Name = "Specimen B",
+                    IsActive = true,
+                    CreatedOn = DateTime.Now
+                });
+                specB = Services.Specimen.Get().First(s => s.Code == newSpecCode);
+            }
+
+            // Standalone tests with different specimens
+            var standaloneSerumId = (int)Services.HisTest.Add(MasterTestDataBuilder.HisTest(UniqueCode("SA"), dept.Code, specA.Code));
+            var standaloneEdtaId = (int)Services.HisTest.Add(MasterTestDataBuilder.HisTest(UniqueCode("SB"), dept.Code, specB.Code));
+            var rateA = (int)Services.TestRate.Add(MasterTestDataBuilder.StandardRate(standaloneSerumId, 120m));
+            var rateB = (int)Services.TestRate.Add(MasterTestDataBuilder.StandardRate(standaloneEdtaId, 130m));
+
+            // Profile tests with different specimens
+            var profSerumId = (int)Services.HisTest.Add(MasterTestDataBuilder.HisTest(UniqueCode("PA"), dept.Code, specA.Code));
+            var profEdtaId = (int)Services.HisTest.Add(MasterTestDataBuilder.HisTest(UniqueCode("PB"), dept.Code, specB.Code));
+            var profile = MasterTestDataBuilder.Profile(UniqueCode("PROF"), profSerumId, profEdtaId);
+            profile.PackageRate = 500m;
+            Services.TestProfile.SaveWithDetails(profile, profile.ProfileDetails);
+
+            var invoiceNo = UniqueCode("INV");
+            var dto = new SaleInvoiceDto
+            {
+                Invoice = new SaleInvoice
+                {
+                    InvoiceNo = invoiceNo,
+                    InvoiceDate = DateTime.Today,
+                    PatientId = patientId,
+                    InvoiceStatus = (int)InvoiceStatusType.Draft,
+                    PaymentStatus = (int)PaymentStatusType.Unpaid,
+                    IsActive = true
+                },
+                Details = new List<SaleInvoiceDetail>
+                {
+                    new SaleInvoiceDetail { TestId = standaloneSerumId, Quantity = 1, Rate = 0, RequestDetailId = 0 },
+                    new SaleInvoiceDetail { TestId = standaloneEdtaId, Quantity = 1, Rate = 0, RequestDetailId = 0 },
+                    new SaleInvoiceDetail { TestProfileId = profile.Id, Quantity = 1, Rate = 0, RequestDetailId = 0 }
+                }
+            };
+
+            var invoiceId = Services.SaleInvoice.Save(dto);
+            Assert.IsTrue(invoiceId > 0);
+
+            var requests = Services.Db.TestRequestDetails
+                .Where(r => r.PatientId == patientId && r.HISRequestNo == invoiceNo)
+                .ToList();
+
+            // 2 standalone + 2 profile tests = 4 requests
+            Assert.AreEqual(4, requests.Count, "Should create one request per lab test across lines and profile");
+
+            var sampleBySpecimen = requests
+                .Where(r => !string.IsNullOrWhiteSpace(r.SpecimenCode))
+                .GroupBy(r => r.SpecimenCode)
+                .ToDictionary(g => g.Key, g => g.Select(x => x.SampleNo).Distinct().ToList());
+
+            Assert.IsTrue(sampleBySpecimen.Count >= 2, "Should have requests for at least two specimen types");
+            foreach (var kv in sampleBySpecimen)
+            {
+                Assert.AreEqual(1, kv.Value.Count, $"Specimen {kv.Key} should reuse one barcode across tests");
+                Assert.IsFalse(string.IsNullOrWhiteSpace(kv.Value[0]), $"Specimen {kv.Key} must have SampleNo");
+            }
+
+            foreach (var r in requests)
+            {
+                Assert.IsFalse(string.IsNullOrWhiteSpace(r.SampleNo), "Every request must have a sample number");
+                Assert.AreEqual(ReportStatusType.New, r.ReportStatus);
+            }
+
+            Services.SaleInvoice.Cancel(invoiceId);
+            Services.TestRate.Delete(new TestRateMaster { Id = rateA });
+            Services.TestRate.Delete(new TestRateMaster { Id = rateB });
+        }
+
         private static SaleInvoiceDto BuildMinimalInvoice(string invoiceNo, long patientId, int testId)
         {
             return new SaleInvoiceDto

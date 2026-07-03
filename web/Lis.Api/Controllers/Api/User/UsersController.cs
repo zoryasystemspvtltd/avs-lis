@@ -496,6 +496,43 @@ namespace QuestionsForU.Authentication.Controllers
             userManager.Delete(user);
         }
 
+        /// <summary>
+        /// Returns the currently logged-in user's digital signature (inline image),
+        /// name and designation so approval screens can show it read-only.
+        /// </summary>
+        [HttpGet]
+        [Route("~/api/Users/CurrentDoctorSignature")]
+        public IHttpActionResult GetCurrentDoctorSignature()
+        {
+            var userId = User?.Identity?.GetUserId();
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return Unauthorized();
+            }
+
+            var user = userManager.FindById(userId);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            var name = string.Format("{0} {1}", user.FirstName, user.LastName).Trim();
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                name = user.UserName;
+            }
+
+            var signatureDataUri = DoctorSignatureStorage.GetSignatureDataUri(user.DoctorSignaturePath);
+
+            return Ok(new
+            {
+                name = name,
+                designation = user.DoctorDesignation,
+                signature_data_uri = signatureDataUri,
+                has_signature = !string.IsNullOrWhiteSpace(signatureDataUri)
+            });
+        }
+
         [HttpPost]
         [Route("~/api/Users/{id}/DoctorSignature")]
         [QAuthorize(ModuleName = "Users", ModulePermissionTypes = ModulePermissionType.CanEdit)]
