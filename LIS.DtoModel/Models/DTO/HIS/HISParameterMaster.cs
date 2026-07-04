@@ -16,7 +16,8 @@ namespace LIS.DtoModel.Models
 
         [JsonProperty("hisTestCode")]
         public string HISTestCode { get; set; }
-
+        [NotMapped]
+        public string HISTestCodeDescription { get; set; }
         [JsonProperty("hisParamCode")]
         public string HISParamCode { get; set; }
 

@@ -113,7 +113,7 @@ export const MASTER_LIST_SCHEMAS: { [key: string]: any } = {
     elements: [
       { heading: 'Param Code', fieldName: 'hisParamCode', sortable: true, width: '15%', type: 'link' },
       { heading: 'Description', fieldName: 'hisParamDescription', sortable: true, width: '30%', type: 'label' },
-      { heading: 'Test Code', fieldName: 'hisTestCode', sortable: true, width: '15%', type: 'label' },
+      { heading: 'Test Name', fieldName: 'hisTestCodeDescription', sortable: true, width: '15%', type: 'label' },
       { heading: 'Unit', fieldName: 'hisParamUnit', sortable: false, width: '12%', type: 'label' },
       { heading: 'Method', fieldName: 'hisParamMethod', sortable: false, width: '12%', type: 'label' }
     ]

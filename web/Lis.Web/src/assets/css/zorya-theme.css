@@ -115,6 +115,10 @@ a:focus {
   .qnavbar .navbar-nav.navbar-right > li {
     float: none;
   }
+
+  .container {
+        width: 100%;
+    }
 }
 
 .qnavbar .navbar-collapse {
@@ -548,6 +552,7 @@ a:focus {
   max-width: 100%;
   width: 100%;
   box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 .container-main .content.list-loading {
@@ -576,6 +581,8 @@ a:focus {
   border: none;
   padding: 0;
   box-shadow: none;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* Dashboard home — no double card on charts row */
@@ -1293,6 +1300,12 @@ body.sale-invoice-print-mode .container-main.qcontent {
     flex-direction: column;
     align-items: stretch;
   }
+}
+
+@media (min-width: 1200px) {
+  .container {
+        width: 100%;
+    }
 }
 
 @media (min-width: 1280px) {

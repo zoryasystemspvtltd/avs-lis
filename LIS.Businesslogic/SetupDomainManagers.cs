@@ -146,6 +146,7 @@ namespace LIS.BusinessLogic
             item.HISParamCode = (item.HISParamCode ?? string.Empty).Trim();
             item.HISParamDescription = (item.HISParamDescription ?? string.Empty).Trim();
             item.HISTestCode = (item.HISTestCode ?? string.Empty).Trim();
+            item.HISTestCodeDescription = (item.HISTestCodeDescription ?? string.Empty).Trim();
             item.HISParamUnit = (item.HISParamUnit ?? string.Empty).Trim();
             item.HISParamMethod = (item.HISParamMethod ?? string.Empty).Trim();
             item.LISParamCode = (item.LISParamCode ?? string.Empty).Trim();
@@ -181,6 +182,7 @@ namespace LIS.BusinessLogic
                 if (tests.TryGetValue(p.HisTestId, out var test))
                 {
                     p.HISTestCode = p.HISTestCode ?? test.HISTestCode;
+                    p.HISTestCodeDescription = p.HISTestCodeDescription ?? test.HISTestCodeDescription;
                 }
             }
         }
