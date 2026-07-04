@@ -3,7 +3,7 @@
     using System;
     using System.Data.Entity.Migrations;
     
-    public partial class fresh : DbMigration
+    public partial class Fresh : DbMigration
     {
         public override void Up()
         {
@@ -126,6 +126,8 @@
                         Zip = c.String(maxLength: 10),
                         AreaOfInterest = c.String(maxLength: 256),
                         Qualification = c.String(maxLength: 256),
+                        DoctorDesignation = c.String(maxLength: 100),
+                        DoctorSignaturePath = c.String(maxLength: 300),
                         IsBlocked = c.Boolean(nullable: false),
                         Email = c.String(maxLength: 256),
                         EmailConfirmed = c.Boolean(nullable: false),
