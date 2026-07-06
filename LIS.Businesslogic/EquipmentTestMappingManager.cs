@@ -49,18 +49,18 @@ namespace LIS.BusinessLogic
                 foreach (var test in hisTestList)
                 {
                     var mappinglist = existingmappings
-                                        .Where(p => p.HISTestCode.Equals(test.HISTestCode))
+                                        .Where(p => p.HISParamCode != null && p.HISParamCode.Equals(test.HISTestCode, StringComparison.OrdinalIgnoreCase))
                                         .GroupBy(n => new
                                         {
-                                            n.HISTestCode,
-                                            n.HISTestCodeDescription,
+                                            n.HISParamCode,
+                                            n.HISParamDescription,
                                             n.IsActive,
                                             n.EquipmentId
                                         },
                                         (k, g) => new TestPanelMapping()
                                         {
-                                            HISTestCode = k.HISTestCode,
-                                            HISTestCodeDescription = k.HISTestCodeDescription,
+                                            HISTestCode = k.HISParamCode,
+                                            HISTestCodeDescription = k.HISParamDescription,
                                             IsActive = k.IsActive,
                                             EquipmentId = k.EquipmentId,
                                             LisTests = g.Select(t => new TestNameItem()
@@ -121,20 +121,26 @@ namespace LIS.BusinessLogic
 
             foreach (var mapping in mappings)
             {
-                var hisTest = hisTestRepo.Get(p => p.HISTestCode.Equals(mapping.HISTestCode)).FirstOrDefault();
+                var hisParam = hisTestRepo.Get(p => p.HISTestCode.Equals(mapping.HISParamCode, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
                 if (mapping.Id == 0)
                 {
                     mapping.EquipmentId = equipmentId;
-                    mapping.SpecimenCode = hisTest.HISSpecimenCode;
-                    mapping.SpecimenName = hisTest.HISSpecimenName;
+                    if (hisParam != null)
+                    {
+                        mapping.SpecimenCode = hisParam.HISSpecimenCode;
+                        mapping.SpecimenName = hisParam.HISSpecimenName;
+                    }
                     repo.Add(mapping);
                 }
                 else
                 {
                     var map = repo.Get(mapping.Id);
                     map.EquipmentId = equipmentId;
-                    map.SpecimenCode = hisTest.HISSpecimenCode;
-                    map.SpecimenName = hisTest.HISSpecimenName;
+                    if (hisParam != null)
+                    {
+                        map.SpecimenCode = hisParam.HISSpecimenCode;
+                        map.SpecimenName = hisParam.HISSpecimenName;
+                    }
                     map.LISTestCode = mapping.LISTestCode;
                     map.LISTestCodeDescription = mapping.LISTestCodeDescription;
                     map.IsActive = mapping.IsActive;

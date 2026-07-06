@@ -192,9 +192,17 @@ namespace LIS.Masters.Tests.Masters
             });
             var lis = UniqueCode("LIS");
 
+            var paramCode = UniqueCode("P");
+            var paramId = (int)Services.HisParameter.Add(new HISParameterMaster
+            {
+                HISParamCode = paramCode,
+                HISParamDescription = "Param " + paramCode,
+                HisTestId = testId
+            });
+
             var mapId = (int)Services.TestMapping.Add(new TestMappingMaster
             {
-                HISTestCode = test.HISTestCode,
+                HISParamCode = paramCode,
                 LISTestCode = lis,
                 EquipmentId = equipId,
                 IsActive = true
@@ -202,15 +210,16 @@ namespace LIS.Masters.Tests.Masters
 
             var dup = new TestMappingMaster
             {
-                HISTestCode = test.HISTestCode,
+                HISParamCode = paramCode,
                 LISTestCode = lis,
                 EquipmentId = equipId,
                 IsActive = true
             };
             var ex = Assert.ThrowsException<InvalidOperationException>(() => Services.TestMapping.Add(dup));
-            Assert.AreEqual("Test Mapping already exists.", ex.Message);
+            Assert.AreEqual("Analyzer Parameter Mapping already exists.", ex.Message);
 
             Services.TestMapping.Delete(new TestMappingMaster { Id = mapId });
+            Services.HisParameter.Delete(new HISParameterMaster { Id = paramId });
             Services.Equipment.Delete(new EquipmentMaster { Id = equipId });
         }
 
@@ -227,16 +236,24 @@ namespace LIS.Masters.Tests.Masters
                 IsActive = true
             });
 
+            var paramCode = UniqueCode("P");
+            var paramId = (int)Services.HisParameter.Add(new HISParameterMaster
+            {
+                HISParamCode = paramCode,
+                HISParamDescription = "Param " + paramCode,
+                HisTestId = testId
+            });
+
             var id1 = (int)Services.TestMapping.Add(new TestMappingMaster
             {
-                HISTestCode = test.HISTestCode,
+                HISParamCode = paramCode,
                 LISTestCode = UniqueCode("LIS1"),
                 EquipmentId = equipId,
                 IsActive = true
             });
             var id2 = (int)Services.TestMapping.Add(new TestMappingMaster
             {
-                HISTestCode = test.HISTestCode,
+                HISParamCode = paramCode,
                 LISTestCode = UniqueCode("LIS2"),
                 EquipmentId = equipId,
                 IsActive = true
@@ -245,6 +262,7 @@ namespace LIS.Masters.Tests.Masters
 
             Services.TestMapping.Delete(new TestMappingMaster { Id = id1 });
             Services.TestMapping.Delete(new TestMappingMaster { Id = id2 });
+            Services.HisParameter.Delete(new HISParameterMaster { Id = paramId });
             Services.Equipment.Delete(new EquipmentMaster { Id = equipId });
         }
 

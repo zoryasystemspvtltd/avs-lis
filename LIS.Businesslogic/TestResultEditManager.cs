@@ -22,6 +22,8 @@ namespace LIS.BusinessLogic
         private readonly ModuleRepo<HISParameterRangMaster> rangeRepo;
         private readonly ModuleRepo<EquipmentMaster> equipmentRepo;
         private readonly ModuleRepo<SaleInvoice> invoiceRepo;
+        private readonly ModuleRepo<TestMappingMaster> mappingRepo;
+        private readonly ModuleRepo<TestParameterMappingMaster> testParamMappingRepo;
         private readonly ILogger logger;
         private readonly IModuleIdentity identity;
 
@@ -38,6 +40,8 @@ namespace LIS.BusinessLogic
             rangeRepo = new ModuleRepo<HISParameterRangMaster>(logger, identity, uow);
             equipmentRepo = new ModuleRepo<EquipmentMaster>(logger, identity, uow);
             invoiceRepo = new ModuleRepo<SaleInvoice>(logger, identity, uow);
+            mappingRepo = new ModuleRepo<TestMappingMaster>(logger, identity, uow);
+            testParamMappingRepo = new ModuleRepo<TestParameterMappingMaster>(logger, identity, uow);
         }
 
         public IList<TestResultEditSearchRow> Search(TestResultEditSearchOptions options)
@@ -104,8 +108,7 @@ namespace LIS.BusinessLogic
                 query = query.Where(r => predicates.Any(match => match(r)));
             }
 
-            var resultRequestIds = new HashSet<long>(
-                resultRepo.Get().Select(res => res.TestRequestId));
+            var allParams = parameterRepo.Get().ToList();
 
             var rows = query
                 .GroupBy(r => r.SampleNo ?? r.HISRequestNo)
@@ -113,7 +116,10 @@ namespace LIS.BusinessLogic
                 {
                     var first = g.OrderByDescending(x => x.Id).First();
                     patients.TryGetValue(first.PatientId, out var patient);
-                    var hasResults = g.Any(req => resultRequestIds.Contains(req.Id));
+                    var hasResults = g.Any(req => HasPersistedResults(req.Id));
+                    var canEnter = g.Any(req =>
+                        CanEditStatus(req.ReportStatus, false) &&
+                        HasEditableParameters(req.HISTestCode, allParams));
                     return new TestResultEditSearchRow
                     {
                         SampleNo = first.SampleNo ?? first.HISRequestNo,
@@ -122,7 +128,8 @@ namespace LIS.BusinessLogic
                         CollectionDate = first.SampleCollectionDate,
                         ReportStatus = (int)first.ReportStatus,
                         ReportStatusLabel = FormatReportStatus(first.ReportStatus),
-                        HasResults = hasResults
+                        HasResults = hasResults,
+                        CanEnter = canEnter
                     };
                 })
                 .OrderByDescending(r =>
@@ -170,17 +177,74 @@ namespace LIS.BusinessLogic
 
                 if (result == null)
                 {
+                    var canEdit = CanEditStatus(req.ReportStatus, isAdministrator);
+                    if (!canEdit)
+                    {
+                        continue;
+                    }
+
+                    var scaffoldParams = BuildScaffoldParameters(req.HISTestCode, patient, allParams, allRanges, canEdit);
+                    if (!scaffoldParams.Any())
+                    {
+                        continue;
+                    }
+
+                    tests.Add(new TestResultEditTestDto
+                    {
+                        TestRequestId = req.Id,
+                        TestResultId = 0,
+                        HisTestCode = req.HISTestCode,
+                        HisTestName = req.HISTestName ?? req.HISTestCode,
+                        EquipmentName = null,
+                        ReportStatus = (int)req.ReportStatus,
+                        ReportStatusLabel = FormatReportStatus(req.ReportStatus),
+                        ResultDate = null,
+                        CanEdit = canEdit,
+                        Parameters = scaffoldParams
+                    });
                     continue;
                 }
 
-                var canEdit = CanEditStatus(req.ReportStatus, isAdministrator);
+                var canEditExisting = CanEditStatus(req.ReportStatus, isAdministrator);
                 var details = detailRepo.Get(d => d.TestResultId == result.Id).ToList();
+
+                if (!details.Any())
+                {
+                    if (!canEditExisting)
+                    {
+                        continue;
+                    }
+
+                    var scaffoldParams = BuildScaffoldParameters(req.HISTestCode, patient, allParams, allRanges, canEditExisting);
+                    if (!scaffoldParams.Any())
+                    {
+                        continue;
+                    }
+
+                    equipments.TryGetValue(result.EquipmentId ?? 0, out var shellEqName);
+
+                    tests.Add(new TestResultEditTestDto
+                    {
+                        TestRequestId = req.Id,
+                        TestResultId = 0,
+                        HisTestCode = req.HISTestCode,
+                        HisTestName = req.HISTestName ?? req.HISTestCode,
+                        EquipmentName = shellEqName,
+                        ReportStatus = (int)req.ReportStatus,
+                        ReportStatusLabel = FormatReportStatus(req.ReportStatus),
+                        ResultDate = result.ResultDate,
+                        CanEdit = canEditExisting,
+                        Parameters = scaffoldParams
+                    });
+                    continue;
+                }
+
                 var testCode = !string.IsNullOrWhiteSpace(req.HISTestCode)
                     ? req.HISTestCode
                     : result.HISTestCode;
-                var paramDtos = BuildParameters(details, testCode, patient, allParams, allRanges, canEdit);
+                var paramDtos = BuildParameters(details, testCode, patient, allParams, allRanges, canEditExisting);
 
-                equipments.TryGetValue(result.EquipmentId, out var eqName);
+                equipments.TryGetValue(result.EquipmentId ?? 0, out var eqName);
 
                 tests.Add(new TestResultEditTestDto
                 {
@@ -192,14 +256,15 @@ namespace LIS.BusinessLogic
                     ReportStatus = (int)req.ReportStatus,
                     ReportStatusLabel = FormatReportStatus(req.ReportStatus),
                     ResultDate = result.ResultDate,
-                    CanEdit = canEdit,
+                    CanEdit = canEditExisting,
                     Parameters = paramDtos
                 });
             }
 
             if (!tests.Any())
             {
-                throw new InvalidOperationException("No test results found for this sample. Results may not have been received from the analyzer yet.");
+                throw new InvalidOperationException(
+                    "No editable tests found for this sample. Configure parameters for the test(s) on this sample, or check the approval status.");
             }
 
             return new TestResultEditSampleDto
@@ -218,9 +283,14 @@ namespace LIS.BusinessLogic
 
         public TestResultEditSaveResult Save(TestResultEditSaveRequest request, bool isAdministrator)
         {
-            if (request == null || request.TestResultId <= 0)
+            if (request == null)
             {
                 throw new ArgumentException("Invalid save request.");
+            }
+
+            if (request.TestResultId <= 0)
+            {
+                return CreateManualResult(request, isAdministrator);
             }
 
             var result = resultRepo.Get(request.TestResultId);
@@ -258,7 +328,7 @@ namespace LIS.BusinessLogic
                     }
 
                     var newValue = (change.ResultValue ?? string.Empty).Trim();
-                    var oldValue = detail.LISParamValue ?? string.Empty;
+                    var oldValue = detail.ParamValue ?? string.Empty;
 
                     if (string.Equals(oldValue, newValue, StringComparison.OrdinalIgnoreCase))
                     {
@@ -273,7 +343,7 @@ namespace LIS.BusinessLogic
                     auditLog.AppendFormat("[{0:dd/MM/yyyy HH:mm}] {1} edited {2}: '{3}' → '{4}'<br>",
                         now, editor, detail.LISParamCode, oldValue, newValue);
 
-                    detail.LISParamValue = newValue;
+                    detail.ParamValue = newValue;
                     detailRepo.Update(detail);
                     changed = true;
 
@@ -327,13 +397,13 @@ namespace LIS.BusinessLogic
             var list = new List<TestResultEditParameterDto>();
             foreach (var detail in details)
             {
-                var paramMaster = allParams.FirstOrDefault(p =>
-                    p.HISTestCode != null && p.HISTestCode.Equals(testCode, StringComparison.OrdinalIgnoreCase) &&
-                    (p.LISParamCode != null && p.LISParamCode.Equals(detail.LISParamCode, StringComparison.OrdinalIgnoreCase) ||
-                     p.HISParamCode != null && p.HISParamCode.Equals(detail.LISParamCode, StringComparison.OrdinalIgnoreCase)));
+                var paramMaster = ResolveParametersForTest(testCode, allParams).FirstOrDefault(p =>
+                    (p.LISParamCode != null && p.LISParamCode.Equals(detail.LISParamCode, StringComparison.OrdinalIgnoreCase)) ||
+                     p.HISParamCode != null && p.HISParamCode.Equals(detail.LISParamCode, StringComparison.OrdinalIgnoreCase) ||
+                     (detail.HISParamCode != null && p.HISParamCode != null && p.HISParamCode.Equals(detail.HISParamCode, StringComparison.OrdinalIgnoreCase)));
 
                 TestResultRangeEvaluator.Apply(
-                    detail.LISParamValue,
+                    detail.ParamValue,
                     paramMaster,
                     patient,
                     allRanges,
@@ -346,8 +416,8 @@ namespace LIS.BusinessLogic
                     DetailId = detail.Id,
                     ParameterCode = paramMaster?.HISParamCode ?? detail.LISParamCode,
                     ParameterName = paramMaster?.HISParamDescription ?? detail.LISParamCode,
-                    ResultValue = detail.LISParamValue,
-                    Unit = !string.IsNullOrWhiteSpace(detail.LISParamUnit) ? detail.LISParamUnit : paramMaster?.HISParamUnit,
+                    ResultValue = detail.ParamValue,
+                    Unit = !string.IsNullOrWhiteSpace(detail.ParamUnit) ? detail.ParamUnit : paramMaster?.HISParamUnit,
                     ReferenceRange = refRange,
                     Flag = flag,
                     IsAbnormal = isAbnormal,
@@ -357,6 +427,228 @@ namespace LIS.BusinessLogic
             }
 
             return list.OrderBy(p => p.ParameterName).ToList();
+        }
+
+        private IList<TestResultEditParameterDto> BuildScaffoldParameters(
+            string testCode,
+            PatientDetail patient,
+            List<HISParameterMaster> allParams,
+            List<HISParameterRangMaster> allRanges,
+            bool canEdit)
+        {
+            if (string.IsNullOrWhiteSpace(testCode))
+            {
+                return new List<TestResultEditParameterDto>();
+            }
+
+            var masters = ResolveParametersForTest(testCode, allParams);
+
+            var list = new List<TestResultEditParameterDto>();
+            foreach (var paramMaster in masters)
+            {
+                TestResultRangeEvaluator.Apply(
+                    string.Empty,
+                    paramMaster,
+                    patient,
+                    allRanges,
+                    out var refRange,
+                    out var flag,
+                    out var isAbnormal);
+
+                list.Add(new TestResultEditParameterDto
+                {
+                    DetailId = 0,
+                    ParameterCode = paramMaster.HISParamCode ?? paramMaster.LISParamCode,
+                    ParameterName = paramMaster.HISParamDescription ?? paramMaster.HISParamCode,
+                    ResultValue = string.Empty,
+                    Unit = paramMaster.HISParamUnit,
+                    ReferenceRange = refRange,
+                    Flag = flag,
+                    IsAbnormal = isAbnormal,
+                    Method = paramMaster.HISParamMethod,
+                    IsEditable = canEdit
+                });
+            }
+
+            return list;
+        }
+
+        private TestResultEditSaveResult CreateManualResult(TestResultEditSaveRequest request, bool isAdministrator)
+        {
+            if (request.TestRequestId <= 0)
+            {
+                throw new ArgumentException("Test request is required for new result entry.");
+            }
+
+            var testRequest = requestRepo.Get(request.TestRequestId);
+            if (testRequest == null)
+            {
+                throw new InvalidOperationException("Test request not found.");
+            }
+
+            if (!CanEditStatus(testRequest.ReportStatus, isAdministrator))
+            {
+                throw new InvalidOperationException("This result cannot be entered in the current approval status.");
+            }
+
+            var parameters = (request.Parameters ?? new List<TestResultEditParameterSaveDto>())
+                .Where(p => !string.IsNullOrWhiteSpace(p.ResultValue))
+                .ToList();
+            if (!parameters.Any())
+            {
+                throw new ArgumentException("Enter at least one parameter value before saving.");
+            }
+
+            var existing = resultRepo.Get(res => res.TestRequestId == testRequest.Id).FirstOrDefault();
+
+            var allParams = parameterRepo.Get().ToList();
+            var equipment = equipmentRepo.Get(e => e.IsActive).FirstOrDefault();
+
+            var testCode = testRequest.HISTestCode;
+            var lisTestCode = ResolveListTestCode(testCode);
+            var now = DateTime.Now;
+            var editor = identity?.ActivityMember ?? "system";
+
+            long resultId;
+            if (existing != null)
+            {
+                var hasDetails = detailRepo.Get(d => d.TestResultId == existing.Id).Any();
+                if (hasDetails)
+                {
+                    throw new InvalidOperationException("Results already exist for this test. Reload the sample and try again.");
+                }
+
+                resultId = existing.Id;
+            }
+            else
+            {
+                var testResult = new TestResult
+                {
+                    PatientId = testRequest.PatientId,
+                    HISTestCode = testCode,
+                    LISTestCode = lisTestCode,
+                    SampleNo = testRequest.SampleNo,
+                    SpecimenCode = testRequest.SpecimenCode,
+                    SpecimenName = testRequest.SpecimenName,
+                    SampleCollectionDate = testRequest.SampleCollectionDate,
+                    SampleReceivedDate = testRequest.SampleReceivedDate,
+                    TestRequestId = testRequest.Id,
+                    EquipmentId = equipment?.Id,
+                    ResultDate = now,
+                    CreatedBy = editor,
+                    CreatedOn = now
+                };
+                resultId = resultRepo.Add(testResult);
+            }
+
+            foreach (var change in parameters)
+            {
+                var paramMaster = FindParameterMaster(allParams, testCode, change.ParameterCode);
+                var paramCode = paramMaster?.LISParamCode ?? paramMaster?.HISParamCode ?? change.ParameterCode;
+                if (string.IsNullOrWhiteSpace(paramCode))
+                {
+                    throw new InvalidOperationException($"Unknown parameter code '{change.ParameterCode}'.");
+                }
+
+                detailRepo.Add(new TestResultDetails
+                {
+                    LISParamCode = paramCode,
+                    HISParamCode = paramMaster?.HISParamCode ?? change.ParameterCode,
+                    ParamValue = change.ResultValue.Trim(),
+                    ParamUnit = paramMaster?.HISParamUnit,
+                    TestResultId = resultId,
+                    CreatedBy = editor,
+                    CreatedOn = now
+                });
+            }
+
+            if (testRequest.ReportStatus == ReportStatusType.New ||
+                testRequest.ReportStatus == ReportStatusType.SentToEquipment)
+            {
+                testRequest.ReportStatus = ReportStatusType.ReportGenerated;
+            }
+
+            requestRepo.Update(testRequest);
+
+            logger.LogInfo(
+                $"TestResultEdit: Manual entry Sample={testRequest.SampleNo} TestRequestId={testRequest.Id} TestResultId={resultId} By={editor}");
+
+            return new TestResultEditSaveResult
+            {
+                Success = true,
+                Message = "Results entered successfully.",
+                ReportStatus = (int)testRequest.ReportStatus,
+                ReportStatusLabel = FormatReportStatus(testRequest.ReportStatus)
+            };
+        }
+
+        private string ResolveListTestCode(string hisTestCode)
+        {
+            return hisTestCode;
+        }
+
+        private List<HISParameterMaster> ResolveParametersForTest(string testCode, List<HISParameterMaster> allParams)
+        {
+            if (string.IsNullOrWhiteSpace(testCode) || allParams == null || !allParams.Any())
+            {
+                return new List<HISParameterMaster>();
+            }
+
+            var test = testRepo.Get()
+                .FirstOrDefault(t => t.HISTestCode != null &&
+                    t.HISTestCode.Equals(testCode.Trim(), StringComparison.OrdinalIgnoreCase));
+            if (test != null)
+            {
+                var mappedIds = testParamMappingRepo.Get(m => m.IsActive && m.HisTestId == test.Id)
+                    .Select(m => m.HisParameterId)
+                    .ToHashSet();
+                if (mappedIds.Any())
+                {
+                    return allParams
+                        .Where(p => mappedIds.Contains(p.Id))
+                        .OrderBy(p => p.HISParamDescription ?? p.HISParamCode)
+                        .ToList();
+                }
+            }
+
+            return allParams
+                .Where(p => p.HISTestCode != null &&
+                    p.HISTestCode.Equals(testCode.Trim(), StringComparison.OrdinalIgnoreCase))
+                .OrderBy(p => p.HISParamDescription ?? p.HISParamCode)
+                .ToList();
+        }
+
+        private HISParameterMaster FindParameterMaster(
+            List<HISParameterMaster> allParams,
+            string testCode,
+            string parameterCode)
+        {
+            if (string.IsNullOrWhiteSpace(testCode) || string.IsNullOrWhiteSpace(parameterCode))
+            {
+                return null;
+            }
+
+            return ResolveParametersForTest(testCode, allParams).FirstOrDefault(p =>
+                (p.HISParamCode != null && p.HISParamCode.Equals(parameterCode, StringComparison.OrdinalIgnoreCase)) ||
+                (p.LISParamCode != null && p.LISParamCode.Equals(parameterCode, StringComparison.OrdinalIgnoreCase)));
+        }
+
+        private bool HasEditableParameters(string testCode, List<HISParameterMaster> allParams)
+        {
+            return ResolveParametersForTest(testCode, allParams).Any();
+        }
+
+        private bool HasPersistedResults(long testRequestId)
+        {
+            var result = resultRepo.Get(res => res.TestRequestId == testRequestId)
+                .OrderByDescending(res => res.Id)
+                .FirstOrDefault();
+            if (result == null)
+            {
+                return false;
+            }
+
+            return detailRepo.Get(d => d.TestResultId == result.Id).Any();
         }
 
         private static bool CanEditStatus(ReportStatusType status, bool isAdministrator)

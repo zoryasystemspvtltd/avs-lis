@@ -357,9 +357,15 @@ namespace LIS.BusinessLogic
 
         private List<string> GetTestGroupName(string hISTestCode)
         {
-            var mappings = mappingRepo
-                .Get(p => p.IsActive
+            var hisParamRepo = new ModuleRepo<HISParameterMaster>(logger, identity, genericUnitOfWork);
+            var paramCodes = hisParamRepo.Get(p => p.HISTestCode != null
                     && p.HISTestCode.Equals(hISTestCode, StringComparison.OrdinalIgnoreCase))
+                .Select(p => p.HISParamCode)
+                .Where(c => !string.IsNullOrWhiteSpace(c))
+                .ToList();
+
+            var mappings = mappingRepo
+                .Get(p => p.IsActive && p.HISParamCode != null && paramCodes.Contains(p.HISParamCode))
                 .Select(q => q.GroupName)
                 .Distinct()
                 .ToList();

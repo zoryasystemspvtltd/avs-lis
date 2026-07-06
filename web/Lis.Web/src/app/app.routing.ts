@@ -115,12 +115,10 @@ const LOOKUP_FIELDS = {
     { name: 'maxValue', label: 'Max Value', type: 'number' }
   ],
   testMapping: [
-    { name: 'hisTestCode', label: 'Test Code', type: 'text' },
-    { name: 'hisTestCodeDescription', label: 'Test Description', type: 'text' },
-    { name: 'lisTestCode', label: 'LIS Test Code', type: 'text', required: true },
-    { name: 'lisTestCodeDescription', label: 'LIS Test Description', type: 'text' },
-    { name: 'specimenCode', label: 'Specimen Code', type: 'text' },
-    { name: 'specimenName', label: 'Specimen', type: 'text' },
+    { name: 'hisParamCode', label: 'HIS Param Code', type: 'text' },
+    { name: 'hisParamDescription', label: 'HIS Param Description', type: 'text' },
+    { name: 'lisTestCode', label: 'LIS Param Code', type: 'text', required: true },
+    { name: 'lisTestCodeDescription', label: 'LIS Param Description', type: 'text' },
     { name: 'isActive', label: 'Active', type: 'checkbox' }
   ],
   patient: [
@@ -150,11 +148,7 @@ const LOOKUP_FIELDS = {
     { name: 'isActive', label: 'Active', type: 'checkbox' }
   ],
   testParameter: [
-    { name: 'hisParamCode', label: 'Parameter Code', type: 'text', required: true },
-    { name: 'hisParamDescription', label: 'Parameter Name', type: 'text', required: true },
-    { name: 'hisParamUnit', label: 'Unit', type: 'text' },
-    { name: 'hisParamMethod', label: 'Method', type: 'text' },
-    { name: 'lisParamCode', label: 'LIS Param Code', type: 'text' }
+    { name: 'isActive', label: 'Active', type: 'checkbox' }
   ]
 };
 
@@ -198,8 +192,10 @@ const appRoutes: Routes = [
     { path: 'roles', component: RolesListComponent, canActivate: [AuthGuard] },
 
     { path: 'samples', component: ListRawSampleComponent, canActivate: [AuthGuard] },
-    { path: 'edit-test-results', component: EditTestResultsComponent, canActivate: [AuthGuard] },
-    { path: 'lab-result-entry', component: EditTestResultsComponent, canActivate: [AuthGuard] },
+    { path: 'lab-result-entry', redirectTo: 'samples', pathMatch: 'full' },
+    { path: 'lab-result-entry/:sampleNo', component: EditTestResultsComponent, canActivate: [AuthGuard] },
+    { path: 'edit-test-results', redirectTo: 'samples', pathMatch: 'full' },
+    { path: 'edit-test-results/:sampleNo', redirectTo: 'lab-result-entry/:sampleNo' },
     { path: 'samples/create', component: CreateSampleComponent, canActivate: [AuthGuard] },
     { path: 'samples/edit/:id', component: EditSampleComponent, canActivate: [AuthGuard] },
     { path: 'samples/:id', component: RawSampleDetailsComponent, canActivate: [AuthGuard] },
@@ -283,12 +279,13 @@ const appRoutes: Routes = [
     { path: 'his-parameter-ranges/:id', component: MasterFormComponent, data: { apiName: 'HisParameterRangeMaster', returnUrl: '/his-parameter-ranges', title: 'Parameter Range', fields: LOOKUP_FIELDS.hisParameterRange }, canActivate: [AuthGuard] },
 
     { path: 'test-mappings', component: MasterListComponent, data: { masterKey: 'testMapping' }, canActivate: [AuthGuard] },
-    { path: 'test-mappings/create', component: MasterFormComponent, data: { apiName: 'TestMappingMaster', returnUrl: '/test-mappings', title: 'Test Mapping', fields: LOOKUP_FIELDS.testMapping }, canActivate: [AuthGuard] },
-    { path: 'test-mappings/:id', component: MasterFormComponent, data: { apiName: 'TestMappingMaster', returnUrl: '/test-mappings', title: 'Test Mapping', fields: LOOKUP_FIELDS.testMapping }, canActivate: [AuthGuard] },
+    { path: 'test-mappings/create', component: MasterFormComponent, data: { apiName: 'TestMappingMaster', returnUrl: '/test-mappings', title: 'Analyzer Parameter Mapping', fields: LOOKUP_FIELDS.testMapping }, canActivate: [AuthGuard] },
+    { path: 'test-mappings/:id', component: MasterFormComponent, data: { apiName: 'TestMappingMaster', returnUrl: '/test-mappings', title: 'Analyzer Parameter Mapping', fields: LOOKUP_FIELDS.testMapping }, canActivate: [AuthGuard] },
+    { path: 'analyzer-parameter-mappings', redirectTo: 'test-mappings', pathMatch: 'full' },
 
     { path: 'test-parameters', component: MasterListComponent, data: { masterKey: 'testParameter' }, canActivate: [AuthGuard] },
-    { path: 'test-parameters/create', component: MasterFormComponent, data: { apiName: 'HisParameterMaster', returnUrl: '/test-parameters', title: 'Test Parameter Mapping', fields: LOOKUP_FIELDS.testParameter }, canActivate: [AuthGuard] },
-    { path: 'test-parameters/:id', component: MasterFormComponent, data: { apiName: 'HisParameterMaster', returnUrl: '/test-parameters', title: 'Test Parameter Mapping', fields: LOOKUP_FIELDS.testParameter }, canActivate: [AuthGuard] },
+    { path: 'test-parameters/create', component: MasterFormComponent, data: { apiName: 'TestParameterMappingMaster', returnUrl: '/test-parameters', title: 'Test Parameter Mapping', fields: LOOKUP_FIELDS.testParameter }, canActivate: [AuthGuard] },
+    { path: 'test-parameters/:id', component: MasterFormComponent, data: { apiName: 'TestParameterMappingMaster', returnUrl: '/test-parameters', title: 'Test Parameter Mapping', fields: LOOKUP_FIELDS.testParameter }, canActivate: [AuthGuard] },
 
     { path: 'patient-master', component: MasterListComponent, data: { masterKey: 'patientMaster' }, canActivate: [AuthGuard] },
     { path: 'patient-master/create', component: MasterFormComponent, data: { apiName: 'PatientMaster', returnUrl: '/patient-master', title: 'Patient', fields: LOOKUP_FIELDS.patient }, canActivate: [AuthGuard] },

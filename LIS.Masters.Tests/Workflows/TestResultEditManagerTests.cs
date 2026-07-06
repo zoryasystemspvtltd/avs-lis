@@ -133,6 +133,230 @@ namespace LIS.Masters.Tests.Workflows
         }
 
         [TestMethod]
+        public void Manual_Entry_Creates_Results_For_Sample_Without_Analyzer_Data()
+        {
+            var req = Services.Db.TestRequestDetails
+                .Where(r => r.ReportStatus == ReportStatusType.New && r.SampleNo != null)
+                .OrderByDescending(r => r.Id)
+                .FirstOrDefault(r => !Services.Db.TestResults.Any(tr => tr.TestRequestId == r.Id));
+
+            if (req == null)
+            {
+                Assert.Inconclusive("No New sample without analyzer results in database.");
+            }
+
+            var param = Services.Db.HISParameterMaster
+                .FirstOrDefault(p => p.HISTestCode == req.HISTestCode);
+
+            if (param == null)
+            {
+                var testMaster = Services.Db.HisTestMaster
+                    .FirstOrDefault(t => t.HISTestCode == req.HISTestCode);
+                if (testMaster != null)
+                {
+                    var mappedParamId = Services.Db.TestParameterMappingMaster
+                        .Where(m => m.IsActive && m.HisTestId == testMaster.Id)
+                        .Select(m => m.HisParameterId)
+                        .FirstOrDefault();
+                    if (mappedParamId > 0)
+                    {
+                        param = Services.Db.HISParameterMaster.FirstOrDefault(p => p.Id == mappedParamId);
+                    }
+                }
+            }
+
+            if (param == null)
+            {
+                Assert.Inconclusive($"No parameters configured for test {req.HISTestCode}.");
+            }
+
+            var manager = CreateManager();
+            var loaded = manager.GetBySampleNo(req.SampleNo, true);
+            var test = loaded.Tests.First(t => t.TestRequestId == req.Id);
+            Assert.AreEqual(0L, test.TestResultId);
+            Assert.IsTrue(test.Parameters.Any());
+            Assert.IsTrue(test.CanEdit);
+
+            var save = manager.Save(new TestResultEditSaveRequest
+            {
+                TestResultId = 0,
+                TestRequestId = req.Id,
+                Parameters = new[]
+                {
+                    new TestResultEditParameterSaveDto
+                    {
+                        ParameterCode = param.HISParamCode ?? param.LISParamCode,
+                        ResultValue = "12.5"
+                    }
+                }
+            }, true);
+
+            Assert.IsTrue(save.Success);
+            Assert.IsTrue(Services.Db.TestResults.Any(tr => tr.TestRequestId == req.Id));
+            var reloaded = manager.GetBySampleNo(req.SampleNo, true);
+            var savedTest = reloaded.Tests.First(t => t.TestRequestId == req.Id);
+            Assert.IsTrue(savedTest.TestResultId > 0);
+            Assert.IsTrue(savedTest.Parameters.Any(p => p.ResultValue == "12.5"));
+        }
+
+        [TestMethod]
+        public void GetBySampleNo_Scaffolds_Entry_When_Result_Shell_Has_No_Details()
+        {
+            var req = Services.Db.TestRequestDetails
+                .Where(r => r.ReportStatus == ReportStatusType.New && r.SampleNo != null)
+                .OrderByDescending(r => r.Id)
+                .FirstOrDefault(r => !Services.Db.TestResultDetails.Any(d =>
+                    Services.Db.TestResults.Any(tr => tr.TestRequestId == r.Id && tr.Id == d.TestResultId)));
+
+            if (req == null)
+            {
+                Assert.Inconclusive("No suitable sample for empty-shell entry test.");
+            }
+
+            var param = Services.Db.HISParameterMaster
+                .FirstOrDefault(p => p.HISTestCode == req.HISTestCode);
+            if (param == null)
+            {
+                var testMaster = Services.Db.HisTestMaster
+                    .FirstOrDefault(t => t.HISTestCode == req.HISTestCode);
+                if (testMaster != null)
+                {
+                    var mappedParamId = Services.Db.TestParameterMappingMaster
+                        .Where(m => m.IsActive && m.HisTestId == testMaster.Id)
+                        .Select(m => m.HisParameterId)
+                        .FirstOrDefault();
+                    if (mappedParamId > 0)
+                    {
+                        param = Services.Db.HISParameterMaster.FirstOrDefault(p => p.Id == mappedParamId);
+                    }
+                }
+            }
+
+            if (param == null)
+            {
+                Assert.Inconclusive($"No parameters configured for test {req.HISTestCode}.");
+            }
+
+            var existing = Services.Db.TestResults.FirstOrDefault(tr => tr.TestRequestId == req.Id);
+            if (existing == null)
+            {
+                existing = new LIS.DtoModel.Models.TestResult
+                {
+                    PatientId = req.PatientId,
+                    HISTestCode = req.HISTestCode,
+                    LISTestCode = req.HISTestCode,
+                    SampleNo = req.SampleNo,
+                    TestRequestId = req.Id,
+                    ResultDate = DateTime.Now,
+                    CreatedBy = "test",
+                    CreatedOn = DateTime.Now
+                };
+                Services.Db.TestResults.Add(existing);
+                Services.Db.SaveChanges();
+            }
+            else
+            {
+                var staleDetails = Services.Db.TestResultDetails.Where(d => d.TestResultId == existing.Id).ToList();
+                foreach (var detail in staleDetails)
+                {
+                    Services.Db.TestResultDetails.Remove(detail);
+                }
+                Services.Db.SaveChanges();
+            }
+
+            var manager = CreateManager();
+            var dto = manager.GetBySampleNo(req.SampleNo, true);
+            var test = dto.Tests.First(t => t.TestRequestId == req.Id);
+
+            Assert.AreEqual(0L, test.TestResultId);
+            Assert.IsTrue(test.Parameters.Any());
+            Assert.IsTrue(test.CanEdit);
+        }
+
+        [TestMethod]
+        public void Manual_Entry_Fills_Empty_Result_Shell()
+        {
+            var req = Services.Db.TestRequestDetails
+                .Where(r => r.ReportStatus == ReportStatusType.New && r.SampleNo != null)
+                .OrderByDescending(r => r.Id)
+                .FirstOrDefault();
+
+            if (req == null)
+            {
+                Assert.Inconclusive("No New sample in database.");
+            }
+
+            var param = Services.Db.HISParameterMaster
+                .FirstOrDefault(p => p.HISTestCode == req.HISTestCode);
+            if (param == null)
+            {
+                var testMaster = Services.Db.HisTestMaster
+                    .FirstOrDefault(t => t.HISTestCode == req.HISTestCode);
+                if (testMaster != null)
+                {
+                    var mappedParamId = Services.Db.TestParameterMappingMaster
+                        .Where(m => m.IsActive && m.HisTestId == testMaster.Id)
+                        .Select(m => m.HisParameterId)
+                        .FirstOrDefault();
+                    if (mappedParamId > 0)
+                    {
+                        param = Services.Db.HISParameterMaster.FirstOrDefault(p => p.Id == mappedParamId);
+                    }
+                }
+            }
+
+            if (param == null)
+            {
+                Assert.Inconclusive($"No parameters configured for test {req.HISTestCode}.");
+            }
+
+            var shell = Services.Db.TestResults.FirstOrDefault(tr => tr.TestRequestId == req.Id);
+            if (shell == null)
+            {
+                shell = new LIS.DtoModel.Models.TestResult
+                {
+                    PatientId = req.PatientId,
+                    HISTestCode = req.HISTestCode,
+                    LISTestCode = req.HISTestCode,
+                    SampleNo = req.SampleNo,
+                    TestRequestId = req.Id,
+                    ResultDate = DateTime.Now,
+                    CreatedBy = "test",
+                    CreatedOn = DateTime.Now
+                };
+                Services.Db.TestResults.Add(shell);
+                Services.Db.SaveChanges();
+            }
+            else
+            {
+                var staleDetails = Services.Db.TestResultDetails.Where(d => d.TestResultId == shell.Id).ToList();
+                foreach (var detail in staleDetails)
+                {
+                    Services.Db.TestResultDetails.Remove(detail);
+                }
+                Services.Db.SaveChanges();
+            }
+
+            var manager = CreateManager();
+            var save = manager.Save(new TestResultEditSaveRequest
+            {
+                TestResultId = 0,
+                TestRequestId = req.Id,
+                Parameters = new[]
+                {
+                    new TestResultEditParameterSaveDto
+                    {
+                        ParameterCode = param.HISParamCode ?? param.LISParamCode,
+                        ResultValue = "7.25"
+                    }
+                }
+            }, true);
+
+            Assert.IsTrue(save.Success);
+            Assert.IsTrue(Services.Db.TestResultDetails.Any(d => d.TestResultId == shell.Id && d.ParamValue == "7.25"));
+        }
+
+        [TestMethod]
         public void Save_Blocked_When_DoctorApproved()
         {
             var row = Services.Db.TestResults

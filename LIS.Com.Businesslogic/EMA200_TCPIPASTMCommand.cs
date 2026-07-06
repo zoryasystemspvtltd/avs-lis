@@ -261,8 +261,8 @@ namespace LIS.Com.Businesslogic
                                     TestResultDetails resultDetails = new TestResultDetails
                                     {
                                         LISParamCode = paramCode,
-                                        LISParamValue = field[3],
-                                        LISParamUnit = field[4]
+                                        ParamValue = field[3],
+                                        ParamUnit = field[4]
                                     };
                                     Logger.Logger.LogInstance.LogDebug("EMA200 Result processed for SampleNo " + sampleNo + " and Parameter " + paramCode);
                                     lsResult.Add(resultDetails);

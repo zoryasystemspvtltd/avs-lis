@@ -36,12 +36,6 @@
                             <tr *ngIf="hasAccess('RadiologyDoctorApprovals',63)">
                                 <td><span class="glyphicon glyphicon-ok-circle nav-icon"></span><a routerLink="/radiology-approved-reports" routerLinkActive="active-menu-link">Approved Radiology Reports</a></td>
                             </tr>
-                            <tr *ngIf="hasAccess('Reports',2) || hasAccess('Reports',4) || hasAccess('Reports',63)">
-                                <td><span class="glyphicon glyphicon-list-alt nav-icon"></span><a routerLink="/lab-result-entry" routerLinkActive="active-menu-link">Lab Result Entry</a></td>
-                            </tr>
-                            <tr *ngIf="hasAccess('Reports',2) || hasAccess('Reports',4) || hasAccess('Reports',63)">
-                                <td><span class="glyphicon glyphicon-edit nav-icon"></span><a routerLink="/edit-test-results" routerLinkActive="active-menu-link">Edit Test Results</a></td>
-                            </tr>
                             <tr *ngIf="hasAccess('Reports',63)">
                                 <td><span class="glyphicon glyphicon-filter nav-icon"></span><a routerLink="/technicianapprovals" routerLinkActive="active-menu-link">Technician's Approval</a></td>
                             </tr>
@@ -94,16 +88,15 @@
                 <div id="collapseMaster" class="panel-collapse collapse" [ngClass]="{'in': expandMaster}">
                     <div class="panel-body">
                         <table class="table">
-                            <tr *ngIf="hasAccess('Masters',63)"><td><span class="glyphicon glyphicon-th nav-icon"></span><a routerLink="/test-profiles" routerLinkActive="active-menu-link">Test Profile</a></td></tr>
                             <tr *ngIf="hasAccess('HisTest',63)"><td><span class="glyphicon glyphicon-list-alt nav-icon"></span><a routerLink="/test-master" routerLinkActive="active-menu-link">Test Master</a></td></tr>
+                            <tr *ngIf="hasAccess('Masters',63)"><td><span class="glyphicon glyphicon-th nav-icon"></span><a routerLink="/test-profiles" routerLinkActive="active-menu-link">Test Profile</a></td></tr>
                             <tr *ngIf="hasAccess('Masters',63)"><td><span class="glyphicon glyphicon-tint nav-icon"></span><a routerLink="/specimens" routerLinkActive="active-menu-link">Specimen</a></td></tr>
                             <tr *ngIf="hasAccess('TestRates',63)"><td><span class="glyphicon glyphicon-usd nav-icon"></span><a routerLink="/test-rates" routerLinkActive="active-menu-link">Test Rate</a></td></tr>
                             <tr *ngIf="hasAccess('Masters',63)"><td><span class="glyphicon glyphicon-user nav-icon"></span><a routerLink="/referral-doctors" routerLinkActive="active-menu-link">Referral Doctor</a></td></tr>
                             <tr *ngIf="hasAccess('Masters',63)"><td><span class="glyphicon glyphicon-briefcase nav-icon"></span><a routerLink="/corporates" routerLinkActive="active-menu-link">Corporate</a></td></tr>
-                            <tr *ngIf="hasAccess('Masters',63)"><td><span class="glyphicon glyphicon-random nav-icon"></span><a routerLink="/test-mappings" routerLinkActive="active-menu-link">Test Mapping</a></td></tr>
-                            <!-- Test Parameter Mapping menu hidden — covered by Parameter Master + Test Master + Test Profile -->
-                            <!-- <tr *ngIf="hasAccess('Masters',63)"><td><span class="glyphicon glyphicon-list nav-icon"></span><a routerLink="/test-parameters" routerLinkActive="active-menu-link">Test Parameter</a></td></tr> -->
                             <tr *ngIf="hasAccess('Masters',63)"><td><span class="glyphicon glyphicon-filter nav-icon"></span><a routerLink="/his-parameters" routerLinkActive="active-menu-link">Parameter Master</a></td></tr>
+                            <tr *ngIf="hasAccess('Masters',63)"><td><span class="glyphicon glyphicon-list nav-icon"></span><a routerLink="/test-parameters" routerLinkActive="active-menu-link">Test Parameter Mapping</a></td></tr>
+                            <tr *ngIf="hasAccess('Masters',63)"><td><span class="glyphicon glyphicon-random nav-icon"></span><a routerLink="/test-mappings" routerLinkActive="active-menu-link">Analyzer Parameter Mapping</a></td></tr>
                             <tr *ngIf="hasAccess('Masters',63)"><td><span class="glyphicon glyphicon-signal nav-icon"></span><a routerLink="/his-parameter-ranges" routerLinkActive="active-menu-link">Parameter Range</a></td></tr>
                         </table>
                     </div>

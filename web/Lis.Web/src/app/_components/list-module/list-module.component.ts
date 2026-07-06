@@ -89,6 +89,9 @@ export class ListModuleComponent implements OnInit, OnChanges {
     if (this.schemma.module === 'TestMappingMaster') {
       this.option.SortColumnName = 'HISTestCode';
     }
+    if (this.schemma.module === 'TestParameterMappingMaster') {
+      this.option.SortColumnName = 'HISTestCode';
+    }
     if (this.schemma.module === 'PatientMaster') {
       this.option.SortColumnName = 'Name';
     }
@@ -169,7 +172,7 @@ export class ListModuleComponent implements OnInit, OnChanges {
 
     const masterApiModules = [
       'HisTest', 'TestRate', 'SaleInvoice', 'HisParameterMaster', 'HisParameterRangeMaster',
-      'TestMappingMaster', 'PatientMaster', 'EquipmentHeartbeat', 'Department', 'Specimens'
+      'TestMappingMaster', 'TestParameterMappingMaster', 'PatientMaster', 'EquipmentHeartbeat', 'Department', 'Specimens'
     ];
     const source$ = this.shouldUseGetAll()
       ? this.masterService.getAll(this.schemma.module)
@@ -417,7 +420,7 @@ export class ListModuleComponent implements OnInit, OnChanges {
     if (acc == null) {
       const setupApiModules = ['Department', 'Specimens', 'ReferralDoctor', 'Corporate', 'TestGroup',
         'TestCategory', 'Unit', 'Method', 'SampleType', 'Container', 'TestProfile',
-        'HisParameterMaster', 'HisParameterRangeMaster', 'TestMappingMaster', 'PatientMaster'];
+        'HisParameterMaster', 'HisParameterRangeMaster', 'TestMappingMaster', 'TestParameterMappingMaster', 'PatientMaster'];
       if (setupApiModules.indexOf(module) >= 0) {
         acc = this.user.access.find(element => element.name == 'Masters');
       } else if (module === 'TestRate') {
@@ -433,7 +436,7 @@ export class ListModuleComponent implements OnInit, OnChanges {
   }
 
   private readonly inactiveHighlightModules = [
-    'HisTest', 'TestRate', 'TestMappingMaster', 'PatientMaster', 'HisParameterMaster',
+    'HisTest', 'TestRate', 'TestMappingMaster', 'TestParameterMappingMaster', 'PatientMaster', 'HisParameterMaster',
     'Specimens', 'Unit', 'Method', 'Department', 'TestProfile',
     'ReferralDoctor', 'Corporate', 'TestGroup', 'TestCategory', 'SampleType', 'Container'
   ];
@@ -473,7 +476,8 @@ export class ListModuleComponent implements OnInit, OnChanges {
       isActive: ['isActive', 'IsActive'],
       lisTestCode: ['lisTestCode', 'LISTestCode'],
       groupName: ['groupName', 'GroupName'],
-      testName: ['testName', 'TestName']
+      testName: ['testName', 'TestName'],
+      sampleNo: ['sampleNo', 'SampleNo']
     };
     const keys = aliases[fieldName] || [];
     for (const key of keys) {
@@ -498,6 +502,8 @@ export class ListModuleComponent implements OnInit, OnChanges {
     n.lisTestCode = n.lisTestCode ?? n.LISTestCode;
     n.groupName = n.groupName ?? n.GroupName;
     n.testName = n.testName ?? n.TestName;
+    n.sampleNo = n.sampleNo ?? n.SampleNo;
+    n.hisRequestNo = n.hisRequestNo ?? n.HISRequestNo ?? n.HisRequestNo;
     n.rateTypeLabel = n.rateTypeLabel ?? n.RateTypeLabel;
     if (n.isActive === undefined && n.IsActive !== undefined) {
       n.isActive = n.IsActive;

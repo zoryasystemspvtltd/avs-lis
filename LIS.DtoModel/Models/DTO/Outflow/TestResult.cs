@@ -41,7 +41,7 @@ namespace LIS.DtoModel.Models
         public virtual TestRequestDetail TestRequestDetail { get; set; }
 
         [ForeignKey("Equipment")]
-        public int EquipmentId { get; set; }
+        public int? EquipmentId { get; set; }
 
         [JsonIgnore]
         public virtual EquipmentMaster Equipment { get; set; }

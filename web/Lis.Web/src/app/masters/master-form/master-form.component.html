@@ -49,34 +49,6 @@
         </div>
       </div>
       <br *ngIf="field.type !== 'checkbox'" />
-
-      <ng-container *ngIf="isParameterMasterScreen && field.name === 'hisParamCode'">
-        <div class="row">
-          <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Test<span class="error">*</span></label></div>
-          <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
-            <ng-select
-              [items]="testRateOptions"
-              bindLabel="displayLabel"
-              bindValue="id"
-              formControlName="hisTestId"
-              placeholder="Type to search tests..."
-              [searchable]="true"
-              [clearable]="true"
-              [loading]="testRateSearchLoading"
-              [minTermLength]="0"
-              typeToSearchText="Type to filter tests..."
-              appendTo="body"
-              notFoundText="No matching tests"
-              loadingText="Loading tests..."
-              (open)="onTestRateDropdownOpen()"
-              (search)="onTestRateSearch($event)"
-              class="test-rate-test-select">
-            </ng-select>
-            <span *ngIf="submitted && f.hisTestId?.invalid" class="error">Test is required.</span>
-          </div>
-        </div>
-        <br />
-      </ng-container>
     </ng-container>
 
     <ng-container *ngIf="apiName === 'TestRate'">
@@ -151,31 +123,6 @@
       <br *ngIf="rateType === 3" />
     </ng-container>
 
-    <ng-container *ngIf="apiName === 'HisParameterMaster'">
-      <div class="row" *ngIf="isTestParameterScreen">
-        <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Test<span class="error">*</span></label></div>
-        <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
-          <select class="form-control" formControlName="hisTestId" [disabled]="!lookupsLoaded" (change)="onHisTestIdChanged()">
-            <option [ngValue]="null">-- Select Test --</option>
-            <option *ngFor="let t of tests" [ngValue]="t.id">{{t.hisTestCode}} - {{t.hisTestCodeDescription}}</option>
-          </select>
-        </div>
-      </div>
-      <br *ngIf="isTestParameterScreen" />
-      <ng-container *ngIf="isParameterPickerScreen">
-        <div class="row">
-          <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Parameter<span class="error">*</span></label></div>
-          <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
-            <select class="form-control" formControlName="hisParameterPicker" [disabled]="!lookupsLoaded" (change)="onParameterTemplateSelected()">
-              <option [ngValue]="null">-- Select Parameter --</option>
-              <option *ngFor="let p of parameterOptions" [ngValue]="p.id">{{p.hisParamCode}} - {{p.hisParamDescription}}</option>
-            </select>
-          </div>
-        </div>
-        <br />
-      </ng-container>
-    </ng-container>
-
     <ng-container *ngIf="apiName === 'HisParameterRangeMaster'">
       <div class="row">
         <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Parameter<span class="error">*</span></label></div>
@@ -191,11 +138,11 @@
 
     <ng-container *ngIf="apiName === 'TestMappingMaster'">
       <div class="row">
-        <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Test<span class="error">*</span></label></div>
+        <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Parameter<span class="error">*</span></label></div>
         <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
-          <select class="form-control" formControlName="hisTestPicker" [disabled]="!lookupsLoaded || !!id" (change)="onHisTestSelected()">
-            <option [ngValue]="null">-- Select Test --</option>
-            <option *ngFor="let t of tests" [ngValue]="t.id">{{t.hisTestCode}} - {{t.hisTestCodeDescription}}</option>
+          <select class="form-control" formControlName="hisParameterPicker" [disabled]="!lookupsLoaded || !!id" (change)="onHisParameterSelected()">
+            <option [ngValue]="null">-- Select Parameter --</option>
+            <option *ngFor="let p of hisParameters" [ngValue]="p.id">{{p.hisParamCode}} - {{p.hisParamDescription}}</option>
           </select>
         </div>
       </div>
@@ -207,6 +154,61 @@
             <option [ngValue]="null">-- Select Equipment --</option>
             <option *ngFor="let e of equipments" [ngValue]="e.id">{{e.name}} ({{e.model}})</option>
           </select>
+        </div>
+      </div>
+      <br />
+    </ng-container>
+
+    <ng-container *ngIf="apiName === 'TestParameterMappingMaster'">
+      <p *ngIf="!lookupsLoaded" class="text-muted">Loading lookups...</p>
+      <div class="row">
+        <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Test<span class="error">*</span></label></div>
+        <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
+          <ng-select
+            [items]="testParameterTestOptions"
+            bindLabel="displayLabel"
+            bindValue="id"
+            formControlName="hisTestPicker"
+            placeholder="Type to search tests..."
+            [searchable]="true"
+            [clearable]="true"
+            [loading]="testParameterTestSearchLoading"
+            [readonly]="!!id"
+            [minTermLength]="0"
+            [searchFn]="testParameterTestSearchFn"
+            typeToSearchText="Type test code or name to search..."
+            appendTo="body"
+            notFoundText="No matching tests"
+            (open)="onTestParameterTestDropdownOpen()"
+            (search)="onTestParameterTestSearch($event)"
+            (change)="onHisTestSelected()"
+            class="test-rate-test-select">
+          </ng-select>
+          <span *ngIf="submitted && !form.get('hisTestPicker')?.value" class="error">Test is required.</span>
+        </div>
+      </div>
+      <br />
+      <div class="row">
+        <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Parameter<span class="error">*</span></label></div>
+        <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
+          <ng-select
+            [items]="hisParameters"
+            bindLabel="displayLabel"
+            bindValue="id"
+            formControlName="hisParameterPicker"
+            placeholder="Type to search parameters..."
+            [searchable]="true"
+            [clearable]="true"
+            [loading]="!lookupsLoaded"
+            [readonly]="!!id"
+            [minTermLength]="0"
+            typeToSearchText="Type to filter parameters..."
+            appendTo="body"
+            notFoundText="No matching parameters"
+            (change)="onHisParameterSelected()"
+            class="test-rate-test-select">
+          </ng-select>
+          <span *ngIf="submitted && !form.get('hisParameterPicker')?.value" class="error">Parameter is required.</span>
         </div>
       </div>
       <br />

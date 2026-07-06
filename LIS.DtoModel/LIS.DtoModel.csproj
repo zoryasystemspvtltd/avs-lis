@@ -117,6 +117,7 @@
     <Compile Include="Models\DTO\HIS\HISParameterMaster.cs" />
     <Compile Include="Models\DTO\HIS\HisTestMaster.cs" />
     <Compile Include="Models\DTO\Mapping\TestMappingMaster.cs" />
+    <Compile Include="Models\DTO\Mapping\TestParameterMappingMaster.cs" />
     <Compile Include="Models\DTO\HIS\HISParameterRangMaster.cs" />
     <Compile Include="Models\DTO\Inflow\PatientDetails.cs" />
     <Compile Include="Models\DTO\Outflow\ControlResult.cs" />

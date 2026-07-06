@@ -12,8 +12,11 @@ export class ErrorInterceptor implements HttpInterceptor {
     intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
         
         return next.handle(request).pipe(catchError(err => {
-            if (err.status === 401) {
-                // auto logout if 401 response returned from api
+            const body = err?.error;
+            const privilegeMessage = typeof body === 'string' && /insufficient privilege/i.test(body);
+
+            if (err.status === 401 && !privilegeMessage) {
+                // auto logout if 401 response returned from api (not permission denial)
                 this.authenticationService.logout()
                 .subscribe(response =>{
                     location.reload(true);

@@ -139,9 +139,11 @@ namespace Lis.Api
             container.Register<IMasterCrudManager<HISParameterMaster>, HisParameterMasterManager>(Lifestyle.Scoped);
             container.Register<IMasterCrudManager<HISParameterRangMaster>, HisParameterRangeCrudManager>(Lifestyle.Scoped);
             container.Register<IMasterCrudManager<TestMappingMaster>, TestMappingCrudManager>(Lifestyle.Scoped);
+            container.Register<IMasterCrudManager<TestParameterMappingMaster>, TestParameterMappingCrudManager>(Lifestyle.Scoped);
             container.Register<HisParameterMasterManager, HisParameterMasterManager>(Lifestyle.Scoped);
             container.Register<HisParameterRangeCrudManager, HisParameterRangeCrudManager>(Lifestyle.Scoped);
             container.Register<TestMappingCrudManager, TestMappingCrudManager>(Lifestyle.Scoped);
+            container.Register<TestParameterMappingCrudManager, TestParameterMappingCrudManager>(Lifestyle.Scoped);
             container.Register<PatientMasterManager, PatientMasterManager>(Lifestyle.Scoped);
             container.Register<TestParameterCatalogManager, TestParameterCatalogManager>(Lifestyle.Scoped);
             container.Register<IHubContext<ILisClient>>(() =>

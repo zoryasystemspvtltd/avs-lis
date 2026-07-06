@@ -1,14 +1,15 @@
-import { Component } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { TestResultEditService } from '../../../_services/test-result-edit.service';
 import { AlertService } from '../../../_services/alert.service';
+import { extractApiError } from '../../../_helpers/api-error';
 
 @Component({
   selector: 'app-edit-test-results',
   templateUrl: './edit-test-results.component.html',
   styleUrls: ['./edit-test-results.component.css']
 })
-export class EditTestResultsComponent {
+export class EditTestResultsComponent implements OnInit {
   sampleNo = '';
   invoiceNo = '';
   patientName = '';
@@ -19,26 +20,34 @@ export class EditTestResultsComponent {
   loading = false;
   saving = false;
   filterError = '';
+  loadError = '';
   data: any = null;
   selectedTestIndex = 0;
+  /** True when opened directly for a sample (from Recent Samples workflow). */
+  directSampleMode = false;
 
   constructor(
     private testResultEditService: TestResultEditService,
     private alertService: AlertService,
+    private route: ActivatedRoute,
     private router: Router) { }
 
-  get isLabResultEntry(): boolean {
-    return this.router.url.indexOf('/lab-result-entry') >= 0;
+  ngOnInit(): void {
+    this.route.params.subscribe(params => {
+      const sn = (params['sampleNo'] || '').trim();
+      if (sn) {
+        this.directSampleMode = true;
+        this.loadSample(decodeURIComponent(sn));
+      }
+    });
   }
 
   get pageTitle(): string {
-    return this.isLabResultEntry ? 'Lab Result Entry' : 'Edit Test Results';
+    return 'Lab Result Entry';
   }
 
   get pageSubtitle(): string {
-    return this.isLabResultEntry
-      ? 'Search pending samples and enter laboratory results.'
-      : 'Manually correct analyzer parameter values. Changes update existing TestResults / TestResultDetails only.';
+    return 'Enter or update laboratory results for the selected sample.';
   }
 
   get selectedTest(): any {
@@ -48,11 +57,18 @@ export class EditTestResultsComponent {
     return this.data.tests[this.selectedTestIndex];
   }
 
+  /** Auto-detect entry vs edit — user does not choose the mode. */
+  isEntryMode(test: any): boolean {
+    return test && !test.testResultId;
+  }
+
   search() {
     this.filterError = '';
     this.data = null;
-    if (!this.sampleNo?.trim() && !this.invoiceNo?.trim() && !this.patientName?.trim()) {
-      this.filterError = 'Enter Sample / Lab No, Invoice No, or Patient Name to search.';
+    const hasText = !!(this.sampleNo?.trim() || this.invoiceNo?.trim() || this.patientName?.trim());
+    const hasDates = !!(this.fromDate || this.toDate);
+    if (!hasText && !hasDates) {
+      this.filterError = 'Enter at least one search criterion (Sample / Lab No, Invoice No, Patient Name, or date range).';
       return;
     }
     this.loading = true;
@@ -67,14 +83,14 @@ export class EditTestResultsComponent {
         this.searchRows = rows || [];
         this.loading = false;
         if (this.searchRows.length === 1) {
-          this.loadSample(this.searchRows[0].sampleNo);
+          this.openSample(this.searchRows[0]);
         } else if (this.searchRows.length === 0) {
           this.filterError = 'No matching samples found.';
         }
       },
       err => {
         this.loading = false;
-        this.alertService.error(this.readError(err, 'Search failed.'));
+        this.alertService.error(extractApiError(err, 'Search failed.'));
       }
     );
   }
@@ -83,30 +99,55 @@ export class EditTestResultsComponent {
     if (!row?.sampleNo) {
       return;
     }
-    if (row.hasResults === false) {
-      this.filterError = 'No analyzer results exist for this sample yet.';
+    if (!this.canOpenSample(row)) {
+      this.filterError = 'This sample cannot be edited in its current status, or no parameters are configured for its test(s).';
       return;
     }
-    this.loadSample(row.sampleNo);
+    this.router.navigate(['/lab-result-entry', encodeURIComponent(row.sampleNo)]);
+  }
+
+  canOpenSample(row: any): boolean {
+    if (!row) {
+      return false;
+    }
+    const hasResults = row.hasResults ?? row.HasResults;
+    const canEnter = row.canEnter ?? row.CanEnter;
+    if (hasResults) {
+      return true;
+    }
+    return canEnter !== false;
   }
 
   loadSample(sampleNo: string) {
     if (!sampleNo) {
+      this.loadError = 'Sample / Lab No is required.';
       return;
     }
     this.sampleNo = sampleNo;
     this.loading = true;
     this.filterError = '';
+    this.loadError = '';
     this.testResultEditService.getBySampleNo(sampleNo).subscribe(
       d => {
-        this.data = d;
+        this.data = this.normalizeSampleDto(d);
         this.selectedTestIndex = 0;
         this.loading = false;
+        if (!this.data?.tests?.length) {
+          this.loadError = 'No editable tests found for this sample. Configure Test Parameter Mapping for the test(s), or check the approval status.';
+          this.data = null;
+        } else {
+          const hasParams = this.data.tests.some((t: any) => (t.parameters || []).length > 0);
+          if (!hasParams) {
+            this.loadError = 'No parameters are configured for this sample\'s test(s). Add Test Parameter Mapping in Masters.';
+            this.data = null;
+          }
+        }
       },
       err => {
         this.loading = false;
         this.data = null;
-        this.alertService.error(this.readError(err, 'Unable to load results.'));
+        this.loadError = extractApiError(err, 'Unable to load results.');
+        this.alertService.error(this.loadError);
       }
     );
   }
@@ -117,7 +158,7 @@ export class EditTestResultsComponent {
       return;
     }
     this.searchRows = [];
-    this.loadSample(this.sampleNo.trim());
+    this.router.navigate(['/lab-result-entry', encodeURIComponent(this.sampleNo.trim())]);
   }
 
   selectTest(index: number) {
@@ -128,8 +169,6 @@ export class EditTestResultsComponent {
     if (!param || !this.selectedTest) {
       return;
     }
-    const test = this.selectedTest;
-    const patient = { age: this.data?.age, gender: this.data?.gender };
     param.flag = '';
     param.isAbnormal = false;
     const val = parseFloat(('' + param.resultValue).replace(/,/g, ''));
@@ -158,15 +197,21 @@ export class EditTestResultsComponent {
       this.alertService.error('This test result is read-only in the current approval status.');
       return;
     }
-    if (!test.testResultId) {
+    if (!test.testRequestId) {
+      return;
+    }
+    const filledParams = (test.parameters || []).filter((p: any) => (p.resultValue || '').toString().trim());
+    if (!filledParams.length) {
+      this.alertService.error('Enter at least one parameter value before saving.');
       return;
     }
     this.saving = true;
     const payload = {
-      testResultId: test.testResultId,
+      testResultId: test.testResultId || 0,
       testRequestId: test.testRequestId,
-      parameters: (test.parameters || []).map((p: any) => ({
-        detailId: p.detailId,
+      parameters: filledParams.map((p: any) => ({
+        detailId: p.detailId || 0,
+        parameterCode: p.parameterCode,
         resultValue: p.resultValue,
         remark: p.remark || ''
       }))
@@ -179,32 +224,56 @@ export class EditTestResultsComponent {
       },
       err => {
         this.saving = false;
-        this.alertService.error(this.readError(err, 'Save failed.'));
+        this.alertService.error(extractApiError(err, 'Save failed.'));
       }
     );
   }
 
-  clear() {
-    this.sampleNo = '';
-    this.invoiceNo = '';
-    this.patientName = '';
-    this.fromDate = '';
-    this.toDate = '';
-    this.searchRows = [];
-    this.data = null;
-    this.filterError = '';
+  backToSamples() {
+    this.router.navigate(['/samples']);
   }
 
-  private readError(err: any, fallback: string): string {
-    if (err?.status === 401) {
-      return 'Insufficient privilege. Your role needs Reports Edit or Authorize permission.';
-    }
-    if (typeof err?.error === 'string' && err.error.trim()) {
-      return err.error;
-    }
-    if (err?.error?.message) {
-      return err.error.message;
-    }
-    return fallback;
+  clear() {
+    this.backToSamples();
   }
+
+  private normalizeSampleDto(d: any): any {
+    if (!d) {
+      return null;
+    }
+    const tests = d.tests || d.Tests || [];
+    return {
+      ...d,
+      sampleNo: d.sampleNo ?? d.SampleNo,
+      invoiceNo: d.invoiceNo ?? d.InvoiceNo,
+      patientName: d.patientName ?? d.PatientName,
+      age: d.age ?? d.Age,
+      gender: d.gender ?? d.Gender,
+      tests: (tests || []).map((t: any) => ({
+        ...t,
+        hisTestCode: t.hisTestCode ?? t.HisTestCode,
+        hisTestName: t.hisTestName ?? t.HisTestName,
+        equipmentName: t.equipmentName ?? t.EquipmentName,
+        reportStatusLabel: t.reportStatusLabel ?? t.ReportStatusLabel,
+        resultDate: t.resultDate ?? t.ResultDate,
+        canEdit: t.canEdit ?? t.CanEdit,
+        testRequestId: t.testRequestId ?? t.TestRequestId,
+        testResultId: t.testResultId ?? t.TestResultId,
+        parameters: (t.parameters || t.Parameters || []).map((p: any) => ({
+          ...p,
+          parameterCode: p.parameterCode ?? p.ParameterCode,
+          parameterName: p.parameterName ?? p.ParameterName,
+          resultValue: p.resultValue ?? p.ResultValue,
+          unit: p.unit ?? p.Unit,
+          referenceRange: p.referenceRange ?? p.ReferenceRange,
+          flag: p.flag ?? p.Flag,
+          isAbnormal: p.isAbnormal ?? p.IsAbnormal,
+          method: p.method ?? p.Method,
+          isEditable: p.isEditable ?? p.IsEditable,
+          detailId: p.detailId ?? p.DetailId
+        }))
+      }))
+    };
+  }
+
 }

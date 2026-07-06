@@ -22,6 +22,8 @@ namespace LIS.DtoModel.Models.TestResultEdit
         public int ReportStatus { get; set; }
         public string ReportStatusLabel { get; set; }
         public bool HasResults { get; set; }
+        /// <summary>True when manual lab result entry is allowed for this sample (even if analyzer results are absent).</summary>
+        public bool CanEnter { get; set; }
     }
 
     public class TestResultEditSampleDto
@@ -75,6 +77,8 @@ namespace LIS.DtoModel.Models.TestResultEdit
     public class TestResultEditParameterSaveDto
     {
         public long DetailId { get; set; }
+        /// <summary>Parameter code when creating a new result line (DetailId = 0).</summary>
+        public string ParameterCode { get; set; }
         public string ResultValue { get; set; }
         public string Remark { get; set; }
     }

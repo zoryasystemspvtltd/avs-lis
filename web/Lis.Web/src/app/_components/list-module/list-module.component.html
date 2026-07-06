@@ -125,6 +125,10 @@
                                     <div *ngSwitchCase="'date-range'">
                                         {{item[element.otherFieldName] | date:element.format}} {{element.seperater}} {{item[element.fieldName] | date:element.format}}
                                     </div>
+                                    <div *ngSwitchCase="'link_route'">
+                                        <a *ngIf="fieldValue(item, element.linkField || element.fieldName)"
+                                           [routerLink]="['/', element.linkBase, fieldValue(item, element.linkField || element.fieldName)]">{{element.linkLabel || 'Open'}}</a>
+                                    </div>
                                     <div *ngSwitchCase="'link'">
                                         <a [routerLink]="['/',schemma.url,item.id]">{{fieldValue(item, element.fieldName)}}</a>
                                     </div>

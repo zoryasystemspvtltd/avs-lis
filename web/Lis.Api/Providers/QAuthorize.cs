@@ -20,17 +20,18 @@ namespace Lis.Api.Providers
     {
         public string ModuleName { get; set; }
 
+        /// <summary>Optional second module — user is authorized if either module grants the required permission bits.</summary>
+        public string AlternateModuleName { get; set; }
+
         public ModulePermissionType ModulePermissionTypes { get; set; }
 
         public override void OnAuthorization(HttpActionContext actionContext)
         {
             base.OnAuthorization(actionContext);
 
-            //TODO
-
             if (HttpContext.Current?.User?.Identity?.IsAuthenticated != true)
             {
-                InvalidResponse(actionContext);
+                InvalidResponse(actionContext, false);
                 return;
             }
 
@@ -42,7 +43,7 @@ namespace Lis.Api.Providers
             var identity = HttpContext.Current.User.Identity as ClaimsIdentity;
             if (identity == null)
             {
-                InvalidResponse(actionContext);
+                InvalidResponse(actionContext, false);
                 return;
             }
 
@@ -50,7 +51,7 @@ namespace Lis.Api.Providers
 
             if (modulePermisionsClaim == null)
             {
-                InvalidResponse(actionContext);
+                InvalidResponse(actionContext, true);
                 return;
             }
 
@@ -60,44 +61,52 @@ namespace Lis.Api.Providers
                     ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
                 });
 
-            
             if (rolePermission == null)
             {
-                InvalidResponse(actionContext);
+                InvalidResponse(actionContext, true);
                 return;
             }
 
-            var modulePermisions = rolePermission.Where(p => p.Name.Equals(ModuleName, StringComparison.OrdinalIgnoreCase));
-
-            if (modulePermisions == null)
+            if (IsAuthorizedForModule(rolePermission, ModuleName)
+                || (!string.IsNullOrWhiteSpace(AlternateModuleName)
+                    && IsAuthorizedForModule(rolePermission, AlternateModuleName)))
             {
-                InvalidResponse(actionContext);
                 return;
             }
 
-            var modulePermision = modulePermisions.GroupBy(item => new { item.Id, item.Name, item.Url })
-                .Select(group => new
-                {
-                    Id = group.Key.Id,
-                    Name = group.Key.Name,
-                    Url = group.Key.Url,
-                    Access = group.Aggregate(0, (acc, curr) => acc | curr.Access)
-                })
-                .First();
-
-            bool isAuthorised = (((int)this.ModulePermissionTypes & modulePermision.Access) != 0);
-
-            if (!isAuthorised)
-            {
-                InvalidResponse(actionContext);
-            }
+            InvalidResponse(actionContext, true);
         }
 
-        private void InvalidResponse(HttpActionContext actionContext)
+        private bool IsAuthorizedForModule(List<ModulePermission> rolePermission, string moduleName)
         {
-            var message = "Insufficient privilege.";
+            if (string.IsNullOrWhiteSpace(moduleName))
+            {
+                return false;
+            }
 
-            actionContext.Response = actionContext.Request.CreateResponse(HttpStatusCode.Unauthorized, message);
+            var modulePermisions = rolePermission
+                .Where(p => p.Name.Equals(moduleName, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            if (!modulePermisions.Any())
+            {
+                return false;
+            }
+
+            var access = modulePermisions
+                .GroupBy(item => new { item.Id, item.Name, item.Url })
+                .Select(group => group.Aggregate(0, (acc, curr) => acc | curr.Access))
+                .First();
+
+            return (((int)ModulePermissionTypes & access) != 0);
+        }
+
+        private void InvalidResponse(HttpActionContext actionContext, bool isAuthenticated)
+        {
+            var message = isAuthenticated ? "Insufficient privilege." : "Authentication required.";
+            var status = isAuthenticated ? HttpStatusCode.Forbidden : HttpStatusCode.Unauthorized;
+
+            actionContext.Response = actionContext.Request.CreateResponse(status, message);
             actionContext.Response.ReasonPhrase = message;
         }
     }

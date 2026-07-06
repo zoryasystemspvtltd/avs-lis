@@ -35,22 +35,22 @@ namespace LIS.BusinessLogic
 
             NormalizeParameter(item);
 
-            if (item.HisTestId <= 0)
+            if (item.HisTestId.HasValue && item.HisTestId.Value <= 0)
             {
-                throw new InvalidOperationException("Test is required.");
+                item.HisTestId = null;
             }
 
-            ValidateParameterUniqueness(item, null);
-
-            item.CreatedOn = DateTime.Now;
-            if (item.HisTestId > 0 && string.IsNullOrEmpty(item.HISTestCode))
+            if (item.HisTestId.HasValue && item.HisTestId.Value > 0 && string.IsNullOrEmpty(item.HISTestCode))
             {
-                var test = testRepo.Get(item.HisTestId);
+                var test = testRepo.Get(item.HisTestId.Value);
                 if (test != null)
                 {
                     item.HISTestCode = test.HISTestCode;
                 }
             }
+
+            ValidateParameterUniqueness(item, null);
+            item.CreatedOn = DateTime.Now;
 
             return base.Add(item);
         }
@@ -61,9 +61,9 @@ namespace LIS.BusinessLogic
 
             ValidateParameterUniqueness(item, item.Id);
 
-            if (item.HisTestId > 0)
+            if (item.HisTestId.HasValue && item.HisTestId.Value > 0)
             {
-                var test = testRepo.Get(item.HisTestId);
+                var test = testRepo.Get(item.HisTestId.Value);
                 if (test != null)
                 {
                     item.HISTestCode = test.HISTestCode;
@@ -179,7 +179,7 @@ namespace LIS.BusinessLogic
             var tests = testRepo.Get().ToDictionary(t => t.Id, t => t);
             foreach (var p in items)
             {
-                if (tests.TryGetValue(p.HisTestId, out var test))
+                if (p.HisTestId.HasValue && tests.TryGetValue(p.HisTestId.Value, out var test))
                 {
                     p.HISTestCode = p.HISTestCode ?? test.HISTestCode;
                     p.HISTestCodeDescription = p.HISTestCodeDescription ?? test.HISTestCodeDescription;
@@ -351,23 +351,23 @@ namespace LIS.BusinessLogic
     public class TestMappingCrudManager : MasterCrudManager<TestMappingMaster>, IMasterCrudManager<TestMappingMaster>
     {
         private readonly ModuleRepo<EquipmentMaster> equipmentRepo;
-        private readonly ModuleRepo<HisTestMaster> testRepo;
+        private readonly ModuleRepo<HISParameterMaster> parameterRepo;
 
         public TestMappingCrudManager(ILogger logger, IModuleIdentity identity, GenericUnitOfWork uow)
-            : base(logger, identity, uow, x => x.LISTestCode, x => x.HISTestCodeDescription, x => x.IsActive, "HISTestCode")
+            : base(logger, identity, uow, x => x.LISTestCode, x => x.HISParamDescription, x => x.IsActive, "HISParamCode")
         {
             equipmentRepo = new ModuleRepo<EquipmentMaster>(logger, identity, uow);
-            testRepo = new ModuleRepo<HisTestMaster>(logger, identity, uow);
+            parameterRepo = new ModuleRepo<HISParameterMaster>(logger, identity, uow);
         }
 
         public new long Add(TestMappingMaster item)
         {
             item.CreatedOn = DateTime.Now;
             item.CreatedBy = Identity?.ActivityMember;
-            ApplyTestMetadata(item);
+            ApplyParameterMetadata(item);
             if (ExistsDuplicate(item, null))
             {
-                throw new InvalidOperationException("Test Mapping already exists.");
+                throw new InvalidOperationException("Analyzer Parameter Mapping already exists.");
             }
 
             return base.Add(item);
@@ -375,10 +375,10 @@ namespace LIS.BusinessLogic
 
         public new void Update(TestMappingMaster item)
         {
-            ApplyTestMetadata(item);
+            ApplyParameterMetadata(item);
             if (ExistsDuplicate(item, item.Id))
             {
-                throw new InvalidOperationException("Test Mapping already exists.");
+                throw new InvalidOperationException("Analyzer Parameter Mapping already exists.");
             }
 
             base.Update(item);
@@ -419,20 +419,20 @@ namespace LIS.BusinessLogic
             {
                 var search = option.SearchText.Trim();
                 query = query.Where(m =>
-                    (m.HISTestCode != null && m.HISTestCode.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                    (m.HISParamCode != null && m.HISParamCode.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0) ||
                     (m.LISTestCode != null && m.LISTestCode.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0) ||
-                    (m.HISTestCodeDescription != null && m.HISTestCodeDescription.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0));
+                    (m.HISParamDescription != null && m.HISParamDescription.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0));
             }
 
             var list = query.ToList();
             var equipmentNames = equipmentRepo.Get().ToDictionary(e => e.Id, e => e.Name);
-            var testNames = testRepo.Get().ToDictionary(
-                t => (t.HISTestCode ?? string.Empty).Trim(),
-                t => t.HISTestCodeDescription,
+            var paramNames = parameterRepo.Get().ToDictionary(
+                p => (p.HISParamCode ?? string.Empty).Trim(),
+                p => p.HISParamDescription,
                 StringComparer.OrdinalIgnoreCase);
             foreach (var m in list)
             {
-                EnrichMappingItem(m, equipmentNames, testNames);
+                EnrichMappingItem(m, equipmentNames, paramNames);
             }
 
             result.TotalRecord = list.Count;
@@ -451,7 +451,7 @@ namespace LIS.BusinessLogic
 
         private static string ResolveMappingSortColumn(string sortColumnName)
         {
-            const string fallback = "HISTestCode";
+            const string fallback = "HISParamCode";
             if (string.IsNullOrWhiteSpace(sortColumnName))
             {
                 return fallback;
@@ -464,41 +464,31 @@ namespace LIS.BusinessLogic
             return prop != null ? prop.Name : fallback;
         }
 
-        private void ApplyTestMetadata(TestMappingMaster item)
+        private void ApplyParameterMetadata(TestMappingMaster item)
         {
-            if (item == null || string.IsNullOrWhiteSpace(item.HISTestCode))
+            if (item == null || string.IsNullOrWhiteSpace(item.HISParamCode))
             {
                 return;
             }
 
-            var test = testRepo.Get()
-                .FirstOrDefault(t => t.HISTestCode != null &&
-                    t.HISTestCode.Equals(item.HISTestCode.Trim(), StringComparison.OrdinalIgnoreCase));
-            if (test == null)
+            var param = parameterRepo.Get()
+                .FirstOrDefault(p => p.HISParamCode != null &&
+                    p.HISParamCode.Equals(item.HISParamCode.Trim(), StringComparison.OrdinalIgnoreCase));
+            if (param == null)
             {
                 return;
             }
 
-            if (string.IsNullOrWhiteSpace(item.HISTestCodeDescription))
+            if (string.IsNullOrWhiteSpace(item.HISParamDescription))
             {
-                item.HISTestCodeDescription = test.HISTestCodeDescription;
-            }
-
-            if (string.IsNullOrWhiteSpace(item.SpecimenCode))
-            {
-                item.SpecimenCode = test.HISSpecimenCode;
-            }
-
-            if (string.IsNullOrWhiteSpace(item.SpecimenName))
-            {
-                item.SpecimenName = test.HISSpecimenName;
+                item.HISParamDescription = param.HISParamDescription;
             }
         }
 
         private void EnrichMappingItem(
             TestMappingMaster m,
             Dictionary<int, string> equipmentNames = null,
-            Dictionary<string, string> testNames = null)
+            Dictionary<string, string> paramNames = null)
         {
             if (m == null)
             {
@@ -510,11 +500,11 @@ namespace LIS.BusinessLogic
                 equipmentNames = equipmentRepo.Get().ToDictionary(e => e.Id, e => e.Name);
             }
 
-            if (testNames == null)
+            if (paramNames == null)
             {
-                testNames = testRepo.Get().ToDictionary(
-                    t => (t.HISTestCode ?? string.Empty).Trim(),
-                    t => t.HISTestCodeDescription,
+                paramNames = parameterRepo.Get().ToDictionary(
+                    p => (p.HISParamCode ?? string.Empty).Trim(),
+                    p => p.HISParamDescription,
                     StringComparer.OrdinalIgnoreCase);
             }
 
@@ -523,19 +513,19 @@ namespace LIS.BusinessLogic
                 m.GroupName = name;
             }
 
-            if (string.IsNullOrWhiteSpace(m.HISTestCodeDescription) &&
-                !string.IsNullOrWhiteSpace(m.HISTestCode) &&
-                testNames.TryGetValue(m.HISTestCode.Trim(), out var testName))
+            if (string.IsNullOrWhiteSpace(m.HISParamDescription) &&
+                !string.IsNullOrWhiteSpace(m.HISParamCode) &&
+                paramNames.TryGetValue(m.HISParamCode.Trim(), out var paramName))
             {
-                m.HISTestCodeDescription = testName;
+                m.HISParamDescription = paramName;
             }
         }
 
         private bool ExistsDuplicate(TestMappingMaster item, int? excludeId)
         {
-            var histest = (item.HISTestCode ?? string.Empty).Trim();
+            var hisParam = (item.HISParamCode ?? string.Empty).Trim();
             var lisCode = (item.LISTestCode ?? string.Empty).Trim();
-            if (string.IsNullOrEmpty(histest) || string.IsNullOrEmpty(lisCode))
+            if (string.IsNullOrEmpty(hisParam) || string.IsNullOrEmpty(lisCode))
             {
                 return false;
             }
@@ -546,8 +536,128 @@ namespace LIS.BusinessLogic
                     (!excludeId.HasValue || m.Id != excludeId.Value))
                 .AsEnumerable()
                 .Any(m =>
-                    string.Equals((m.HISTestCode ?? string.Empty).Trim(), histest, StringComparison.OrdinalIgnoreCase) &&
+                    string.Equals((m.HISParamCode ?? string.Empty).Trim(), hisParam, StringComparison.OrdinalIgnoreCase) &&
                     string.Equals((m.LISTestCode ?? string.Empty).Trim(), lisCode, StringComparison.OrdinalIgnoreCase));
+        }
+    }
+
+    public class TestParameterMappingCrudManager : MasterCrudManager<TestParameterMappingMaster>, IMasterCrudManager<TestParameterMappingMaster>
+    {
+        private readonly ModuleRepo<HisTestMaster> testRepo;
+        private readonly ModuleRepo<HISParameterMaster> parameterRepo;
+
+        public TestParameterMappingCrudManager(ILogger logger, IModuleIdentity identity, GenericUnitOfWork uow)
+            : base(logger, identity, uow, x => x.HISTestCode, x => x.HISParamCode, x => x.IsActive, "HISTestCode")
+        {
+            testRepo = new ModuleRepo<HisTestMaster>(logger, identity, uow);
+            parameterRepo = new ModuleRepo<HISParameterMaster>(logger, identity, uow);
+        }
+
+        public new long Add(TestParameterMappingMaster item)
+        {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
+            if (item.HisTestId <= 0 || item.HisParameterId <= 0)
+            {
+                throw new InvalidOperationException("Test and Parameter are required.");
+            }
+
+            if (ExistsDuplicate(item, null))
+            {
+                throw new InvalidOperationException(BuildDuplicateMessage(item));
+            }
+
+            item.CreatedOn = DateTime.Now;
+            item.CreatedBy = Identity?.ActivityMember;
+            return base.Add(item);
+        }
+
+        public new void Update(TestParameterMappingMaster item)
+        {
+            if (ExistsDuplicate(item, item.Id))
+            {
+                throw new InvalidOperationException(BuildDuplicateMessage(item));
+            }
+
+            base.Update(item);
+        }
+
+        public new void Delete(TestParameterMappingMaster item)
+        {
+            var existing = Repo.Get(item.Id);
+            if (existing != null)
+            {
+                existing.IsActive = false;
+                Repo.Update(existing);
+            }
+        }
+
+        public override ItemList<TestParameterMappingMaster> Get(ListOptions option)
+        {
+            var result = base.Get(option);
+            if (result?.Items != null)
+            {
+                Enrich(result.Items);
+            }
+
+            return result;
+        }
+
+        public override TestParameterMappingMaster GetById(int id)
+        {
+            var item = base.GetById(id);
+            if (item != null)
+            {
+                Enrich(new[] { item });
+            }
+
+            return item;
+        }
+
+        private void Enrich(IEnumerable<TestParameterMappingMaster> items)
+        {
+            var tests = testRepo.Get().ToDictionary(t => t.Id, t => t);
+            var parameters = parameterRepo.Get().ToDictionary(p => p.Id, p => p);
+            foreach (var item in items)
+            {
+                if (tests.TryGetValue(item.HisTestId, out var test))
+                {
+                    item.HISTestCode = test.HISTestCode;
+                    item.HISTestCodeDescription = test.HISTestCodeDescription;
+                }
+
+                if (parameters.TryGetValue(item.HisParameterId, out var param))
+                {
+                    item.HISParamCode = param.HISParamCode;
+                    item.HISParamDescription = param.HISParamDescription;
+                }
+            }
+        }
+
+        private bool ExistsDuplicate(TestParameterMappingMaster item, int? excludeId)
+        {
+            return Repo.Get(m =>
+                    m.IsActive &&
+                    m.HisTestId == item.HisTestId &&
+                    m.HisParameterId == item.HisParameterId &&
+                    (!excludeId.HasValue || m.Id != excludeId.Value))
+                .Any();
+        }
+
+        private string BuildDuplicateMessage(TestParameterMappingMaster item)
+        {
+            var test = testRepo.Get(item.HisTestId);
+            var parameter = parameterRepo.Get(item.HisParameterId);
+            var testLabel = test != null
+                ? $"{test.HISTestCode} - {test.HISTestCodeDescription}"
+                : $"Test Id {item.HisTestId}";
+            var paramLabel = parameter != null
+                ? $"{parameter.HISParamCode} - {parameter.HISParamDescription}"
+                : $"Parameter Id {item.HisParameterId}";
+            return $"A mapping already exists for Test \"{testLabel}\" and Parameter \"{paramLabel}\".";
         }
     }
 

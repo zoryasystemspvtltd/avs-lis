@@ -33,6 +33,7 @@ namespace LIS.DataAccess
         //Equipment Master and mapping with HIS
         public virtual DbSet<EquipmentMaster> EquipmentMaster { get; set; }
         public virtual DbSet<TestMappingMaster> TestMappingMaster { get; set; }
+        public virtual DbSet<TestParameterMappingMaster> TestParameterMappingMaster { get; set; }
         public virtual DbSet<EquipmentHeartBeat> EquipmentHeartBeat { get; set; }
         public virtual DbSet<Departments> Department { get; set; }
 

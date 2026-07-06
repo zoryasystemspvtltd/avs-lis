@@ -125,8 +125,8 @@ namespace LIS.Com.Businesslogic
             }
 
             resdt.LISParamCode = paramCode;
-            resdt.LISParamValue = paramValue;
-            resdt.LISParamUnit = field[6];
+            resdt.ParamValue = paramValue;
+            resdt.ParamUnit = field[6];
 
             return resdt;
         }

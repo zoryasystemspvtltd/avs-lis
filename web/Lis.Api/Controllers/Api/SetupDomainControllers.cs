@@ -209,6 +209,69 @@ namespace Lis.Api.Controllers.Api
         public override HttpResponseMessage Delete(TestMappingMaster item) => base.Delete(item);
     }
 
+    [RoutePrefix("api/TestParameterMappingMaster")]
+    public class TestParameterMappingMasterController : MasterApiControllerBase<TestParameterMappingMaster>
+    {
+        public TestParameterMappingMasterController(TestParameterMappingCrudManager manager, IResponseManager responseManager, ILogger logger)
+            : base(manager, responseManager, logger, "Masters") { }
+
+        [HttpGet, Route(""), Route("{id:int}")]
+        public IHttpActionResult Get(int? id = null) => GetCore(id);
+
+        [HttpPost, Route("")]
+        public override HttpResponseMessage Post(TestParameterMappingMaster item)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return Request.CreateResponse(HttpStatusCode.PreconditionFailed, ModelState);
+                }
+
+                var id = Manager.Add(item);
+                var response = ResponseMgr.CreateResponse(HttpStatusCode.OK, "Record added successfully", null, id);
+                return Request.CreateResponse(HttpStatusCode.OK, response);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Request.CreateResponse(HttpStatusCode.Conflict, new { message = ex.Message });
+            }
+            catch (Exception e)
+            {
+                Logger.LogException(e);
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, e.Message);
+            }
+        }
+
+        [HttpPost, Route("Put")]
+        public override HttpResponseMessage Put(TestParameterMappingMaster item)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return Request.CreateResponse(HttpStatusCode.PreconditionFailed, ModelState);
+                }
+
+                Manager.Update(item);
+                var response = ResponseMgr.CreateResponse(HttpStatusCode.OK, "Record updated successfully", null, null);
+                return Request.CreateResponse(HttpStatusCode.OK, response);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Request.CreateResponse(HttpStatusCode.Conflict, new { message = ex.Message });
+            }
+            catch (Exception e)
+            {
+                Logger.LogException(e);
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, e.Message);
+            }
+        }
+
+        [HttpPost, Route("Delete")]
+        public override HttpResponseMessage Delete(TestParameterMappingMaster item) => base.Delete(item);
+    }
+
     [RoutePrefix("api/PatientMaster")]
     public class PatientMasterController : ApiController
     {

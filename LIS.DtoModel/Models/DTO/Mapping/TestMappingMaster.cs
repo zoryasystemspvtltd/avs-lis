@@ -12,8 +12,8 @@ namespace LIS.DtoModel.Models
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
-        public string HISTestCode { get; set; }
-        public string HISTestCodeDescription { get; set; }
+        public string HISParamCode { get; set; }
+        public string HISParamDescription { get; set; }
         public string SpecimenCode { get; set; }
         public string SpecimenName { get; set; }
         public string LISTestCode { get; set; }

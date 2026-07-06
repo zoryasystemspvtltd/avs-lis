@@ -340,11 +340,18 @@ namespace LIS.Masters.Tests.Masters
             var test = Services.HisTest.GetTestById(testId);
             var equipId = EnsureEquipmentId();
             var lisCode = UniqueCode("LIS");
+            var paramCode = UniqueCode("P");
+            var paramId = (int)Services.HisParameter.Add(new HISParameterMaster
+            {
+                HISParamCode = paramCode,
+                HISParamDescription = "Param " + paramCode,
+                HisTestId = testId
+            });
 
             var mapping = new TestMappingMaster
             {
-                HISTestCode = test.HISTestCode,
-                HISTestCodeDescription = test.HISTestCodeDescription,
+                HISParamCode = paramCode,
+                HISParamDescription = "Param " + paramCode,
                 LISTestCode = lisCode,
                 LISTestCodeDescription = "LIS " + lisCode,
                 EquipmentId = equipId,
@@ -360,7 +367,7 @@ namespace LIS.Masters.Tests.Masters
 
             var dup = new TestMappingMaster
             {
-                HISTestCode = test.HISTestCode,
+                HISParamCode = paramCode,
                 LISTestCode = lisCode,
                 EquipmentId = equipId,
                 IsActive = true
@@ -368,6 +375,7 @@ namespace LIS.Masters.Tests.Masters
             Assert.ThrowsException<InvalidOperationException>(() => Services.TestMapping.Add(dup));
 
             Services.TestMapping.Delete(new TestMappingMaster { Id = mapId });
+            Services.HisParameter.Delete(new HISParameterMaster { Id = paramId });
             Services.Equipment.Delete(new EquipmentMaster { Id = equipId });
         }
     }

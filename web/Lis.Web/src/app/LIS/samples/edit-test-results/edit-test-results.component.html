@@ -1,11 +1,13 @@
 <div class="avilis-form-page edit-test-results-page">
-  <h3><span class="glyphicon" [ngClass]="isLabResultEntry ? 'glyphicon-list-alt' : 'glyphicon-edit'"></span> {{pageTitle}}</h3>
+  <h3><span class="glyphicon glyphicon-list-alt"></span> {{pageTitle}}</h3>
   <p class="text-muted">{{pageSubtitle}}</p>
+  <alert></alert>
   <hr />
 
-  <div class="panel panel-default" *ngIf="!data">
-    <div class="panel-heading"><strong>Search</strong></div>
+  <div class="panel panel-default" *ngIf="!data && !directSampleMode">
+    <div class="panel-heading"><strong>Search Sample</strong></div>
     <div class="panel-body">
+      <p class="text-muted">Select a sample from <a routerLink="/samples">Recent Samples</a>, or search below.</p>
       <div class="row">
         <div class="col-sm-3 form-group">
           <label>Sample / Lab No</label>
@@ -31,12 +33,14 @@
         </div>
         <div class="col-sm-9 form-group" style="padding-top: 24px;">
           <button type="button" class="btn btn-primary" (click)="loadBySampleNo()" [disabled]="loading">
-            <span class="glyphicon glyphicon-search"></span> Load by Sample No
+            <span class="glyphicon glyphicon-search"></span> Open Sample
           </button>
           <button type="button" class="btn btn-default" (click)="search()" [disabled]="loading" style="margin-left: 8px;">
             Advanced Search
           </button>
-          <button type="button" class="btn btn-default" (click)="clear()" [disabled]="loading" style="margin-left: 8px;">Reset</button>
+          <button type="button" class="btn btn-default" (click)="backToSamples()" [disabled]="loading" style="margin-left: 8px;">
+            Recent Samples
+          </button>
         </div>
       </div>
       <p class="text-danger" *ngIf="filterError">{{ filterError }}</p>
@@ -64,8 +68,8 @@
             <td>{{ row.hasResults ? 'Yes' : 'No' }}</td>
             <td>
               <button type="button" class="btn btn-xs btn-primary" (click)="openSample(row)"
-                [disabled]="!row.hasResults">
-                Open
+                [disabled]="!canOpenSample(row)">
+                {{ row.hasResults ? 'Edit' : 'Enter' }}
               </button>
             </td>
           </tr>
@@ -74,11 +78,18 @@
     </div>
   </div>
 
+  <p *ngIf="directSampleMode && loading && !data"><span class="glyphicon glyphicon-refresh glyphicon-spin"></span> Loading sample...</p>
+  <div class="alert alert-danger" *ngIf="directSampleMode && !loading && !data && loadError">
+    {{ loadError }}
+    <button type="button" class="btn btn-default btn-sm" style="margin-left: 12px;" (click)="backToSamples()">Back to Recent Samples</button>
+  </div>
+  <p class="text-danger" *ngIf="directSampleMode && filterError">{{ filterError }}</p>
+
   <div *ngIf="data">
     <div class="panel panel-info">
       <div class="panel-heading">
         <strong>Sample Header</strong>
-        <button type="button" class="btn btn-xs btn-default pull-right" (click)="clear()">New Search</button>
+        <button type="button" class="btn btn-xs btn-default pull-right" (click)="backToSamples()">Back to Recent Samples</button>
       </div>
       <div class="panel-body">
         <div class="row">
@@ -105,7 +116,7 @@
       <div class="panel-body">
         <div class="row" style="margin-bottom: 12px;">
           <div class="col-sm-3"><label>Test Code</label><div>{{ selectedTest.hisTestCode }}</div></div>
-          <div class="col-sm-3"><label>Equipment</label><div>{{ selectedTest.equipmentName }}</div></div>
+          <div class="col-sm-3"><label>Equipment</label><div>{{ selectedTest.equipmentName || '—' }}</div></div>
           <div class="col-sm-3"><label>Result Date</label><div>{{ selectedTest.resultDate | date:'dd/MM/yyyy HH:mm' }}</div></div>
           <div class="col-sm-3"><label>Status</label><div>{{ selectedTest.reportStatusLabel }}</div></div>
         </div>
@@ -144,7 +155,7 @@
           Editing is not allowed for this approval status. Doctor-approved results cannot be modified.
         </p>
         <button type="button" class="btn btn-primary" (click)="save()" [disabled]="saving || !selectedTest.canEdit">
-          <span class="glyphicon glyphicon-floppy-disk"></span> Save Changes
+          <span class="glyphicon glyphicon-floppy-disk"></span> Save Results
         </button>
         <button type="button" class="btn btn-default" (click)="loadSample(data.sampleNo)" [disabled]="saving" style="margin-left: 8px;">
           Reload

@@ -312,8 +312,8 @@ namespace LIS.Businesslogic
                                             res.ReviewDate,
                                             res.ReviewedBy,
                                             det.LISParamCode,
-                                            det.LISParamValue,
-                                            det.LISParamUnit
+                                            det.ParamValue,
+                                            det.ParamUnit
                                         }
                                     )
                                     .GroupBy(t => new { t.TestRequestId, t.ReportStatus, t.ReviewDate, t.ReviewedBy })
@@ -327,8 +327,8 @@ namespace LIS.Businesslogic
                                         TestValues = group.Select(v => new TestValues()
                                         {
                                             LISParamCode = v.LISParamCode,
-                                            ParamValue = v.LISParamValue,
-                                            ParamUnit = v.LISParamUnit,
+                                            ParamValue = v.ParamValue,
+                                            ParamUnit = v.ParamUnit,
                                         })
                                     }).ToList();
 
@@ -356,7 +356,7 @@ namespace LIS.Businesslogic
                     var paramMap = testMap.Where(m => m.LISTestCode.Equals(result.LISTestCode, StringComparison.OrdinalIgnoreCase))
                         .Join(parameterMapRepo.Get(p => p.HISTestCode.Equals(result.HISTestCode, StringComparison.OrdinalIgnoreCase)
                         && p.LISParamCode.Equals(item.LISParamCode, StringComparison.OrdinalIgnoreCase)),
-                          map => map.HISTestCode,        // Select the primary key (the first part of the "on" clause in an sql "join" statement)
+                          map => map.HISParamCode,        // Select the primary key (the first part of the "on" clause in an sql "join" statement)
                           param => param.HISTestCode,   // Select the foreign key (the second part of the "on" clause)
                           (map, para) => new { para.HISParamCode, para.HISParamDescription, para.Id, para.HISParamUnit }) // selection
                                                                                                                           //.Join(parameteRangeRepo.Get(p => p.Id > 0),
@@ -415,7 +415,9 @@ namespace LIS.Businesslogic
                 return null;
             }
 
-            var testMap = mappingRepo.Get(p => p.HISTestCode.Equals(testResult.HISTestCode, StringComparison.OrdinalIgnoreCase)
+            var testMap = mappingRepo.Get(p => p.HISParamCode != null
+                && parameterMapRepo.Get(param => param.HISTestCode.Equals(testResult.HISTestCode, StringComparison.OrdinalIgnoreCase)
+                    && param.HISParamCode.Equals(p.HISParamCode, StringComparison.OrdinalIgnoreCase)).Any()
                 && p.EquipmentId == testResult.EquipmentId).FirstOrDefault();
 
             var departmentname = testRepo.Get(t => t.HISTestCode.Equals(testResult.HISTestCode, StringComparison.OrdinalIgnoreCase))
@@ -435,7 +437,7 @@ namespace LIS.Businesslogic
                     PatientName = testResult.Patient.Name,
                     SampleNo = testResult.SampleNo,
                     HisPatientId = testResult.Patient.HisPatientId,
-                    TestName = testMap == null ? "" : testMap.HISTestCodeDescription,
+                    TestName = testMap == null ? "" : testMap.HISParamDescription,
                     SpecimenName = testMap == null ? "" : testMap.SpecimenName,
                     SampleCollectionDate = testResult.SampleCollectionDate,
                     SampleReceivedDate = testResult.SampleReceivedDate,
@@ -474,7 +476,8 @@ namespace LIS.Businesslogic
             var patients = patientRepo.Get(p => p.IsActive == true);
 
             requestDetails = (from m in mappingInfo
-                              join p in testRequestDetails on m.HISTestCode equals p.HISTestCode
+                              join param in parameterMapRepo.Get() on m.HISParamCode equals param.HISParamCode
+                              join p in testRequestDetails on param.HISTestCode equals p.HISTestCode
                               join tq in patients on p.PatientId equals tq.Id
                               select new
                               {
@@ -658,14 +661,15 @@ namespace LIS.Businesslogic
                                                                     , StringComparison.OrdinalIgnoreCase));
 
             var result = mappingInfo.Where(p => p.LISTestCode.Equals(LisHostCode, StringComparison.OrdinalIgnoreCase))
+                .Join(parameterMapRepo.Get(),
+                map => map.HISParamCode,
+                param => param.HISParamCode,
+                (map, param) => param.HISTestCode)
                 .Join(testRequestDetails,
-                map => map.HISTestCode,
+                testCode => testCode,
                 test => test.HISTestCode,
-                (map, test) => new { TestCode = map.HISTestCode })
-                .Join(mappingInfo,
-                res => res.TestCode,
-                newmap => newmap.HISTestCode,
-                 (res, newmap) => new { TestCode = newmap.HISTestCode }).GroupBy(t => t.TestCode)
+                (testCode, test) => testCode)
+                .GroupBy(t => t)
                 .Select(group => new { TestCode = group.Key, TestCount = group.Count() }).FirstOrDefault();
 
             if (result == null)
@@ -684,18 +688,18 @@ namespace LIS.Businesslogic
                                         .Join(equipmentRepo.Get(e => e.AccessKey.Equals(identity.AccessKey, StringComparison.OrdinalIgnoreCase)),
                                         map => map.EquipmentId,
                                         eqp => eqp.Id,
-                                        (map, eqp) => new
-                                        {
-                                            map.HISTestCode,
-                                            map.LISTestCode
-                                        }).Distinct();
+                                        (map, eqp) => map.HISParamCode)
+                                        .Distinct()
+                                        .ToList();
 
-            var testRequestDetails = testMappings
-                                        .Join(testRequestDetailsRepo.Get(p => p.SampleNo.Equals(SampleNo, StringComparison.OrdinalIgnoreCase)
-                                        && (p.ReportStatus == ReportStatusType.SentToEquipment || p.ReportStatus == ReportStatusType.ReportGenerated)),
-                                         map => map.HISTestCode,
-                                         req => req.HISTestCode,
-                                         (map, req) => req).ToList();
+            var testCodes = parameterMapRepo.Get(p => p.HISTestCode != null && testMappings.Contains(p.HISParamCode))
+                .Select(p => p.HISTestCode)
+                .Distinct()
+                .ToList();
+
+            var testRequestDetails = testRequestDetailsRepo.Get(p => p.SampleNo.Equals(SampleNo, StringComparison.OrdinalIgnoreCase)
+                                        && (p.ReportStatus == ReportStatusType.SentToEquipment || p.ReportStatus == ReportStatusType.ReportGenerated)
+                                        && testCodes.Contains(p.HISTestCode)).ToList();
 
             return testRequestDetails;
         }

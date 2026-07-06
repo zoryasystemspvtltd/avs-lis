@@ -112,8 +112,7 @@ export const MASTER_LIST_SCHEMAS: { [key: string]: any } = {
     url: 'his-parameters', heading: 'Parameter Master', module: 'HisParameterMaster', hideAction: true,
     elements: [
       { heading: 'Param Code', fieldName: 'hisParamCode', sortable: true, width: '15%', type: 'link' },
-      { heading: 'Description', fieldName: 'hisParamDescription', sortable: true, width: '30%', type: 'label' },
-      { heading: 'Test Name', fieldName: 'hisTestCodeDescription', sortable: true, width: '15%', type: 'label' },
+      { heading: 'Description', fieldName: 'hisParamDescription', sortable: true, width: '40%', type: 'label' },
       { heading: 'Unit', fieldName: 'hisParamUnit', sortable: false, width: '12%', type: 'label' },
       { heading: 'Method', fieldName: 'hisParamMethod', sortable: false, width: '12%', type: 'label' }
     ]
@@ -130,23 +129,22 @@ export const MASTER_LIST_SCHEMAS: { [key: string]: any } = {
     ]
   },
   testMapping: {
-    url: 'test-mappings', heading: 'Test Mapping Master', module: 'TestMappingMaster', hideAction: true,
+    url: 'test-mappings', heading: 'Analyzer Parameter Mapping', module: 'TestMappingMaster', hideAction: true,
     elements: [
-      { heading: 'Test Code', fieldName: 'hisTestCode', sortable: true, width: '15%', type: 'link' },
-      { heading: 'Test Name', fieldName: 'hisTestCodeDescription', sortable: true, width: '15%', type: 'link' },
-      { heading: 'LIS Test', fieldName: 'lisTestCode', sortable: true, width: '15%', type: 'label' },
+      { heading: 'HIS Param Code', fieldName: 'hisParamCode', sortable: true, width: '15%', type: 'link' },
+      { heading: 'HIS Param Name', fieldName: 'hisParamDescription', sortable: true, width: '20%', type: 'label' },
+      { heading: 'LIS Param', fieldName: 'lisTestCode', sortable: true, width: '15%', type: 'label' },
       { heading: 'Equipment', fieldName: 'groupName', sortable: false, width: '25%', type: 'label' },
       { heading: 'Active', fieldName: 'isActive', sortable: false, width: '10%', type: 'label' }
     ]
   },
   testParameter: {
-    url: 'test-parameters', heading: 'Test Parameter Mapping', module: 'HisParameterMaster', hideAction: true, hideCreate: false,
+    url: 'test-parameters', heading: 'Test Parameter Mapping', module: 'TestParameterMappingMaster', hideAction: true, hideCreate: false,
     elements: [
       { heading: 'Test Code', fieldName: 'hisTestCode', sortable: true, width: '18%', type: 'link' },
       { heading: 'Parameter Code', fieldName: 'hisParamCode', sortable: true, width: '18%', type: 'label' },
       { heading: 'Parameter Name', fieldName: 'hisParamDescription', sortable: true, width: '34%', type: 'label' },
-      { heading: 'Unit', fieldName: 'hisParamUnit', sortable: false, width: '12%', type: 'label' },
-      { heading: 'LIS Param', fieldName: 'lisParamCode', sortable: false, width: '12%', type: 'label' }
+      { heading: 'Active', fieldName: 'isActive', sortable: false, width: '12%', type: 'label' }
     ]
   },
   patientMaster: {

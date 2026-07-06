@@ -29,6 +29,7 @@
             <th>Patient</th>
             <th>Test</th>
             <th>Collection Date</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
@@ -39,6 +40,9 @@
             <td>{{ patientName(sample) }}</td>
             <td>{{ testName(sample) }}</td>
             <td>{{ sample.sampleCollectionDate | date:'dd/MM/yyyy' }}</td>
+            <td>
+              <a [routerLink]="['/lab-result-entry', sample.sampleNo]" class="btn btn-primary btn-xs">Results</a>
+            </td>
           </tr>
         </tbody>
       </table>

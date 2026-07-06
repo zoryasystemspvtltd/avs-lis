@@ -29,10 +29,16 @@ export class MasterFormComponent implements OnInit {
   units: any[] = [];
   parameterOptions: any[] = [];
   existingParameters: any[] = [];
+  existingTestParameterMappings: any[] = [];
   lookupsLoaded = false;
   testRateOptions: any[] = [];
   testRateSearchLoading = false;
   private testRateSearchTimer: any;
+  testParameterTestOptions: any[] = [];
+  testParameterTestSearchLoading = false;
+  private testParameterTestSearchTimer: any;
+  /** Server-side test search — disable ng-select client filter. */
+  readonly testParameterTestSearchFn = () => true;
   readonly parameterCodeExistsMessage = 'Parameter Code already exists.';
   readonly parameterDescriptionExistsMessage = 'Description already exists.';
   readonly parameterCombinationExistsMessage = 'Parameter Code and Description combination already exists.';
@@ -63,19 +69,23 @@ export class MasterFormComponent implements OnInit {
       group['testProfileId'] = [null];
       group['isActive'] = [true];
     }
-    if (this.apiName === 'HisParameterMaster') {
+    if (this.apiName === 'HisParameterMaster' && this.isParameterMasterScreen) {
+      // Parameter Master is independent of Test.
+    }
+    if (this.apiName === 'TestParameterMappingMaster') {
       group['hisTestId'] = [null, Validators.required];
+      group['hisParameterId'] = [null, Validators.required];
+      group['hisTestPicker'] = [null, Validators.required];
+      group['hisParameterPicker'] = [null, Validators.required];
     }
     if (this.apiName === 'HisParameterRangeMaster') {
       group['hisParameterId'] = [null, Validators.required];
     }
     if (this.apiName === 'TestMappingMaster') {
       group['equipmentId'] = [null, Validators.required];
-      group['hisTestPicker'] = [null, Validators.required];
-      group['hisTestCode'] = [''];
-      group['hisTestCodeDescription'] = [''];
-      group['specimenCode'] = [''];
-      group['specimenName'] = [''];
+      group['hisParameterPicker'] = [null, Validators.required];
+      group['hisParamCode'] = [''];
+      group['hisParamDescription'] = [''];
     }
     if (this.isParameterPickerScreen) {
       group['hisParameterPicker'] = [null];
@@ -87,7 +97,8 @@ export class MasterFormComponent implements OnInit {
 
     if (this.apiName === 'TestRate') {
       this.loadTestRateLookups();
-    } else     if (this.apiName === 'HisParameterMaster' || this.apiName === 'HisParameterRangeMaster' || this.apiName === 'TestMappingMaster') {
+    } else if (this.apiName === 'HisParameterMaster' || this.apiName === 'HisParameterRangeMaster' ||
+      this.apiName === 'TestMappingMaster' || this.apiName === 'TestParameterMappingMaster') {
       this.loadSetupLookups();
     } else     if (this.apiName === 'Department' || this.apiName === 'Unit' || this.apiName === 'Method' || this.apiName === 'Specimens') {
       if (!this.id && this.apiName === 'Department') {
@@ -112,7 +123,7 @@ export class MasterFormComponent implements OnInit {
   }
 
   get isTestParameterScreen(): boolean {
-    return this.apiName === 'HisParameterMaster' && (this.returnUrl || '').indexOf('test-parameters') >= 0;
+    return this.apiName === 'TestParameterMappingMaster';
   }
 
   get isParameterMasterScreen(): boolean {
@@ -120,7 +131,7 @@ export class MasterFormComponent implements OnInit {
   }
 
   get isParameterPickerScreen(): boolean {
-    return this.isTestParameterScreen;
+    return false;
   }
 
   isUnitOrMethodDropdown(field: any): boolean {
@@ -144,8 +155,7 @@ export class MasterFormComponent implements OnInit {
       return false;
     }
     if (this.apiName === 'TestMappingMaster' &&
-      (field.name === 'hisTestCode' || field.name === 'hisTestCodeDescription' ||
-        field.name === 'specimenCode' || field.name === 'specimenName')) {
+      (field.name === 'hisParamCode' || field.name === 'hisParamDescription')) {
       return true;
     }
     if (this.isTestParameterScreen &&
@@ -173,7 +183,7 @@ export class MasterFormComponent implements OnInit {
   visibleFields() {
     if (this.apiName === 'TestMappingMaster') {
       return this.fields.filter(f =>
-        f.name !== 'hisTestCode' && f.name !== 'hisTestCodeDescription' && f.name !== 'specimenCode');
+        f.name !== 'hisParamCode' && f.name !== 'hisParamDescription');
     }
     if (this.apiName === 'TestRate') {
       return this.fields.filter(f => f.name !== 'taxPercent');
@@ -236,10 +246,10 @@ export class MasterFormComponent implements OnInit {
 
   private loadSetupLookups() {
     const requests: { [key: string]: Observable<any> } = {};
-    if (!this.isParameterMasterScreen) {
+    if (!this.isParameterMasterScreen && !this.isTestParameterScreen) {
       requests.tests = this.masterService.getLookupList('HisTest');
     }
-    if (this.apiName === 'HisParameterMaster') {
+    if (this.apiName === 'HisParameterMaster' || this.apiName === 'TestParameterMappingMaster') {
       requests.existingParams = this.masterService.getItems('HisParameterMaster', {
         RecordPerPage: 2000, CurrentPage: 1, SortColumnName: 'HISParamCode', SortDirection: true
       });
@@ -253,12 +263,27 @@ export class MasterFormComponent implements OnInit {
         RecordPerPage: 500, CurrentPage: 1, SortColumnName: 'HISParamCode', SortDirection: true
       });
     }
+    if (this.apiName === 'TestMappingMaster' || this.apiName === 'TestParameterMappingMaster') {
+      requests.params = this.masterService.getItems('HisParameterMaster', {
+        RecordPerPage: 2000, CurrentPage: 1, SortColumnName: 'HISParamCode', SortDirection: true
+      });
+    }
+    if (this.apiName === 'TestParameterMappingMaster') {
+      requests.existingTestParamMappings = this.masterService.getItems('TestParameterMappingMaster', {
+        RecordPerPage: 5000, CurrentPage: 1, SortColumnName: 'HISTestCode', SortDirection: true
+      });
+    }
     if (this.apiName === 'TestMappingMaster') {
       requests.equipments = this.httpEquipmentList();
     }
     forkJoin(requests).subscribe(
       (data: any) => {
-        this.tests = data.tests || [];
+        if (this.isTestParameterScreen) {
+          this.tests = [];
+          this.testParameterTestOptions = [];
+        } else {
+          this.tests = data.tests || [];
+        }
         if (data.units) {
           this.units = (data.units || []).filter(u => u.isActive !== false);
         }
@@ -269,34 +294,34 @@ export class MasterFormComponent implements OnInit {
           this.existingParameters = (data.existingParams.items || data.existingParams.Items || data.existingParams) || [];
         }
         if (data.params) {
-          this.hisParameters = (data.params.items || data.params.Items || data.params) || [];
+          const params = (data.params.items || data.params.Items || data.params) || [];
+          this.hisParameters = this.isTestParameterScreen
+            ? params.map((p: any) => this.toParameterPickerOption(p))
+            : params;
+          this.parameterOptions = this.hisParameters;
+        }
+        if (data.existingTestParamMappings) {
+          this.existingTestParameterMappings = (data.existingTestParamMappings.items
+            || data.existingTestParamMappings.Items
+            || data.existingTestParamMappings) || [];
         }
         if (data.equipments) {
           this.equipments = data.equipments || [];
         }
         this.lookupsLoaded = true;
-        if (this.isParameterPickerScreen) {
-          this.loadParameterCatalog(() => {
-            if (this.id) {
-              this.masterService.getItem(this.apiName, this.id).subscribe(item => {
-                if (item) {
-                  this.patchItem(item);
-                  this.syncHisTestPicker(item);
-                  this.syncParameterPicker(item);
-                  this.lockParameterDerivedFields(true);
-                }
-              });
-            }
-          });
+        if (this.isTestParameterScreen) {
+          if (this.id) {
+            this.masterService.getItem(this.apiName, this.id).subscribe(item => {
+              if (item) {
+                this.patchItem(item);
+                this.syncTestParameterPickers(item);
+              }
+            });
+          }
         } else if (this.apiName === 'HisParameterMaster' && this.id) {
           this.masterService.getItem(this.apiName, this.id).subscribe(item => {
             if (item) {
               this.patchItem(item);
-              if (this.isParameterMasterScreen) {
-                this.ensureHisTestOption(item?.hisTestId ?? item?.HISTestId);
-              } else {
-                this.syncHisTestPicker(item);
-              }
             }
           });
         } else if (this.apiName === 'HisParameterRangeMaster' && !this.id) {
@@ -305,7 +330,9 @@ export class MasterFormComponent implements OnInit {
           this.masterService.getItem(this.apiName, this.id).subscribe(item => {
             if (item) {
               this.patchItem(item);
-              this.syncHisTestPicker(item);
+              if (this.apiName === 'TestMappingMaster') {
+                this.syncHisParameterPicker(item);
+              }
               if (this.apiName === 'HisParameterRangeMaster') {
                 this.lockRangeCodeField();
               }
@@ -354,16 +381,36 @@ export class MasterFormComponent implements OnInit {
     }
   }
 
+  onHisParameterSelected() {
+    const paramId = this.form.get('hisParameterPicker')?.value;
+    const param = this.hisParameters.find(p => +p.id === +paramId);
+    if (param) {
+      const patch: any = {
+        hisParamCode: param.hisParamCode || param.HISParamCode,
+        hisParamDescription: param.hisParamDescription || param.HISParamDescription
+      };
+      if (this.apiName === 'TestParameterMappingMaster') {
+        patch.hisParameterId = param.id;
+      }
+      this.form.patchValue(patch);
+    }
+  }
+
   onHisTestSelected() {
     const testId = this.form.get('hisTestPicker')?.value ?? this.form.get('hisTestId')?.value;
-    const test = this.tests.find(t => +t.id === +testId);
+    const test = this.findTestPickerOption(testId);
     if (test) {
-      this.form.patchValue({
+      const patch: any = {
         hisTestCode: test.hisTestCode || test.HISTestCode,
-        hisTestCodeDescription: test.hisTestCodeDescription || test.HISTestCodeDescription,
-        specimenCode: test.hisSpecimenCode || test.HISSpecimenCode || '',
-        specimenName: test.hisSpecimenName || test.HISSpecimenName || ''
-      });
+        hisTestCodeDescription: test.hisTestCodeDescription || test.HISTestCodeDescription
+      };
+      if (this.apiName === 'TestParameterMappingMaster') {
+        patch.hisTestId = test.id;
+      } else {
+        patch.specimenCode = test.hisSpecimenCode || test.HISSpecimenCode || '';
+        patch.specimenName = test.hisSpecimenName || test.HISSpecimenName || '';
+      }
+      this.form.patchValue(patch);
     }
   }
 
@@ -371,6 +418,41 @@ export class MasterFormComponent implements OnInit {
     if (this.isTestParameterScreen || this.isParameterMasterScreen) {
       this.onHisTestSelected();
     }
+  }
+
+  private validateTestParameterMappingDuplicate(item: any): string | null {
+    if (this.apiName !== 'TestParameterMappingMaster') {
+      return null;
+    }
+
+    const testId = +(item.hisTestId ?? item.HisTestId ?? 0);
+    const paramId = +(item.hisParameterId ?? item.HisParameterId ?? 0);
+    if (!testId || !paramId) {
+      return null;
+    }
+
+    const excludeId = this.id ? +this.id : 0;
+    const duplicate = (this.existingTestParameterMappings || []).find(m => {
+      const mId = +(m.id ?? m.Id ?? 0);
+      const mTestId = +(m.hisTestId ?? m.HisTestId ?? 0);
+      const mParamId = +(m.hisParameterId ?? m.HisParameterId ?? 0);
+      const active = m.isActive ?? m.IsActive;
+      return active !== false && mTestId === testId && mParamId === paramId && mId !== excludeId;
+    });
+
+    if (!duplicate) {
+      return null;
+    }
+
+    const test = this.findTestPickerOption(testId);
+    const param = this.hisParameters.find(p => +p.id === paramId);
+    const testLabel = test
+      ? `${test.hisTestCode || test.HISTestCode} - ${test.hisTestCodeDescription || test.HISTestCodeDescription}`
+      : 'selected test';
+    const paramLabel = param
+      ? `${param.hisParamCode || param.HISParamCode} - ${param.hisParamDescription || param.HISParamDescription}`
+      : 'selected parameter';
+    return `A mapping already exists for Test "${testLabel}" and Parameter "${paramLabel}".`;
   }
 
   private validateParameterDuplicate(item: any): string | null {
@@ -476,16 +558,41 @@ export class MasterFormComponent implements OnInit {
     });
   }
 
-  private syncHisTestPicker(item: any) {
-    if (this.apiName !== 'TestMappingMaster' || !item?.hisTestCode) {
+  private syncHisParameterPicker(item: any) {
+    if (this.apiName !== 'TestMappingMaster' || !item?.hisParamCode) {
       return;
     }
 
-    const test = this.tests.find(t =>
-      (t.hisTestCode || t.HISTestCode) === item.hisTestCode);
-    if (test) {
-      this.form.patchValue({ hisTestPicker: test.id });
-      this.onHisTestSelected();
+    const param = this.hisParameters.find(p =>
+      (p.hisParamCode || p.HISParamCode) === item.hisParamCode);
+    if (param) {
+      this.form.patchValue({ hisParameterPicker: param.id });
+      this.onHisParameterSelected();
+    }
+  }
+
+  private syncTestParameterPickers(item: any) {
+    if (this.apiName !== 'TestParameterMappingMaster') {
+      return;
+    }
+    const testId = item?.hisTestId ?? item?.HisTestId;
+    const paramId = item?.hisParameterId ?? item?.HisParameterId;
+    if (testId) {
+      this.ensureTestParameterTestOption(testId);
+      this.form.patchValue({ hisTestPicker: testId, hisTestId: testId });
+    }
+    if (paramId) {
+      this.form.patchValue({ hisParameterPicker: paramId, hisParameterId: paramId });
+    }
+  }
+
+  private syncHisTestPicker(item: any) {
+    if (this.apiName !== 'TestParameterMappingMaster') {
+      return;
+    }
+    const testId = item?.hisTestId ?? item?.HisTestId;
+    if (testId) {
+      this.form.patchValue({ hisTestPicker: testId, hisTestId: testId });
     }
   }
 
@@ -550,6 +657,60 @@ export class MasterFormComponent implements OnInit {
     }
   }
 
+  onTestParameterTestDropdownOpen() {
+    if (!this.testParameterTestOptions.length) {
+      this.searchTestParameterTestOptions('');
+    }
+  }
+
+  onTestParameterTestSearch(event: { term: string }) {
+    const term = (event?.term || '').trim();
+    if (this.testParameterTestSearchTimer) {
+      clearTimeout(this.testParameterTestSearchTimer);
+    }
+    this.testParameterTestSearchTimer = setTimeout(() => this.searchTestParameterTestOptions(term), 250);
+  }
+
+  private searchTestParameterTestOptions(term: string) {
+    this.testParameterTestSearchLoading = true;
+    this.masterService.searchHisTests(term, 50).subscribe(
+      rows => {
+        this.testParameterTestOptions = (rows || []).map(t => this.toTestRateOption(t));
+        this.testParameterTestSearchLoading = false;
+      },
+      () => {
+        this.testParameterTestSearchLoading = false;
+        this.testParameterTestOptions = [];
+      }
+    );
+  }
+
+  private ensureTestParameterTestOption(testId: any) {
+    if (!testId) {
+      return;
+    }
+    const existing = this.testParameterTestOptions.find(o => +o.id === +testId);
+    if (existing) {
+      return;
+    }
+    this.masterService.getItem('HisTest', testId).subscribe(test => {
+      if (test) {
+        const option = this.toTestRateOption(test);
+        this.testParameterTestOptions = [option, ...this.testParameterTestOptions];
+      }
+    });
+  }
+
+  private findTestPickerOption(testId: any): any {
+    if (!testId) {
+      return null;
+    }
+    const id = +testId;
+    return this.testParameterTestOptions.find(t => +t.id === id)
+      || this.tests.find(t => +t.id === id)
+      || this.testRateOptions.find(t => +t.id === id);
+  }
+
   onTestRateSearch(event: { term: string }) {
     const term = (event?.term || '').trim();
     if (this.testRateSearchTimer) {
@@ -577,6 +738,13 @@ export class MasterFormComponent implements OnInit {
     const code = t.hisTestCode || t.HISTestCode || '';
     const desc = t.hisTestCodeDescription || t.HISTestCodeDescription || '';
     return { id, hisTestCode: code, hisTestCodeDescription: desc, displayLabel: `${code} - ${desc}`.trim() };
+  }
+
+  private toParameterPickerOption(p: any) {
+    const id = p.id ?? p.Id;
+    const code = p.hisParamCode || p.HISParamCode || '';
+    const desc = p.hisParamDescription || p.HISParamDescription || '';
+    return { id, hisParamCode: code, hisParamDescription: desc, displayLabel: `${code} - ${desc}`.trim() };
   }
 
   private ensureHisTestOption(testId: any) {
@@ -774,16 +942,38 @@ export class MasterFormComponent implements OnInit {
       this.applyTestRateValidators();
     }
     if (this.apiName === 'TestMappingMaster') {
-      this.onHisTestSelected();
-      const picker = this.form.get('hisTestPicker');
+      this.onHisParameterSelected();
+      const picker = this.form.get('hisParameterPicker');
       if (!picker?.value) {
         picker?.setErrors({ required: true });
         return;
       }
     }
+    if (this.apiName === 'TestParameterMappingMaster') {
+      this.onHisTestSelected();
+      this.onHisParameterSelected();
+      const testPicker = this.form.get('hisTestPicker');
+      const paramPicker = this.form.get('hisParameterPicker');
+      if (!testPicker?.value) {
+        testPicker?.setErrors({ required: true });
+        return;
+      }
+      if (!paramPicker?.value) {
+        paramPicker?.setErrors({ required: true });
+        return;
+      }
+      this.form.patchValue({
+        hisTestId: +testPicker.value,
+        hisParameterId: +paramPicker.value
+      });
+    }
     if (this.form.invalid) { return; }
 
     let item = Object.assign({}, this.form.getRawValue());
+    if (this.apiName === 'TestParameterMappingMaster') {
+      item.hisTestId = +this.form.get('hisTestPicker').value;
+      item.hisParameterId = +this.form.get('hisParameterPicker').value;
+    }
     if (item.code) { item.code = ('' + item.code).trim(); }
     if (item.name) { item.name = ('' + item.name).trim(); }
     if (item.hisParamCode) { item.hisParamCode = ('' + item.hisParamCode).trim(); }
@@ -798,9 +988,10 @@ export class MasterFormComponent implements OnInit {
       if (eq) {
         item.groupName = eq.name || eq.groupName;
       }
-      delete item.hisTestPicker;
+      delete item.hisParameterPicker;
     }
-    if (this.isParameterPickerScreen) {
+    if (this.apiName === 'TestParameterMappingMaster') {
+      delete item.hisTestPicker;
       delete item.hisParameterPicker;
     }
     if (this.apiName === 'PatientMaster' && !('' + (item.phone || '')).trim()) {
@@ -829,10 +1020,7 @@ export class MasterFormComponent implements OnInit {
     }
     if (this.isParameterMasterScreen) {
       if (!item.hisParamCode) {
-        const testId = item.hisTestId;
-        const test = this.findHisTestById(testId);
-        const prefix = ((test?.hisTestCode || test?.HISTestCode || 'P') + '').trim().substring(0, 8) || 'P';
-        item.hisParamCode = `${prefix}-${Date.now().toString(36).toUpperCase()}`;
+        item.hisParamCode = `P-${Date.now().toString(36).toUpperCase()}`;
       }
       if (!item.lisParamCode) {
         item.lisParamCode = item.hisParamCode;
@@ -842,6 +1030,12 @@ export class MasterFormComponent implements OnInit {
     const parameterDuplicateError = this.validateParameterDuplicate(item);
     if (parameterDuplicateError) {
       this.alertService.error(parameterDuplicateError);
+      return;
+    }
+
+    const testParameterDuplicateError = this.validateTestParameterMappingDuplicate(item);
+    if (testParameterDuplicateError) {
+      this.alertService.error(testParameterDuplicateError);
       return;
     }
 

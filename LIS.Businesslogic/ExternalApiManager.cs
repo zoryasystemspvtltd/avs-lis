@@ -60,7 +60,7 @@ namespace LIS.BusinessLogic
 
             var testResult = new TestResultDto
             {
-                EquipmentId = result.TestResult.EquipmentId,
+                EquipmentId = result.TestResult.EquipmentId ?? 0,
                 HISTestCode = result.TestResult.HISTestCode,
                 DoctorNote = result.TestResult.DoctorNote,
                 LISTestCode = result.TestResult.LISTestCode,
@@ -95,8 +95,8 @@ namespace LIS.BusinessLogic
                     CreatedOn = resultDetail.CreatedOn,
                     Id = resultDetail.Id,
                     LISParamCode = paramCodeHis,
-                    LISParamUnit = resultDetail.LISParamUnit,
-                    LISParamValue = resultDetail.LISParamValue,
+                    LISParamUnit = resultDetail.ParamUnit,
+                    LISParamValue = resultDetail.ParamValue,
                     TestResultId = result.TestResult.Id
                 };
 
@@ -160,8 +160,12 @@ namespace LIS.BusinessLogic
                 foreach (var order in patient.Orders)
                 {
                     var testMappings = mappingRepo
-                        .Get(p => p.IsActive
-                            && p.HISTestCode.Equals(order.TestCode, StringComparison.OrdinalIgnoreCase))
+                        .Get(p => p.IsActive)
+                        .Join(paramRepoHis.Get(p => p.HISTestCode != null
+                            && p.HISTestCode.Equals(order.TestCode, StringComparison.OrdinalIgnoreCase)),
+                            map => map.HISParamCode,
+                            param => param.HISParamCode,
+                            (map, param) => map)
                             .Select(q => new { q.SpecimenCode, q.SpecimenName, q.GroupName })
                             .Distinct()
                             .ToList();

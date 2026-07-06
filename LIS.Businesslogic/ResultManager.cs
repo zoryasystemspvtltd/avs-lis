@@ -153,8 +153,8 @@ namespace LIS.BusinessLogic
                 var controlDetail = new ControlResultDetails()
                 {
                     LISParamCode = resultDetail.LISParamCode,
-                    LISParamValue = resultDetail.LISParamValue,
-                    LISParamUnit = resultDetail.LISParamUnit,
+                    LISParamValue = resultDetail.ParamValue,
+                    LISParamUnit = resultDetail.ParamUnit,
                     ControlResultId = resultId
                 };
 

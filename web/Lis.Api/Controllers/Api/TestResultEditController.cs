@@ -42,12 +42,15 @@ namespace Lis.Api.Controllers.Api
             return HttpContext.Current?.User?.IsInRole("Administrator") == true;
         }
 
-        private const ModulePermissionType EditTestResultsPermission =
-            ModulePermissionType.CanEdit | ModulePermissionType.CanAuthorize;
+        private const ModulePermissionType ViewTestResultsPermission =
+            ModulePermissionType.CanView | ModulePermissionType.CanAdd | ModulePermissionType.CanEdit | ModulePermissionType.CanAuthorize;
+
+        private const ModulePermissionType SaveTestResultsPermission =
+            ModulePermissionType.CanAdd | ModulePermissionType.CanEdit | ModulePermissionType.CanAuthorize;
 
         [HttpGet]
         [Route("search")]
-        [QAuthorize(ModuleName = "Reports", ModulePermissionTypes = EditTestResultsPermission)]
+        [QAuthorize(ModuleName = "Reports", AlternateModuleName = "Samples", ModulePermissionTypes = ViewTestResultsPermission)]
         public IHttpActionResult Search()
         {
             try
@@ -63,7 +66,7 @@ namespace Lis.Api.Controllers.Api
 
         [HttpGet]
         [Route("{sampleNo}")]
-        [QAuthorize(ModuleName = "Reports", ModulePermissionTypes = EditTestResultsPermission)]
+        [QAuthorize(ModuleName = "Reports", AlternateModuleName = "Samples", ModulePermissionTypes = ViewTestResultsPermission)]
         public IHttpActionResult Get(string sampleNo)
         {
             try
@@ -79,7 +82,7 @@ namespace Lis.Api.Controllers.Api
 
         [HttpPut]
         [Route("")]
-        [QAuthorize(ModuleName = "Reports", ModulePermissionTypes = EditTestResultsPermission)]
+        [QAuthorize(ModuleName = "Reports", AlternateModuleName = "Samples", ModulePermissionTypes = SaveTestResultsPermission)]
         public IHttpActionResult Put(TestResultEditSaveRequest request)
         {
             try

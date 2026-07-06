@@ -2,6 +2,7 @@
     <div class="col-md-12">
         <h3>Test Details - {{item.sampleNo}}
             <div style="padding-right:6px; float:right;">
+                <a [routerLink]="['/lab-result-entry', item.sampleNo]" class="btn btn-primary btn-default-alternet">Lab Result Entry</a>
                 <a [routerLink]="['/samples/edit/',id]" class="btn btn-default btn-default-alternet">Add
                     New Test</a>
             </div>

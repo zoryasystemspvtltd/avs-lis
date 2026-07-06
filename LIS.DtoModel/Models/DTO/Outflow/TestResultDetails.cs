@@ -14,8 +14,9 @@ namespace LIS.DtoModel.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long Id { get; set; }
         public string LISParamCode { get; set; }
-        public string LISParamValue { get; set; }
-        public string LISParamUnit { get; set; }
+        public string HISParamCode { get; set; }
+        public string ParamValue { get; set; }
+        public string ParamUnit { get; set; }
         public string CreatedBy { get; set; }
         public DateTime CreatedOn { get; set; }
 

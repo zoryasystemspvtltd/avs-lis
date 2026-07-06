@@ -41,7 +41,10 @@ export class ListRawSampleComponent implements OnInit {
         heading: 'Collection Date', fieldName: 'sampleCollectionDate', sortable: true, width: '16%', type: 'date', format: 'dd/MM/yyyy'
       },
       {
-        heading: 'Patient Name', fieldName: 'patient', sortable: false, width: '20%', type: 'chield'
+        heading: 'Patient Name', fieldName: 'patient', sortable: false, width: '18%', type: 'chield'
+      },
+      {
+        heading: 'Results', fieldName: 'sampleNo', linkBase: 'lab-result-entry', linkLabel: 'Enter', sortable: false, width: '8%', type: 'link_route'
       }
     ]
   }

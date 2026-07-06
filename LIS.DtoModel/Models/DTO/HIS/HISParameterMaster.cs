@@ -38,7 +38,7 @@ namespace LIS.DtoModel.Models
 
         [ForeignKey("HisTest")]
         [JsonProperty("hisTestId")]
-        public int HisTestId { get; set; }
+        public int? HisTestId { get; set; }
 
         [JsonIgnore]
         public virtual HisTestMaster HisTest { get; set; }

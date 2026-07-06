@@ -54,8 +54,8 @@ namespace LIS.Com.Businesslogic
                     var paramValue = field[5].ToString();
                     lisTestCode = paramCode;
                     resultDetails.LISParamCode = paramCode;
-                    resultDetails.LISParamValue = paramValue;
-                    resultDetails.LISParamUnit = field[6];
+                    resultDetails.ParamValue = paramValue;
+                    resultDetails.ParamUnit = field[6];
                     lsResult.Add(resultDetails);
                 }
             }
