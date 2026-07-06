@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup } from '@angular/forms';
-import { AlertService,TestMasterService } from '../../../_services';
+import { AlertService, TestMasterService } from '../../../_services';
+import { extractApiError } from '../../../_helpers/api-error';
 
 @Component({
   selector: 'app-test-details',
@@ -50,7 +51,7 @@ export class TestDetailsComponent implements OnInit {
             this.router.navigate(['/test-master']);
           },
           error => {
-            this.alertService.error(error?.error?.message || 'Failed to delete test');
+            this.alertService.error(extractApiError(error, 'Failed to delete test'));
           });
     }
   }

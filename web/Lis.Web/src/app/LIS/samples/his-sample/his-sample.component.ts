@@ -1,71 +1,68 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
-import { AuthenticationToken } from '../../../_models';
-import { AuthenticationService, SampleService, AlertService } from '../../../_services';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
+import { ModuleService } from '../../../_services/modules.service';
+
 @Component({
   selector: 'app-his-sample',
   templateUrl: './his-sample.component.html',
   styleUrls: ['./his-sample.component.css']
 })
-export class HisSampleComponent implements OnInit {
-  id: number;
-  private user: AuthenticationToken;
-  item: any;
-  private sub: any;
-  public isLoaded: Boolean;
-  selectedApplicationName: string;
-  sampleForm: FormGroup;
-  message: string;
+export class HisSampleComponent implements OnInit, OnDestroy {
   @Output() onGetOrder = new EventEmitter<boolean>();
   @Input() hideCreateButton = false;
-  isInProgress: boolean = false;
 
-  constructor(private authenticationService: AuthenticationService,
-    private sampleService: SampleService,
-    private route: ActivatedRoute,
-    private alertService: AlertService,
-    private router: Router) { }
+  recentSamples: any[] = [];
+  loading = true;
+  loadError = '';
+
+  private readonly listOption = {
+    RecordPerPage: 8,
+    CurrentPage: 1,
+    SortColumnName: 'sampleCollectionDate',
+    SortDirection: false,
+    SearchText: '',
+    Status: 0
+  };
+
+  constructor(
+    private moduleService: ModuleService
+  ) { }
 
   ngOnInit(): void {
-    this.sub = this.route.params.subscribe(params => {
-      this.isLoaded = false;
-      this.id = +params['id'];
-      // In a real app: dispatch action to load the details here.
-      this.getUserApps();
-    });
+    this.loadRecentSamples();
   }
 
-  hasAccess(): boolean {
+  ngOnDestroy(): void { }
 
-    return true;
-  }
-
-  getUserApps() {
-    this.authenticationService.getUserApps().subscribe(val => {
-      let app = val.find(app => app.accessKey == this.authenticationService.selectedApplication);
-      if (app == null) {
-        this.router.navigate(['/']);
-      }
-      this.selectedApplicationName = app.name;
-
-    });
-  }
-
-  getHisSample() {
-    this.isInProgress = true;
-    this.sampleService.getHisSamples()
-      .subscribe(data => {
-        this.message = 'Orders collected';
-        this.alertService.success(this.message);
-        this.isInProgress = false;
-        this.onGetOrder.emit(true);
+  loadRecentSamples(): void {
+    this.loading = true;
+    this.loadError = '';
+    this.moduleService.getItems('Patients', this.listOption).subscribe(
+      response => {
+        this.recentSamples = response?.items || [];
+        this.loading = false;
       },
-        (error) => {
-          let message: string = error;
-          this.message = (message != "") ? message : 'Error to Collect HID Order.';
-          this.isInProgress = false;
-          this.alertService.error(this.message);
-        });
+      () => {
+        this.loadError = 'Unable to load recent samples.';
+        this.recentSamples = [];
+        this.loading = false;
+      }
+    );
+  }
+
+  refresh(): void {
+    this.loadRecentSamples();
+    this.onGetOrder.emit(true);
+  }
+
+  patientName(sample: any): string {
+    const patient = sample?.patient;
+    if (!patient) {
+      return '—';
+    }
+    return patient.name || patient.Name || '—';
+  }
+
+  testName(sample: any): string {
+    return sample?.hisTestName || sample?.testName || '—';
   }
 }

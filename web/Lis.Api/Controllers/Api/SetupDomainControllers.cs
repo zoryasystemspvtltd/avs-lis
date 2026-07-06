@@ -27,10 +27,54 @@ namespace Lis.Api.Controllers.Api
         public IEnumerable<HISParameterMaster> GetAllRecords() => FetchAllActiveCore();
 
         [HttpPost, Route("")]
-        public override HttpResponseMessage Post(HISParameterMaster item) => base.Post(item);
+        public override HttpResponseMessage Post(HISParameterMaster item)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return Request.CreateResponse(HttpStatusCode.PreconditionFailed, ModelState);
+                }
+
+                var id = Manager.Add(item);
+                var response = ResponseMgr.CreateResponse(HttpStatusCode.OK, "Record added successfully", null, id);
+                return Request.CreateResponse(HttpStatusCode.OK, response);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Request.CreateResponse(HttpStatusCode.Conflict, new { message = ex.Message });
+            }
+            catch (Exception e)
+            {
+                Logger.LogException(e);
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, e.Message);
+            }
+        }
 
         [HttpPost, Route("Put")]
-        public override HttpResponseMessage Put(HISParameterMaster item) => base.Put(item);
+        public override HttpResponseMessage Put(HISParameterMaster item)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return Request.CreateResponse(HttpStatusCode.PreconditionFailed, ModelState);
+                }
+
+                Manager.Update(item);
+                var response = ResponseMgr.CreateResponse(HttpStatusCode.OK, "Record updated successfully", null, null);
+                return Request.CreateResponse(HttpStatusCode.OK, response);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Request.CreateResponse(HttpStatusCode.Conflict, new { message = ex.Message });
+            }
+            catch (Exception e)
+            {
+                Logger.LogException(e);
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, e.Message);
+            }
+        }
 
         [HttpPost, Route("Delete")]
         public override HttpResponseMessage Delete(HISParameterMaster item) => base.Delete(item);
@@ -90,10 +134,54 @@ namespace Lis.Api.Controllers.Api
         }
 
         [HttpPost, Route("")]
-        public override HttpResponseMessage Post(HISParameterRangMaster item) => base.Post(item);
+        public override HttpResponseMessage Post(HISParameterRangMaster item)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return Request.CreateResponse(HttpStatusCode.PreconditionFailed, ModelState);
+                }
+
+                var id = Manager.Add(item);
+                var response = ResponseMgr.CreateResponse(HttpStatusCode.OK, "Record added successfully", null, id);
+                return Request.CreateResponse(HttpStatusCode.OK, response);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Request.CreateResponse(HttpStatusCode.Conflict, new { message = ex.Message });
+            }
+            catch (Exception e)
+            {
+                Logger.LogException(e);
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, e.Message);
+            }
+        }
 
         [HttpPost, Route("Put")]
-        public override HttpResponseMessage Put(HISParameterRangMaster item) => base.Put(item);
+        public override HttpResponseMessage Put(HISParameterRangMaster item)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return Request.CreateResponse(HttpStatusCode.PreconditionFailed, ModelState);
+                }
+
+                Manager.Update(item);
+                var response = ResponseMgr.CreateResponse(HttpStatusCode.OK, "Record updated successfully", null, null);
+                return Request.CreateResponse(HttpStatusCode.OK, response);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Request.CreateResponse(HttpStatusCode.Conflict, new { message = ex.Message });
+            }
+            catch (Exception e)
+            {
+                Logger.LogException(e);
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, e.Message);
+            }
+        }
 
         [HttpPost, Route("Delete")]
         public override HttpResponseMessage Delete(HISParameterRangMaster item) => base.Delete(item);
@@ -186,6 +274,22 @@ namespace Lis.Api.Controllers.Api
         {
             try { return Ok(new { patientId = manager.GenerateNextPatientId() }); }
             catch (Exception e) { logger.LogException(e); return Ok(new { patientId = "" }); }
+        }
+
+        [HttpGet]
+        [Route("NextMrNo")]
+        public IHttpActionResult NextMrNo()
+        {
+            try { return Ok(new { mrNo = manager.GenerateNextMrNo() }); }
+            catch (Exception e) { logger.LogException(e); return Ok(new { mrNo = "" }); }
+        }
+
+        [HttpGet]
+        [Route("NextVisitId")]
+        public IHttpActionResult NextVisitId()
+        {
+            try { return Ok(new { visitId = manager.GenerateNextVisitId() }); }
+            catch (Exception e) { logger.LogException(e); return Ok(new { visitId = "" }); }
         }
 
         [HttpGet]
@@ -310,6 +414,7 @@ namespace Lis.Api.Controllers.Api
         }
     }
 
+    [RoutePrefix("api/EquipmentHeartbeat")]
     public class EquipmentHeartbeatController : ApiController
     {
         private readonly IEquipmentManager equipmentManager;
@@ -323,11 +428,14 @@ namespace Lis.Api.Controllers.Api
 
         [HttpGet]
         [AllowAnonymous]
+        [Route("")]
         public IEnumerable<EquipmentMaster> Get()
         {
             try
             {
-                return equipmentManager.Get().Where(e => e.IsActive);
+                return equipmentManager.Get()
+                    .Where(e => e.IsActive)
+                    .OrderBy(e => e.Name);
             }
             catch (Exception e)
             {

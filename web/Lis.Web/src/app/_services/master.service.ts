@@ -76,6 +76,42 @@ export class MasterService {
     );
   }
 
+  getNextMrNo(): Observable<string> {
+    return this.http.get<any>(`${this.baseUrl}/api/PatientMaster/NextMrNo`).pipe(
+      map(r => (typeof r === 'string' ? r : r?.mrNo || r?.MRNo || '')),
+      catchError(() => of(''))
+    );
+  }
+
+  getNextVisitId(): Observable<string> {
+    return this.http.get<any>(`${this.baseUrl}/api/PatientMaster/NextVisitId`).pipe(
+      map(r => (typeof r === 'string' ? r : r?.visitId || r?.VisitId || '')),
+      catchError(() => of(''))
+    );
+  }
+
+  searchHisTests(searchText: string, recordPerPage = 50): Observable<any[]> {
+    const option = {
+      RecordPerPage: recordPerPage,
+      CurrentPage: 1,
+      SortColumnName: 'HISTestCode',
+      SortDirection: true,
+      SearchText: searchText || ''
+    };
+    return this.getItems('HisTest', option).pipe(
+      map(response => {
+        if (Array.isArray(response)) {
+          return response;
+        }
+        if (response && (response.items || response.Items)) {
+          return response.items || response.Items;
+        }
+        return [];
+      }),
+      catchError(() => of([]))
+    );
+  }
+
   getNextRequestNo(): Observable<string> {
     return this.http.get<any>(`${this.baseUrl}/api/NewSample/NextRequestNo`).pipe(
       map(r => (typeof r === 'string' ? r : r?.requestNo || r?.RequestNo || '')),
@@ -130,6 +166,19 @@ export class MasterService {
     return this.http.get<any>(url);
   }
 
+  getProfileHierarchy(id: any): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/api/TestProfile/${id}`).pipe(
+      catchError(() => of(null))
+    );
+  }
+
+  getNextProfileCode(): Observable<string> {
+    return this.http.get<any>(`${this.baseUrl}/api/TestProfile/NextProfileCode`).pipe(
+      map(r => (typeof r === 'string' ? r : r?.code || r?.Code || '')),
+      catchError(() => of(''))
+    );
+  }
+
   getInvoice(id: number): Observable<any> {
     return this.http.get<any>(`${this.baseUrl}/api/SaleInvoice/${id}`);
   }
@@ -147,8 +196,46 @@ export class MasterService {
     return this.http.get<any>(`${this.baseUrl}/api/Patients/Billing`, { headers });
   }
 
-  updateInvoiceStatus(id: number, invoiceStatus: number, paymentStatus: number): Observable<any> {
-    return this.http.post<any>(`${this.baseUrl}/api/SaleInvoice/Status`, { id, invoiceStatus, paymentStatus });
+  getBillableItems(
+    searchText: string,
+    invoiceDate: string,
+    page = 1,
+    pageSize = 50,
+    itemType?: string,
+    departmentCode?: string
+  ): Observable<any> {
+    const option: any = {
+      RecordPerPage: pageSize,
+      CurrentPage: page,
+      SearchText: searchText || '',
+      SortColumnName: 'Label',
+      SortDirection: true
+    };
+    if (itemType) {
+      option.BillableItemType = itemType;
+    }
+    if (departmentCode) {
+      option.DepartmentCode = departmentCode;
+    }
+    const headers = new HttpHeaders({ ApiOption: JSON.stringify(option) });
+    let url = `${this.baseUrl}/api/SaleInvoice/BillableItems`;
+    if (invoiceDate) {
+      url += `?invoiceDate=${encodeURIComponent(invoiceDate)}`;
+    }
+    return this.http.get<any>(url, { headers }).pipe(
+      catchError(err => {
+        console.error('getBillableItems failed', err);
+        return of({ totalRecord: 0, items: [] });
+      })
+    );
+  }
+
+  updateInvoiceStatus(id: number, invoiceStatus: number, paymentStatus: number, paidAmount?: number | null): Observable<any> {
+    const body: any = { id, invoiceStatus, paymentStatus };
+    if (paidAmount != null && paidAmount !== undefined) {
+      body.paidAmount = paidAmount;
+    }
+    return this.http.post<any>(`${this.baseUrl}/api/SaleInvoice/Status`, body);
   }
 
   cancelInvoice(id: number): Observable<any> {

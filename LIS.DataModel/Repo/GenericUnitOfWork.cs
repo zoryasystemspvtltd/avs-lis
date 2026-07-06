@@ -1,6 +1,7 @@
 ﻿using LIS.DtoModel;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,6 +16,13 @@ namespace LIS.DataAccess.Repo
             this.dbContext = dbContext;
         }
         public Type type { get; set; }
+
+        public ApplicationDBContext Context => dbContext;
+
+        public DbContextTransaction BeginTransaction()
+        {
+            return dbContext.Database.BeginTransaction();
+        }
 
         public GenericRepository<TEntity> GetRepoInstance<TEntity>() where TEntity : class
         {

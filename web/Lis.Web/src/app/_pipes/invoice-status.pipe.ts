@@ -16,7 +16,7 @@ const INVOICE_STATUS_CLASSES: { [key: number]: string } = {
 
 const PAYMENT_STATUS_LABELS: { [key: number]: string } = {
   0: 'Unpaid',
-  1: 'Partial',
+  1: 'Partially Paid',
   2: 'Paid'
 };
 

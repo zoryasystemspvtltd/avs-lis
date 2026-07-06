@@ -20,6 +20,7 @@ export class DoctorSampleDetailsComponent implements OnInit {
   sampleForm: FormGroup;
   message: string;
   selectedRunIndex: number = 0;
+  doctorSignature: { name?: string; designation?: string; signatureDataUri?: string; hasSignature?: boolean } = {};
 
   constructor(private authenticationService: AuthenticationService,
     private sampleService: SampleService,
@@ -38,6 +39,21 @@ export class DoctorSampleDetailsComponent implements OnInit {
     });
 
     this.user = this.authenticationService.currentUserValue;
+    this.loadDoctorSignature();
+  }
+
+  loadDoctorSignature() {
+    this.sampleService.getCurrentDoctorSignature().subscribe(
+      sig => {
+        this.doctorSignature = {
+          name: sig?.name ?? sig?.Name,
+          designation: sig?.designation ?? sig?.Designation,
+          signatureDataUri: sig?.signature_data_uri ?? sig?.signatureDataUri,
+          hasSignature: sig?.has_signature ?? sig?.hasSignature ?? false
+        };
+      },
+      () => { this.doctorSignature = {}; }
+    );
   }
 
   getItemDetails(id: number) {

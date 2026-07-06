@@ -23,17 +23,42 @@ namespace LIS.DtoModel.Models
         [JsonIgnore]
         public virtual HisTestMaster HisTestMaster { get; set; }
 
+        public int? TestProfileId { get; set; }
+
+        [NotMapped]
+        public string TestProfileName { get; set; }
+
+        [NotMapped]
+        public string TestName { get; set; }
+
         public decimal Rate { get; set; } = 0;
         public int Quantity { get; set; } = 1;
         public decimal Amount { get; set; } = 0;
+
+        /// <summary>Computed line discount in rupees.</summary>
         public decimal DiscountAmount { get; set; } = 0;
+
+        /// <summary>Line discount type: "Percentage" or "Fixed Amount".</summary>
+        [MaxLength(20)]
+        public string DiscountType { get; set; }
+
+        /// <summary>Raw line discount input the user keyed in (percent when type=Percentage, else rupee value).</summary>
+        public decimal DiscountValue { get; set; } = 0;
+
         public decimal TaxAmount { get; set; } = 0;
         public decimal NetAmount { get; set; } = 0;
         
         [ForeignKey("TestRequestDetail")]
-        public long RequestDetailId { get; set; }
+        public long? RequestDetailId { get; set; }
         [JsonIgnore]
         public virtual TestRequestDetail TestRequestDetail { get; set; }
+
+        /// <summary>Legacy UI field — not used for routing.</summary>
+        [NotMapped]
+        public string LineType { get; set; }
+
+        [NotMapped]
+        public string DepartmentCode { get; set; }
 
         [MaxLength(30)]
         public string SampleNo { get; set; }

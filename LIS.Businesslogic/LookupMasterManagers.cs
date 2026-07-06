@@ -12,8 +12,41 @@ namespace LIS.BusinessLogic
         public ReferralDoctorManager(ILogger logger, IModuleIdentity identity, GenericUnitOfWork uow)
             : base(logger, identity, uow, x => x.Code, x => x.Name, x => x.IsActive) { }
 
-        public new long Add(ReferralDoctorMaster item) { Stamp(item, true); return base.Add(item); }
-        public new void Update(ReferralDoctorMaster item) { Stamp(item, false); base.Update(item); }
+        public override long Add(ReferralDoctorMaster item)
+        {
+            if (item == null)
+            {
+                throw new ArgumentException("Referral doctor is required.");
+            }
+
+            item.Code = (item.Code ?? string.Empty).Trim();
+            item.Name = (item.Name ?? string.Empty).Trim();
+            Stamp(item, true);
+            return base.Add(item);
+        }
+
+        public override void Update(ReferralDoctorMaster item)
+        {
+            if (item == null || item.Id <= 0)
+            {
+                throw new ArgumentException("Invalid referral doctor record.");
+            }
+
+            var existing = Repo.Get(item.Id);
+            if (existing == null)
+            {
+                throw new InvalidOperationException("Referral doctor not found.");
+            }
+
+            existing.Code = (item.Code ?? string.Empty).Trim();
+            existing.Name = (item.Name ?? string.Empty).Trim();
+            existing.Phone = item.Phone;
+            existing.Email = item.Email;
+            existing.Address = item.Address;
+            existing.IsActive = item.IsActive;
+            Stamp(existing, false);
+            base.Update(existing);
+        }
 
         private void Stamp(ReferralDoctorMaster item, bool isNew)
         {

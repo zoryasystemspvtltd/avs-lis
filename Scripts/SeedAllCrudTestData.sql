@@ -1,6 +1,6 @@
 -- =============================================================================
 -- AVS-LIS / AVILIS — Full CRUD test data (all operational tables)
--- Database: AVSLIS
+-- Database: ZoryaLMS
 -- Prefix: CRUD-*  (safe to identify / delete test rows)
 -- Idempotent: skips rows that already exist (matched by Code / SampleNo / InvoiceNo)
 --
@@ -9,7 +9,7 @@
 --   2. SeedMasterModules.sql   (module permissions — once per DB)
 --   3. SeedAllCrudTestData.sql (this file)
 -- =============================================================================
-USE AVSLIS;
+USE ZoryaLMS;
 GO
 
 SET NOCOUNT ON;

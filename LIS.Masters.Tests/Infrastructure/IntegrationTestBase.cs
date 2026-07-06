@@ -22,7 +22,7 @@ namespace LIS.Masters.Tests.Infrastructure
 
             if (!TestServiceFactory.TryCreate(out var factory, out var error))
             {
-                Assert.Inconclusive($"Cannot connect to AVSLIS: {error}");
+                Assert.Inconclusive($"Cannot connect to ZoryaLMS: {error}");
             }
 
             Services = factory;

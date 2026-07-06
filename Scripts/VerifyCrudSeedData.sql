@@ -1,7 +1,7 @@
 -- =============================================================================
 -- Verify CRUD test data — run after SeedAllCrudTestData.sql
 -- =============================================================================
-USE AVSLIS;
+USE ZoryaLMS;
 GO
 
 SET NOCOUNT ON;

@@ -5,12 +5,17 @@ using LIS.DtoModel.Models;
 using LIS.Logger;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 
 namespace LIS.BusinessLogic
 {
     public class HisParameterMasterManager : MasterCrudManager<HISParameterMaster>, IMasterCrudManager<HISParameterMaster>
     {
+        public const string ParameterCodeExistsMessage = "Parameter Code already exists.";
+        public const string ParameterDescriptionExistsMessage = "Description already exists.";
+        public const string ParameterCombinationExistsMessage = "Parameter Code and Description combination already exists.";
+
         private readonly ModuleRepo<HisTestMaster> testRepo;
         private readonly ModuleRepo<HISParameterRangMaster> rangeRepo;
 
@@ -21,22 +26,21 @@ namespace LIS.BusinessLogic
             rangeRepo = new ModuleRepo<HISParameterRangMaster>(logger, identity, uow);
         }
 
-        public new long Add(HISParameterMaster item)
+        public override long Add(HISParameterMaster item)
         {
             if (item == null)
             {
                 throw new ArgumentNullException(nameof(item));
             }
 
+            NormalizeParameter(item);
+
             if (item.HisTestId <= 0)
             {
                 throw new InvalidOperationException("Test is required.");
             }
 
-            if (ExistsDuplicate(item, null))
-            {
-                throw new InvalidOperationException("A parameter with this code already exists for the selected test.");
-            }
+            ValidateParameterUniqueness(item, null);
 
             item.CreatedOn = DateTime.Now;
             if (item.HisTestId > 0 && string.IsNullOrEmpty(item.HISTestCode))
@@ -51,12 +55,11 @@ namespace LIS.BusinessLogic
             return base.Add(item);
         }
 
-        public new void Update(HISParameterMaster item)
+        public override void Update(HISParameterMaster item)
         {
-            if (ExistsDuplicate(item, item.Id))
-            {
-                throw new InvalidOperationException("A parameter with this code already exists for the selected test.");
-            }
+            NormalizeParameter(item);
+
+            ValidateParameterUniqueness(item, item.Id);
 
             if (item.HisTestId > 0)
             {
@@ -87,17 +90,66 @@ namespace LIS.BusinessLogic
             }
         }
 
-        private bool ExistsDuplicate(HISParameterMaster item, int? excludeId)
+        private void ValidateParameterUniqueness(HISParameterMaster item, int? excludeId)
         {
-            if (item == null || string.IsNullOrWhiteSpace(item.HISParamCode))
+            if (item == null)
             {
-                return false;
+                return;
             }
 
-            return Repo.Get(p =>
-                p.HisTestId == item.HisTestId &&
-                p.HISParamCode == item.HISParamCode &&
-                (!excludeId.HasValue || p.Id != excludeId.Value)).Any();
+            var code = item.HISParamCode;
+            var description = item.HISParamDescription;
+
+            if (string.IsNullOrWhiteSpace(code))
+            {
+                throw new InvalidOperationException("Parameter Code is required.");
+            }
+
+            if (string.IsNullOrWhiteSpace(description))
+            {
+                throw new InvalidOperationException("Description is required.");
+            }
+
+            var candidates = UnitOfWork.Context.Set<HISParameterMaster>()
+                .AsNoTracking()
+                .Where(p => !excludeId.HasValue || p.Id != excludeId.Value)
+                .ToList();
+
+            if (candidates.Any(p => !string.IsNullOrWhiteSpace(p.HISParamCode)
+                && string.Equals(p.HISParamCode.Trim(), code, StringComparison.OrdinalIgnoreCase)))
+            {
+                throw new InvalidOperationException(ParameterCodeExistsMessage);
+            }
+
+            if (candidates.Any(p => !string.IsNullOrWhiteSpace(p.HISParamDescription)
+                && string.Equals(p.HISParamDescription.Trim(), description, StringComparison.OrdinalIgnoreCase)))
+            {
+                throw new InvalidOperationException(ParameterDescriptionExistsMessage);
+            }
+
+            if (candidates.Any(p => !string.IsNullOrWhiteSpace(p.HISParamCode)
+                && !string.IsNullOrWhiteSpace(p.HISParamDescription)
+                && string.Equals(p.HISParamCode.Trim(), code, StringComparison.OrdinalIgnoreCase)
+                && string.Equals(p.HISParamDescription.Trim(), description, StringComparison.OrdinalIgnoreCase)))
+            {
+                throw new InvalidOperationException(ParameterCombinationExistsMessage);
+            }
+        }
+
+        private static void NormalizeParameter(HISParameterMaster item)
+        {
+            if (item == null)
+            {
+                return;
+            }
+
+            item.HISParamCode = (item.HISParamCode ?? string.Empty).Trim();
+            item.HISParamDescription = (item.HISParamDescription ?? string.Empty).Trim();
+            item.HISTestCode = (item.HISTestCode ?? string.Empty).Trim();
+            item.HISTestCodeDescription = (item.HISTestCodeDescription ?? string.Empty).Trim();
+            item.HISParamUnit = (item.HISParamUnit ?? string.Empty).Trim();
+            item.HISParamMethod = (item.HISParamMethod ?? string.Empty).Trim();
+            item.LISParamCode = (item.LISParamCode ?? string.Empty).Trim();
         }
 
         public override ItemList<HISParameterMaster> Get(ListOptions option)
@@ -130,6 +182,7 @@ namespace LIS.BusinessLogic
                 if (tests.TryGetValue(p.HisTestId, out var test))
                 {
                     p.HISTestCode = p.HISTestCode ?? test.HISTestCode;
+                    p.HISTestCodeDescription = p.HISTestCodeDescription ?? test.HISTestCodeDescription;
                 }
             }
         }
@@ -164,7 +217,7 @@ namespace LIS.BusinessLogic
             return $"R{(max + 1).ToString("D7", System.Globalization.CultureInfo.InvariantCulture)}";
         }
 
-        public new long Add(HISParameterRangMaster item)
+        public override long Add(HISParameterRangMaster item)
         {
             if (item == null)
             {
@@ -175,6 +228,8 @@ namespace LIS.BusinessLogic
             {
                 throw new InvalidOperationException("Parameter is required.");
             }
+
+            NormalizeAgeType(item);
 
             if (string.IsNullOrWhiteSpace(item.HISRangeCode))
             {
@@ -191,12 +246,19 @@ namespace LIS.BusinessLogic
             return base.Add(item);
         }
 
-        public new void Update(HISParameterRangMaster item)
+        public override void Update(HISParameterRangMaster item)
         {
             if (item == null || item.Id <= 0)
             {
                 throw new ArgumentException("Invalid parameter range record.");
             }
+
+            if (item.HisParameterId <= 0)
+            {
+                throw new InvalidOperationException("Parameter is required.");
+            }
+
+            NormalizeAgeType(item);
 
             var existing = Repo.Get(item.Id);
             if (existing == null)
@@ -204,12 +266,38 @@ namespace LIS.BusinessLogic
                 throw new InvalidOperationException("Parameter range record not found.");
             }
 
-            if (!string.IsNullOrWhiteSpace(existing.HISRangeCode))
+            existing.HISRangeValue = item.HISRangeValue;
+            existing.Gender = item.Gender;
+            existing.AgeFrom = item.AgeFrom;
+            existing.AgeTo = item.AgeTo;
+            existing.AgeType = item.AgeType;
+            existing.MinValue = item.MinValue;
+            existing.MaxValue = item.MaxValue;
+            existing.HisParameterId = item.HisParameterId;
+
+            base.Update(existing);
+        }
+
+        private static void NormalizeAgeType(HISParameterRangMaster item)
+        {
+            if (item == null || string.IsNullOrWhiteSpace(item.AgeType))
             {
-                item.HISRangeCode = existing.HISRangeCode;
+                return;
             }
 
-            base.Update(item);
+            var normalized = item.AgeType.Trim();
+            if (normalized.Equals("Years", StringComparison.OrdinalIgnoreCase))
+            {
+                normalized = "Year";
+            }
+
+            if (!normalized.Equals("Year", StringComparison.OrdinalIgnoreCase) &&
+                !normalized.Equals("Month", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException("Age Type must be Year or Month.");
+            }
+
+            item.AgeType = normalized;
         }
 
         public override ItemList<HISParameterRangMaster> Get(ListOptions option)
@@ -247,7 +335,7 @@ namespace LIS.BusinessLogic
             }
         }
 
-        public new void Delete(HISParameterRangMaster item)
+        public override void Delete(HISParameterRangMaster item)
         {
             if (item?.Id > 0)
             {
@@ -263,17 +351,20 @@ namespace LIS.BusinessLogic
     public class TestMappingCrudManager : MasterCrudManager<TestMappingMaster>, IMasterCrudManager<TestMappingMaster>
     {
         private readonly ModuleRepo<EquipmentMaster> equipmentRepo;
+        private readonly ModuleRepo<HisTestMaster> testRepo;
 
         public TestMappingCrudManager(ILogger logger, IModuleIdentity identity, GenericUnitOfWork uow)
             : base(logger, identity, uow, x => x.LISTestCode, x => x.HISTestCodeDescription, x => x.IsActive, "HISTestCode")
         {
             equipmentRepo = new ModuleRepo<EquipmentMaster>(logger, identity, uow);
+            testRepo = new ModuleRepo<HisTestMaster>(logger, identity, uow);
         }
 
         public new long Add(TestMappingMaster item)
         {
             item.CreatedOn = DateTime.Now;
             item.CreatedBy = Identity?.ActivityMember;
+            ApplyTestMetadata(item);
             if (ExistsDuplicate(item, null))
             {
                 throw new InvalidOperationException("Test Mapping already exists.");
@@ -284,12 +375,24 @@ namespace LIS.BusinessLogic
 
         public new void Update(TestMappingMaster item)
         {
+            ApplyTestMetadata(item);
             if (ExistsDuplicate(item, item.Id))
             {
                 throw new InvalidOperationException("Test Mapping already exists.");
             }
 
             base.Update(item);
+        }
+
+        public new TestMappingMaster GetById(int id)
+        {
+            var item = base.GetById(id);
+            if (item != null)
+            {
+                EnrichMappingItem(item);
+            }
+
+            return item;
         }
 
         public new void Delete(TestMappingMaster item)
@@ -323,12 +426,13 @@ namespace LIS.BusinessLogic
 
             var list = query.ToList();
             var equipmentNames = equipmentRepo.Get().ToDictionary(e => e.Id, e => e.Name);
+            var testNames = testRepo.Get().ToDictionary(
+                t => (t.HISTestCode ?? string.Empty).Trim(),
+                t => t.HISTestCodeDescription,
+                StringComparer.OrdinalIgnoreCase);
             foreach (var m in list)
             {
-                if (equipmentNames.TryGetValue(m.EquipmentId, out var name))
-                {
-                    m.GroupName = name;
-                }
+                EnrichMappingItem(m, equipmentNames, testNames);
             }
 
             result.TotalRecord = list.Count;
@@ -358,6 +462,73 @@ namespace LIS.BusinessLogic
                 col,
                 System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.IgnoreCase);
             return prop != null ? prop.Name : fallback;
+        }
+
+        private void ApplyTestMetadata(TestMappingMaster item)
+        {
+            if (item == null || string.IsNullOrWhiteSpace(item.HISTestCode))
+            {
+                return;
+            }
+
+            var test = testRepo.Get()
+                .FirstOrDefault(t => t.HISTestCode != null &&
+                    t.HISTestCode.Equals(item.HISTestCode.Trim(), StringComparison.OrdinalIgnoreCase));
+            if (test == null)
+            {
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(item.HISTestCodeDescription))
+            {
+                item.HISTestCodeDescription = test.HISTestCodeDescription;
+            }
+
+            if (string.IsNullOrWhiteSpace(item.SpecimenCode))
+            {
+                item.SpecimenCode = test.HISSpecimenCode;
+            }
+
+            if (string.IsNullOrWhiteSpace(item.SpecimenName))
+            {
+                item.SpecimenName = test.HISSpecimenName;
+            }
+        }
+
+        private void EnrichMappingItem(
+            TestMappingMaster m,
+            Dictionary<int, string> equipmentNames = null,
+            Dictionary<string, string> testNames = null)
+        {
+            if (m == null)
+            {
+                return;
+            }
+
+            if (equipmentNames == null)
+            {
+                equipmentNames = equipmentRepo.Get().ToDictionary(e => e.Id, e => e.Name);
+            }
+
+            if (testNames == null)
+            {
+                testNames = testRepo.Get().ToDictionary(
+                    t => (t.HISTestCode ?? string.Empty).Trim(),
+                    t => t.HISTestCodeDescription,
+                    StringComparer.OrdinalIgnoreCase);
+            }
+
+            if (equipmentNames.TryGetValue(m.EquipmentId, out var name))
+            {
+                m.GroupName = name;
+            }
+
+            if (string.IsNullOrWhiteSpace(m.HISTestCodeDescription) &&
+                !string.IsNullOrWhiteSpace(m.HISTestCode) &&
+                testNames.TryGetValue(m.HISTestCode.Trim(), out var testName))
+            {
+                m.HISTestCodeDescription = testName;
+            }
         }
 
         private bool ExistsDuplicate(TestMappingMaster item, int? excludeId)
@@ -465,7 +636,9 @@ namespace LIS.BusinessLogic
                 query = query.Where(p =>
                     (p.Name != null && p.Name.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0) ||
                     (p.Phone != null && p.Phone.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0) ||
-                    (p.HisPatientId != null && p.HisPatientId.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0));
+                    (p.HisPatientId != null && p.HisPatientId.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                    (p.MRNo != null && p.MRNo.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                    (p.VisitId != null && p.VisitId.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0));
             }
 
             var list = query.OrderBy(p => p.Name).ToList();
@@ -483,15 +656,65 @@ namespace LIS.BusinessLogic
 
         public string GenerateNextPatientId()
         {
-            var count = repo.Get().Count() + 1;
-            return $"PAT{count:D5}";
+            return GenerateNextCode("PAT", 5, repo.Get().Select(p => p.HisPatientId));
+        }
+
+        public string GenerateNextMrNo()
+        {
+            return GenerateNextCode("MR", 5, repo.Get().Select(p => p.MRNo));
+        }
+
+        public string GenerateNextVisitId()
+        {
+            return GenerateNextCode("VIS", 5, repo.Get().Select(p => p.VisitId));
+        }
+
+        private static string GenerateNextCode(string prefix, int digits, IEnumerable<string> codes)
+        {
+            var max = 0;
+            foreach (var code in codes.Where(c => !string.IsNullOrWhiteSpace(c)))
+            {
+                var trimmed = code.Trim();
+                if (trimmed.Length > prefix.Length &&
+                    trimmed.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) &&
+                    int.TryParse(trimmed.Substring(prefix.Length), out var num) &&
+                    num > max)
+                {
+                    max = num;
+                }
+            }
+
+            return $"{prefix}{(max + 1).ToString($"D{digits}", System.Globalization.CultureInfo.InvariantCulture)}";
         }
 
         public long Add(PatientDetail item)
         {
+            NormalizePatientFields(item);
+            ValidatePatientRequiredFields(item);
+
             if (string.IsNullOrWhiteSpace(item.HisPatientId))
             {
                 item.HisPatientId = GenerateNextPatientId();
+            }
+
+            if (string.IsNullOrWhiteSpace(item.MRNo))
+            {
+                item.MRNo = GenerateNextMrNo();
+            }
+
+            if (string.IsNullOrWhiteSpace(item.VisitId))
+            {
+                item.VisitId = GenerateNextVisitId();
+            }
+
+            if (ExistsDuplicateMrNo(item, null))
+            {
+                throw new InvalidOperationException("MR No already exists.");
+            }
+
+            if (ExistsDuplicateVisitId(item, null))
+            {
+                throw new InvalidOperationException("Visit ID already exists.");
             }
 
             if (ExistsDuplicatePatient(item, null))
@@ -516,12 +739,131 @@ namespace LIS.BusinessLogic
 
         public void Update(PatientDetail item)
         {
+            if (item == null || item.Id <= 0)
+            {
+                throw new ArgumentException("Invalid patient record.");
+            }
+
+            NormalizePatientFields(item);
+            ValidatePatientRequiredFields(item);
+
+            var existing = repo.Get(item.Id);
+            if (existing == null)
+            {
+                throw new InvalidOperationException("Patient record not found.");
+            }
+
+            if (ExistsDuplicateMrNo(item, item.Id))
+            {
+                throw new InvalidOperationException("MR No already exists.");
+            }
+
+            if (ExistsDuplicateVisitId(item, item.Id))
+            {
+                throw new InvalidOperationException("Visit ID already exists.");
+            }
+
             if (ExistsDuplicatePatient(item, item.Id))
             {
                 throw new InvalidOperationException("Patient already exists.");
             }
 
-            repo.Update(item);
+            existing.Name = item.Name;
+            existing.PatientPrefix = item.PatientPrefix;
+            existing.MRNo = item.MRNo;
+            existing.VisitId = item.VisitId;
+            existing.Phone = item.Phone;
+            existing.Address = item.Address;
+            existing.Gender = item.Gender;
+            existing.Age = item.Age;
+            existing.DateOfBirth = item.DateOfBirth;
+            existing.IsActive = item.IsActive;
+
+            repo.Update(existing);
+        }
+
+        private static void NormalizePatientFields(PatientDetail item)
+        {
+            if (item == null)
+            {
+                return;
+            }
+
+            item.PatientPrefix = string.IsNullOrWhiteSpace(item.PatientPrefix)
+                ? null
+                : item.PatientPrefix.Trim();
+            item.MRNo = string.IsNullOrWhiteSpace(item.MRNo)
+                ? null
+                : item.MRNo.Trim();
+            item.VisitId = string.IsNullOrWhiteSpace(item.VisitId)
+                ? null
+                : item.VisitId.Trim();
+            item.Phone = string.IsNullOrWhiteSpace(item.Phone)
+                ? item.Phone
+                : item.Phone.Trim();
+            item.Name = string.IsNullOrWhiteSpace(item.Name)
+                ? item.Name
+                : item.Name.Trim();
+        }
+
+        private static void ValidatePatientRequiredFields(PatientDetail item)
+        {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
+            if (string.IsNullOrWhiteSpace(item.Phone))
+            {
+                throw new InvalidOperationException("Phone number is required.");
+            }
+
+            if (string.IsNullOrWhiteSpace(item.PatientPrefix))
+            {
+                throw new InvalidOperationException("Salutation is required.");
+            }
+
+            if (string.IsNullOrWhiteSpace(item.MRNo))
+            {
+                throw new InvalidOperationException("MR No is required.");
+            }
+
+            if (string.IsNullOrWhiteSpace(item.VisitId))
+            {
+                throw new InvalidOperationException("Visit ID is required.");
+            }
+        }
+
+        private bool ExistsDuplicateMrNo(PatientDetail item, long? excludeId)
+        {
+            if (item == null || string.IsNullOrWhiteSpace(item.MRNo))
+            {
+                return false;
+            }
+
+            var mrNo = item.MRNo.Trim();
+            return repo.Get(p =>
+                p.IsActive &&
+                (!excludeId.HasValue || p.Id != excludeId.Value)).AsEnumerable()
+                .Any(p =>
+                    !string.IsNullOrWhiteSpace(p.MRNo) &&
+                    p.MRNo.Trim().Equals(mrNo, StringComparison.OrdinalIgnoreCase));
+        }
+
+        private bool ExistsDuplicateVisitId(PatientDetail item, long? excludeId)
+        {
+            if (item == null || string.IsNullOrWhiteSpace(item.VisitId))
+            {
+                return false;
+            }
+
+            var visitId = item.VisitId.Trim();
+            return repo.Get(p =>
+                p.IsActive &&
+                (!excludeId.HasValue || p.Id != excludeId.Value)).AsEnumerable()
+                .Any(p =>
+                    !string.IsNullOrWhiteSpace(p.VisitId) &&
+                    p.VisitId.Trim().Equals(visitId, StringComparison.OrdinalIgnoreCase));
         }
 
         private bool ExistsDuplicatePatient(PatientDetail item, long? excludeId)

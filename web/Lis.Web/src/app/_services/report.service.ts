@@ -10,6 +10,7 @@ export interface ReportFilter {
   patientId?: number | null;
   referralDoctorId?: number | null;
   invoiceNo?: string;
+  createdById?: string | null;
   currentPage?: number;
   recordPerPage?: number;
   sortColumnName?: string;
@@ -38,6 +39,37 @@ export class ReportService {
     return this.http.get<any>(`${this.baseUrl}/api/Reports/TestReport?labNo=${encodeURIComponent(labNo)}`);
   }
 
+  getRadiologyPrintAccessions(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/api/Reports/RadiologyPrintAccessions`);
+  }
+
+  getRadiologyReport(radiologyRequestId: number): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/api/Reports/RadiologyReport?radiologyRequestId=${radiologyRequestId}`);
+  }
+
+  getFddReport(endpoint: string, filter: ReportFilter & { collectorName?: string; modality?: string }): Observable<{ items: any[]; totalRecord: number }> {
+    const option = {
+      FromDate: filter.fromDate,
+      ToDate: filter.toDate,
+      PatientId: filter.patientId || null,
+      ReferralDoctorId: filter.referralDoctorId || null,
+      InvoiceNo: filter.invoiceNo || null,
+      CollectorName: filter.collectorName || null,
+      Modality: filter.modality || null,
+      CurrentPage: filter.currentPage || 1,
+      RecordPerPage: filter.recordPerPage || 25,
+      SortColumnName: filter.sortColumnName || '',
+      SortDirection: filter.sortDirection !== undefined ? filter.sortDirection : false
+    };
+    const headers = new HttpHeaders({ ApiOption: JSON.stringify(option) });
+    return this.http.get<any>(`${this.baseUrl}/api/Reports/${endpoint}`, { headers }).pipe(
+      map(r => ({
+        items: (r?.items || r?.Items || []).map(normalizeRow),
+        totalRecord: r?.totalRecord ?? r?.TotalRecord ?? 0
+      }))
+    );
+  }
+
   private fetchReport(endpoint: string, filter: ReportFilter, defaultSort: string): Observable<{ items: any[]; totalRecord: number }> {
     const option = {
       FromDate: filter.fromDate,
@@ -45,6 +77,7 @@ export class ReportService {
       PatientId: filter.patientId || null,
       ReferralDoctorId: filter.referralDoctorId || null,
       InvoiceNo: filter.invoiceNo || null,
+      CreatedById: filter.createdById || null,
       CurrentPage: filter.currentPage || 1,
       RecordPerPage: filter.recordPerPage || 25,
       SortColumnName: filter.sortColumnName || defaultSort,

@@ -167,6 +167,43 @@ namespace LIS.Masters.Tests.Transactions
         }
 
         [TestMethod]
+        public void SaleInvoice_PartialPayment_Sets_PaymentStatus_Partial()
+        {
+            var patientId = EnsurePatientId();
+            var rateId = 0;
+            var testId = EnsureTestWithRate(out rateId);
+            var requestDetailId = EnsureRequestDetailId(patientId);
+            var dto = BuildInvoiceDto(UniqueCode("INV"), patientId, testId, requestDetailId);
+            dto.Invoice.PaidAmount = 50m;
+            dto.Details[0].Rate = 100m;
+            dto.Details[0].Amount = 100m;
+            dto.Details[0].NetAmount = 100m;
+            dto.Invoice.GrossAmount = 100m;
+            dto.Invoice.NetAmount = 100m;
+
+            var id = Services.SaleInvoice.Save(dto);
+            var loaded = Services.SaleInvoice.GetById(id);
+            Assert.AreEqual((int)PaymentStatusType.Partial, loaded.Invoice.PaymentStatus);
+            Assert.AreEqual(50m, loaded.Invoice.PaidAmount);
+            Assert.AreEqual(50m, loaded.Invoice.DueAmount);
+
+            Services.SaleInvoice.Cancel(id);
+        }
+
+        [TestMethod]
+        public void SaleInvoice_NegativePaidAmount_Throws()
+        {
+            var patientId = EnsurePatientId();
+            var rateId = 0;
+            var testId = EnsureTestWithRate(out rateId);
+            var requestDetailId = EnsureRequestDetailId(patientId);
+            var dto = BuildInvoiceDto(UniqueCode("INV"), patientId, testId, requestDetailId);
+            dto.Invoice.PaidAmount = -1m;
+
+            Assert.ThrowsException<ArgumentException>(() => Services.SaleInvoice.Save(dto));
+        }
+
+        [TestMethod]
         public void SaleInvoice_GenerateInvoiceNo_Returns_Unique_Prefix()
         {
             var no = Services.SaleInvoice.GenerateInvoiceNo();
@@ -186,6 +223,59 @@ namespace LIS.Masters.Tests.Transactions
 
             Assert.ThrowsException<InvalidOperationException>(() =>
                 Services.SaleInvoice.UpdateStatus(id, (int)InvoiceStatusType.Confirmed, (int)PaymentStatusType.Paid));
+        }
+
+        [TestMethod]
+        public void SaleInvoice_GetBillableItems_Returns_Paged_Lookup()
+        {
+            var result = Services.SaleInvoice.GetBillableItems(new ListOptions
+            {
+                RecordPerPage = 20,
+                CurrentPage = 1,
+                SearchText = string.Empty,
+                SortColumnName = "Label",
+                SortDirection = true
+            }, DateTime.Today);
+
+            Assert.IsNotNull(result);
+            Assert.IsNotNull(result.Items);
+            Assert.IsTrue(result.TotalRecord >= 0);
+            Assert.IsTrue(result.Items.Count() <= 20);
+        }
+
+        [TestMethod]
+        public void SaleInvoice_GetBillableItems_Search_Matches_Test_Code_Or_Name()
+        {
+            var seeded = Services.SaleInvoice.GetBillableItems(new ListOptions
+            {
+                RecordPerPage = 200,
+                CurrentPage = 1,
+                BillableItemType = "test",
+                SearchText = string.Empty
+            }, DateTime.Today);
+
+            var sample = seeded?.Items?.FirstOrDefault(i =>
+                string.Equals(i.ItemType, "test", StringComparison.OrdinalIgnoreCase) &&
+                !string.IsNullOrWhiteSpace(i.Label));
+            if (sample == null)
+            {
+                Assert.Inconclusive("No rated active tests available for search validation.");
+                return;
+            }
+
+            var codeToken = sample.Label.Split('-')[0].Trim();
+            Assert.IsFalse(string.IsNullOrWhiteSpace(codeToken), "Expected test code in billable label.");
+
+            var byCode = Services.SaleInvoice.GetBillableItems(new ListOptions
+            {
+                RecordPerPage = 50,
+                CurrentPage = 1,
+                BillableItemType = "test",
+                SearchText = codeToken
+            }, DateTime.Today);
+
+            Assert.IsTrue(byCode.TotalRecord > 0, "Search by test code should return matches.");
+            Assert.IsTrue(byCode.Items.Any(i => i.Key == sample.Key), "Search should include the seeded test.");
         }
 
         private SaleInvoiceDto BuildInvoiceDto(string invoiceNo, long patientId, int testId, long requestDetailId)

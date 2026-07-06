@@ -84,7 +84,21 @@
         </table>
       </section>
 
-      <section class="report-test-block" *ngFor="let section of report.sections">
+      <section class="report-profile-group" *ngFor="let group of report.profileGroups">
+        <div class="report-profile-header">
+          <strong>{{ group.profileName }}</strong>
+        </div>
+        <ng-container *ngFor="let section of group.sections">
+          <ng-container *ngTemplateOutlet="testSection; context: { section: section }"></ng-container>
+        </ng-container>
+      </section>
+
+      <ng-container *ngFor="let section of report.sections">
+        <ng-container *ngTemplateOutlet="testSection; context: { section: section }"></ng-container>
+      </ng-container>
+
+      <ng-template #testSection let-section="section">
+      <section class="report-test-block">
         <div class="test-block-header">
           <strong>{{ section.testName }}</strong>
           <span class="test-meta" *ngIf="section.testCode"> ({{ section.testCode }})</span>
@@ -112,6 +126,7 @@
           </tbody>
         </table>
       </section>
+      </ng-template>
     </div>
 
     <!-- Fixed on every printed page: disclaimer, approval, page number -->
@@ -123,9 +138,14 @@
         </span>
         <span class="report-footer-pagenum" aria-label="Page number"></span>
       </div>
-      <div class="report-footer-row report-footer-sign" *ngIf="report.header?.approvedBy">
-        <span class="report-footer-approved">Approved by: {{ report.header.approvedBy }}</span>
-        <span class="report-footer-sign-line">Authorized signatory: _________________________</span>
+      <div class="report-footer-row report-footer-sign" *ngIf="report.header?.approvedBy || report.header?.approvedBySignatureImage">
+        <span class="report-footer-approved">
+          <img *ngIf="report.header?.approvedBySignatureImage" [src]="report.header.approvedBySignatureImage"
+            class="report-signature-img" alt="Signature" />
+          <span class="report-footer-approved-name">Approved by: {{ report.header.approvedByName || report.header.approvedBy }}<span
+              *ngIf="report.header?.approvedByDesignation">, {{ report.header.approvedByDesignation }}</span></span>
+        </span>
+        <span class="report-footer-sign-line" *ngIf="!report.header?.approvedBySignatureImage">Authorized signatory: _________________________</span>
       </div>
     </footer>
   </div>

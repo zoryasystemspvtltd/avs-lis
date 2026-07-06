@@ -19,6 +19,12 @@ export class UserService {
         }));
     }
 
+    getLookup() {
+        return this.http.get<Array<{ id: string; name: string }>>(
+            `${environment.ApplicationServer}/api/Users/Lookup`
+        );
+    }
+
     getById(id: string) {
         return this.http.get<User>(`${environment.ApplicationServer}/api/Users/${id}`)
             .pipe(map(response => {
@@ -64,6 +70,22 @@ export class UserService {
 
             return response;
         }));
+    }
+
+    uploadDoctorSignature(userId: string, file: File) {
+        const formData = new FormData();
+        formData.append('file', file, file.name);
+        return this.http.post<{ doctor_signature_path: string }>(
+            `${environment.ApplicationServer}/api/Users/${userId}/DoctorSignature`,
+            formData
+        );
+    }
+
+    getDoctorSignatureBlob(userId: string) {
+        return this.http.get(
+            `${environment.ApplicationServer}/api/Users/${userId}/DoctorSignature`,
+            { responseType: 'blob' }
+        );
     }
 
     getRoleById(id:string) {

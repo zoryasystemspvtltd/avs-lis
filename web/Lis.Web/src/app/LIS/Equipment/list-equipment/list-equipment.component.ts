@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 
 @Component({
   selector: 'app-equipment',
-  template: '<app-list-module [schemma]="moduleJson"></app-list-module>'
+  template: '<app-list-module [schemma]="moduleJson" [listModuleKey]="\'equipments\'"></app-list-module>'
 })
 
 export class ListEquipmentComponent implements OnInit {
@@ -14,20 +14,18 @@ export class ListEquipmentComponent implements OnInit {
   public moduleJson: any = {
     url: 'equipments',
     heading: 'Equipment Management',
+    pageDescription: 'Maintain equipment master records — create, edit, and activate/deactivate analyzers.',
     module: 'Equipments',
-    hideAction:true,
-    hideSearch:false,
-    auto_refresh:false,
+    hideAction: true,
+    hideSearch: false,
+    hideCreate: false,
+    allowPaging: true,
+    auto_refresh: false,
     elements: [
-      {
-        heading: 'Equipment Name', fieldName: 'name', sortable: true, width: '60%', type: 'link'
-      },
-      {
-        heading: 'Equipment Status', fieldName: 'isAlive', sortable: false, width: '15%', type: 'status_icon'
-      },
-      {
-        heading: 'Last Heart beat', fieldName: 'heartBeatTime', sortable: false, width: '25%', type: 'date', format: 'dd/MM/yyyy HH:mm:ss' 
-      },
+      { heading: 'Equipment Name', fieldName: 'name', sortable: true, width: '35%', type: 'link' },
+      { heading: 'Model', fieldName: 'model', sortable: true, width: '25%', type: 'label' },
+      { heading: 'Access Key', fieldName: 'accessKey', sortable: false, width: '25%', type: 'label' },
+      { heading: 'Active', fieldName: 'isActive', sortable: false, width: '15%', type: 'label' }
     ]
   }
 }

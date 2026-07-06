@@ -1,6 +1,6 @@
 <div class="avilis-form-page edit-test-results-page">
-  <h3><span class="glyphicon glyphicon-edit"></span> Edit Test Results</h3>
-  <p class="text-muted">Manually correct analyzer parameter values. Changes update existing TestResults / TestResultDetails only.</p>
+  <h3><span class="glyphicon" [ngClass]="isLabResultEntry ? 'glyphicon-list-alt' : 'glyphicon-edit'"></span> {{pageTitle}}</h3>
+  <p class="text-muted">{{pageSubtitle}}</p>
   <hr />
 
   <div class="panel panel-default" *ngIf="!data">

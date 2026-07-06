@@ -1,10 +1,10 @@
 <div class="content avilis-dashboard">
     <div class="avilis-dashboard-welcome" *ngIf="authenticationService?.currentUserValue">
-        <h2>Welcome to AVILIS</h2>
+        <h2>Welcome to ZoryaLMS</h2>
         <p>Laboratory operations dashboard — monitor samples, approvals, and workflow status at a glance.</p>
     </div>
     <div *ngIf="!emailConfirmed" class="alert alert-warning">
-        You are using default password for this account. You are suggested to change your password.
+        You are using the default password for this account. Please change your password to keep your account secure.
         <br> By changing your password, you help make sure that only you can use your account.
         <br>
         Change your password by clicking
@@ -19,5 +19,5 @@
             <app-processed-sample-chart></app-processed-sample-chart>
         </div>
     </div>
-    <hr style="border-color:#ecf2f4;">
+    <hr class="dashboard-divider">
 </div>

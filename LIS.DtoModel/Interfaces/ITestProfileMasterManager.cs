@@ -6,6 +6,8 @@ namespace LIS.DtoModel.Interfaces
     public interface ITestProfileMasterManager : IMasterCrudManager<TestProfileMaster>
     {
         TestProfileMaster GetWithDetails(int id);
-        void SaveWithDetails(TestProfileMaster profile, IEnumerable<TestProfileDetail> details);
+        TestProfileHierarchyDto GetWithHierarchy(int id);
+        int SaveWithDetails(TestProfileMaster profile, IEnumerable<TestProfileDetail> details);
+        string GetNextProfileCode();
     }
 }

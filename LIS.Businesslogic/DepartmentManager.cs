@@ -73,6 +73,13 @@ namespace LIS.Businesslogic
 
             department.Code = department.Code?.Trim();
             department.Name = department.Name?.Trim();
+            var rawCategory = department.ProcessingCategory?.Trim();
+            if (!string.IsNullOrWhiteSpace(rawCategory) && !DepartmentProcessingCategories.IsValid(rawCategory))
+            {
+                throw new InvalidOperationException("Department processing category must be Laboratory or Diagnostic.");
+            }
+
+            department.ProcessingCategory = DepartmentProcessingCategories.Normalize(department.ProcessingCategory);
             if (string.IsNullOrWhiteSpace(department.Code) || string.IsNullOrWhiteSpace(department.Name))
             {
                 throw new InvalidOperationException("Department code and name are required.");
@@ -83,6 +90,18 @@ namespace LIS.Businesslogic
 
         public void Update(Departments department)
         {
+            if (department == null)
+            {
+                throw new ArgumentNullException(nameof(department));
+            }
+
+            var rawCategory = department.ProcessingCategory?.Trim();
+            if (!string.IsNullOrWhiteSpace(rawCategory) && !DepartmentProcessingCategories.IsValid(rawCategory))
+            {
+                throw new InvalidOperationException("Department processing category must be Laboratory or Diagnostic.");
+            }
+
+            department.ProcessingCategory = DepartmentProcessingCategories.Normalize(department.ProcessingCategory);
             departmentRepo.Update(department);
         }
 
@@ -112,6 +131,11 @@ namespace LIS.Businesslogic
             if (col.Equals("name", StringComparison.OrdinalIgnoreCase))
             {
                 return "Name";
+            }
+
+            if (col.Equals("processingCategory", StringComparison.OrdinalIgnoreCase))
+            {
+                return "ProcessingCategory";
             }
 
             return "Name";

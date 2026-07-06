@@ -2,6 +2,7 @@ using LIS.DtoModel.Interfaces;
 using LIS.DtoModel.Models;
 using LIS.Masters.Tests.Infrastructure;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.Linq;
 
 namespace LIS.Masters.Tests.Masters
@@ -25,6 +26,20 @@ namespace LIS.Masters.Tests.Masters
             manager.Update(loaded);
             Assert.AreEqual("Updated " + code, manager.GetById(id).Name);
 
+            var partialUpdate = new ReferralDoctorMaster
+            {
+                Id = id,
+                Code = code,
+                Name = "Partial " + code,
+                Phone = "9999888877",
+                IsActive = true
+            };
+            manager.Update(partialUpdate);
+            var afterPartial = manager.GetById(id);
+            Assert.AreEqual("Partial " + code, afterPartial.Name);
+            Assert.AreEqual("9999888877", afterPartial.Phone);
+            Assert.IsTrue(afterPartial.CreatedOn > DateTime.MinValue, "CreatedOn must be preserved on edit");
+
             var list = manager.Get(ListOptionsFactory.Create(search: code));
             Assert.IsTrue(list.Items.Any(i => i.Code == code));
 
@@ -39,7 +54,7 @@ namespace LIS.Masters.Tests.Masters
             var code = UniqueCode("CORP");
             var id = (int)Services.Corporate.Add(MasterTestDataBuilder.Corporate(code));
 
-            var list = Services.Corporate.Get(ListOptionsFactory.Create());
+            var list = Services.Corporate.Get(ListOptionsFactory.Create(search: code));
             Assert.IsTrue(list.TotalRecord > 0);
             Assert.IsTrue(list.Items.Any(i => i.Id == id));
 
@@ -81,8 +96,8 @@ namespace LIS.Masters.Tests.Masters
             var grpId = (int)Services.TestGroup.Add(new TestGroupMaster { Code = grpCode, Name = "Group", IsActive = true });
             var catId = (int)Services.TestCategory.Add(new TestCategoryMaster { Code = catCode, Name = "Category", IsActive = true });
 
-            Assert.IsTrue(Services.TestGroup.Get(ListOptionsFactory.Create()).Items.Any(x => x.Id == grpId));
-            Assert.IsTrue(Services.TestCategory.Get(ListOptionsFactory.Create()).Items.Any(x => x.Id == catId));
+            Assert.IsTrue(Services.TestGroup.Get(ListOptionsFactory.Create(search: grpCode)).Items.Any(x => x.Id == grpId));
+            Assert.IsTrue(Services.TestCategory.Get(ListOptionsFactory.Create(search: catCode)).Items.Any(x => x.Id == catId));
 
             Services.TestGroup.Delete(new TestGroupMaster { Id = grpId });
             Services.TestCategory.Delete(new TestCategoryMaster { Id = catId });

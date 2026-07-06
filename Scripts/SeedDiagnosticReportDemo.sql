@@ -3,7 +3,7 @@
 -- Use for print/UAT: Reports → Diagnostic Report
 -- Safe to re-run (CRUD / DIAG prefixes)
 -- =============================================================================
-USE AVSLIS;
+USE ZoryaLMS;
 GO
 
 SET NOCOUNT ON;

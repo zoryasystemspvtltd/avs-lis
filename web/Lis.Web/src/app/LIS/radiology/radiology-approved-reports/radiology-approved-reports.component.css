@@ -1,0 +1,35 @@
+.filter-panel { margin-bottom: 16px; }
+.filter-actions-col { padding-top: 22px; }
+.workflow-loading, .workflow-empty { padding: 16px 0; }
+.workflow-pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+}
+.radiology-approved-intro {
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(233, 181, 19, 0.45);
+}
+
+.radiology-approved-intro .panel-title {
+  margin: 0 0 8px 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+}
+
+.radiology-approved-intro .text-muted {
+  margin: 0;
+  font-size: 14px;
+  color: #666;
+}
+
+.filter-panel {
+  margin-bottom: 15px;
+  border:  1px solid rgba(233, 181, 19, 0.45);
+  border-radius: 4px;
+}

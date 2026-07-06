@@ -115,6 +115,9 @@ namespace Lis.Api
             container.Register<ISaleInvoiceManager, SaleInvoiceManager>(Lifestyle.Scoped);
             container.Register<IReportManager, ReportManager>(Lifestyle.Scoped);
             container.Register<ITestReportManager, TestReportManager>(Lifestyle.Scoped);
+            container.Register<ISampleCollectionManager, SampleCollectionManager>(Lifestyle.Scoped);
+            container.Register<ISampleReceivingManager, SampleReceivingManager>(Lifestyle.Scoped);
+            container.Register<IRadiologyReportManager, RadiologyReportManager>(Lifestyle.Scoped);
             container.Register<ITestResultEditManager, TestResultEditManager>(Lifestyle.Scoped);
             container.Register<IMasterCrudManager<ReferralDoctorMaster>, ReferralDoctorManager>(Lifestyle.Scoped);
             container.Register<IMasterCrudManager<CorporateMaster>, CorporateManager>(Lifestyle.Scoped);

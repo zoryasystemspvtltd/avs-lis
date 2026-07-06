@@ -1,13 +1,13 @@
 @import "~@ng-select/ng-select/themes/default.theme.css";
 body {
-    padding-top: 56px;
-    padding-bottom: 20px;
+    padding-top: 52px;
+    padding-bottom: 12px;
     font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
 }
 
 .wrapper {
     min-height: 100vh;
-    background: #f0f4f6;
+    background: #eef2f4;
 }
 
 
@@ -22,13 +22,13 @@ body {
 /* The side navigation menu */
 
 .sidenav {
-    height: calc(100vh - 56px);
-    width: 248px;
+    height: calc(100vh - 52px);
+    width: 232px;
     position: fixed;
     z-index: 1000;
-    top: 56px;
+    top: 52px;
     left: 0;
-    background-color: #ffffff;
+    background-color: #003c4f;
     overflow-x: hidden;
     overflow-y: auto;
     padding: 0;
@@ -36,13 +36,13 @@ body {
 }
 
 .maincontainer {
-    margin-left: 248px;
+    margin-left: 232px;
 }
 
 .nav-button {
     cursor: pointer;
     margin-left: -15px;
-    background-color: #155f69;
+    background-color: #003c4f;
     padding: 6px;
     height: 30px;
     border-top-right-radius: 5px;
@@ -98,7 +98,7 @@ body {
     margin: -75px 0 0 -75px;
     border: 3px solid #FFF;
     border-radius: 50%;
-    border-top: 3px solid #142c8a;
+    border-top: 3px solid #125d74;
     width: 20px;
     height: 20px;
     -webkit-animation: spin 2s linear infinite;
@@ -264,15 +264,15 @@ body {
 }
 
 #sidenav.hidden {
-    margin-left: -248px;
+    margin-left: -232px;
 }
 
 .shift-right {
-    margin-left: 248px;
+    margin-left: 232px;
 }
 
 .shift-down {
-    margin-top: 56px;
+    margin-top: 52px;
     position: absolute;
     left: 0px;
 }
@@ -293,7 +293,7 @@ body {
 }
 
 .glyphicon-inr {
-    background-image: url("data:image/svg+xml;utg8,<svg xmlns='http://www.w3.org/2000/svg' version='1.1' height='50px' width='50px'><text x='0' y='15' fill='red' font-size='20'>₹</text></svg>");
+    background-image: url("data:image/svg+xml;charset=utf8,<svg xmlns='http://www.w3.org/2000/svg' version='1.1' height='50px' width='50px'><text x='0' y='15' fill='red' font-size='20'>₹</text></svg>");
 }
 
 .modal-backdrop.fade {
@@ -331,8 +331,8 @@ a {
 }
 
 .panel-head-area {
-    background-color: #e8f4f6;
-    border: 1px solid #d8e6ea;
-    margin-top: 8px;
-    border-radius: 6px;
+    background-color: #e8f2f5;
+    border: 1px solid rgba(233, 181, 19, 0.45);
+    margin-top: 6px;
+    border-radius: 4px;
 }

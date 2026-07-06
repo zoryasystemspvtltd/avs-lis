@@ -1,0 +1,68 @@
+<br>
+<div class="avilis-form-page" *ngIf="loading">
+  <p class="text-muted"><span class="glyphicon glyphicon-refresh glyphicon-spin"></span> Loading profile...</p>
+</div>
+
+<div class="avilis-form-page" *ngIf="!loading && !profile">
+  <div class="alert alert-warning">
+    <span class="glyphicon glyphicon-exclamation-sign"></span>
+  Unable to load test profile. It may have been removed or you may not have access.
+  </div>
+  <button type="button" class="btn btn-default" routerLink="/test-profiles">Back to Test Profiles</button>
+</div>
+
+<div class="avilis-form-page" *ngIf="!loading && profile">
+  <h3>Test Profile — {{profile.name}} ({{profile.code}})</h3>
+  <p class="text-muted">Read-only enterprise view: Profile → Test → Parameter → Unit / Method / Reference Range</p>
+  <hr />
+
+  <div class="row">
+    <div class="col-sm-2 form-grid-stye"><label>Package Rate</label></div>
+    <div class="col-sm-4 form-grid-stye">{{profile.packageRate | currency:'INR'}}</div>
+    <div class="col-sm-2 form-grid-stye"><label>Status</label></div>
+    <div class="col-sm-4 form-grid-stye">{{profile.isActive !== false ? 'Active' : 'Inactive'}}</div>
+  </div>
+  <br />
+  <div class="row" *ngIf="profile.createdBy || profile.modifiedBy">
+    <div class="col-sm-2 form-grid-stye"><label>Created</label></div>
+    <div class="col-sm-4 form-grid-stye">{{profile.createdBy || '—'}} {{profile.createdOn | date:'dd/MM/yyyy HH:mm'}}</div>
+    <div class="col-sm-2 form-grid-stye"><label>Modified</label></div>
+    <div class="col-sm-4 form-grid-stye">{{profile.modifiedBy || '—'}} {{profile.modifiedOn | date:'dd/MM/yyyy HH:mm'}}</div>
+  </div>
+  <br />
+
+  <div *ngFor="let test of profile.tests">
+    <h4>{{test.testCode}} — {{test.testName}} <small class="text-muted">(Qty: {{test.quantity}})</small></h4>
+    <table class="table table-bordered table-striped" *ngIf="test.parameters?.length">
+      <thead>
+        <tr>
+          <th>Parameter</th>
+          <th>Unit</th>
+          <th>Method</th>
+          <th>Reference Range</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let p of test.parameters">
+          <td>{{p.paramCode}} — {{p.description}}</td>
+          <td>{{p.unit || '—'}}</td>
+          <td>{{p.method || '—'}}</td>
+          <td>
+            <div *ngFor="let r of p.ranges">
+              <span *ngIf="r.rangeValue">{{r.rangeValue}}</span>
+              <span *ngIf="!r.rangeValue && (r.minValue || r.maxValue)">{{r.minValue}} - {{r.maxValue}}</span>
+              <small class="text-muted" *ngIf="r.gender"> ({{r.gender}})</small>
+            </div>
+            <span *ngIf="!p.ranges?.length">—</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="text-muted" *ngIf="!test.parameters?.length">No parameters configured for this test.</p>
+    <br />
+  </div>
+
+  <button type="button" class="btn btn-primary" (click)="edit()">Edit</button>
+  <button type="button" class="btn btn-default" (click)="back()">Back to List</button>
+  <button type="button" class="btn btn-warning" *ngIf="profile.isActive !== false" (click)="deactivate()">Deactivate</button>
+</div>

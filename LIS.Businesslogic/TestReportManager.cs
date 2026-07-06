@@ -24,6 +24,8 @@ namespace LIS.BusinessLogic
         private readonly ModuleRepo<HISParameterRangMaster> rangeRepo;
         private readonly ModuleRepo<HisTestMaster> testRepo;
         private readonly ModuleRepo<Departments> departmentRepo;
+        private readonly ModuleRepo<TestProfileMaster> profileRepo;
+        private readonly ModuleRepo<TestProfileDetail> profileDetailRepo;
         private readonly ITestRequestDetailsManager testRequestManager;
 
         public TestReportManager(
@@ -44,6 +46,8 @@ namespace LIS.BusinessLogic
             rangeRepo = new ModuleRepo<HISParameterRangMaster>(logger, identity, unitOfWork);
             testRepo = new ModuleRepo<HisTestMaster>(logger, identity, unitOfWork);
             departmentRepo = new ModuleRepo<Departments>(logger, identity, unitOfWork);
+            profileRepo = new ModuleRepo<TestProfileMaster>(logger, identity, unitOfWork);
+            profileDetailRepo = new ModuleRepo<TestProfileDetail>(logger, identity, unitOfWork);
             testRequestManager = testRequestDetailsManager;
         }
 
@@ -85,27 +89,115 @@ namespace LIS.BusinessLogic
             ValidateWorkflow(requests);
 
             var header = BuildHeader(invoice, patient, requests);
-            var sections = new List<DiagnosticTestReportSection>();
+            var sectionByRequestId = new Dictionary<long, DiagnosticTestReportSection>();
 
-            foreach (var request in requests.OrderBy(r => r.HISTestName ?? r.HISTestCode))
+            foreach (var request in requests)
             {
                 var section = BuildSection(request, patient);
                 if (section != null && section.Parameters != null && section.Parameters.Any())
                 {
-                    sections.Add(section);
+                    sectionByRequestId[request.Id] = section;
                 }
             }
 
-            if (!sections.Any())
+            if (!sectionByRequestId.Any())
             {
                 throw new TestReportValidationException("Test results are not available for printing.");
             }
 
+            var grouped = BuildProfileGroupedSections(invoice, requests, sectionByRequestId);
+
             return new DiagnosticTestReportDto
             {
                 Header = header,
-                Sections = sections
+                ProfileGroups = grouped.ProfileGroups,
+                Sections = grouped.StandaloneSections
             };
+        }
+
+        private (List<DiagnosticTestReportProfileGroup> ProfileGroups, List<DiagnosticTestReportSection> StandaloneSections)
+            BuildProfileGroupedSections(
+                SaleInvoice invoice,
+                List<TestRequestDetail> requests,
+                Dictionary<long, DiagnosticTestReportSection> sectionByRequestId)
+        {
+            var invoiceLines = detailRepo.Get()
+                .Where(d => d.SaleInvoiceId == invoice.Id && d.IsActive)
+                .OrderBy(d => d.Id)
+                .ToList();
+
+            var profileLines = invoiceLines
+                .Where(d => d.TestProfileId.HasValue && d.TestProfileId > 0)
+                .ToList();
+
+            if (!profileLines.Any())
+            {
+                return (null, OrderSections(requests, sectionByRequestId));
+            }
+
+            var assignedRequestIds = new HashSet<long>();
+            var profileGroups = new List<DiagnosticTestReportProfileGroup>();
+
+            foreach (var line in profileLines)
+            {
+                var profile = profileRepo.Get(line.TestProfileId.Value);
+                if (profile == null)
+                {
+                    continue;
+                }
+
+                var profileDetails = profileDetailRepo.Get(d => d.TestProfileId == profile.Id)
+                    .OrderBy(d => d.Id)
+                    .ToList();
+
+                var profileTestCodes = profileDetails
+                    .Select(d => testRepo.Get(d.TestId)?.HISTestCode)
+                    .Where(c => !string.IsNullOrWhiteSpace(c))
+                    .ToList();
+
+                var groupSections = new List<DiagnosticTestReportSection>();
+                foreach (var testCode in profileTestCodes)
+                {
+                    var request = requests.FirstOrDefault(r =>
+                        !assignedRequestIds.Contains(r.Id) &&
+                        r.HISTestCode != null &&
+                        r.HISTestCode.Equals(testCode, StringComparison.OrdinalIgnoreCase) &&
+                        sectionByRequestId.ContainsKey(r.Id));
+
+                    if (request != null)
+                    {
+                        groupSections.Add(sectionByRequestId[request.Id]);
+                        assignedRequestIds.Add(request.Id);
+                    }
+                }
+
+                if (groupSections.Any())
+                {
+                    profileGroups.Add(new DiagnosticTestReportProfileGroup
+                    {
+                        ProfileName = profile.Name,
+                        ProfileCode = profile.Code,
+                        Sections = groupSections
+                    });
+                }
+            }
+
+            var standalone = OrderSections(
+                requests.Where(r => !assignedRequestIds.Contains(r.Id)).ToList(),
+                sectionByRequestId);
+
+            return (profileGroups.Any() ? profileGroups : null, standalone);
+        }
+
+        private static List<DiagnosticTestReportSection> OrderSections(
+            List<TestRequestDetail> requests,
+            Dictionary<long, DiagnosticTestReportSection> sectionByRequestId)
+        {
+            return requests
+                .OrderBy(r => r.HISTestName ?? r.HISTestCode)
+                .Where(r => sectionByRequestId.ContainsKey(r.Id))
+                .Select(r => sectionByRequestId[r.Id])
+                .ToList();
         }
 
         private SaleInvoice ResolveInvoice(string labNo, string invoiceNo)
@@ -149,23 +241,33 @@ namespace LIS.BusinessLogic
 
         private List<TestRequestDetail> ResolveTestRequests(SaleInvoice invoice)
         {
+            var invNo = invoice.InvoiceNo ?? string.Empty;
+            var merged = new Dictionary<long, TestRequestDetail>();
+
             var requestIds = detailRepo.Get()
-                .Where(d => d.SaleInvoiceId == invoice.Id && d.IsActive && d.RequestDetailId > 0)
-                .Select(d => d.RequestDetailId)
+                .Where(d => d.SaleInvoiceId == invoice.Id && d.IsActive && d.RequestDetailId.HasValue && d.RequestDetailId.Value > 0)
+                .Select(d => d.RequestDetailId.Value)
                 .Distinct()
                 .ToList();
 
             if (requestIds.Any())
             {
-                return requestRepo.Get()
-                    .Where(r => requestIds.Contains(r.Id))
-                    .ToList();
+                foreach (var request in requestRepo.Get().Where(r => requestIds.Contains(r.Id)))
+                {
+                    merged[request.Id] = request;
+                }
             }
 
-            var invNo = invoice.InvoiceNo ?? string.Empty;
-            return requestRepo.Get()
-                .Where(r => r.HISRequestNo != null && r.HISRequestNo.Equals(invNo, StringComparison.OrdinalIgnoreCase))
-                .ToList();
+            if (!string.IsNullOrWhiteSpace(invNo))
+            {
+                foreach (var request in requestRepo.Get()
+                    .Where(r => r.HISRequestNo != null && r.HISRequestNo.Equals(invNo, StringComparison.OrdinalIgnoreCase)))
+                {
+                    merged[request.Id] = request;
+                }
+            }
+
+            return merged.Values.ToList();
         }
 
         private void ValidateWorkflow(List<TestRequestDetail> requests)

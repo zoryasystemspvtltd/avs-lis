@@ -151,10 +151,26 @@
             </div>
         </div>
         <div class="row">
+            <div class="col-md-6">
+                <div class="doctor-approval-signature">
+                    <label>Digital Signature</label>
+                    <div class="doctor-approval-signature-box">
+                        <img *ngIf="doctorSignature.hasSignature" [src]="doctorSignature.signatureDataUri"
+                            class="doctor-approval-signature-img" alt="Doctor signature" />
+                        <span *ngIf="!doctorSignature.hasSignature" class="text-muted">
+                            No digital signature uploaded for your profile.
+                        </span>
+                    </div>
+                    <div class="doctor-approval-signature-name">
+                        {{ doctorSignature.name }}<span *ngIf="doctorSignature.designation">, {{ doctorSignature.designation }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
             <div class="col-sm-12 col-md-12 col-lg-12">
                 <div style="float:left; margin-right: 5px;">
-                    <button type="button" class="btn btn-primary" (click)="authorize(5)" *ngIf="hasAccess(4)">Approve &
-                        Send</button>
+                    <button type="button" class="btn btn-primary" (click)="authorize(5)" *ngIf="hasAccess(4)">Approve</button>
                 </div>
 				<div style="float:left; margin-right: 5px;">
                     <button type="button" class="btn btn-primary" (click)="authorize(3)" *ngIf="hasAccess(4)">Ask for Second Opinion </button>

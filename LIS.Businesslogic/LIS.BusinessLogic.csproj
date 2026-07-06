@@ -75,6 +75,7 @@
     <Compile Include="QualityControlManager.cs" />
     <Compile Include="ResultManager.cs" />
     <Compile Include="DepartmentManager.cs" />
+    <Compile Include="DepartmentProcessingRouter.cs" />
     <Compile Include="SpecimenManager.cs" />
     <Compile Include="TestMappingMasterManager.cs" />
     <Compile Include="TestParameterManager.cs" />
@@ -86,6 +87,10 @@
     <Compile Include="TestProfileMasterManager.cs" />
     <Compile Include="SetupDomainManagers.cs" />
     <Compile Include="ReportManager.cs" />
+    <Compile Include="SampleWorkflowInvoiceEligibility.cs" />
+    <Compile Include="SampleCollectionManager.cs" />
+    <Compile Include="SampleReceivingManager.cs" />
+    <Compile Include="RadiologyReportManager.cs" />
     <Compile Include="TestReportManager.cs" />
     <Compile Include="TestReportValidationException.cs" />
     <Compile Include="TestResultRangeEvaluator.cs" />

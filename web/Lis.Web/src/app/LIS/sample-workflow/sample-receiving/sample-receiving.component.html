@@ -1,0 +1,92 @@
+<div class="container-fluid">
+  <div class="panel panel-default filter-panel">
+    <div class="panel-body">
+      <div class="sample-receiving-intro">
+        <h3 class="panel-title"><span class="glyphicon glyphicon-import"></span> Sample Receiving</h3>
+        <p class="text-muted">Search collected samples awaiting lab receiving.</p>
+      </div>
+      <div class="row">
+        <div class="col-sm-3"><label>Barcode No</label><input class="form-control input-sm" [(ngModel)]="barcodeNumber" /></div>
+        <div class="col-sm-3"><label>Order No.</label><input class="form-control input-sm" [(ngModel)]="orderNumber" /></div>
+        <div class="col-sm-3"><label>Patient Name</label><input class="form-control input-sm" [(ngModel)]="patientName" /></div>
+        <div class="col-sm-3"><label>Search</label><input class="form-control input-sm" [(ngModel)]="searchText" (keyup.enter)="search(1)" /></div>
+      </div>
+      <div class="filter-actions">
+        <button class="btn btn-primary btn-sm" (click)="search(1)" [disabled]="loading">Search</button>
+        <button class="btn btn-default btn-sm" (click)="reset()" [disabled]="loading">Reset</button>
+        <button class="btn btn-success btn-sm" (click)="openBulkReceive()" [disabled]="loading || !hasSelection">Receive Selected</button>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="text-center"><span class="glyphicon glyphicon-refresh glyphicon-spin"></span> Loading...</div>
+
+  <div class="table-responsive" *ngIf="!loading">
+    <table class="table table-striped table-hover">
+      <thead>
+        <tr>
+          <th class="col-check"><input type="checkbox" [checked]="selectAll" (change)="toggleSelectAll($event)" title="Select all" /></th>
+          <th>Barcode</th><th>Order</th><th>Patient</th><th>Test</th><th>Collected By</th><th>Collection Date</th><th>Status</th><th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of rows">
+          <td><input type="checkbox" [(ngModel)]="row.selected" (change)="onRowSelectionChange()" /></td>
+          <td>{{ row.sampleNo }}</td>
+          <td>{{ row.hisRequestNo }}</td>
+          <td>{{ row.patientName }}</td>
+          <td>{{ row.testName }}</td>
+          <td>{{ row.collectedBy }}</td>
+          <td>{{ row.sampleCollectionDate | date:'dd/MM/yyyy HH:mm' }}</td>
+          <td>{{ row.status }}</td>
+          <td>
+            <button class="btn btn-success btn-xs" (click)="openReceive(row)">Receive</button>
+            <button class="btn btn-warning btn-xs" (click)="openReject(row)">Reject</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <p *ngIf="!rows.length" class="text-muted text-center workflow-empty">No samples awaiting receiving.</p>
+    <div class="workflow-pager" *ngIf="totalRecord > recordPerPage">
+      <span class="list-pager-info">Showing {{ recordFrom }}&ndash;{{ recordTo }} of {{ totalRecord }}</span>
+      <ngb-pagination [(page)]="currentPage" [pageSize]="recordPerPage" [collectionSize]="totalRecord"
+        [maxSize]="5" [rotate]="true" [boundaryLinks]="true" (pageChange)="search($event)"></ngb-pagination>
+    </div>
+  </div>
+
+  <div class="modal fade" [class.in]="showReceiveModal" [style.display]="showReceiveModal ? 'block' : 'none'">
+    <div class="modal-dialog"><div class="modal-content">
+      <div class="modal-header"><button type="button" class="close" (click)="showReceiveModal=false">&times;</button><h4>{{ bulkReceiveMode ? 'Receive Selected Samples' : 'Receive Sample' }}</h4></div>
+      <div class="modal-body">
+        <p *ngIf="bulkReceiveMode" class="text-muted">{{ selectedRows.length }} sample(s) selected.</p>
+        <label>Received Date/Time</label>
+        <input type="datetime-local" class="form-control" [(ngModel)]="receiveDateTime" />
+        <label>Remarks</label>
+        <textarea class="form-control" rows="2" [(ngModel)]="receiveRemarks"></textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default" (click)="showReceiveModal=false">Cancel</button>
+        <button class="btn btn-primary" (click)="submitReceive()">Receive</button>
+      </div>
+    </div></div>
+  </div>
+
+  <div class="modal fade" [class.in]="showRejectModal" [style.display]="showRejectModal ? 'block' : 'none'">
+    <div class="modal-dialog"><div class="modal-content">
+      <div class="modal-header"><button type="button" class="close" (click)="showRejectModal=false">&times;</button><h4>Reject Sample</h4></div>
+      <div class="modal-body">
+        <label>Reason <span class="text-danger">*</span></label>
+        <select class="form-control" [(ngModel)]="rejectReasonCode">
+          <option value="">-- Select --</option>
+          <option *ngFor="let r of rejectionReasons" [value]="r.code">{{ r.code }} - {{ r.name }}</option>
+        </select>
+        <label>Remarks</label>
+        <textarea class="form-control" rows="2" [(ngModel)]="rejectRemarks"></textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default" (click)="showRejectModal=false">Cancel</button>
+        <button class="btn btn-danger" (click)="submitReject()">Reject</button>
+      </div>
+    </div></div>
+  </div>
+</div>

@@ -66,10 +66,14 @@ namespace LIS.Masters.Tests.Infrastructure
 
         public static PatientDetail Patient(string nameSuffix, string hisPatientId = null)
         {
+            var token = Guid.NewGuid().ToString("N");
             return new PatientDetail
             {
                 HisPatientId = hisPatientId,
                 Name = $"Patient {nameSuffix}",
+                PatientPrefix = "Mr",
+                MRNo = $"MR-{token.Substring(0, 8)}",
+                VisitId = $"VIS-{token.Substring(8, 8)}",
                 Gender = "M",
                 Phone = "9876543210",
                 Age = 30,

@@ -21,9 +21,14 @@ import { TestListComponent } from './LIS/testMaster/test-list/test-list.componen
 import { TestDetailsComponent } from './LIS/testMaster/test-details/test-details.component';
 import { TestCreateComponent } from './LIS/testMaster/test-create/test-create.component';
 import { TestEditComponent } from './LIS/testMaster/test-edit/test-edit.component';
-import { MasterListComponent, MasterFormComponent, SaleInvoiceFormComponent, TestProfileFormComponent } from './masters';
-import { SaleInvoiceRegisterComponent, TestBookingRegisterComponent, TestReportComponent } from './reports';
+import { MasterListComponent, MasterFormComponent, SaleInvoiceFormComponent, TestProfileFormComponent, TestProfileViewComponent } from './masters';
+import { SaleInvoiceRegisterComponent, TestBookingRegisterComponent, TestReportComponent, FddReportComponent, RadiologyReportPrintComponent } from './reports';
 import { ListEquipmentHeartbeatComponent } from './LIS';
+import { SampleCollectionComponent } from './LIS/sample-workflow/sample-collection/sample-collection.component';
+import { SampleReceivingComponent } from './LIS/sample-workflow/sample-receiving/sample-receiving.component';
+import { RadiologyReportEntryComponent } from './LIS/radiology/radiology-report-entry/radiology-report-entry.component';
+import { RadiologyDoctorApprovalComponent } from './LIS/radiology/radiology-doctor-approval/radiology-doctor-approval.component';
+import { RadiologyApprovedReportsComponent } from './LIS/radiology/radiology-approved-reports/radiology-approved-reports.component';
 
 const LOOKUP_FIELDS = {
   codeName: [
@@ -52,7 +57,11 @@ const LOOKUP_FIELDS = {
   ],
   department: [
     { name: 'code', label: 'Code', type: 'text', required: true },
-    { name: 'name', label: 'Name', type: 'text', required: true }
+    { name: 'name', label: 'Name', type: 'text', required: true },
+    { name: 'processingCategory', label: 'Processing Category', type: 'select', required: true, help: 'Laboratory: automated or manual laboratory tests. Diagnostic: radiology, sonography, CT, MRI, and similar imaging studies.', options: [
+      { value: 'Laboratory', label: 'Laboratory' },
+      { value: 'Diagnostic', label: 'Diagnostic' }
+    ]}
   ],
   specimen: [
     { name: 'code', label: 'Code', type: 'text', required: true },
@@ -75,7 +84,6 @@ const LOOKUP_FIELDS = {
     { name: 'rate', label: 'Rate', type: 'number', required: true },
     { name: 'emergencyRate', label: 'Emergency Rate', type: 'number' },
     { name: 'discountPercent', label: 'Discount %', type: 'number' },
-    { name: 'taxPercent', label: 'Tax %', type: 'number' },
     { name: 'effectiveStart', label: 'Effective From', type: 'date', required: true },
     { name: 'effectiveEnd', label: 'Effective To', type: 'date', required: true },
     { name: 'isActive', label: 'Active', type: 'checkbox' }
@@ -85,7 +93,7 @@ const LOOKUP_FIELDS = {
     { name: 'hisParamDescription', label: 'Description', type: 'text', required: true },
     { name: 'hisParamUnit', label: 'Unit', type: 'text' },
     { name: 'hisParamMethod', label: 'Method', type: 'text' },
-    { name: 'lisParamCode', label: 'LIS Param Code', type: 'text' }
+    { name: 'isActive', label: 'Active', type: 'checkbox' }
   ],
   hisParameterRange: [
     { name: 'hisRangeCode', label: 'Range Code', type: 'text', readonly: true },
@@ -98,7 +106,11 @@ const LOOKUP_FIELDS = {
     ]},
     { name: 'ageFrom', label: 'Age From', type: 'number' },
     { name: 'ageTo', label: 'Age To', type: 'number' },
-    { name: 'ageType', label: 'Age Type', type: 'text' },
+    { name: 'ageType', label: 'Age Type', type: 'select', options: [
+      { value: '', label: '-- Select Age Type --' },
+      { value: 'Year', label: 'Year' },
+      { value: 'Month', label: 'Month' }
+    ]},
     { name: 'minValue', label: 'Min Value', type: 'number' },
     { name: 'maxValue', label: 'Max Value', type: 'number' }
   ],
@@ -112,9 +124,21 @@ const LOOKUP_FIELDS = {
     { name: 'isActive', label: 'Active', type: 'checkbox' }
   ],
   patient: [
+    { name: 'hisPatientId', label: 'Patient Number', type: 'text', readonly: true },
+    { name: 'patientPrefix', label: 'Salutation', type: 'select', required: true, options: [
+      { value: '', label: '-- Select Salutation --' },
+      { value: 'Mr.', label: 'Mr.' },
+      { value: 'Mrs.', label: 'Mrs.' },
+      { value: 'Miss', label: 'Miss' },
+      { value: 'Master', label: 'Master' },
+      { value: 'Dr.', label: 'Dr.' },
+      { value: 'Prof.', label: 'Prof.' }
+    ]},
     { name: 'name', label: 'Patient Name', type: 'text', required: true },
-    { name: 'hisPatientId', label: 'Patient ID', type: 'text', readonly: true },
-    { name: 'phone', label: 'Phone', type: 'text' },
+    { name: 'mrNo', label: 'MR Number', type: 'text', readonly: true },
+    { name: 'visitId', label: 'Visit ID', type: 'text', readonly: true },
+    { name: 'phone', label: 'Phone', type: 'text', required: true },
+    { name: 'address', label: 'Address', type: 'text' },
     { name: 'gender', label: 'Gender', type: 'select', required: true, options: [
       { value: '', label: '-- Select Gender --' },
       { value: 'M', label: 'Male' },
@@ -175,6 +199,7 @@ const appRoutes: Routes = [
 
     { path: 'samples', component: ListRawSampleComponent, canActivate: [AuthGuard] },
     { path: 'edit-test-results', component: EditTestResultsComponent, canActivate: [AuthGuard] },
+    { path: 'lab-result-entry', component: EditTestResultsComponent, canActivate: [AuthGuard] },
     { path: 'samples/create', component: CreateSampleComponent, canActivate: [AuthGuard] },
     { path: 'samples/edit/:id', component: EditSampleComponent, canActivate: [AuthGuard] },
     { path: 'samples/:id', component: RawSampleDetailsComponent, canActivate: [AuthGuard] },
@@ -242,7 +267,8 @@ const appRoutes: Routes = [
 
     { path: 'test-profiles', component: MasterListComponent, data: { masterKey: 'testProfile' }, canActivate: [AuthGuard] },
     { path: 'test-profiles/create', component: TestProfileFormComponent, canActivate: [AuthGuard] },
-    { path: 'test-profiles/:id', component: TestProfileFormComponent, canActivate: [AuthGuard] },
+    { path: 'test-profiles/edit/:id', component: TestProfileFormComponent, canActivate: [AuthGuard] },
+    { path: 'test-profiles/:id', component: TestProfileViewComponent, canActivate: [AuthGuard] },
 
     { path: 'test-rates', component: MasterListComponent, data: { masterKey: 'testRate' }, canActivate: [AuthGuard] },
     { path: 'test-rates/create', component: MasterFormComponent, data: { apiName: 'TestRate', returnUrl: '/test-rates', title: 'Test Rate', fields: LOOKUP_FIELDS.testRate }, canActivate: [AuthGuard] },
@@ -276,6 +302,98 @@ const appRoutes: Routes = [
     { path: 'reports/sale-invoice-register', component: SaleInvoiceRegisterComponent, canActivate: [AuthGuard] },
     { path: 'reports/test-booking-register', component: TestBookingRegisterComponent, canActivate: [AuthGuard] },
     { path: 'reports/test-report', component: TestReportComponent, canActivate: [AuthGuard] },
+    { path: 'reports/radiology-report', component: RadiologyReportPrintComponent, canActivate: [AuthGuard] },
+
+    { path: 'sample-collection', component: SampleCollectionComponent, canActivate: [AuthGuard] },
+    { path: 'sample-receiving', component: SampleReceivingComponent, canActivate: [AuthGuard] },
+    { path: 'radiology-report-entry', component: RadiologyReportEntryComponent, canActivate: [AuthGuard] },
+    { path: 'radiology-doctor-approvals', component: RadiologyDoctorApprovalComponent, canActivate: [AuthGuard] },
+    { path: 'radiology-approved-reports', component: RadiologyApprovedReportsComponent, canActivate: [AuthGuard] },
+
+    { path: 'reports/collection-summary', component: FddReportComponent, data: {
+      title: 'Collection Summary', endpoint: 'CollectionSummary', defaultSort: 'CollectionDate', exportName: 'CollectionSummary',
+      columns: [
+        { header: 'Collection Date', field: 'collectionDate', type: 'date' },
+        { header: 'Barcode', field: 'sampleNo' }, { header: 'Order No.', field: 'orderNumber' },
+        { header: 'Patient ID', field: 'patientId' }, { header: 'Patient', field: 'patientName' },
+        { header: 'Test', field: 'testName' }, { header: 'Collector', field: 'collectedBy' }, { header: 'Status', field: 'status' }
+      ]
+    }, canActivate: [AuthGuard] },
+    { path: 'reports/collector-wise', component: FddReportComponent, data: {
+      title: 'Collector Wise Report', endpoint: 'CollectorWise', defaultSort: 'CollectorName', exportName: 'CollectorWise', showPatientFilter: false, showCollectorFilter: true,
+      columns: [
+        { header: 'Collector', field: 'collectorName' }, { header: 'Collected', field: 'totalCollected' },
+        { header: 'Rejected', field: 'totalRejected' }, { header: 'Recollection', field: 'totalRecollection' }
+      ]
+    }, canActivate: [AuthGuard] },
+    { path: 'reports/pending-collection', component: FddReportComponent, data: {
+      title: 'Pending Collection Report', endpoint: 'PendingCollection', defaultSort: 'OrderDate', exportName: 'PendingCollection', showPatientFilter: false,
+      columns: [
+        { header: 'Barcode', field: 'sampleNo' }, { header: 'Order No.', field: 'orderNumber' },
+        { header: 'Patient ID', field: 'patientId' }, { header: 'Patient', field: 'patientName' },
+        { header: 'Test', field: 'testName' }, { header: 'Order Date', field: 'orderDate', type: 'date' }
+      ]
+    }, canActivate: [AuthGuard] },
+    { path: 'reports/recollection', component: FddReportComponent, data: {
+      title: 'Recollection Report', endpoint: 'Recollection', defaultSort: 'CollectionDate', exportName: 'Recollection',
+      columns: [
+        { header: 'Barcode', field: 'sampleNo' }, { header: 'Order', field: 'orderNumber' },
+        { header: 'Patient', field: 'patientName' }, { header: 'Test', field: 'testName' },
+        { header: 'Collector', field: 'collectedBy' }, { header: 'Date', field: 'collectionDate', type: 'datetime' }, { header: 'Remarks', field: 'remarks' }
+      ]
+    }, canActivate: [AuthGuard] },
+    { path: 'reports/received-samples', component: FddReportComponent, data: {
+      title: 'Received Samples Report', endpoint: 'ReceivedSamples', defaultSort: 'ReceivedDate', exportName: 'ReceivedSamples',
+      columns: [
+        { header: 'Barcode', field: 'sampleNo' }, { header: 'Patient', field: 'patientName' }, { header: 'Test', field: 'testName' },
+        { header: 'Collected', field: 'collectionDate', type: 'datetime' }, { header: 'Received', field: 'receivedDate', type: 'datetime' },
+        { header: 'Received By', field: 'receivedBy' }, { header: 'TAT (min)', field: 'turnaroundMinutes' }
+      ]
+    }, canActivate: [AuthGuard] },
+    { path: 'reports/rejected-samples', component: FddReportComponent, data: {
+      title: 'Rejected Samples Report', endpoint: 'RejectedSamples', defaultSort: 'RejectedOn', exportName: 'RejectedSamples',
+      columns: [
+        { header: 'Barcode', field: 'sampleNo' }, { header: 'Patient', field: 'patientName' }, { header: 'Test', field: 'testName' },
+        { header: 'Stage', field: 'stage' }, { header: 'Reason', field: 'rejectionReason' },
+        { header: 'Rejected By', field: 'rejectedBy' }, { header: 'Rejected On', field: 'rejectedOn', type: 'datetime' }
+      ]
+    }, canActivate: [AuthGuard] },
+    { path: 'reports/sample-turnaround', component: FddReportComponent, data: {
+      title: 'Turnaround Time Report', endpoint: 'SampleTurnaround', defaultSort: 'ReceivedDate', exportName: 'SampleTurnaround',
+      columns: [
+        { header: 'Barcode', field: 'sampleNo' }, { header: 'Patient', field: 'patientName' }, { header: 'Test', field: 'testName' },
+        { header: 'Collection', field: 'collectionDate', type: 'datetime' }, { header: 'Received', field: 'receivedDate', type: 'datetime' },
+        { header: 'TAT (min)', field: 'turnaroundMinutes' }
+      ]
+    }, canActivate: [AuthGuard] },
+    { path: 'reports/radiology/pending', component: FddReportComponent, data: {
+      title: 'Pending Reporting Cases', endpoint: 'PendingRadiology', defaultSort: 'CreatedOn', exportName: 'PendingRadiology', showModalityFilter: true,
+      columns: [
+        { header: 'Accession', field: 'accessionNo' }, { header: 'Patient', field: 'patientName' }, { header: 'Test', field: 'testName' },
+        { header: 'Modality', field: 'modality' }, { header: 'Status', field: 'status' }, { header: 'Created', field: 'createdOn', type: 'datetime' }
+      ]
+    }, canActivate: [AuthGuard] },
+    { path: 'reports/radiology/authorized', component: FddReportComponent, data: {
+      title: 'Authorized Reports', endpoint: 'AuthorizedRadiology', defaultSort: 'AuthorizedOn', exportName: 'AuthorizedRadiology', showModalityFilter: true,
+      columns: [
+        { header: 'Accession', field: 'accessionNo' }, { header: 'Patient', field: 'patientName' }, { header: 'Test', field: 'testName' },
+        { header: 'Modality', field: 'modality' }, { header: 'Authorized By', field: 'authorizedBy' },
+        { header: 'Authorized On', field: 'authorizedOn', type: 'datetime' }, { header: 'Status', field: 'status' }
+      ]
+    }, canActivate: [AuthGuard] },
+    { path: 'reports/radiology/modality-stats', component: FddReportComponent, data: {
+      title: 'Modality Statistics', endpoint: 'ModalityStatistics', defaultSort: 'Modality', exportName: 'ModalityStatistics', showPatientFilter: false,
+      columns: [
+        { header: 'Modality', field: 'modality' }, { header: 'Total', field: 'totalCases' },
+        { header: 'Authorized', field: 'authorizedCases' }, { header: 'Pending', field: 'pendingCases' }
+      ]
+    }, canActivate: [AuthGuard] },
+    { path: 'reports/radiology/productivity', component: FddReportComponent, data: {
+      title: 'Radiologist Productivity Report', endpoint: 'RadiologistProductivity', defaultSort: 'RadiologistName', exportName: 'RadiologistProductivity', showPatientFilter: false,
+      columns: [
+        { header: 'Radiologist', field: 'radiologistName' }, { header: 'Authorized', field: 'authorizedCount' }, { header: 'Released', field: 'releasedCount' }
+      ]
+    }, canActivate: [AuthGuard] },
 
     // otherwise redirect to home
     { path: '**', redirectTo: '' }

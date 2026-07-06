@@ -1,8 +1,8 @@
 @echo off
-REM Run all AVILIS seed scripts against local SQLEXPRESS / AVSLIS
+REM Run all AVILIS seed scripts against local SQLEXPRESS / ZoryaLMS
 setlocal
 set SERVER=.\SQLEXPRESS
-set DATABASE=AVSLIS
+set DATABASE=ZoryaLMS
 set SCRIPTDIR=%~dp0
 
 echo ============================================

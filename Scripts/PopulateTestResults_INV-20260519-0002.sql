@@ -1,6 +1,6 @@
 -- Populate test results for Lab No / Invoice INV-20260519-0002 (AFP test)
 -- Safe to re-run: removes prior results for this test request before insert.
-USE AVSLIS;
+USE ZoryaLMS;
 GO
 
 SET NOCOUNT ON;

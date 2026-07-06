@@ -6,6 +6,14 @@ namespace LIS.DtoModel.Models
     public class DiagnosticTestReportDto
     {
         public DiagnosticTestReportHeader Header { get; set; }
+        public List<DiagnosticTestReportProfileGroup> ProfileGroups { get; set; }
+        public List<DiagnosticTestReportSection> Sections { get; set; }
+    }
+
+    public class DiagnosticTestReportProfileGroup
+    {
+        public string ProfileName { get; set; }
+        public string ProfileCode { get; set; }
         public List<DiagnosticTestReportSection> Sections { get; set; }
     }
 
@@ -22,6 +30,9 @@ namespace LIS.DtoModel.Models
         public DateTime? CollectionDate { get; set; }
         public DateTime? ReportDate { get; set; }
         public string ApprovedBy { get; set; }
+        public string ApprovedByName { get; set; }
+        public string ApprovedByDesignation { get; set; }
+        public string ApprovedBySignatureImage { get; set; }
     }
 
     public class DiagnosticTestReportSection

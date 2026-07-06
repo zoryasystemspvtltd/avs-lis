@@ -1,9 +1,9 @@
 -- =============================================================================
 -- AVS-LIS sample / demo data — masters, rates, patients, sale invoices
--- Database: AVSLIS
+-- Database: ZoryaLMS
 -- Safe to re-run: skips rows that already exist (matched by Code / InvoiceNo / SampleNo)
 -- =============================================================================
-USE AVSLIS;
+USE ZoryaLMS;
 GO
 
 SET NOCOUNT ON;

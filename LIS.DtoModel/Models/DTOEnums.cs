@@ -35,4 +35,13 @@
         Profile = 3,
         Emergency = 4
     }
+
+    public enum RadiologyReportStatus
+    {
+        Pending = 0,
+        Draft = 1,
+        UnderReview = 2,
+        Authorized = 3,
+        Released = 4
+    }
 }

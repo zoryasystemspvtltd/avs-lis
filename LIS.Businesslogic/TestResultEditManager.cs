@@ -48,11 +48,16 @@ namespace LIS.BusinessLogic
             }
 
             var query = requestRepo.Get().AsEnumerable();
+            var patients = patientRepo.Get().ToDictionary(p => p.Id, p => p);
+
+            // Advanced Search: every supplied criterion is combined with OR, so a row is
+            // returned when it matches ANY of the entered fields (union), not all of them.
+            var predicates = new List<Func<TestRequestDetail, bool>>();
 
             if (!string.IsNullOrWhiteSpace(options.SampleNo))
             {
                 var sn = options.SampleNo.Trim();
-                query = query.Where(r =>
+                predicates.Add(r =>
                     (r.SampleNo != null && (
                         r.SampleNo.Equals(sn, StringComparison.OrdinalIgnoreCase) ||
                         r.SampleNo.IndexOf(sn, StringComparison.OrdinalIgnoreCase) >= 0)) ||
@@ -68,7 +73,7 @@ namespace LIS.BusinessLogic
                     .Select(i => i.InvoiceNo)
                     .ToList();
 
-                query = query.Where(r =>
+                predicates.Add(r =>
                     (r.HISRequestNo != null && r.HISRequestNo.IndexOf(inv, StringComparison.OrdinalIgnoreCase) >= 0) ||
                     (r.SampleNo != null && r.SampleNo.IndexOf(inv, StringComparison.OrdinalIgnoreCase) >= 0) ||
                     invoiceNos.Any(no =>
@@ -76,26 +81,27 @@ namespace LIS.BusinessLogic
                         (r.SampleNo != null && r.SampleNo.Equals(no, StringComparison.OrdinalIgnoreCase))));
             }
 
-            if (options.FromDate.HasValue)
-            {
-                var from = options.FromDate.Value.Date;
-                query = query.Where(r => r.SampleCollectionDate >= from);
-            }
-
-            if (options.ToDate.HasValue)
-            {
-                var to = options.ToDate.Value.Date.AddDays(1);
-                query = query.Where(r => r.SampleCollectionDate < to);
-            }
-
-            var patients = patientRepo.Get().ToDictionary(p => p.Id, p => p);
             if (!string.IsNullOrWhiteSpace(options.PatientName))
             {
                 var name = options.PatientName.Trim();
-                query = query.Where(r =>
+                predicates.Add(r =>
                     patients.TryGetValue(r.PatientId, out var p) &&
                     p.Name != null &&
                     p.Name.IndexOf(name, StringComparison.OrdinalIgnoreCase) >= 0);
+            }
+
+            // From/To together form a single date-range term so the range still behaves
+            // sensibly while participating as one component of the overall OR.
+            if (options.FromDate.HasValue || options.ToDate.HasValue)
+            {
+                var from = options.FromDate?.Date ?? DateTime.MinValue;
+                var to = options.ToDate.HasValue ? options.ToDate.Value.Date.AddDays(1) : DateTime.MaxValue;
+                predicates.Add(r => r.SampleCollectionDate >= from && r.SampleCollectionDate < to);
+            }
+
+            if (predicates.Any())
+            {
+                query = query.Where(r => predicates.Any(match => match(r)));
             }
 
             var resultRequestIds = new HashSet<long>(

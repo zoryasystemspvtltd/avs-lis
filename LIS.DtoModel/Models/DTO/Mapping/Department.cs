@@ -19,5 +19,10 @@ namespace LIS.DtoModel.Models
         [Required]
         [StringLength(55)]
         public string Name { get; set; }
+
+        /// <summary>Laboratory or Diagnostic — sole routing discriminator for test workflows.</summary>
+        [Required]
+        [StringLength(20)]
+        public string ProcessingCategory { get; set; }
     }
 }

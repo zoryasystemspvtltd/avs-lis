@@ -65,6 +65,9 @@ namespace LIS.DataAccess
         public virtual DbSet<MethodMaster> MethodMaster { get; set; }
         public virtual DbSet<SampleTypeMaster> SampleTypeMaster { get; set; }
         public virtual DbSet<ContainerMaster> ContainerMaster { get; set; }
+        public virtual DbSet<SampleRejectionReasonMaster> SampleRejectionReasonMaster { get; set; }
+        public virtual DbSet<RadiologyRequestDetail> RadiologyRequestDetail { get; set; }
+        public virtual DbSet<RadiologyResultDetail> RadiologyResultDetail { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {

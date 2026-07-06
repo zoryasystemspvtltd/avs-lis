@@ -79,9 +79,19 @@ namespace LIS.BusinessLogic
             var patientsById = patientRepo.Get().ToDictionary(p => p.Id, p => p);
 
             // Materialize in memory — avoids EF enum/navigation issues that returned empty lists in UI.
-            IEnumerable<TestRequestDetail> query = testRequestRepo.Get()
-                .Where(p => p.ReportStatus == option.Status)
-                .ToList();
+            IEnumerable<TestRequestDetail> query;
+            if (option.ReceivedOnly)
+            {
+                query = testRequestRepo.Get()
+                    .Where(p => !string.IsNullOrWhiteSpace(p.ReceivedBy))
+                    .ToList();
+            }
+            else
+            {
+                query = testRequestRepo.Get()
+                    .Where(p => p.ReportStatus == option.Status)
+                    .ToList();
+            }
 
             if (!string.IsNullOrWhiteSpace(option.SearchText))
             {
@@ -99,8 +109,7 @@ namespace LIS.BusinessLogic
                     query = query.Where(p =>
                         (p.SampleNo != null && p.SampleNo.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0)
                         || (p.HISTestName != null && p.HISTestName.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0)
-                        || (p.HISRequestNo != null && p.HISRequestNo.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0)
-                        || (p.IPNo != null && p.IPNo.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0)
+                        || (p.HISRequestNo != null && p.HISRequestNo.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0)                        
                         || (patientsById.TryGetValue(p.PatientId, out var pat) && pat.Name != null
                             && pat.Name.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0));
                 }
@@ -200,7 +209,9 @@ namespace LIS.BusinessLogic
                 query = query.Where(p =>
                     (p.Name != null && p.Name.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0) ||
                     (p.Phone != null && p.Phone.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0) ||
-                    (p.HisPatientId != null && p.HisPatientId.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0));
+                    (p.HisPatientId != null && p.HisPatientId.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                    (p.MRNo != null && p.MRNo.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                    (p.VisitId != null && p.VisitId.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0));
             }
 
             var list = query.OrderBy(p => p.Name).ToList();
@@ -300,10 +311,7 @@ namespace LIS.BusinessLogic
                             SpecimenCode = order.SpecimenCode,
                             SpecimenName = order.SpecimenName,
                             HISRequestNo = order.HISRequestNo,
-                            HISRequestId = $"R{order.HISRequestNo}",
-                            BedNo = order.BedNo,
-                            IPNo = order.IPNo,
-                            MRNo = order.MRNo,
+                            HISRequestId = $"R{order.HISRequestNo}",                           
                             DepartmentId = departmentId,
                             Department = department
                         };

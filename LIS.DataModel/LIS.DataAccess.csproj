@@ -82,9 +82,9 @@
     <Compile Include="DAL\SoftDeleteInterceptor.cs" />
     <Compile Include="DAL\SoftDeleteQueryVisitor.cs" />
     <Compile Include="Enums\RoleType.cs" />
-    <Compile Include="Migrations\202605170711055_fresh.cs" />
-    <Compile Include="Migrations\202605170711055_fresh.Designer.cs">
-      <DependentUpon>202605170711055_fresh.cs</DependentUpon>
+    <Compile Include="Migrations\202607040223148_Fresh.cs" />
+    <Compile Include="Migrations\202607040223148_Fresh.Designer.cs">
+      <DependentUpon>202607040223148_Fresh.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -129,8 +129,8 @@
     <Content Include="Scripts\jquery-3.7.1.slim.min.js" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\202605170711055_fresh.resx">
-      <DependentUpon>202605170711055_fresh.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\202607040223148_Fresh.resx">
+      <DependentUpon>202607040223148_Fresh.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

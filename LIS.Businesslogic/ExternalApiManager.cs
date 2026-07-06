@@ -198,14 +198,11 @@ namespace LIS.BusinessLogic
                                         SampleCollectionDate = DateTime.Now,
                                         SampleReceivedDate = DateTime.Now,
                                         SpecimenCode = specimenCode,
-                                        SpecimenName = specimenName,
-                                        BedNo = patient.BedNo,
+                                        SpecimenName = specimenName,                                     
                                         Department = patient.Department,
                                         DepartmentId = patient.DepartmentId,
                                         HISRequestId = patient.HISRequestId,
-                                        HISRequestNo = patient.HISRequestNo,
-                                        IPNo = patient.IPNo,
-                                        MRNo = patient.MRNo
+                                        HISRequestNo = patient.HISRequestNo
                                     });
 
                                     foreach (var param in order.TestParameter)

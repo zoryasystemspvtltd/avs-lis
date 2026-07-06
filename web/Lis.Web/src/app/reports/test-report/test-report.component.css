@@ -78,6 +78,13 @@
   white-space: nowrap;
 }
 
+.test-report-page .report-signature-img {
+  max-height: 48px;
+  max-width: 200px;
+  display: block;
+  margin-bottom: 3px;
+}
+
 .test-report-page .report-meta-table {
   width: 100%;
   border-collapse: collapse;
@@ -103,6 +110,23 @@
   padding: 5px 8px;
   margin: 12px 0 4px;
   font-size: 12px;
+}
+
+.test-report-page .report-profile-header {
+  margin: 16px 0 8px;
+  padding: 8px 10px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #1a4a52;
+  border-top: 2px solid #1a7f8c;
+  border-bottom: 2px solid #1a7f8c;
+}
+
+.test-report-page .report-profile-group .report-test-block:first-of-type .test-block-header {
+  margin-top: 6px;
 }
 
 .test-report-page .test-meta {
@@ -235,6 +259,14 @@ body.test-report-print-mode .report-footer-approved {
   flex: 1;
 }
 
+.diagnostic-report-print-doc .report-signature-img,
+body.test-report-print-mode .report-signature-img {
+  max-height: 12mm;
+  max-width: 45mm;
+  display: block;
+  margin-bottom: 1mm;
+}
+
 .diagnostic-report-print-doc .report-print-body,
 body.test-report-print-mode .report-print-body {
   padding: calc(var(--diag-header-total) + 2mm) var(--diag-side-margin)
@@ -269,6 +301,21 @@ body.test-report-print-mode .test-block-header {
   border: 1px solid #b8d4da;
   padding: 4px 6px;
   margin: 10px 0 3px;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.diagnostic-report-print-doc .report-profile-header,
+body.test-report-print-mode .report-profile-header {
+  margin: 14px 0 6px;
+  padding: 6px 8px;
+  text-align: center;
+  font-size: 12pt;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-top: 1.5pt solid #1a7f8c;
+  border-bottom: 1.5pt solid #1a7f8c;
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
 }

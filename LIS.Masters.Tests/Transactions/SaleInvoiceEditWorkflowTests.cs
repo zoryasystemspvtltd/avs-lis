@@ -108,5 +108,49 @@ namespace LIS.Masters.Tests.Transactions
             Services.TestRate.Delete(new TestRateMaster { Id = rateId });
             Services.Corporate.Delete(new CorporateMaster { Id = corpId });
         }
+
+        [TestMethod]
+        public void SaleInvoice_Create_Recalculates_Line_And_Header_Totals()
+        {
+            var patientId = CreatePatient();
+            var rateId = 0;
+            var testId = EnsureTestWithRate(out rateId);
+
+            var dto = new SaleInvoiceDto
+            {
+                Invoice = new SaleInvoice
+                {
+                    InvoiceNo = UniqueCode("INV"),
+                    InvoiceDate = DateTime.Today,
+                    PatientId = patientId,
+                    InvoiceStatus = (int)InvoiceStatusType.Draft,
+                    PaymentStatus = (int)PaymentStatusType.Unpaid,
+                    IsActive = true
+                },
+                Details = new List<SaleInvoiceDetail>
+                {
+                    new SaleInvoiceDetail { TestId = testId, Quantity = 2, Rate = 0, DiscountAmount = 10m }
+                }
+            };
+            // Tax is entered once at the invoice level (no longer per line).
+            dto.Invoice.TaxAmount = 5m;
+
+            var id = Services.SaleInvoice.Save(dto);
+            var loaded = Services.SaleInvoice.GetById(id);
+            var line = loaded.Details.First();
+
+            Assert.AreEqual(200m, line.Rate);
+            Assert.AreEqual(400m, line.Amount);
+            Assert.AreEqual(390m, line.NetAmount);
+            Assert.AreEqual(0m, line.TaxAmount);
+            Assert.AreEqual(400m, loaded.Invoice.GrossAmount);
+            Assert.AreEqual(10m, loaded.Invoice.DiscountAmount);
+            Assert.AreEqual(5m, loaded.Invoice.TaxAmount);
+            Assert.AreEqual(395m, loaded.Invoice.NetAmount);
+            Assert.IsTrue(line.RequestDetailId > 0, "Lab line must link test request before persist");
+
+            Services.SaleInvoice.Cancel(id);
+            Services.TestRate.Delete(new TestRateMaster { Id = rateId });
+        }
     }
 }

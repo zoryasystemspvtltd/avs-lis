@@ -1,3 +1,18 @@
+  tr.inactive-master-row td {
+    background-color: #f2dede !important;
+    color: #a94442;
+  }
+
+  .list-empty-cell {
+    padding: 16px 10px !important;
+  }
+
+  .list-pager-info {
+    font-size: 12px;
+    color: var(--zorya-text-muted);
+    margin: 6px 0;
+  }
+
   .linktooltip {
     width: 300px;
     background-color: black;

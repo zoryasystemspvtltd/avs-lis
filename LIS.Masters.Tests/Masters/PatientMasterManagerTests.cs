@@ -42,6 +42,23 @@ namespace LIS.Masters.Tests.Masters
         }
 
         [TestMethod]
+        public void Patient_Create_With_Empty_HisPatientId_Auto_Generates()
+        {
+            var suffix = UniqueCode("AUTO");
+            var patient = MasterTestDataBuilder.Patient(suffix);
+            patient.HisPatientId = null;
+
+            var id = Services.PatientMaster.Add(patient);
+            Assert.IsTrue(id > 0);
+
+            var loaded = Services.PatientMaster.GetById(id);
+            Assert.IsFalse(string.IsNullOrWhiteSpace(loaded.HisPatientId));
+            Assert.IsTrue(loaded.HisPatientId.StartsWith("PAT"));
+
+            Services.PatientMaster.Delete(new PatientDetail { Id = id });
+        }
+
+        [TestMethod]
         public void Patient_Duplicate_HisPatientId_Throws_On_Create()
         {
             var suffix = UniqueCode("DUP");
@@ -66,6 +83,40 @@ namespace LIS.Masters.Tests.Masters
             duplicate.Phone = "900-000-0001";
             duplicate.Name = patient.Name;
             Assert.ThrowsException<System.InvalidOperationException>(() => Services.PatientMaster.Add(duplicate));
+
+            Services.PatientMaster.Delete(new PatientDetail { Id = id });
+        }
+
+        [TestMethod]
+        public void Patient_Duplicate_MRNo_Throws_On_Create()
+        {
+            var suffix = UniqueCode("MR");
+            var mrNo = UniqueCode("MRNO");
+            var patient = MasterTestDataBuilder.Patient(suffix);
+            patient.MRNo = mrNo;
+            var id = Services.PatientMaster.Add(patient);
+
+            var duplicate = MasterTestDataBuilder.Patient("dup-mr");
+            duplicate.MRNo = mrNo.ToLowerInvariant();
+            var ex = Assert.ThrowsException<System.InvalidOperationException>(() => Services.PatientMaster.Add(duplicate));
+            Assert.IsTrue(ex.Message.IndexOf("MR No already exists", System.StringComparison.OrdinalIgnoreCase) >= 0);
+
+            Services.PatientMaster.Delete(new PatientDetail { Id = id });
+        }
+
+        [TestMethod]
+        public void Patient_Duplicate_VisitId_Throws_On_Create()
+        {
+            var suffix = UniqueCode("VIS");
+            var visitId = UniqueCode("VISID");
+            var patient = MasterTestDataBuilder.Patient(suffix);
+            patient.VisitId = visitId;
+            var id = Services.PatientMaster.Add(patient);
+
+            var duplicate = MasterTestDataBuilder.Patient("dup-vis");
+            duplicate.VisitId = visitId.ToLowerInvariant();
+            var ex = Assert.ThrowsException<System.InvalidOperationException>(() => Services.PatientMaster.Add(duplicate));
+            Assert.IsTrue(ex.Message.IndexOf("Visit ID already exists", System.StringComparison.OrdinalIgnoreCase) >= 0);
 
             Services.PatientMaster.Delete(new PatientDetail { Id = id });
         }

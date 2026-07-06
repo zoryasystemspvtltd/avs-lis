@@ -1,8 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { ReportService } from '../../_services/report.service';
 import { MasterService } from '../../_services/master.service';
+import { UserService } from '../../_services/user.service';
 import { AlertService } from '../../_services/alert.service';
 import { ReportPageBase } from '../report-page.base';
+import { ReportFilter } from '../../_services/report.service';
 import {
   ExcelColumn,
   exportRowsToExcel,
@@ -17,10 +19,13 @@ import {
 })
 export class SaleInvoiceRegisterComponent extends ReportPageBase implements OnInit {
   readonly pageTitle = 'Sale Invoice Register';
+  createdById: string = null;
+  creators: Array<{ id: string; name: string }> = [];
 
   constructor(
     reportService: ReportService,
     masterService: MasterService,
+    private userService: UserService,
     alertService: AlertService
   ) {
     super(reportService, masterService, alertService);
@@ -28,10 +33,36 @@ export class SaleInvoiceRegisterComponent extends ReportPageBase implements OnIn
 
   ngOnInit() {
     this.initReportPage();
+    this.loadCreatorLookups();
+  }
+
+  loadCreatorLookups(): void {
+    this.userService.getLookup().subscribe(
+      list => {
+        const items = Array.isArray(list) ? list : [];
+        this.creators = items
+          .map((x: any) => ({
+            id: (x.id ?? x.Id ?? '').toString(),
+            name: (x.name ?? x.Name ?? '').trim()
+          }))
+          .filter((x: { id: string; name: string }) => x.id && x.name);
+      },
+      () => {
+        this.creators = [];
+      }
+    );
   }
 
   reset() {
+    this.createdById = null;
     this.resetFilters();
+  }
+
+  buildFilter(page: number, recordPerPage: number, sortColumn: string): ReportFilter {
+    return {
+      ...super.buildFilter(page, recordPerPage, sortColumn),
+      createdById: this.createdById || null
+    };
   }
 
   protected runSearch(page: number, pageSize: number): void {

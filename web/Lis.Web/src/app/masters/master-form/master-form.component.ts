@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { forkJoin, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { AlertService, MasterService } from '../../_services';
+import { extractApiError } from '../../_helpers/api-error';
 
 @Component({
   selector: 'app-master-form',
@@ -25,8 +26,16 @@ export class MasterFormComponent implements OnInit {
   hisParameters: any[] = [];
   equipments: any[] = [];
   methods: any[] = [];
+  units: any[] = [];
   parameterOptions: any[] = [];
+  existingParameters: any[] = [];
   lookupsLoaded = false;
+  testRateOptions: any[] = [];
+  testRateSearchLoading = false;
+  private testRateSearchTimer: any;
+  readonly parameterCodeExistsMessage = 'Parameter Code already exists.';
+  readonly parameterDescriptionExistsMessage = 'Description already exists.';
+  readonly parameterCombinationExistsMessage = 'Parameter Code and Description combination already exists.';
 
   constructor(
     private route: ActivatedRoute,
@@ -80,7 +89,10 @@ export class MasterFormComponent implements OnInit {
       this.loadTestRateLookups();
     } else     if (this.apiName === 'HisParameterMaster' || this.apiName === 'HisParameterRangeMaster' || this.apiName === 'TestMappingMaster') {
       this.loadSetupLookups();
-    } else if (this.apiName === 'Department' || this.apiName === 'Unit' || this.apiName === 'Method' || this.apiName === 'Specimens') {
+    } else     if (this.apiName === 'Department' || this.apiName === 'Unit' || this.apiName === 'Method' || this.apiName === 'Specimens') {
+      if (!this.id && this.apiName === 'Department') {
+        this.form.patchValue({ processingCategory: 'Laboratory' });
+      }
       if (this.id) {
         this.masterService.getItem(this.apiName, this.id).subscribe(item => {
           if (item) {
@@ -89,11 +101,7 @@ export class MasterFormComponent implements OnInit {
         });
       }
     } else if (!this.id && this.apiName === 'PatientMaster') {
-      this.masterService.getNextPatientId().subscribe(pid => {
-        if (pid) {
-          this.form.patchValue({ hisPatientId: pid });
-        }
-      });
+      this.assignNextPatientId();
     } else if (this.id) {
       this.masterService.getItem(this.apiName, this.id).subscribe(item => {
         if (item) {
@@ -112,7 +120,16 @@ export class MasterFormComponent implements OnInit {
   }
 
   get isParameterPickerScreen(): boolean {
-    return this.isTestParameterScreen || this.isParameterMasterScreen;
+    return this.isTestParameterScreen;
+  }
+
+  isUnitOrMethodDropdown(field: any): boolean {
+    return this.isParameterMasterScreen &&
+      (field?.name === 'hisParamUnit' || field?.name === 'hisParamMethod');
+  }
+
+  unitMethodOptions(fieldName: string): any[] {
+    return fieldName === 'hisParamMethod' ? this.methods : this.units;
   }
 
   isCodeReadonly(field: any): boolean {
@@ -131,12 +148,23 @@ export class MasterFormComponent implements OnInit {
         field.name === 'specimenCode' || field.name === 'specimenName')) {
       return true;
     }
-    if (this.isParameterPickerScreen &&
-      (field.name === 'hisParamCode' || field.name === 'hisParamDescription' ||
-        field.name === 'hisParamUnit' || field.name === 'hisParamMethod')) {
+    if (this.isTestParameterScreen &&
+      (field.name === 'hisParamCode' || field.name === 'hisParamDescription')) {
+      return true;
+    }
+    if (this.isParameterMasterScreen && field.name === 'hisParamCode' && !this.id) {
+      return false;
+    }
+    if (this.isParameterMasterScreen && field.name === 'hisParamCode' && !!this.id) {
       return true;
     }
     if (this.apiName === 'HisParameterRangeMaster' && field.name === 'hisRangeCode') {
+      return true;
+    }
+    if (this.apiName === 'PatientMaster' && field.name === 'mrNo' && !this.id) {
+      return true;
+    }
+    if (this.apiName === 'PatientMaster' && field.name === 'visitId' && !this.id) {
       return true;
     }
     return !!field.readonly || this.isCodeReadonly(field);
@@ -147,6 +175,9 @@ export class MasterFormComponent implements OnInit {
       return this.fields.filter(f =>
         f.name !== 'hisTestCode' && f.name !== 'hisTestCodeDescription' && f.name !== 'specimenCode');
     }
+    if (this.apiName === 'TestRate') {
+      return this.fields.filter(f => f.name !== 'taxPercent');
+    }
     return this.fields;
   }
 
@@ -156,6 +187,12 @@ export class MasterFormComponent implements OnInit {
     return +this.form.get('rateType').value;
   }
 
+  get patientDisplayName(): string {
+    const prefix = (this.form?.get('patientPrefix')?.value || '').trim();
+    const name = (this.form?.get('name')?.value || '').trim();
+    return [prefix, name].filter(Boolean).join(' ') || '—';
+  }
+
   isInValid(controlName: string) {
     const c = this.form.get(controlName);
     return this.submitted && c && c.invalid;
@@ -163,14 +200,54 @@ export class MasterFormComponent implements OnInit {
 
   toDateInput(d: Date | string) {
     if (!d) { return ''; }
-    const dt = typeof d === 'string' ? new Date(d) : d;
-    return dt.toISOString().substring(0, 10);
+    const dt = this.parseLocalDate(d);
+    if (!dt) { return ''; }
+    return this.formatLocalDate(dt);
+  }
+
+  private parseLocalDate(d: Date | string): Date | null {
+    if (!d) { return null; }
+    if (d instanceof Date) {
+      return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    }
+    const text = ('' + d).trim();
+    const datePart = text.length >= 10 ? text.substring(0, 10) : text;
+    const pieces = datePart.split('-').map(v => +v);
+    if (pieces.length === 3 && pieces.every(n => !isNaN(n))) {
+      return new Date(pieces[0], pieces[1] - 1, pieces[2]);
+    }
+    const parsed = new Date(text);
+    return isNaN(parsed.getTime())
+      ? null
+      : new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate());
+  }
+
+  private formatLocalDate(dt: Date): string {
+    const y = dt.getFullYear();
+    const m = String(dt.getMonth() + 1).padStart(2, '0');
+    const day = String(dt.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
+
+  private toApiDateString(d: Date | string): string {
+    const dt = this.parseLocalDate(d);
+    return dt ? this.formatLocalDate(dt) : '';
   }
 
   private loadSetupLookups() {
-    const requests: { [key: string]: Observable<any> } = {
-      tests: this.masterService.getLookupList('HisTest')
-    };
+    const requests: { [key: string]: Observable<any> } = {};
+    if (!this.isParameterMasterScreen) {
+      requests.tests = this.masterService.getLookupList('HisTest');
+    }
+    if (this.apiName === 'HisParameterMaster') {
+      requests.existingParams = this.masterService.getItems('HisParameterMaster', {
+        RecordPerPage: 2000, CurrentPage: 1, SortColumnName: 'HISParamCode', SortDirection: true
+      });
+    }
+    if (this.isParameterMasterScreen) {
+      requests.units = this.masterService.getLookupList('Unit');
+      requests.methods = this.masterService.getLookupList('Method');
+    }
     if (this.apiName === 'HisParameterRangeMaster') {
       requests.params = this.masterService.getItems('HisParameterMaster', {
         RecordPerPage: 500, CurrentPage: 1, SortColumnName: 'HISParamCode', SortDirection: true
@@ -182,6 +259,15 @@ export class MasterFormComponent implements OnInit {
     forkJoin(requests).subscribe(
       (data: any) => {
         this.tests = data.tests || [];
+        if (data.units) {
+          this.units = (data.units || []).filter(u => u.isActive !== false);
+        }
+        if (data.methods) {
+          this.methods = (data.methods || []).filter(m => m.isActive !== false);
+        }
+        if (data.existingParams) {
+          this.existingParameters = (data.existingParams.items || data.existingParams.Items || data.existingParams) || [];
+        }
         if (data.params) {
           this.hisParameters = (data.params.items || data.params.Items || data.params) || [];
         }
@@ -202,6 +288,17 @@ export class MasterFormComponent implements OnInit {
               });
             }
           });
+        } else if (this.apiName === 'HisParameterMaster' && this.id) {
+          this.masterService.getItem(this.apiName, this.id).subscribe(item => {
+            if (item) {
+              this.patchItem(item);
+              if (this.isParameterMasterScreen) {
+                this.ensureHisTestOption(item?.hisTestId ?? item?.HISTestId);
+              } else {
+                this.syncHisTestPicker(item);
+              }
+            }
+          });
         } else if (this.apiName === 'HisParameterRangeMaster' && !this.id) {
           this.assignNextRangeCode();
         } else if (this.id) {
@@ -217,6 +314,27 @@ export class MasterFormComponent implements OnInit {
         }
       },
       () => this.alertService.error('Failed to load lookup data.')
+    );
+  }
+
+  private assignNextPatientId() {
+    this.masterService.getNextPatientId().subscribe(
+      pid => {
+        if (pid) {
+          this.form.patchValue({ hisPatientId: pid });
+        }
+      },
+      () => {
+        this.form.patchValue({ hisPatientId: '' });
+      }
+    );
+    this.masterService.getNextMrNo().subscribe(
+      mr => { if (mr) { this.form.patchValue({ mrNo: mr }); } },
+      () => { this.form.patchValue({ mrNo: '' }); }
+    );
+    this.masterService.getNextVisitId().subscribe(
+      vid => { if (vid) { this.form.patchValue({ visitId: vid }); } },
+      () => { this.form.patchValue({ visitId: '' }); }
     );
   }
 
@@ -253,6 +371,48 @@ export class MasterFormComponent implements OnInit {
     if (this.isTestParameterScreen || this.isParameterMasterScreen) {
       this.onHisTestSelected();
     }
+  }
+
+  private validateParameterDuplicate(item: any): string | null {
+    if (this.apiName !== 'HisParameterMaster') {
+      return null;
+    }
+
+    const code = ('' + (item.hisParamCode ?? item.HISParamCode ?? '')).trim();
+    const description = ('' + (item.hisParamDescription ?? item.HISParamDescription ?? '')).trim();
+    if (!code && !description) {
+      return null;
+    }
+
+    const excludeId = this.id ? +this.id : 0;
+    const candidates = (this.existingParameters || []).filter(p => {
+      const pId = +(p.id ?? p.Id ?? 0);
+      return pId !== excludeId;
+    });
+
+    const matchesCode = (p: any, value: string) => {
+      const pCode = ('' + (p.hisParamCode ?? p.HISParamCode ?? '')).trim();
+      return pCode && pCode.toLowerCase() === value.toLowerCase();
+    };
+
+    const matchesDescription = (p: any, value: string) => {
+      const pDesc = ('' + (p.hisParamDescription ?? p.HISParamDescription ?? '')).trim();
+      return pDesc && pDesc.toLowerCase() === value.toLowerCase();
+    };
+
+    if (code && candidates.some(p => matchesCode(p, code))) {
+      return this.parameterCodeExistsMessage;
+    }
+
+    if (description && candidates.some(p => matchesDescription(p, description))) {
+      return this.parameterDescriptionExistsMessage;
+    }
+
+    if (code && description && candidates.some(p => matchesCode(p, code) && matchesDescription(p, description))) {
+      return this.parameterCombinationExistsMessage;
+    }
+
+    return null;
   }
 
   loadParameterCatalog(afterLoad?: () => void) {
@@ -306,8 +466,8 @@ export class MasterFormComponent implements OnInit {
 
   private lockParameterDerivedFields(includeIdentityFields = true) {
     const names = includeIdentityFields
-      ? ['hisParamCode', 'hisParamDescription', 'hisParamUnit', 'hisParamMethod']
-      : ['hisParamUnit', 'hisParamMethod'];
+      ? ['hisParamCode', 'hisParamDescription']
+      : [];
     names.forEach(name => {
       const control = this.form.get(name);
       if (control) {
@@ -351,13 +511,11 @@ export class MasterFormComponent implements OnInit {
 
   private loadTestRateLookups() {
     forkJoin({
-      tests: this.masterService.getLookupList('HisTest'),
       corporates: this.masterService.getLookupList('Corporate'),
       doctors: this.masterService.getLookupList('ReferralDoctor'),
       profiles: this.masterService.getLookupList('TestProfile')
     }).subscribe(
       data => {
-        this.tests = data.tests || [];
         this.corporates = (data.corporates || []).filter(c => c.isActive !== false);
         this.doctors = (data.doctors || []).filter(d => d.isActive !== false);
         this.profiles = (data.profiles || []).filter(p => p.isActive !== false);
@@ -367,6 +525,7 @@ export class MasterFormComponent implements OnInit {
           this.masterService.getItem(this.apiName, this.id).subscribe(item => {
             if (item) {
               this.patchItem(item);
+              this.ensureTestRateOption(item);
             }
           });
         } else {
@@ -383,6 +542,70 @@ export class MasterFormComponent implements OnInit {
         this.alertService.error('Failed to load lookup data for Test Rate form.');
       }
     );
+  }
+
+  onTestRateDropdownOpen() {
+    if (!this.testRateOptions.length) {
+      this.searchTestRateOptions('');
+    }
+  }
+
+  onTestRateSearch(event: { term: string }) {
+    const term = (event?.term || '').trim();
+    if (this.testRateSearchTimer) {
+      clearTimeout(this.testRateSearchTimer);
+    }
+    this.testRateSearchTimer = setTimeout(() => this.searchTestRateOptions(term), 250);
+  }
+
+  private searchTestRateOptions(term: string) {
+    this.testRateSearchLoading = true;
+    this.masterService.searchHisTests(term, 50).subscribe(
+      rows => {
+        this.testRateOptions = (rows || []).map(t => this.toTestRateOption(t));
+        this.testRateSearchLoading = false;
+      },
+      () => {
+        this.testRateSearchLoading = false;
+        this.testRateOptions = [];
+      }
+    );
+  }
+
+  private toTestRateOption(t: any) {
+    const id = t.id ?? t.Id;
+    const code = t.hisTestCode || t.HISTestCode || '';
+    const desc = t.hisTestCodeDescription || t.HISTestCodeDescription || '';
+    return { id, hisTestCode: code, hisTestCodeDescription: desc, displayLabel: `${code} - ${desc}`.trim() };
+  }
+
+  private ensureHisTestOption(testId: any) {
+    if (!testId) {
+      return;
+    }
+    const existing = this.testRateOptions.find(o => +o.id === +testId);
+    if (existing) {
+      return;
+    }
+    this.masterService.getItem('HisTest', testId).subscribe(test => {
+      if (test) {
+        const option = this.toTestRateOption(test);
+        this.testRateOptions = [option, ...this.testRateOptions];
+      }
+    });
+  }
+
+  private ensureTestRateOption(item: any) {
+    this.ensureHisTestOption(item?.testId ?? item?.TestId);
+  }
+
+  private findHisTestById(testId: any): any {
+    if (!testId) {
+      return null;
+    }
+    const id = +testId;
+    return this.testRateOptions.find(t => +t.id === id)
+      || this.tests.find(t => +t.id === id);
   }
 
   onRateTypeChange() {
@@ -402,6 +625,10 @@ export class MasterFormComponent implements OnInit {
     const patch: any = Object.assign({}, item);
     if (patch.Code != null && patch.code == null) { patch.code = patch.Code; }
     if (patch.Name != null && patch.name == null) { patch.name = patch.Name; }
+    if (patch.Phone != null && patch.phone == null) { patch.phone = patch.Phone; }
+    if (patch.Email != null && patch.email == null) { patch.email = patch.Email; }
+    if (patch.Address != null && patch.address == null) { patch.address = patch.Address; }
+    if (patch.ProcessingCategory != null && patch.processingCategory == null) { patch.processingCategory = patch.ProcessingCategory; }
     if (patch.effectiveStart) { patch.effectiveStart = this.toDateInput(patch.effectiveStart); }
     if (patch.effectiveEnd) { patch.effectiveEnd = this.toDateInput(patch.effectiveEnd); }
     if (patch.dateOfBirth) { patch.dateOfBirth = this.toDateInput(patch.dateOfBirth); }
@@ -411,6 +638,7 @@ export class MasterFormComponent implements OnInit {
     if (patch.referralDoctorId != null) { patch.referralDoctorId = +patch.referralDoctorId; }
     if (patch.testProfileId != null) { patch.testProfileId = +patch.testProfileId; }
     if (patch.hisTestId != null) { patch.hisTestId = +patch.hisTestId; }
+    if (patch.HISTestId != null && patch.hisTestId == null) { patch.hisTestId = +patch.HISTestId; }
     if (patch.hisParameterId != null) { patch.hisParameterId = +patch.hisParameterId; }
     if (patch.equipmentId != null) { patch.equipmentId = +patch.equipmentId; }
     if (patch.isActive != null) { patch.isActive = this.coerceBool(patch.isActive); }
@@ -420,10 +648,80 @@ export class MasterFormComponent implements OnInit {
     if (patch.HISParamUnit != null && patch.hisParamUnit == null) { patch.hisParamUnit = patch.HISParamUnit; }
     if (patch.HISParamMethod != null && patch.hisParamMethod == null) { patch.hisParamMethod = patch.HISParamMethod; }
     if (patch.LISParamCode != null && patch.lisParamCode == null) { patch.lisParamCode = patch.LISParamCode; }
+    if (patch.MRNo != null && patch.mrNo == null) { patch.mrNo = patch.MRNo; }
+    if (patch.VisitId != null && patch.visitId == null) { patch.visitId = patch.VisitId; }
+    if (patch.PatientPrefix != null && patch.patientPrefix == null) { patch.patientPrefix = patch.PatientPrefix; }
     if (patch.HISRangeCode != null && patch.hisRangeCode == null) { patch.hisRangeCode = patch.HISRangeCode; }
+    if (patch.HISRangeValue != null && patch.hisRangeValue == null) { patch.hisRangeValue = patch.HISRangeValue; }
+    if (patch.AgeFrom != null && patch.ageFrom == null) { patch.ageFrom = patch.AgeFrom; }
+    if (patch.AgeTo != null && patch.ageTo == null) { patch.ageTo = patch.AgeTo; }
+    if (patch.AgeType != null && patch.ageType == null) { patch.ageType = patch.AgeType; }
+    if (patch.MinValue != null && patch.minValue == null) { patch.minValue = patch.MinValue; }
+    if (patch.MaxValue != null && patch.maxValue == null) { patch.maxValue = patch.MaxValue; }
     if (patch.Gender != null && patch.gender == null) { patch.gender = patch.Gender; }
-    patch.gender = this.normalizeGenderForForm(patch.gender);
+    patch.gender = this.apiName === 'PatientMaster'
+      ? this.normalizePatientGenderForForm(patch.gender)
+      : this.normalizeGenderForForm(patch.gender);
+    if (this.isParameterMasterScreen) {
+      if (patch.hisParamUnit) {
+        patch.hisParamUnit = this.matchLookupName(patch.hisParamUnit, this.units);
+      }
+      if (patch.hisParamMethod) {
+        patch.hisParamMethod = this.matchLookupName(patch.hisParamMethod, this.methods);
+      }
+    }
     this.form.patchValue(patch);
+  }
+
+  onPatientAgeChange(): void {
+    if (this.apiName !== 'PatientMaster') {
+      return;
+    }
+    const age = +this.form.get('age')?.value;
+    if (!age || age <= 0 || isNaN(age)) {
+      return;
+    }
+    const dob = new Date();
+    dob.setHours(0, 0, 0, 0);
+    dob.setFullYear(dob.getFullYear() - Math.floor(age));
+    this.form.patchValue({ dateOfBirth: this.toDateInput(dob) }, { emitEvent: false });
+  }
+
+  onPatientDobChange(): void {
+    if (this.apiName !== 'PatientMaster') {
+      return;
+    }
+    const dob = this.parseLocalDate(this.form.get('dateOfBirth')?.value);
+    if (!dob) {
+      return;
+    }
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    let age = today.getFullYear() - dob.getFullYear();
+    const monthDiff = today.getMonth() - dob.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+      age--;
+    }
+    if (age >= 0) {
+      this.form.patchValue({ age }, { emitEvent: false });
+    }
+  }
+
+  private normalizePatientGenderForForm(gender: string): string {
+    if (!gender) {
+      return '';
+    }
+    const g = ('' + gender).trim().toUpperCase();
+    if (g === 'M' || g === 'MALE') {
+      return 'M';
+    }
+    if (g === 'F' || g === 'FEMALE') {
+      return 'F';
+    }
+    if (g === 'O' || g === 'OTHER') {
+      return 'O';
+    }
+    return gender;
   }
 
   private normalizeGenderForForm(gender: string): string {
@@ -444,7 +742,30 @@ export class MasterFormComponent implements OnInit {
   }
 
   private coerceBool(value: any): boolean {
-    return value === true || value === 'true' || value === 1 || value === '1';
+    if (value === true || value === 1) {
+      return true;
+    }
+    if (value === false || value === 0) {
+      return false;
+    }
+    if (value == null) {
+      return false;
+    }
+    const normalized = ('' + value).trim().toLowerCase();
+    return normalized === 'true' || normalized === '1' || normalized === 'yes';
+  }
+
+  private matchLookupName(value: string, options: any[]): string {
+    if (!value || !options?.length) {
+      return value || '';
+    }
+    const trimmed = ('' + value).trim();
+    const exact = options.find(o => (o.name || o.Name) === trimmed);
+    if (exact) {
+      return exact.name || exact.Name;
+    }
+    const ci = options.find(o => (o.name || o.Name || '').toLowerCase() === trimmed.toLowerCase());
+    return ci ? (ci.name || ci.Name) : trimmed;
   }
 
   onSubmit() {
@@ -466,9 +787,12 @@ export class MasterFormComponent implements OnInit {
     if (item.code) { item.code = ('' + item.code).trim(); }
     if (item.name) { item.name = ('' + item.name).trim(); }
     if (item.hisParamCode) { item.hisParamCode = ('' + item.hisParamCode).trim(); }
-    if (item.effectiveStart) { item.effectiveStart = new Date(item.effectiveStart); }
-    if (item.effectiveEnd) { item.effectiveEnd = new Date(item.effectiveEnd); }
-    if (item.dateOfBirth) { item.dateOfBirth = new Date(item.dateOfBirth); }
+    if (item.effectiveStart) { item.effectiveStart = this.toApiDateString(item.effectiveStart); }
+    if (item.effectiveEnd) { item.effectiveEnd = this.toApiDateString(item.effectiveEnd); }
+    if (item.dateOfBirth) { item.dateOfBirth = this.toApiDateString(item.dateOfBirth); }
+    if (this.apiName === 'PatientMaster' && item.gender) {
+      item.gender = this.normalizePatientGenderForForm(item.gender);
+    }
     if (this.apiName === 'TestMappingMaster') {
       const eq = this.equipments.find(e => +e.id === +item.equipmentId);
       if (eq) {
@@ -479,10 +803,48 @@ export class MasterFormComponent implements OnInit {
     if (this.isParameterPickerScreen) {
       delete item.hisParameterPicker;
     }
-    if (this.apiName === 'PatientMaster' && !item.hisPatientId) {
-      this.alertService.error('Patient ID is required.');
+    if (this.apiName === 'PatientMaster' && !('' + (item.phone || '')).trim()) {
+      this.alertService.error('Phone number is required.');
       return;
     }
+    if (this.apiName === 'PatientMaster') {
+      item.patientPrefix = ('' + (item.patientPrefix || '')).trim();
+      item.mrNo = ('' + (item.mrNo || '')).trim();
+      item.visitId = ('' + (item.visitId || '')).trim();
+      if (!item.patientPrefix) {
+        this.alertService.error('Patient Prefix is required.');
+        return;
+      }
+      if (!item.mrNo) {
+        this.alertService.error('MR No is required.');
+        return;
+      }
+      if (!item.visitId) {
+        this.alertService.error('Visit ID is required.');
+        return;
+      }
+      if (!this.id && !('' + (item.hisPatientId || '')).trim()) {
+        delete item.hisPatientId;
+      }
+    }
+    if (this.isParameterMasterScreen) {
+      if (!item.hisParamCode) {
+        const testId = item.hisTestId;
+        const test = this.findHisTestById(testId);
+        const prefix = ((test?.hisTestCode || test?.HISTestCode || 'P') + '').trim().substring(0, 8) || 'P';
+        item.hisParamCode = `${prefix}-${Date.now().toString(36).toUpperCase()}`;
+      }
+      if (!item.lisParamCode) {
+        item.lisParamCode = item.hisParamCode;
+      }
+    }
+
+    const parameterDuplicateError = this.validateParameterDuplicate(item);
+    if (parameterDuplicateError) {
+      this.alertService.error(parameterDuplicateError);
+      return;
+    }
+
     if (this.apiName === 'TestRate') {
       const rt = +item.rateType;
       if (rt !== 1) { item.corporateId = null; }
@@ -505,16 +867,21 @@ export class MasterFormComponent implements OnInit {
       : this.masterService.addItem(this.apiName, item);
 
     req.subscribe(
-      () => {
+      (res) => {
         this.loading = false;
         this.alertService.success('Saved successfully');
+        if (this.apiName === 'PatientMaster' && !this.id) {
+          const newPatientId = res?.result ?? res?.Result;
+          if (newPatientId) {
+            this.router.navigate(['/sale-invoices/create'], { state: { patientId: +newPatientId } });
+            return;
+          }
+        }
         this.router.navigate([this.returnUrl]);
       },
       err => {
         this.loading = false;
-        const body = err?.error;
-        const msg = typeof body === 'string' ? body : (body?.message || body?.Message || body?.error || 'Save failed');
-        this.alertService.error(msg);
+        this.alertService.error(extractApiError(err, 'Save failed'));
       }
     );
   }
@@ -558,8 +925,7 @@ export class MasterFormComponent implements OnInit {
       },
       err => {
         this.loading = false;
-        const apiMsg = typeof err?.error === 'string' ? err.error : err?.error?.message;
-        this.alertService.error(apiMsg || (isDelete ? 'Delete failed' : 'Deactivate failed'));
+        this.alertService.error(extractApiError(err, isDelete ? 'Delete failed' : 'Deactivate failed'));
       }
     );
   }

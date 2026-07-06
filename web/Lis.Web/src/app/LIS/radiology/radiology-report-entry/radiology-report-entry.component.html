@@ -1,0 +1,61 @@
+<div class="container-fluid">
+  <div class="panel panel-default filter-panel" *ngIf="!showEntry">
+    <div class="panel-body">
+      <div class="radiology-report-entry-intro">
+        <h3 class="panel-title"><span class="glyphicon glyphicon-picture"></span> Radiology Report Entry</h3>
+        <p class="text-muted">Enter and submit radiology findings for doctor approval.</p>
+      </div>
+      <div class="row">
+        <div class="col-sm-4"><label>Search</label><input class="form-control input-sm" [(ngModel)]="searchText" (keyup.enter)="search()" /></div>
+        <div class="col-sm-3"><label>Modality</label><input class="form-control input-sm" [(ngModel)]="modality" /></div>
+        <div class="col-sm-2 filter-actions-col">
+          <button class="btn btn-primary btn-sm" (click)="search()" [disabled]="loading">Search</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!showEntry && loading" class="text-center workflow-loading">
+    <span class="glyphicon glyphicon-refresh glyphicon-spin"></span> Loading queue...
+  </div>
+
+  <div *ngIf="!showEntry && !loading" class="table-responsive">
+    <table class="table table-striped table-hover">
+      <thead><tr><th>Accession</th><th>Patient</th><th>Test</th><th>Modality</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+        <tr *ngFor="let row of rows">
+          <td>{{ row.accessionNo }}</td>
+          <td>{{ row.patientName }}</td>
+          <td>{{ row.testName }}</td>
+          <td>{{ row.modality }}</td>
+          <td>{{ row.status }}</td>
+          <td><button class="btn btn-primary btn-xs" (click)="openEntry(row)">Entry</button></td>
+        </tr>
+      </tbody>
+    </table>
+    <p *ngIf="!rows.length" class="text-muted text-center workflow-empty">No radiology cases in the queue.</p>
+    <div class="workflow-pager" *ngIf="totalRecord > recordPerPage">
+      <span class="list-pager-info">Showing {{ recordFrom }}&ndash;{{ recordTo }} of {{ totalRecord }}</span>
+      <ngb-pagination [(page)]="currentPage" [pageSize]="recordPerPage" [collectionSize]="totalRecord"
+        [maxSize]="5" [rotate]="true" [boundaryLinks]="true" (pageChange)="search($event)"></ngb-pagination>
+    </div>
+  </div>
+
+  <div *ngIf="showEntry && reportDetail" class="panel panel-default entry-panel">
+    <div class="panel-heading entry-panel-heading">
+      <strong>{{ reportDetail.patientName }}</strong> — {{ reportDetail.testName }} ({{ reportDetail.status }})
+      <button class="btn btn-default btn-xs entry-back-btn" (click)="showEntry=false">Back</button>
+    </div>
+    <div class="panel-body">
+      <div class="form-group"><label>Clinical History</label><textarea class="form-control" rows="2" [(ngModel)]="clinicalHistory" [readonly]="!reportDetail.canEdit"></textarea></div>
+      <div class="form-group"><label>Findings <span class="text-danger">*</span></label><textarea class="form-control" rows="4" [(ngModel)]="findings" [readonly]="!reportDetail.canEdit"></textarea></div>
+      <div class="form-group"><label>Impression <span class="text-danger">*</span></label><textarea class="form-control" rows="3" [(ngModel)]="impression" [readonly]="!reportDetail.canEdit"></textarea></div>
+      <div class="form-group"><label>Recommendation</label><textarea class="form-control" rows="2" [(ngModel)]="recommendation" [readonly]="!reportDetail.canEdit"></textarea></div>
+
+      <div class="btn-toolbar entry-actions">
+        <button class="btn btn-default" (click)="saveDraft()" *ngIf="reportDetail.canEdit">Save Draft</button>
+        <button class="btn btn-primary" (click)="submitReview()" *ngIf="reportDetail.canEdit">Submit for Doctor Approval</button>
+      </div>
+    </div>
+  </div>
+</div>

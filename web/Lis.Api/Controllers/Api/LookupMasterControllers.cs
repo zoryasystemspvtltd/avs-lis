@@ -5,6 +5,7 @@ using LIS.DtoModel.Models;
 using LIS.Logger;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
@@ -22,6 +23,15 @@ namespace Lis.Api.Controllers.Api
 
         [HttpGet, Route("GetAll")]
         public IEnumerable<ReferralDoctorMaster> GetAllRecords() => FetchAllActiveCore();
+
+        [HttpPost, Route("")]
+        public override HttpResponseMessage Post(ReferralDoctorMaster item) => base.Post(item);
+
+        [HttpPost, Route("Put")]
+        public override HttpResponseMessage Put(ReferralDoctorMaster item) => base.Put(item);
+
+        [HttpPost, Route("Delete")]
+        public override HttpResponseMessage Delete(ReferralDoctorMaster item) => base.Delete(item);
     }
 
     [RoutePrefix("api/Corporate")]
@@ -151,7 +161,7 @@ namespace Lis.Api.Controllers.Api
             {
                 if (id.HasValue)
                 {
-                    return Ok(profileManager.GetWithDetails(id.Value));
+                    return Ok(profileManager.GetWithHierarchy(id.Value));
                 }
 
                 return GetCore(null);
@@ -163,8 +173,42 @@ namespace Lis.Api.Controllers.Api
             }
         }
 
+        [HttpGet, Route("{id:int}/Hierarchy")]
+        public IHttpActionResult GetHierarchy(int id)
+        {
+            try
+            {
+                var hierarchy = profileManager.GetWithHierarchy(id);
+                if (hierarchy == null)
+                {
+                    return NotFound();
+                }
+
+                return Ok(hierarchy);
+            }
+            catch (Exception e)
+            {
+                Logger.LogException(e);
+                return InternalServerError(e);
+            }
+        }
+
         [HttpGet, Route("GetAll")]
         public IEnumerable<TestProfileMaster> GetAllRecords() => FetchAllActiveCore();
+
+        [HttpGet, Route("NextProfileCode")]
+        public IHttpActionResult GetNextProfileCode()
+        {
+            try
+            {
+                return Ok(new { code = profileManager.GetNextProfileCode() });
+            }
+            catch (Exception e)
+            {
+                Logger.LogException(e);
+                return InternalServerError(e);
+            }
+        }
 
         [QAuthorize(ModuleName = "Masters", ModulePermissionTypes = ModulePermissionType.CanAdd | ModulePermissionType.CanEdit)]
         [HttpPost, Route("")]
@@ -177,8 +221,14 @@ namespace Lis.Api.Controllers.Api
                     return Request.CreateResponse(HttpStatusCode.PreconditionFailed, ModelState);
                 }
 
-                profileManager.SaveWithDetails(profile, profile?.ProfileDetails);
-                var response = ResponseMgr.CreateResponse(HttpStatusCode.OK, "Profile saved successfully", null, profile.Id);
+                var details = profile?.ProfileDetails;
+                if (details == null || !details.Any())
+                {
+                    return Request.CreateResponse(HttpStatusCode.PreconditionFailed, "At least one test line is required.");
+                }
+
+                var savedId = profileManager.SaveWithDetails(profile, details);
+                var response = ResponseMgr.CreateResponse(HttpStatusCode.OK, "Profile saved successfully", null, savedId);
                 return Request.CreateResponse(HttpStatusCode.OK, response);
             }
             catch (Exception e)
@@ -189,7 +239,31 @@ namespace Lis.Api.Controllers.Api
         }
 
         [HttpPost, Route("Put")]
-        public override HttpResponseMessage Put(TestProfileMaster item) => base.Put(item);
+        public override HttpResponseMessage Put(TestProfileMaster item)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return Request.CreateResponse(HttpStatusCode.PreconditionFailed, ModelState);
+                }
+
+                var details = item?.ProfileDetails;
+                if (details == null || !details.Any())
+                {
+                    return Request.CreateResponse(HttpStatusCode.PreconditionFailed, "At least one test line is required.");
+                }
+
+                var savedId = profileManager.SaveWithDetails(item, details);
+                var response = ResponseMgr.CreateResponse(HttpStatusCode.OK, "Profile updated successfully", null, savedId);
+                return Request.CreateResponse(HttpStatusCode.OK, response);
+            }
+            catch (Exception e)
+            {
+                Logger.LogException(e);
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, e.Message);
+            }
+        }
 
         [HttpPost, Route("Delete")]
         public override HttpResponseMessage Delete(TestProfileMaster item) => base.Delete(item);

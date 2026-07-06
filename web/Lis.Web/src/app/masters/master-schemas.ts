@@ -2,8 +2,9 @@ export const MASTER_LIST_SCHEMAS: { [key: string]: any } = {
   department: {
     url: 'departments', heading: 'Department Master', module: 'Department', hideAction: true, hideCreate: false,
     elements: [
-      { heading: 'Code', fieldName: 'code', sortable: true, width: '20%', type: 'link_search' },
-      { heading: 'Name', fieldName: 'name', sortable: true, width: '80%', type: 'label' }
+      { heading: 'Code', fieldName: 'code', sortable: true, width: '15%', type: 'link_search' },
+      { heading: 'Name', fieldName: 'name', sortable: true, width: '45%', type: 'label' },
+      { heading: 'Processing Category', fieldName: 'processingCategory', sortable: true, width: '25%', type: 'label' }
     ]
   },
   specimen: {
@@ -89,19 +90,20 @@ export const MASTER_LIST_SCHEMAS: { [key: string]: any } = {
   testProfile: {
     url: 'test-profiles', heading: 'Test Profile / Package Master', module: 'TestProfile', hideAction: true,
     elements: [
-      { heading: 'Code', fieldName: 'code', sortable: true, width: '20%', type: 'link' },
-      { heading: 'Name', fieldName: 'name', sortable: true, width: '40%', type: 'label' },
-      { heading: 'Package Rate', fieldName: 'packageRate', sortable: false, width: '20%', type: 'label' }
+      { heading: 'Code', fieldName: 'code', sortable: true, width: '15%', type: 'link' },
+      { heading: 'Name', fieldName: 'name', sortable: true, width: '35%', type: 'label' },
+      { heading: 'Package Rate', fieldName: 'packageRate', sortable: false, width: '15%', type: 'currency' },
+      { heading: 'Active', fieldName: 'isActive', sortable: false, width: '10%', type: 'label' }
     ]
   },
   testRate: {
     url: 'test-rates', heading: 'Test Rate Master', module: 'TestRate', hideAction: true,
     elements: [
-      { heading: 'Test', fieldName: 'testName', sortable: false, width: '25%', type: 'link' },
-      { heading: 'Rate', fieldName: 'rate', sortable: true, width: '12%', type: 'label' },
+      { heading: 'Test', fieldName: 'testName', sortable: false, width: '20%', type: 'link' },
+      { heading: 'Rate Type', fieldName: 'rateTypeLabel', sortable: false, width: '12%', type: 'label' },
+      { heading: 'Rate', fieldName: 'rate', sortable: true, width: '10%', type: 'label' },
       { heading: 'Emergency', fieldName: 'emergencyRate', sortable: false, width: '12%', type: 'label' },
       { heading: 'Discount %', fieldName: 'discountPercent', sortable: false, width: '12%', type: 'label' },
-      { heading: 'Tax %', fieldName: 'taxPercent', sortable: false, width: '10%', type: 'label' },
       { heading: 'Effective From', fieldName: 'effectiveStart', sortable: true, width: '15%', type: 'date', format: 'dd/MM/yyyy' },
       { heading: 'Active', fieldName: 'isActive', sortable: false, width: '8%', type: 'label' }
     ]
@@ -111,7 +113,7 @@ export const MASTER_LIST_SCHEMAS: { [key: string]: any } = {
     elements: [
       { heading: 'Param Code', fieldName: 'hisParamCode', sortable: true, width: '15%', type: 'link' },
       { heading: 'Description', fieldName: 'hisParamDescription', sortable: true, width: '30%', type: 'label' },
-      { heading: 'Test Code', fieldName: 'hisTestCode', sortable: true, width: '15%', type: 'label' },
+      { heading: 'Test Name', fieldName: 'hisTestCodeDescription', sortable: true, width: '15%', type: 'label' },
       { heading: 'Unit', fieldName: 'hisParamUnit', sortable: false, width: '12%', type: 'label' },
       { heading: 'Method', fieldName: 'hisParamMethod', sortable: false, width: '12%', type: 'label' }
     ]
@@ -130,7 +132,8 @@ export const MASTER_LIST_SCHEMAS: { [key: string]: any } = {
   testMapping: {
     url: 'test-mappings', heading: 'Test Mapping Master', module: 'TestMappingMaster', hideAction: true,
     elements: [
-      { heading: 'Test', fieldName: 'hisTestCode', sortable: true, width: '15%', type: 'link' },
+      { heading: 'Test Code', fieldName: 'hisTestCode', sortable: true, width: '15%', type: 'link' },
+      { heading: 'Test Name', fieldName: 'hisTestCodeDescription', sortable: true, width: '15%', type: 'link' },
       { heading: 'LIS Test', fieldName: 'lisTestCode', sortable: true, width: '15%', type: 'label' },
       { heading: 'Equipment', fieldName: 'groupName', sortable: false, width: '25%', type: 'label' },
       { heading: 'Active', fieldName: 'isActive', sortable: false, width: '10%', type: 'label' }
@@ -149,11 +152,14 @@ export const MASTER_LIST_SCHEMAS: { [key: string]: any } = {
   patientMaster: {
     url: 'patient-master', heading: 'Patient Master', module: 'PatientMaster', hideAction: true,
     elements: [
-      { heading: 'Name', fieldName: 'name', sortable: true, width: '25%', type: 'link' },
-      { heading: 'Phone', fieldName: 'phone', sortable: false, width: '15%', type: 'label' },
+      { heading: 'Patient No', fieldName: 'hisPatientId', sortable: true, width: '14%', type: 'link' },
+      { heading: 'Patient Name', fieldName: 'name', sortable: true, width: '22%', type: 'label' },
+      { heading: 'Salutation', fieldName: 'patientPrefix', sortable: false, width: '10%', type: 'label' },
+      { heading: 'MR No', fieldName: 'mrNo', sortable: true, width: '12%', type: 'label' },
+      { heading: 'Visit ID', fieldName: 'visitId', sortable: false, width: '12%', type: 'label' },
+      { heading: 'Phone', fieldName: 'phone', sortable: false, width: '12%', type: 'label' },
       { heading: 'Gender', fieldName: 'gender', sortable: false, width: '10%', type: 'label' },
       { heading: 'Age', fieldName: 'age', sortable: false, width: '10%', type: 'label' },
-      { heading: 'External ID', fieldName: 'hisPatientId', sortable: false, width: '15%', type: 'label' },
       { heading: 'Active', fieldName: 'isActive', sortable: false, width: '10%', type: 'label' }
     ]
   },

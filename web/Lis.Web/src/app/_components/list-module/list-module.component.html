@@ -1,10 +1,12 @@
 <div class="content list-loading" *ngIf="!isLoaded">
     <h1>{{schemma?.heading}}</h1>
+    <p class="text-muted" *ngIf="schemma?.pageDescription">{{schemma.pageDescription}}</p>
     <p class="text-muted"><span class="glyphicon glyphicon-refresh glyphicon-spin"></span> Loading...</p>
 </div>
 <div class="content" *ngIf="isLoaded">
     <div class="alert alert-warning" *ngIf="loadError">{{loadError}}</div>
     <h1>{{schemma.heading}}</h1>
+    <p class="text-muted" *ngIf="schemma.pageDescription">{{schemma.pageDescription}}</p>
     <div class="qtable">
         <div class="row">
             <div class="col-md-12">
@@ -55,7 +57,7 @@
                                 Rejected</a></li>
                         <li *ngIf="allowFilter(5)" [ngClass]="{'active': filterStatus === 5}"><a style="cursor: pointer;" (click)="setFilterStatus(5);"><span
                                     class="glyphicon glyphicon-thumbs-up" title="Doctor Approved"></span>Doctor
-                                Approvrd</a></li>
+                                Approved</a></li>
                         <li *ngIf="allowFilter(6)" [ngClass]="{'active': filterStatus === 6}"><a style="cursor: pointer;" (click)="setFilterStatus(6);"><span
                                     class="glyphicon glyphicon-thumbs-down" title="Doctor Rejected"></span>Doctor
                                 Rejected</a></li>
@@ -95,7 +97,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr *ngFor="let item of items">
+                        <tr *ngFor="let item of items" [class.inactive-master-row]="isInactiveRow(item)">
                             <td *ngIf="!schemma.hideAction || schemma.allowPrint">
                                 <input type="checkbox" name="chk_item" (change)="deSelectAll();" [(ngModel)]="item.IsSelected" />
                                 <app-you-frame [html]="item.reportStatus | statusType"></app-you-frame>
@@ -103,7 +105,7 @@
                             <td *ngFor="let element of schemma.elements;" width="{{element.width}}">
                                 <div [ngSwitch]="element.type">
                                     <div *ngSwitchCase="'label'">
-                                        {{item[element.fieldName]}}
+                                        {{fieldValue(item, element.fieldName)}}
                                     </div>
                                     <div *ngSwitchCase="'chield'">
                                         {{item[element.fieldName].name}}
@@ -124,7 +126,7 @@
                                         {{item[element.otherFieldName] | date:element.format}} {{element.seperater}} {{item[element.fieldName] | date:element.format}}
                                     </div>
                                     <div *ngSwitchCase="'link'">
-                                        <a [routerLink]="['/',schemma.url,item.id]">{{item[element.fieldName]}}</a>
+                                        <a [routerLink]="['/',schemma.url,item.id]">{{fieldValue(item, element.fieldName)}}</a>
                                     </div>
                                     <div *ngSwitchCase="'link_search'">
                                         <a [routerLink]="['/',schemma.url,item[element.fieldName]]">{{item[element.fieldName]}}</a>
@@ -175,17 +177,23 @@
                                         <app-you-frame [html]="item[element.fieldName]" [maxLength]="element.length" [htmlToText]="element.textOnly"></app-you-frame>
                                     </div>
                                     <div *ngSwitchCase="'status_icon'">
-                                        <span class="glyphicon glyphicon glyphicon-ok-sign icon-large" title="Refresh Ststus." [ngClass]="{'icon-green': item[element.fieldName] === true,'icon-red': item[element.fieldName] !== true}"></span>
+                                        <span class="glyphicon glyphicon-ok-sign icon-large" title="Refresh status." [ngClass]="{'icon-green': item[element.fieldName] === true,'icon-red': item[element.fieldName] !== true}"></span>
                                     </div>
                                 </div>
+                            </td>
+                        </tr>
+                        <tr *ngIf="isLoaded && !loading && !items.length">
+                            <td [attr.colspan]="(schemma.hideAction && !schemma.allowPrint ? 0 : 1) + schemma.elements.length" class="text-center text-muted list-empty-cell">
+                                <span class="glyphicon glyphicon-info-sign"></span> No records found.
+                            </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
         </div>
-        <div class="row" *ngIf="schemma.allowPaging">
+        <div class="row" *ngIf="schemma.allowPaging && totalRecord > 0">
             <div class="col-md-5">
-                <h4 class="pagination">{{recordFrom}} to {{recordTo}} of {{totalRecord}} items - Page size &nbsp; </h4>
+                <h4 class="list-pager-info">Showing {{recordFrom}}&ndash;{{recordTo}} of {{totalRecord}} &mdash; Page size &nbsp; </h4>
                 <select class="pagination" [ngModel]="option.RecordPerPage" (change)="onChangePageSize($event.target.value)">
                     <option value="10">10</option>
                     <option value="25">25</option>
@@ -229,8 +237,7 @@
                 <button type="button" *ngIf="schemma.isTechnician" class="btn btn-primary" (click)="editAll(3);" data-dismiss="modal" >Verified and ready for doctor's approval</button>
                 <button type="button" *ngIf="schemma.isTechnician" class="btn btn-default" (click)="editAll(4);" data-dismiss="modal" >Reject</button>
                 <button type="button" *ngIf="schemma.isTechnician" class="btn btn-default" (click)="editAll(0);" data-dismiss="modal" >Reject & Re-Run Sample</button>
-                <button type="button" *ngIf="schemma.isDoctor" class="btn btn-primary" (click)="editAll(5);" data-dismiss="modal" >Approve &
-                    Send</button>
+                <button type="button" *ngIf="schemma.isDoctor" class="btn btn-primary" (click)="editAll(5);" data-dismiss="modal">Approve</button>
                 <button type="button" *ngIf="schemma.isDoctor" class="btn btn-default" (click)="editAll(3);" data-dismiss="modal" >Ask for Second Opinion</button>
                 <button type="button" *ngIf="schemma.isDoctor" class="btn btn-default" (click)="editAll(6);" data-dismiss="modal" >Reject</button>
                 <button type="button" *ngIf="schemma.isRejected" class="btn btn-default" (click)="editAll(0);" data-dismiss="modal" >Re-Run Sample</button>

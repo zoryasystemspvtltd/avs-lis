@@ -64,7 +64,7 @@ namespace LIS.BusinessLogic
 
         public IEnumerable<TestRateMaster> GetAllActive()
         {
-            return rateRepo.Get(r => r.IsActive).Select(Enrich).ToList();
+            return EnrichBatch(rateRepo.Get(r => r.IsActive).ToList());
         }
 
         public ItemList<TestRateMaster> Get(ListOptions option)
@@ -75,7 +75,7 @@ namespace LIS.BusinessLogic
             }
 
             var result = new ItemList<TestRateMaster>();
-            var query = rateRepo.Get();
+            var query = rateRepo.Get(r => true);
 
             if (!string.IsNullOrEmpty(option.SearchText))
             {
@@ -87,25 +87,41 @@ namespace LIS.BusinessLogic
                 query = query.Where(r => testIds.Contains(r.TestId));
             }
 
-            var list = query.ToList().Select(Enrich).ToList();
-            result.TotalRecord = list.Count;
+            result.TotalRecord = query.Count();
 
             var sortColumn = ResolveSortColumn(option.SortColumnName);
             int minRow = (option.CurrentPage - 1) * option.RecordPerPage;
             int pageSize = option.RecordPerPage == 0 ? result.TotalRecord : option.RecordPerPage;
+            if (pageSize <= 0)
+            {
+                pageSize = 10;
+            }
 
-            result.Items = list
-                .OrderBy(sortColumn, option.SortDirection)
-                .Skip(minRow)
-                .Take(pageSize)
-                .ToList();
+            List<TestRateMaster> page;
+            if (sortColumn == "TestName" || sortColumn == "TestCode")
+            {
+                page = EnrichBatch(query.ToList())
+                    .OrderBy(sortColumn, option.SortDirection)
+                    .Skip(minRow)
+                    .Take(pageSize)
+                    .ToList();
+            }
+            else
+            {
+                page = ApplyQueryableSort(query, sortColumn, option.SortDirection)
+                    .Skip(minRow)
+                    .Take(pageSize)
+                    .ToList();
+                page = EnrichBatch(page);
+            }
 
+            result.Items = page;
             return result;
         }
 
         public IEnumerable<TestRateMaster> GetByTestId(int testId)
         {
-            return rateRepo.Get(r => r.TestId == testId && r.IsActive).Select(Enrich).ToList();
+            return EnrichBatch(rateRepo.Get(r => r.TestId == testId && r.IsActive).ToList());
         }
 
         public TestRateMaster GetEffectiveRate(int testId, int rateType, int? corporateId, int? referralDoctorId, int? profileId, DateTime? effectiveOn = null)
@@ -192,32 +208,95 @@ namespace LIS.BusinessLogic
                 return null;
             }
 
-            var test = testRepo.Get(rate.TestId);
-            if (test != null)
+            return EnrichBatch(new List<TestRateMaster> { rate }).FirstOrDefault();
+        }
+
+        private List<TestRateMaster> EnrichBatch(List<TestRateMaster> rates)
+        {
+            if (rates == null || rates.Count == 0)
             {
-                rate.TestCode = test.HISTestCode;
-                rate.TestName = test.HISTestCodeDescription;
+                return rates ?? new List<TestRateMaster>();
             }
 
-            if (rate.CorporateId.HasValue)
+            var testIds = rates.Select(r => r.TestId).Distinct().ToList();
+            var corporateIds = rates.Where(r => r.CorporateId.HasValue).Select(r => r.CorporateId.Value).Distinct().ToList();
+            var doctorIds = rates.Where(r => r.ReferralDoctorId.HasValue).Select(r => r.ReferralDoctorId.Value).Distinct().ToList();
+            var profileIds = rates.Where(r => r.TestProfileId.HasValue).Select(r => r.TestProfileId.Value).Distinct().ToList();
+
+            var tests = testIds.Count == 0
+                ? new Dictionary<int, HisTestMaster>()
+                : testRepo.Get(t => testIds.Contains(t.Id)).ToDictionary(t => t.Id);
+            var corporates = corporateIds.Count == 0
+                ? new Dictionary<int, CorporateMaster>()
+                : corporateRepo.Get(c => corporateIds.Contains(c.Id)).ToDictionary(c => c.Id);
+            var doctors = doctorIds.Count == 0
+                ? new Dictionary<int, ReferralDoctorMaster>()
+                : doctorRepo.Get(d => doctorIds.Contains(d.Id)).ToDictionary(d => d.Id);
+            var profiles = profileIds.Count == 0
+                ? new Dictionary<int, TestProfileMaster>()
+                : profileRepo.Get(p => profileIds.Contains(p.Id)).ToDictionary(p => p.Id);
+
+            foreach (var rate in rates)
             {
-                var corp = corporateRepo.Get(rate.CorporateId.Value);
-                rate.CorporateName = corp?.Name;
+                if (tests.TryGetValue(rate.TestId, out var test))
+                {
+                    rate.TestCode = test.HISTestCode;
+                    rate.TestName = test.HISTestCodeDescription;
+                }
+
+                if (rate.CorporateId.HasValue && corporates.TryGetValue(rate.CorporateId.Value, out var corp))
+                {
+                    rate.CorporateName = corp?.Name;
+                }
+
+                if (rate.ReferralDoctorId.HasValue && doctors.TryGetValue(rate.ReferralDoctorId.Value, out var doc))
+                {
+                    rate.ReferralDoctorName = doc?.Name;
+                }
+
+                if (rate.TestProfileId.HasValue && profiles.TryGetValue(rate.TestProfileId.Value, out var profile))
+                {
+                    rate.ProfileName = profile?.Name;
+                }
+
+                rate.RateTypeLabel = FormatRateType(rate.RateType);
             }
 
-            if (rate.ReferralDoctorId.HasValue)
-            {
-                var doc = doctorRepo.Get(rate.ReferralDoctorId.Value);
-                rate.ReferralDoctorName = doc?.Name;
-            }
+            return rates;
+        }
 
-            if (rate.TestProfileId.HasValue)
+        private static IQueryable<TestRateMaster> ApplyQueryableSort(IQueryable<TestRateMaster> query, string sortColumn, bool ascending)
+        {
+            switch (sortColumn)
             {
-                var profile = profileRepo.Get(rate.TestProfileId.Value);
-                rate.ProfileName = profile?.Name;
+                case "Rate":
+                    return ascending ? query.OrderBy(r => r.Rate) : query.OrderByDescending(r => r.Rate);
+                case "EmergencyRate":
+                    return ascending ? query.OrderBy(r => r.EmergencyRate) : query.OrderByDescending(r => r.EmergencyRate);
+                case "EffectiveEnd":
+                    return ascending ? query.OrderBy(r => r.EffectiveEnd) : query.OrderByDescending(r => r.EffectiveEnd);
+                case "Id":
+                    return ascending ? query.OrderBy(r => r.Id) : query.OrderByDescending(r => r.Id);
+                case "TestId":
+                    return ascending ? query.OrderBy(r => r.TestId) : query.OrderByDescending(r => r.TestId);
+                case "RateType":
+                    return ascending ? query.OrderBy(r => r.RateType) : query.OrderByDescending(r => r.RateType);
+                default:
+                    return ascending ? query.OrderBy(r => r.EffectiveStart) : query.OrderByDescending(r => r.EffectiveStart);
             }
+        }
 
-            return rate;
+        private static string FormatRateType(int rateType)
+        {
+            switch (rateType)
+            {
+                case (int)RateType.Standard: return "Standard";
+                case (int)RateType.Corporate: return "Corporate";
+                case (int)RateType.ReferralDoctor: return "Referral Doctor";
+                case (int)RateType.Profile: return "Profile";
+                case (int)RateType.Emergency: return "Emergency";
+                default: return rateType.ToString();
+            }
         }
 
         private static string ResolveSortColumn(string sortColumnName)

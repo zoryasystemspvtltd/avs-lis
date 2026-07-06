@@ -1,7 +1,7 @@
 @echo off
 setlocal
 set SERVER=.\SQLEXPRESS
-set DB=AVSLIS
+set DB=ZoryaLMS
 set SCRIPT=%~dp0SeedDiagnosticReportDemo.sql
 
 echo Running diagnostic report demo seed on %SERVER% / %DB% ...

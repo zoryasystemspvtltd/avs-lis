@@ -11,8 +11,11 @@ import { Subscription, timer, of } from 'rxjs';
   styleUrls: ['./list-module.component.css']
 })
 export class ListModuleComponent implements OnInit, OnChanges {
+  private static listStateByModule: { [key: string]: any } = {};
+
   private user: AuthenticationToken;
   @Input() schemma: any;
+  @Input() listModuleKey: string;
 
   private readonly getAllApiModules = [
     'ReferralDoctor', 'Corporate', 'TestGroup', 'TestCategory', 'Unit', 'Method',
@@ -31,10 +34,10 @@ export class ListModuleComponent implements OnInit, OnChanges {
   public loadError: string;
 
   public option = {
-    'RecordPerPage': this.authenticationService.RecordPerPage,
-    'CurrentPage': this.authenticationService.CurrentPage,
-    'SortColumnName': this.authenticationService.SortColumnName,
-    'SortDirection': this.authenticationService.SortDirection
+    'RecordPerPage': 10,
+    'CurrentPage': 1,
+    'SortColumnName': 'Name',
+    'SortDirection': true
   };
 
   public recordFrom: number;
@@ -50,7 +53,7 @@ export class ListModuleComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    if (changes.schemma && !changes.schemma.firstChange && this.schemma) {
+    if (this.schemma && (changes.listModuleKey || (changes.schemma && !changes.schemma.firstChange))) {
       this.initList();
     }
   }
@@ -111,7 +114,34 @@ export class ListModuleComponent implements OnInit, OnChanges {
         this.filterStatus = this.authenticationService.selectedStatus;
       }
     }
+    this.restoreListState();
     this.getItems();
+  }
+
+  private getListStateKey(): string {
+    return this.listModuleKey || this.schemma?.module || this.schemma?.url || 'default';
+  }
+
+  private restoreListState() {
+    const saved = ListModuleComponent.listStateByModule[this.getListStateKey()];
+    if (saved) {
+      this.option.RecordPerPage = saved.RecordPerPage;
+      this.option.CurrentPage = saved.CurrentPage;
+      this.option.SortColumnName = saved.SortColumnName;
+      this.option.SortDirection = saved.SortDirection;
+    } else {
+      this.option.CurrentPage = 1;
+      this.option.RecordPerPage = 10;
+    }
+  }
+
+  private saveListState() {
+    ListModuleComponent.listStateByModule[this.getListStateKey()] = {
+      RecordPerPage: this.option.RecordPerPage,
+      CurrentPage: this.option.CurrentPage,
+      SortColumnName: this.option.SortColumnName,
+      SortDirection: this.option.SortDirection
+    };
   }
 
   subscription: Subscription
@@ -135,7 +165,7 @@ export class ListModuleComponent implements OnInit, OnChanges {
 
   refreshItems() {
     this.setFilter();
-    this.authenticationService.CurrentPage = this.option.CurrentPage;
+    this.saveListState();
 
     const masterApiModules = [
       'HisTest', 'TestRate', 'SaleInvoice', 'HisParameterMaster', 'HisParameterRangeMaster',
@@ -159,6 +189,7 @@ export class ListModuleComponent implements OnInit, OnChanges {
 
         const oldItems = this.items.map(x => x);
         this.items = response.items || [];
+        this.items = this.items.map(i => this.normalizeMasterItem(i));
         this.items.forEach(i => {
           const oldItem = oldItems.filter(o => o.id === i.id);
           if (oldItem && oldItem.length > 0) {
@@ -208,6 +239,10 @@ export class ListModuleComponent implements OnInit, OnChanges {
       ? response.totalRecord
       : (response.TotalRecord != null ? response.TotalRecord : items.length);
 
+    if (items.length > this.option.RecordPerPage && items.length === totalRecord) {
+      return this.paginateClientList(items);
+    }
+
     return { items, totalRecord };
   }
 
@@ -237,10 +272,7 @@ export class ListModuleComponent implements OnInit, OnChanges {
   sort = function (columnName: string) {
     this.option.SortColumnName = columnName;
     this.option.SortDirection = !this.option.SortDirection;
-
-    this.authenticationService.SortColumnName = columnName,
-      this.authenticationService.SortDirection = this.option.SortDirection;
-
+    this.saveListState();
     this.getItems();
   }
 
@@ -285,7 +317,11 @@ export class ListModuleComponent implements OnInit, OnChanges {
 
     this.option.SearchCondition = null;
 
-    if (this.filterStatus >= 0) {
+    if (this.schemma.receivedOnly) {
+      this.option.ReceivedOnly = true;
+    }
+
+    if (this.filterStatus >= 0 && !this.schemma.receivedOnly) {
       this.option.SearchCondition = {
         'Name': 'Status',
         'Value': this.filterStatus
@@ -317,7 +353,7 @@ export class ListModuleComponent implements OnInit, OnChanges {
 
   doSearch = function () {
     this.option.CurrentPage = 1;
-    this.authenticationService.CurrentPage = 1;
+    this.saveListState();
     this.getItems();
   }
 
@@ -396,6 +432,103 @@ export class ListModuleComponent implements OnInit, OnChanges {
     return ((parseInt(acc.access, 10) & type) === type);
   }
 
+  private readonly inactiveHighlightModules = [
+    'HisTest', 'TestRate', 'TestMappingMaster', 'PatientMaster', 'HisParameterMaster',
+    'Specimens', 'Unit', 'Method', 'Department', 'TestProfile',
+    'ReferralDoctor', 'Corporate', 'TestGroup', 'TestCategory', 'SampleType', 'Container'
+  ];
+
+  isInactiveRow(item: any): boolean {
+    if (!item || this.inactiveHighlightModules.indexOf(this.schemma?.module) < 0) {
+      return false;
+    }
+    const normalized = this.normalizeMasterItem(item);
+    if (normalized.isActive === undefined && normalized.IsActive === undefined) {
+      return false;
+    }
+    return normalized.isActive === false || normalized.IsActive === false;
+  }
+
+  fieldValue(item: any, fieldName: string): any {
+    if (!item || !fieldName) {
+      return '';
+    }
+    const normalized = this.normalizeMasterItem(item);
+    const direct = normalized[fieldName];
+    if (fieldName === 'isActive') {
+      return this.formatActiveLabel(direct);
+    }
+    if (fieldName === 'rateTypeLabel' && (direct == null || direct === '')) {
+      return this.rateTypeLabelFromCode(normalized.rateType ?? normalized.RateType);
+    }
+    if (direct != null && direct !== '') {
+      return direct;
+    }
+    const aliases: { [key: string]: string[] } = {
+      hisTestCode: ['histTestCode', 'HISTestCode', 'hiSTestCode', 'histestCode'],
+      hisTestCodeDescription: ['histTestCodeDescription', 'HISTestCodeDescription', 'hiSTestCodeDescription', 'histestCodeDescription'],
+      hisSpecimenName: ['hisSpecimenName', 'HISSpecimenName'],
+      departmentName: ['departmentName', 'DepartmentName'],
+      rateTypeLabel: ['rateTypeLabel', 'RateTypeLabel'],
+      isActive: ['isActive', 'IsActive'],
+      lisTestCode: ['lisTestCode', 'LISTestCode'],
+      groupName: ['groupName', 'GroupName'],
+      testName: ['testName', 'TestName']
+    };
+    const keys = aliases[fieldName] || [];
+    for (const key of keys) {
+      const val = normalized[key];
+      if (val != null && val !== '') {
+        return val;
+      }
+    }
+    return direct ?? '';
+  }
+
+  private normalizeMasterItem(item: any): any {
+    if (!item) {
+      return item;
+    }
+    const n = { ...item };
+    n.hisTestCode = n.hisTestCode ?? n.hiSTestCode ?? n.HISTestCode ?? n.histestCode ?? n.histTestCode;
+    n.hisTestCodeDescription = n.hisTestCodeDescription ?? n.hiSTestCodeDescription ?? n.HISTestCodeDescription
+      ?? n.histestCodeDescription ?? n.histTestCodeDescription;
+    n.hisSpecimenName = n.hisSpecimenName ?? n.HISSpecimenName;
+    n.departmentName = n.departmentName ?? n.DepartmentName;
+    n.lisTestCode = n.lisTestCode ?? n.LISTestCode;
+    n.groupName = n.groupName ?? n.GroupName;
+    n.testName = n.testName ?? n.TestName;
+    n.rateTypeLabel = n.rateTypeLabel ?? n.RateTypeLabel;
+    if (n.isActive === undefined && n.IsActive !== undefined) {
+      n.isActive = n.IsActive;
+    }
+    return n;
+  }
+
+  private formatActiveLabel(value: any): string {
+    if (value === true || value === 'true' || value === 1 || value === '1') {
+      return 'Yes';
+    }
+    if (value === false || value === 'false' || value === 0 || value === '0') {
+      return 'No';
+    }
+    return value == null ? '' : ('' + value);
+  }
+
+  private rateTypeLabelFromCode(rateType: any): string {
+    switch (+rateType) {
+      case 1: return 'Corporate';
+      case 2: return 'Doctor';
+      case 3: return 'Profile';
+      case 4: return 'Emergency';
+      default: return 'Standard';
+    }
+  }
+
+  private hasOwn(item: any, key: string): boolean {
+    return item && Object.prototype.hasOwnProperty.call(item, key);
+  }
+
   allowFilter(filter: number) {
     let allowed = false;
     if (this.schemma.allowedFilter) {
@@ -411,9 +544,9 @@ export class ListModuleComponent implements OnInit, OnChanges {
 
   onChangePageSize(val) {
     this.option.RecordPerPage = val;
-    this.authenticationService.RecordPerPage = val,
-
-      this.getItems();
+    this.option.CurrentPage = 1;
+    this.saveListState();
+    this.getItems();
   }
 
   printAbleItems: any[] = [];

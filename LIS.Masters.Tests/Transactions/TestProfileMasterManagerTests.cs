@@ -10,7 +10,7 @@ namespace LIS.Masters.Tests.Transactions
     {
         private int EnsureTestId()
         {
-            var existing = Services.HisTest.Get(ListOptionsFactory.ForHisTest()).Items?.FirstOrDefault();
+            var existing = Services.HisTest.Get(ListOptionsFactory.ForHisTest()).Items?.FirstOrDefault(t => t.IsActive);
             if (existing != null)
             {
                 return existing.Id;

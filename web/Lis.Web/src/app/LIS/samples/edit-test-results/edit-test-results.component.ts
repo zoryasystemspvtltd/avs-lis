@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { Router } from '@angular/router';
 import { TestResultEditService } from '../../../_services/test-result-edit.service';
 import { AlertService } from '../../../_services/alert.service';
 
@@ -23,7 +24,22 @@ export class EditTestResultsComponent {
 
   constructor(
     private testResultEditService: TestResultEditService,
-    private alertService: AlertService) { }
+    private alertService: AlertService,
+    private router: Router) { }
+
+  get isLabResultEntry(): boolean {
+    return this.router.url.indexOf('/lab-result-entry') >= 0;
+  }
+
+  get pageTitle(): string {
+    return this.isLabResultEntry ? 'Lab Result Entry' : 'Edit Test Results';
+  }
+
+  get pageSubtitle(): string {
+    return this.isLabResultEntry
+      ? 'Search pending samples and enter laboratory results.'
+      : 'Manually correct analyzer parameter values. Changes update existing TestResults / TestResultDetails only.';
+  }
 
   get selectedTest(): any {
     if (!this.data?.tests?.length) {

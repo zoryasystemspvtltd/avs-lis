@@ -30,8 +30,8 @@
         <label>Patient</label>
         <ng-select [items]="patients" bindLabel="name" bindValue="id" [(ngModel)]="patientId"
           placeholder="All patients" [clearable]="true" [searchable]="true" class="zorya-report-select">
-          <ng-template ng-label-tmp let-item="item">{{ item.name }} ({{ item.hisPatientId }})</ng-template>
-          <ng-template ng-option-tmp let-item="item">{{ item.name }} ({{ item.hisPatientId }})</ng-template>
+          <ng-template ng-label-tmp let-item="item">{{ item.id == null ? item.name : item.name + ' (' + item.hisPatientId + ')' }}</ng-template>
+          <ng-template ng-option-tmp let-item="item">{{ item.id == null ? item.name : item.name + ' (' + item.hisPatientId + ')' }}</ng-template>
         </ng-select>
       </div>
       <div class="filter-field filter-wide">
@@ -103,7 +103,7 @@
 
     <div class="zorya-report-pager" *ngIf="searched && totalRecord > 0 && !loading">
       <div class="pager-left">
-        <span class="pager-info">Showing {{ recordFrom }}–{{ recordTo }} of {{ totalRecord }}</span>
+        <span class="pager-info">Showing {{ recordFrom }}&ndash;{{ recordTo }} of {{ totalRecord }}</span>
         <label class="pager-size-label">Page size</label>
         <select class="form-control input-sm pager-size-select" [ngModel]="recordPerPage" (change)="onPageSizeChange($event.target.value)">
           <option [ngValue]="10">10</option>
