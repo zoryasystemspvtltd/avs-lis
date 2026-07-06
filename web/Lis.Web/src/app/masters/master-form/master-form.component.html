@@ -8,6 +8,10 @@
       <strong>Patient Number:</strong> {{form.get('hisPatientId')?.value || 'Assigned on save'}}
       &nbsp;|&nbsp;
       <strong>Patient Name:</strong> {{patientDisplayName}}
+      &nbsp;|&nbsp;
+      <strong>MR Number:</strong> {{form.get('mrNo')?.value || '—'}}
+      &nbsp;|&nbsp;
+      <strong>Visit ID:</strong> {{form.get('visitId')?.value || '—'}}
     </div>
     <br *ngIf="apiName === 'PatientMaster'" />
 

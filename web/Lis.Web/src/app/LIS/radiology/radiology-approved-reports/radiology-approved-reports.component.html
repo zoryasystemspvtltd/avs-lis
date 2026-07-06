@@ -1,12 +1,15 @@
 <div class="container-fluid">
-  <h3><span class="glyphicon glyphicon-ok-circle"></span> Approved Radiology Reports</h3>
-  <p class="text-muted">Authorized and released radiology reports ready for printing.</p>
-
   <div class="panel panel-default filter-panel">
-    <div class="panel-body row">
-      <div class="col-sm-4"><label>Search</label><input class="form-control input-sm" [(ngModel)]="searchText" (keyup.enter)="search()" /></div>
-      <div class="col-sm-2 filter-actions-col">
-        <button class="btn btn-primary btn-sm" (click)="search()" [disabled]="loading">Search</button>
+    <div class="panel-body">
+      <div class="radiology-approved-intro">
+        <h3 class="panel-title"><span class="glyphicon glyphicon-ok-circle"></span> Approved Radiology Reports</h3>
+        <p class="text-muted">Authorized and released radiology reports ready for printing.</p>
+      </div>
+      <div class="row">
+        <div class="col-sm-4"><label>Search</label><input class="form-control input-sm" [(ngModel)]="searchText" (keyup.enter)="search()" /></div>
+        <div class="col-sm-2 filter-actions-col">
+          <button class="btn btn-primary btn-sm" (click)="search()" [disabled]="loading">Search</button>
+        </div>
       </div>
     </div>
   </div>
