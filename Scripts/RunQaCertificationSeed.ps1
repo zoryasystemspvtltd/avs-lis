@@ -46,6 +46,8 @@ Write-Host "Server: $Server | Database: $Database"
 
 if (-not $ManifestOnly) {
     Invoke-SqlFile $SeedSql
+    $permSql = Join-Path $PSScriptRoot "SeedRoleBasedPermissions.sql"
+    Invoke-SqlFile $permSql
 }
 
 $manifest = @(Get-Manifest)

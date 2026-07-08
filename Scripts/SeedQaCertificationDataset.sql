@@ -173,7 +173,7 @@ DECLARE @RadPatId BIGINT = (SELECT TOP 1 Id FROM PatientDetails WHERE HisPatient
 -- ---------------------------------------------------------------------------
 -- 6. Laboratory test requests (three workflow states)
 -- ---------------------------------------------------------------------------
-IF @LabPatId IS NOT NULL AND NOT EXISTS (SELECT 1 FROM TestRequestDetails WHERE SampleNo = N'QA-CERT-SMP-PEND')
+IF @LabPatId IS NOT NULL AND NOT EXISTS (SELECT 1 FROM TestRequestDetails WHERE SampleNo = N'QA-CERT-SMP-PEND' OR HISRequestNo = N'QA-CERT-INV-PEND')
     INSERT INTO TestRequestDetails (
         SampleNo, HISTestCode, HISTestName, SampleCollectionDate, SampleReceivedDate,
         SpecimenCode, SpecimenName, CreatedBy, CreatedOn, ReportStatus,
@@ -184,7 +184,7 @@ IF @LabPatId IS NOT NULL AND NOT EXISTS (SELECT 1 FROM TestRequestDetails WHERE 
            @LabPatId, t.DepartmentCode, d.Name, N'QA-CERT-LAB-PAT', N'QA-CERT-INV-PEND', N'QA-CERT-INV-PEND'
     FROM HISTestMaster t LEFT JOIN Department d ON d.Code = t.DepartmentCode WHERE t.HISTestCode = N'QA-CERT-MAN';
 
-IF @LabPatId IS NOT NULL AND NOT EXISTS (SELECT 1 FROM TestRequestDetails WHERE SampleNo = N'QA-CERT-SMP-COLL')
+IF @LabPatId IS NOT NULL AND NOT EXISTS (SELECT 1 FROM TestRequestDetails WHERE SampleNo = N'QA-CERT-SMP-COLL' OR HISRequestNo = N'QA-CERT-INV-COLL')
     INSERT INTO TestRequestDetails (
         SampleNo, HISTestCode, HISTestName, SampleCollectionDate, SampleReceivedDate,
         SpecimenCode, SpecimenName, CreatedBy, CreatedOn, ReportStatus,
@@ -197,7 +197,7 @@ IF @LabPatId IS NOT NULL AND NOT EXISTS (SELECT 1 FROM TestRequestDetails WHERE 
            N'qa-cert-tech@zorya.co.in', N'QA cert collected sample'
     FROM HISTestMaster t LEFT JOIN Department d ON d.Code = t.DepartmentCode WHERE t.HISTestCode = N'QA-CERT-ANLZ';
 
-IF @LabPatId IS NOT NULL AND NOT EXISTS (SELECT 1 FROM TestRequestDetails WHERE SampleNo = N'QA-CERT-SMP-RECV')
+IF @LabPatId IS NOT NULL AND NOT EXISTS (SELECT 1 FROM TestRequestDetails WHERE SampleNo = N'QA-CERT-SMP-RECV' OR HISRequestNo = N'QA-CERT-INV-RECV')
     INSERT INTO TestRequestDetails (
         SampleNo, HISTestCode, HISTestName, SampleCollectionDate, SampleReceivedDate,
         SpecimenCode, SpecimenName, CreatedBy, CreatedOn, ReportStatus,
@@ -210,13 +210,14 @@ IF @LabPatId IS NOT NULL AND NOT EXISTS (SELECT 1 FROM TestRequestDetails WHERE 
            N'qa-cert-tech@zorya.co.in', N'qa-cert-tech@zorya.co.in', N'QA cert collected', N'QA cert received'
     FROM HISTestMaster t LEFT JOIN Department d ON d.Code = t.DepartmentCode WHERE t.HISTestCode = N'QA-CERT-MAN';
 
-DECLARE @ReqPend BIGINT = (SELECT TOP 1 Id FROM TestRequestDetails WHERE SampleNo = N'QA-CERT-SMP-PEND');
-DECLARE @ReqColl BIGINT = (SELECT TOP 1 Id FROM TestRequestDetails WHERE SampleNo = N'QA-CERT-SMP-COLL');
-DECLARE @ReqRecv BIGINT = (SELECT TOP 1 Id FROM TestRequestDetails WHERE SampleNo = N'QA-CERT-SMP-RECV');
+DECLARE @ReqPend BIGINT = (SELECT TOP 1 Id FROM TestRequestDetails WHERE SampleNo = N'QA-CERT-SMP-PEND' OR HISRequestNo = N'QA-CERT-INV-PEND');
+DECLARE @ReqColl BIGINT = (SELECT TOP 1 Id FROM TestRequestDetails WHERE SampleNo = N'QA-CERT-SMP-COLL' OR HISRequestNo = N'QA-CERT-INV-COLL');
+DECLARE @ReqRecv BIGINT = (SELECT TOP 1 Id FROM TestRequestDetails WHERE SampleNo = N'QA-CERT-SMP-RECV' OR HISRequestNo = N'QA-CERT-INV-RECV');
 
 -- Reset workflow states on every seed run (repeatable certification)
 IF @ReqPend IS NOT NULL
     UPDATE TestRequestDetails SET
+        SampleNo = N'QA-CERT-SMP-PEND',
         ReportStatus = 0,
         CollectedBy = NULL,
         ReceivedBy = NULL,
@@ -228,6 +229,7 @@ IF @ReqPend IS NOT NULL
 
 IF @ReqColl IS NOT NULL
     UPDATE TestRequestDetails SET
+        SampleNo = N'QA-CERT-SMP-COLL',
         ReportStatus = 0,
         CollectedBy = N'qa-cert-tech@zorya.co.in',
         ReceivedBy = NULL,
@@ -239,6 +241,7 @@ IF @ReqColl IS NOT NULL
 
 IF @ReqRecv IS NOT NULL
     UPDATE TestRequestDetails SET
+        SampleNo = N'QA-CERT-SMP-RECV',
         ReportStatus = 0,
         CollectedBy = N'qa-cert-tech@zorya.co.in',
         ReceivedBy = N'qa-cert-tech@zorya.co.in',
@@ -400,29 +403,11 @@ BEGIN
         INSERT INTO UserApplicationMappings (UserId, ClientApplicationId) VALUES (@DoctorUserId, @AppId);
     IF NOT EXISTS (SELECT 1 FROM UserApplicationMappings WHERE UserId = @TechUserId AND ClientApplicationId = @AppId)
         INSERT INTO UserApplicationMappings (UserId, ClientApplicationId) VALUES (@TechUserId, @AppId);
-
-    DECLARE @ModuleNames TABLE (Name NVARCHAR(128), RoleId NVARCHAR(128));
-    INSERT INTO @ModuleNames (Name, RoleId) VALUES
-        (N'Samples', @RoleTech),
-        (N'SampleCollection', @RoleTech),
-        (N'SampleReceiving', @RoleTech),
-        (N'DoctorsApprovals', @RoleDoc),
-        (N'RadiologyReportEntry', @RoleDoc),
-        (N'RadiologyReports', @RoleDoc),
-        (N'RadiologyDoctorApprovals', @RoleDoc),
-        (N'Reports', @RoleDoc);
-
-    INSERT INTO RoleModuleMappings (CanAdd, CanEdit, CanAuthorize, CanDelete, CanView, CanReject, ModuleId, RoleId, ApplicationId)
-    SELECT 1, 1, 1, 1, 1, 1, um.Id, m.RoleId, @AppId
-    FROM @ModuleNames m
-    INNER JOIN UserModules um ON um.Name = m.Name AND um.ApplicationId = @AppId
-    WHERE NOT EXISTS (
-        SELECT 1 FROM RoleModuleMappings rm
-        WHERE rm.ModuleId = um.Id AND rm.RoleId = m.RoleId AND rm.ApplicationId = @AppId
-    );
 END
 
 COMMIT TRANSACTION;
+
+-- Role module permissions (Technician + Doctor matrix) — applied after user setup
 
 -- ---------------------------------------------------------------------------
 -- Manifest (for certification scripts)

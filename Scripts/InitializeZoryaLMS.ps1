@@ -73,7 +73,8 @@ $seedScripts = @(
     "SeedSampleData.sql",
     "SeedFullDatabaseInsert.sql",
     "SeedAllCrudTestData.sql",
-    "SeedQaCertificationDataset.sql"
+    "SeedQaCertificationDataset.sql",
+    "SeedRoleBasedPermissions.sql"
 )
 foreach ($script in $seedScripts) {
     $path = Join-Path $PSScriptRoot $script

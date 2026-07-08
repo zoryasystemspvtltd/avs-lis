@@ -71,7 +71,9 @@ function SqlScalar([string]$q) {
   $query = 'SET NOCOUNT ON; ' + $q
   $out = & sqlcmd -S '.\SQLEXPRESS' -d ZoryaLMS -E -h -1 -W -Q $query 2>&1
   if ($LASTEXITCODE -ne 0) { throw ('SQL failed: ' + $out) }
-  return ($out | Where-Object { $_ -and $_.ToString().Trim() -ne '' } | Select-Object -First 1).ToString().Trim()
+  $line = $out | Where-Object { $_ -and $_.ToString().Trim() -ne '' } | Select-Object -First 1
+  if ($null -eq $line) { return '' }
+  return $line.ToString().Trim()
 }
 
 function SqlRow([string]$q) {
