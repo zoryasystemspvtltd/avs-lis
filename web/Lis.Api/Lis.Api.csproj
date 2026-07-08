@@ -235,9 +235,17 @@
     <Compile Include="Controllers\Api\EquipmentTestMappingsController.cs" />
     <Compile Include="Controllers\Api\SampleController.cs" />
     <Compile Include="Controllers\Api\User\UsersController.cs" />
-    <Compile Include="Migrations\202607040238496_Fresh.cs" />
-    <Compile Include="Migrations\202607040238496_Fresh.Designer.cs">
-      <DependentUpon>202607040238496_Fresh.cs</DependentUpon>
+    <Compile Include="Migrations\202604270642026_fresh.cs" />
+    <Compile Include="Migrations\202604270642026_fresh.Designer.cs">
+      <DependentUpon>202604270642026_fresh.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202606281200000_DoctorDesignationSignature.cs" />
+    <Compile Include="Migrations\202606281200000_DoctorDesignationSignature.Designer.cs">
+      <DependentUpon>202606281200000_DoctorDesignationSignature.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202607081804055_IdentityModelSync.cs" />
+    <Compile Include="Migrations\202607081804055_IdentityModelSync.Designer.cs">
+      <DependentUpon>202607081804055_IdentityModelSync.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\ClientApplication.cs" />
@@ -312,8 +320,14 @@
     <Content Include="Scripts\jquery-3.7.1.min.map" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\202607040238496_Fresh.resx">
-      <DependentUpon>202607040238496_Fresh.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\202604270642026_fresh.resx">
+      <DependentUpon>202604270642026_fresh.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202606281200000_DoctorDesignationSignature.resx">
+      <DependentUpon>202606281200000_DoctorDesignationSignature.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202607081804055_IdentityModelSync.resx">
+      <DependentUpon>202607081804055_IdentityModelSync.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

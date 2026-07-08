@@ -143,6 +143,37 @@ namespace LIS.Masters.Tests.Workflows
         }
 
         [TestMethod]
+        public void Confirmed_Unpaid_Reject_At_Receiving_Returns_To_Collection_Queue()
+        {
+            var rateId = 0;
+            var testId = EnsureTestWithStandardRate(250m, out rateId);
+            var invoiceNo = UniqueCode("RRJ");
+            CreatePatientAndInvoice(invoiceNo, testId, InvoiceStatusType.Confirmed, PaymentStatusType.Unpaid, out var requestId);
+
+            Services.SampleCollection.CollectSample(new SampleCollectionAction
+            {
+                TestRequestId = requestId,
+                CollectionDateTime = DateTime.Now,
+                Remarks = "UT collect before receiving reject"
+            });
+
+            Assert.IsTrue(IsInReceivingQueue(requestId, invoiceNo));
+            Assert.IsFalse(IsInCollectionQueue(requestId, invoiceNo));
+
+            Services.SampleReceiving.RejectSample(new SampleRejectionAction
+            {
+                TestRequestId = requestId,
+                RejectionReasonCode = "RJ01",
+                Remarks = "UT receiving reject"
+            });
+
+            Assert.IsFalse(IsInReceivingQueue(requestId, invoiceNo));
+            Assert.IsTrue(IsInCollectionQueue(requestId, invoiceNo));
+
+            Services.TestRate.Delete(new TestRateMaster { Id = rateId });
+        }
+
+        [TestMethod]
         public void Paid_Invoice_Still_Appears_In_Collection_Queue()
         {
             var rateId = 0;

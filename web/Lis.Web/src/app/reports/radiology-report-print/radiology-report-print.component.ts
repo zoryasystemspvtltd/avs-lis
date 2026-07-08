@@ -179,18 +179,109 @@ export class RadiologyReportPrintComponent implements OnInit, OnDestroy {
 
   private getPrintStyles(): string {
     return `
-      @page { size: A4 portrait; margin: 12mm; }
-      body { font-family: Segoe UI, Arial, sans-serif; font-size: 11px; color: #222; }
-      h2 { margin: 0 0 8px; font-size: 16px; }
-      .report-title-bar { background: #125d74; color: #fff; padding: 8px 12px; margin-bottom: 12px; font-weight: bold; }
-      .report-meta-table td { padding: 4px 8px; border: 1px solid #ccc; }
+      :root {
+        --rad-title-bar-height: 8mm;
+        --rad-header-total: 4cm;
+        --rad-letterhead-height: calc(4cm - var(--rad-title-bar-height));
+        --rad-footer-height: 4cm;
+        --rad-side-margin: 10mm;
+      }
+      @page { size: A4 portrait; margin: 0; }
+      body.radiology-report-print-doc {
+        margin: 0;
+        padding: 0;
+        font-family: Segoe UI, Arial, sans-serif;
+        font-size: 11px;
+        color: #222;
+      }
+      table { border-collapse: collapse; width: 100%; }
+      .report-print-header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: var(--rad-header-total);
+        z-index: 1000;
+        background: #fff;
+      }
+      .report-letterhead-zone {
+        height: var(--rad-letterhead-height);
+        background: transparent;
+      }
+      .letterhead-screen-hint { display: none; }
+      .report-print-title-bar {
+        height: var(--rad-title-bar-height);
+        line-height: var(--rad-title-bar-height);
+        padding: 0 var(--rad-side-margin);
+        margin: 0;
+        text-align: center;
+        font-size: 11pt;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        border-bottom: 1.5pt solid #125d74;
+        box-sizing: border-box;
+      }
+      .report-print-footer-zone {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: var(--rad-footer-height);
+        z-index: 1000;
+        background: #fff;
+        box-sizing: border-box;
+        padding: 3mm var(--rad-side-margin) 2mm;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+      }
+      .report-footer-signature {
+        align-self: flex-start;
+        text-align: left;
+        max-width: 55%;
+        margin-bottom: 2mm;
+        font-size: 8pt;
+        line-height: 1.25;
+      }
+      .report-footer-doctor-name {
+        display: block;
+        font-weight: 600;
+        margin-top: 0.5mm;
+      }
+      .report-footer-doctor-designation {
+        display: block;
+        white-space: pre-wrap;
+        margin-top: 0.5mm;
+      }
+      .report-footer-legal {
+        border-top: 0.5pt solid #888;
+        padding-top: 2mm;
+        font-size: 8pt;
+        color: #333;
+      }
+      .report-footer-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 8mm;
+      }
+      .report-footer-disclaimer { flex: 1; line-height: 1.25; }
+      .report-footer-pagenum::after {
+        content: "Page " counter(page) " of " counter(pages);
+        white-space: nowrap;
+        font-weight: 600;
+      }
+      .report-signature-img { max-height: 14mm; max-width: 50mm; display: block; margin-bottom: 1mm; }
+      .report-print-body {
+        padding: calc(var(--rad-header-total) + 2mm) var(--rad-side-margin)
+          calc(var(--rad-footer-height) + 2mm) var(--rad-side-margin);
+      }
+      .report-meta-table td { border: 1px solid #ccc; padding: 3px 6px; }
       .meta-label { font-weight: 600; background: #f4f8fa; width: 18%; }
-      .narrative-block { margin: 14px 0; }
-      .narrative-block h4 { margin: 0 0 6px; color: #125d74; }
+      .narrative-block { margin: 12px 0; }
+      .narrative-block h4 { margin: 0 0 6px; color: #125d74; font-size: 10pt; }
       .narrative-body { white-space: pre-wrap; line-height: 1.5; }
-      .report-footer { margin-top: 24px; border-top: 1px solid #ccc; padding-top: 8px; font-size: 10px; }
-      .report-signature-wrap { margin-bottom: 4px; }
-      .report-signature-img { max-height: 16mm; max-width: 55mm; display: block; }
     `;
   }
 }

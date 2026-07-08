@@ -5,22 +5,22 @@ namespace LIS.DataAccess.Migrations
     using System.Data.Entity.Migrations;
     using System.Data.Entity.Migrations.Infrastructure;
     using System.Resources;
-    
+
     [GeneratedCode("EntityFramework.Migrations", "6.4.4")]
-    public sealed partial class Fresh : IMigrationMetadata
+    public sealed partial class DepartmentProcessingCategory : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(Fresh));
-        
+        private readonly ResourceManager Resources = new ResourceManager(typeof(DepartmentProcessingCategory));
+
         string IMigrationMetadata.Id
         {
-            get { return "202607040223148_Fresh"; }
+            get { return "202606261200000_DepartmentProcessingCategory"; }
         }
-        
+
         string IMigrationMetadata.Source
         {
-            get { return null; }
+            get { return Resources.GetString("Source"); }
         }
-        
+
         string IMigrationMetadata.Target
         {
             get { return Resources.GetString("Target"); }

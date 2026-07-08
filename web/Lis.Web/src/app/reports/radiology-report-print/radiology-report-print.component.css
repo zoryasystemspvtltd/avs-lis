@@ -1,48 +1,323 @@
+:root {
+  --rad-title-bar-height: 8mm;
+  --rad-header-total: 4cm;
+  --rad-letterhead-height: calc(4cm - var(--rad-title-bar-height));
+  --rad-footer-height: 4cm;
+  --rad-side-margin: 10mm;
+}
+
 .radiology-report-page .diagnostic-report {
   background: #fff;
   padding: 16px;
   border: 1px solid #e0e0e0;
   border-radius: 4px;
+  font-size: 12px;
+  color: #222;
+  position: relative;
 }
-.radiology-report-page .report-title-bar {
-  background: #125d74;
-  color: #fff;
-  padding: 10px 14px;
-  margin: -16px -16px 16px;
-  border-radius: 4px 4px 0 0;
+
+.radiology-report-page .report-letterhead-zone {
+  min-height: var(--rad-letterhead-height);
+  border: 1px dashed #c5d5d8;
+  background: #f8fbfc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.radiology-report-page .letterhead-screen-hint {
+  font-size: 11px;
+  color: #7a9aa3;
+  font-style: italic;
+}
+
+.radiology-report-page .report-print-title-bar {
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 4px 0;
+  border-bottom: 2px solid #125d74;
+  margin-bottom: 8px;
+}
+
+.radiology-report-page .report-print-header,
+.radiology-report-page .report-print-footer-zone {
+  position: static;
+}
+
+.radiology-report-page .report-print-body {
+  padding: 0;
+}
+
+.radiology-report-page .report-print-footer-zone {
+  margin-top: 16px;
+  font-size: 10px;
+  color: #555;
+}
+
+.radiology-report-page .report-footer-legal {
+  border-top: 1px solid #ccc;
+  padding-top: 8px;
+}
+
+.radiology-report-page .report-footer-signature {
+  text-align: left;
+  margin-bottom: 10px;
+  max-width: 55%;
+}
+
+.radiology-report-page .report-footer-doctor-name {
+  display: block;
   font-weight: 600;
+  margin-top: 4px;
 }
+
+.radiology-report-page .report-footer-doctor-designation {
+  display: block;
+  white-space: pre-wrap;
+  margin-top: 2px;
+  line-height: 1.35;
+}
+
+.radiology-report-page .report-footer-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.radiology-report-page .report-footer-disclaimer {
+  flex: 1;
+}
+
 .radiology-report-page .report-meta-table {
   width: 100%;
   margin-bottom: 12px;
+  border-collapse: collapse;
 }
+
 .radiology-report-page .report-meta-table td {
   padding: 6px 10px;
   border: 1px solid #d5e3ea;
   vertical-align: top;
 }
+
 .radiology-report-page .meta-label {
   font-weight: 600;
   background: #f4f8fa;
   width: 18%;
 }
+
 .radiology-report-page .narrative-block h4 {
   color: #125d74;
   margin: 16px 0 8px;
 }
+
 .radiology-report-page .narrative-body {
   white-space: pre-wrap;
   line-height: 1.55;
 }
-.radiology-report-page .report-footer {
-  margin-top: 20px;
-  padding-top: 12px;
-  border-top: 1px solid #ccc;
-  font-size: 11px;
-}
+
 .radiology-report-page .report-signature-img {
-  max-height: 60px;
-  max-width: 220px;
+  max-height: 48px;
+  max-width: 200px;
   display: block;
   margin-bottom: 4px;
+}
+
+/* Print layout (iframe document + window print fallback) */
+.radiology-report-print-doc,
+body.radiology-report-print-mode .diagnostic-report {
+  font-family: "Segoe UI", Arial, sans-serif;
+  font-size: 11px;
+  color: #222;
+}
+
+.radiology-report-print-doc .report-print-header,
+body.radiology-report-print-mode .report-print-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--rad-header-total);
+  z-index: 1000;
+  background: #fff;
+}
+
+.radiology-report-print-doc .report-letterhead-zone,
+body.radiology-report-print-mode .report-letterhead-zone {
+  height: var(--rad-letterhead-height);
+  background: transparent;
+  border: none;
+}
+
+.radiology-report-print-doc .letterhead-screen-hint,
+body.radiology-report-print-mode .letterhead-screen-hint {
+  display: none;
+}
+
+.radiology-report-print-doc .report-print-title-bar,
+body.radiology-report-print-mode .report-print-title-bar {
+  height: var(--rad-title-bar-height);
+  line-height: var(--rad-title-bar-height);
+  padding: 0 var(--rad-side-margin);
+  margin: 0;
+  text-align: center;
+  font-size: 11pt;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border-bottom: 1.5pt solid #125d74;
+  box-sizing: border-box;
+}
+
+.radiology-report-print-doc .report-print-footer-zone,
+body.radiology-report-print-mode .report-print-footer-zone {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: var(--rad-footer-height);
+  z-index: 1000;
+  background: #fff;
+  box-sizing: border-box;
+  padding: 3mm var(--rad-side-margin) 2mm;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.radiology-report-print-doc .report-footer-signature,
+body.radiology-report-print-mode .report-footer-signature {
+  align-self: flex-start;
+  text-align: left;
+  max-width: 55%;
+  margin-bottom: 2mm;
+  font-size: 8pt;
+  line-height: 1.25;
+}
+
+.radiology-report-print-doc .report-footer-doctor-name,
+body.radiology-report-print-mode .report-footer-doctor-name {
+  display: block;
+  font-weight: 600;
+  margin-top: 0.5mm;
+}
+
+.radiology-report-print-doc .report-footer-doctor-designation,
+body.radiology-report-print-mode .report-footer-doctor-designation {
+  display: block;
+  white-space: pre-wrap;
+  margin-top: 0.5mm;
+}
+
+.radiology-report-print-doc .report-footer-legal,
+body.radiology-report-print-mode .report-footer-legal {
+  border-top: 0.5pt solid #888;
+  padding-top: 2mm;
+  font-size: 8pt;
+  color: #333;
+}
+
+.radiology-report-print-doc .report-footer-row,
+body.radiology-report-print-mode .report-footer-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8mm;
+}
+
+.radiology-report-print-doc .report-footer-disclaimer,
+body.radiology-report-print-mode .report-footer-disclaimer {
+  flex: 1;
+  line-height: 1.25;
+}
+
+.radiology-report-print-doc .report-footer-pagenum::after,
+body.radiology-report-print-mode .report-footer-pagenum::after {
+  content: "Page " counter(page) " of " counter(pages);
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.radiology-report-print-doc .report-signature-img,
+body.radiology-report-print-mode .report-signature-img {
+  max-height: 14mm;
+  max-width: 50mm;
+  display: block;
+  margin-bottom: 1mm;
+}
+
+.radiology-report-print-doc .report-print-body,
+body.radiology-report-print-mode .report-print-body {
+  padding: calc(var(--rad-header-total) + 2mm) var(--rad-side-margin)
+    calc(var(--rad-footer-height) + 2mm) var(--rad-side-margin);
+}
+
+.radiology-report-print-doc .report-meta-table td,
+body.radiology-report-print-mode .report-meta-table td {
+  border: 1px solid #ccc;
+  padding: 3px 6px;
+}
+
+.radiology-report-print-doc .meta-label,
+body.radiology-report-print-mode .meta-label {
+  font-weight: 600;
+  background: #f4f8fa;
+  width: 18%;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.radiology-report-print-doc .narrative-block h4,
+body.radiology-report-print-mode .narrative-block h4 {
+  margin: 12px 0 6px;
+  color: #125d74;
+  font-size: 10pt;
+}
+
+.radiology-report-print-doc .narrative-body,
+body.radiology-report-print-mode .narrative-body {
+  white-space: pre-wrap;
+  line-height: 1.5;
+}
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+
+  body.radiology-report-print-mode app-header,
+  body.radiology-report-print-mode app-nav-menu,
+  body.radiology-report-print-mode app-left-nav-menu,
+  body.radiology-report-print-mode app-footer,
+  body.radiology-report-print-mode #sidenav,
+  body.radiology-report-print-mode .sidenav,
+  body.radiology-report-print-mode .navbar,
+  body.radiology-report-print-mode .nav-button,
+  body.radiology-report-print-mode .no-print,
+  body.radiology-report-print-mode .no-print * {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  body.radiology-report-print-mode .wrapper,
+  body.radiology-report-print-mode .avilis-portal,
+  body.radiology-report-print-mode .avilis-body,
+  body.radiology-report-print-mode .container-main,
+  body.radiology-report-print-mode .avilis-page-body,
+  body.radiology-report-print-mode .radiology-report-page {
+    margin: 0 !important;
+    padding: 0 !important;
+    min-height: 0 !important;
+    width: 100% !important;
+  }
+
+  body.radiology-report-print-mode .container-main.qcontent.content-with-sidebar {
+    margin-left: 0 !important;
+  }
 }

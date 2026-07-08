@@ -82,9 +82,41 @@
     <Compile Include="DAL\SoftDeleteInterceptor.cs" />
     <Compile Include="DAL\SoftDeleteQueryVisitor.cs" />
     <Compile Include="Enums\RoleType.cs" />
-    <Compile Include="Migrations\202607040223148_Fresh.cs" />
-    <Compile Include="Migrations\202607040223148_Fresh.Designer.cs">
-      <DependentUpon>202607040223148_Fresh.cs</DependentUpon>
+    <Compile Include="Migrations\202605170711055_fresh.cs" />
+    <Compile Include="Migrations\202605170711055_fresh.Designer.cs">
+      <DependentUpon>202605170711055_fresh.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202606191317350_FddSampleRadiology.cs" />
+    <Compile Include="Migrations\202606191317350_FddSampleRadiology.Designer.cs">
+      <DependentUpon>202606191317350_FddSampleRadiology.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202606200950114_patientaddress.cs" />
+    <Compile Include="Migrations\202606200950114_patientaddress.Designer.cs">
+      <DependentUpon>202606200950114_patientaddress.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202606261200000_DepartmentProcessingCategory.cs" />
+    <Compile Include="Migrations\202606261200000_DepartmentProcessingCategory.Designer.cs">
+      <DependentUpon>202606261200000_DepartmentProcessingCategory.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202606271200000_PatientMrVisitPrefix.cs" />
+    <Compile Include="Migrations\202606271200000_PatientMrVisitPrefix.Designer.cs">
+      <DependentUpon>202606271200000_PatientMrVisitPrefix.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202607081200000_SaleInvoiceDiscountFields.cs" />
+    <Compile Include="Migrations\202607081200000_SaleInvoiceDiscountFields.Designer.cs">
+      <DependentUpon>202607081200000_SaleInvoiceDiscountFields.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202607081210000_SaleInvoiceDetailNullableRequestDetail.cs" />
+    <Compile Include="Migrations\202607081210000_SaleInvoiceDetailNullableRequestDetail.Designer.cs">
+      <DependentUpon>202607081210000_SaleInvoiceDetailNullableRequestDetail.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202607081220000_LabResultRestructure.cs" />
+    <Compile Include="Migrations\202607081220000_LabResultRestructure.Designer.cs">
+      <DependentUpon>202607081220000_LabResultRestructure.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202607081802343_SchemaModelSync.cs" />
+    <Compile Include="Migrations\202607081802343_SchemaModelSync.Designer.cs">
+      <DependentUpon>202607081802343_SchemaModelSync.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -129,8 +161,32 @@
     <Content Include="Scripts\jquery-3.7.1.slim.min.js" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\202607040223148_Fresh.resx">
-      <DependentUpon>202607040223148_Fresh.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\202605170711055_fresh.resx">
+      <DependentUpon>202605170711055_fresh.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202606191317350_FddSampleRadiology.resx">
+      <DependentUpon>202606191317350_FddSampleRadiology.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202606200950114_patientaddress.resx">
+      <DependentUpon>202606200950114_patientaddress.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202606261200000_DepartmentProcessingCategory.resx">
+      <DependentUpon>202606261200000_DepartmentProcessingCategory.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202606271200000_PatientMrVisitPrefix.resx">
+      <DependentUpon>202606271200000_PatientMrVisitPrefix.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202607081200000_SaleInvoiceDiscountFields.resx">
+      <DependentUpon>202607081200000_SaleInvoiceDiscountFields.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202607081210000_SaleInvoiceDetailNullableRequestDetail.resx">
+      <DependentUpon>202607081210000_SaleInvoiceDetailNullableRequestDetail.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202607081220000_LabResultRestructure.resx">
+      <DependentUpon>202607081220000_LabResultRestructure.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202607081802343_SchemaModelSync.resx">
+      <DependentUpon>202607081802343_SchemaModelSync.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

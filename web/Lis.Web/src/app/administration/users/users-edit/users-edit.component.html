@@ -63,11 +63,9 @@
                                 <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Doctor Designation<span
                                             class="error">*</span></label></div>
                                 <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
-                                    <div class="input-group">
-                                        <span class="input-group-addon"><i class="glyphicon glyphicon-briefcase"></i></span>
-                                        <input type="text" class="form-control" formControlName="doctor_designation"
-                                            placeholder="e.g. Consultant Pathologist" maxlength="100">
-                                    </div>
+                                    <textarea class="form-control doctor-designation-field" rows="4"
+                                        formControlName="doctor_designation"
+                                        placeholder="e.g. Consultant Pathologist" maxlength="100"></textarea>
                                     <span *ngIf="isInValid('doctor_designation')" class="error">Doctor designation is required.</span>
                                     <span *ngIf="isInValidMaxLength('doctor_designation')" class="error">Doctor designation must not exceed 100 characters.</span>
                                 </div>

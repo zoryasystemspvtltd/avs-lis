@@ -33,67 +33,92 @@
   </div>
 
   <div id="diagnostic-radiology-report-print" class="diagnostic-report" *ngIf="report && !loading">
-    <div class="report-title-bar">Radiology Diagnostic Report</div>
-    <section class="report-meta" *ngIf="report.header">
-      <table class="report-meta-table">
-        <tbody>
-          <tr>
-            <td class="meta-label">Accession No</td>
-            <td>{{ report.header.accessionNo || '—' }}</td>
-            <td class="meta-label">Invoice No</td>
-            <td>{{ report.header.invoiceNo || '—' }}</td>
-          </tr>
-          <tr>
-            <td class="meta-label">Patient</td>
-            <td colspan="3">{{ report.header.patientName || '—' }} <span *ngIf="report.header.patientId">({{ report.header.patientId }})</span></td>
-          </tr>
-          <tr>
-            <td class="meta-label">Age / Gender</td>
-            <td>{{ report.header.age }} / {{ report.header.gender || '—' }}</td>
-            <td class="meta-label">Report Date</td>
-            <td>{{ report.header.reportDate | date:'dd/MM/yyyy' }}</td>
-          </tr>
-          <tr>
-            <td class="meta-label">Test</td>
-            <td>{{ report.header.testName || '—' }}</td>
-            <td class="meta-label">Modality</td>
-            <td>{{ report.header.modality || '—' }}</td>
-          </tr>
-          <tr>
-            <td class="meta-label">Status</td>
-            <td>{{ report.header.reportStatus || '—' }}</td>
-            <td class="meta-label">Department</td>
-            <td>{{ report.header.department || '—' }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </section>
-    <section class="narrative-block" *ngIf="report.clinicalHistory">
-      <h4>Clinical History</h4>
-      <div class="narrative-body">{{ report.clinicalHistory }}</div>
-    </section>
-    <section class="narrative-block">
-      <h4>Findings</h4>
-      <div class="narrative-body">{{ report.findings || '—' }}</div>
-    </section>
-    <section class="narrative-block">
-      <h4>Impression</h4>
-      <div class="narrative-body">{{ report.impression || '—' }}</div>
-    </section>
-    <section class="narrative-block" *ngIf="report.recommendation">
-      <h4>Recommendation</h4>
-      <div class="narrative-body">{{ report.recommendation }}</div>
-    </section>
-    <footer class="report-footer">
-      <div *ngIf="report.header.authorizedBySignatureImage" class="report-signature-wrap">
-        <img [src]="report.header.authorizedBySignatureImage" class="report-signature-img" alt="Signature" />
+    <header class="report-print-header">
+      <div class="report-letterhead-zone">
+        <span class="letterhead-screen-hint">Pre-printed letterhead</span>
       </div>
-      <div *ngIf="report.header.authorizedBy"><strong>Authorized by:</strong> {{ report.header.authorizedByName || report.header.authorizedBy }}<span
-          *ngIf="report.header.authorizedByDesignation">, {{ report.header.authorizedByDesignation }}</span>
-        <span *ngIf="report.header.authorizedOn"> on {{ report.header.authorizedOn | date:'dd/MM/yyyy HH:mm' }}</span>
+      <div class="report-print-title-bar">Radiology Diagnostic Report</div>
+    </header>
+
+    <div class="report-print-body">
+      <section class="report-meta" *ngIf="report.header">
+        <table class="report-meta-table">
+          <tbody>
+            <tr>
+              <td class="meta-label">Accession No</td>
+              <td>{{ report.header.accessionNo || '—' }}</td>
+              <td class="meta-label">Invoice No</td>
+              <td>{{ report.header.invoiceNo || '—' }}</td>
+            </tr>
+            <tr>
+              <td class="meta-label">Patient</td>
+              <td colspan="3">{{ report.header.patientName || '—' }} <span *ngIf="report.header.patientId">({{ report.header.patientId }})</span></td>
+            </tr>
+            <tr>
+              <td class="meta-label">Age / Gender</td>
+              <td>{{ report.header.age }} / {{ report.header.gender || '—' }}</td>
+              <td class="meta-label">Report Date</td>
+              <td>{{ report.header.reportDate | date:'dd/MM/yyyy' }}</td>
+            </tr>
+            <tr>
+              <td class="meta-label">Test</td>
+              <td>{{ report.header.testName || '—' }}</td>
+              <td class="meta-label">Modality</td>
+              <td>{{ report.header.modality || '—' }}</td>
+            </tr>
+            <tr>
+              <td class="meta-label">Status</td>
+              <td>{{ report.header.reportStatus || '—' }}</td>
+              <td class="meta-label">Department</td>
+              <td>{{ report.header.department || '—' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+      <section class="narrative-block" *ngIf="report.clinicalHistory">
+        <h4>Clinical History</h4>
+        <div class="narrative-body">{{ report.clinicalHistory }}</div>
+      </section>
+      <section class="narrative-block">
+        <h4>Findings</h4>
+        <div class="narrative-body">{{ report.findings || '—' }}</div>
+      </section>
+      <section class="narrative-block">
+        <h4>Impression</h4>
+        <div class="narrative-body">{{ report.impression || '—' }}</div>
+      </section>
+      <section class="narrative-block" *ngIf="report.recommendation">
+        <h4>Recommendation</h4>
+        <div class="narrative-body">{{ report.recommendation }}</div>
+      </section>
+    </div>
+
+    <div class="report-print-footer-zone">
+      <div class="report-footer-signature"
+        *ngIf="report.header.authorizedBy || report.header.authorizedBySignatureImage || report.header.authorizedByDesignation">
+        <img *ngIf="report.header.authorizedBySignatureImage" [src]="report.header.authorizedBySignatureImage"
+          class="report-signature-img" alt="Doctor signature" />
+        <span class="report-footer-doctor-name" *ngIf="report.header.authorizedByName || report.header.authorizedBy">
+          {{ report.header.authorizedByName || report.header.authorizedBy }}
+        </span>
+        <span class="report-footer-doctor-designation" *ngIf="report.header.authorizedByDesignation">
+          {{ report.header.authorizedByDesignation }}
+        </span>
+        <span class="report-footer-sign-line"
+          *ngIf="!report.header.authorizedBySignatureImage && report.header.digitalSignature">
+          {{ report.header.digitalSignature }}
+        </span>
+        <span class="report-footer-sign-line"
+          *ngIf="!report.header.authorizedBySignatureImage && !report.header.digitalSignature && (report.header.authorizedBy || report.header.authorizedByName)">
+          _________________________
+        </span>
       </div>
-      <div *ngIf="!report.header.authorizedBySignatureImage && report.header.digitalSignature"><strong>Signature:</strong> {{ report.header.digitalSignature }}</div>
-      <div class="report-footer-disclaimer">Computer-generated radiology report. Results relate only to the examination performed.</div>
-    </footer>
+      <div class="report-footer-legal">
+        <div class="report-footer-row report-footer-main">
+          <span class="report-footer-disclaimer">Computer-generated radiology report. Results relate only to the examination performed.</span>
+          <span class="report-footer-pagenum" aria-label="Page number"></span>
+        </div>
+      </div>
+    </div>
   </div>
 </div>

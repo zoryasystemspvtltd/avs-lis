@@ -167,10 +167,19 @@ namespace LIS.Businesslogic
                 r.IsActive).FirstOrDefault();
 
             var reason = master != null ? $"{master.Code} {master.Name}" : action.RejectionReasonCode.Trim();
-            request.ReportStatus = ReportStatusType.FinallyRejected;
-            request.ReceivedRemarks = string.IsNullOrWhiteSpace(action.Remarks)
+            var rejectionNote = string.IsNullOrWhiteSpace(action.Remarks)
                 ? reason
                 : $"{reason} - {action.Remarks.Trim()}";
+
+            // Receiving rejection returns the sample to collection for recollection.
+            request.ReportStatus = ReportStatusType.New;
+            request.ReceivedRemarks = rejectionNote;
+            request.ReceivedBy = null;
+            request.CollectedBy = null;
+            request.SampleNo = null;
+            request.CollectedRemarks = AppendWorkflowRemark(
+                request.CollectedRemarks,
+                $"Recollection from receiving: {rejectionNote}");
             requestRepo.Update(request);
         }
 
@@ -288,6 +297,18 @@ namespace LIS.Businesslogic
             var minRow = (page - 1) * pageSize;
             result.Items = list.Skip(minRow).Take(pageSize).ToList();
             return result;
+        }
+
+        private static string AppendWorkflowRemark(string existing, string addition)
+        {
+            if (string.IsNullOrWhiteSpace(addition))
+            {
+                return existing;
+            }
+
+            return string.IsNullOrWhiteSpace(existing)
+                ? addition.Trim()
+                : $"{existing.Trim()} | {addition.Trim()}";
         }
     }
 }

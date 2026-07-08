@@ -1,17 +1,10 @@
 .container-main.qcontent {
-  min-height: calc(100vh - 52px);
+  min-height: calc(100vh - var(--zorya-header-h));
+  max-height: none;
   padding: 10px 14px 14px;
   background-color: #eef2f4;
   box-sizing: border-box;
   width: 100%;
-}
-
-.container-main.qcontent.content-with-sidebar {
-  margin-left: 232px;
-  width: calc(100% - 232px);
-}
-
-.container-main.qcontent {
   display: flex;
   flex-direction: column;
 }

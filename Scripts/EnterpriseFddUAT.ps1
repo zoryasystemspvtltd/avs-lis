@@ -1,5 +1,6 @@
 # Enterprise FDD End-to-End UAT - Sample Collection, Receiving, Radiology
 # Validates API + Database reconciliation (business workflow proof)
+param([switch]$EnsureQaSeed)
 $ErrorActionPreference = "Stop"
 $baseApi = "http://localhost:8081"
 $results = @()
@@ -82,6 +83,13 @@ function SqlRow([string]$q) {
 }
 
 Write-Host "========== ENTERPRISE FDD UAT ($uatTag) ==========" -ForegroundColor Cyan
+
+if ($EnsureQaSeed) {
+  Write-Host "Ensuring QA certification seed dataset..." -ForegroundColor Cyan
+  & (Join-Path $PSScriptRoot "RunQaCertificationSeed.ps1")
+  if ($LASTEXITCODE -ne 0) { throw "QA certification seed failed." }
+}
+
 $adminToken = Get-Token
 Log "ENV" "API/Portal health" "INFO" "Assumed up (script entry)"
 
@@ -278,9 +286,14 @@ try {
       testRequestId = $rid; rejectionReasonCode = $code; remarks = "$uatTag reject $code"
     } | ConvertTo-Json) | Out-Null
     $st = SqlScalar "SELECT ReportStatus FROM TestRequestDetails WHERE Id = $rid"
-    if ([int]$st -ne 7) { throw "Expected FinallyRejected(7), got $st for $code" }
+    if ([int]$st -ne 0) { throw "Expected New(0) after receiving reject, got $st for $code" }
+    $collectedBy = SqlScalar ('SELECT ISNULL(CollectedBy,'''') FROM TestRequestDetails WHERE Id = ' + $rid)
+    if ($collectedBy) { throw "CollectedBy should be cleared after receiving reject for $code" }
     $rr = SqlScalar ('SELECT ISNULL(ReceivedRemarks,'''') FROM TestRequestDetails WHERE Id = ' + $rid)
     if ($rr -notlike "*$code*") { throw "Rejection reason not saved for $code" }
+    $pendingOpt = '{"RecordPerPage":50,"CurrentPage":1,"OrderNumber":"' + (SqlScalar ('SELECT HISRequestNo FROM TestRequestDetails WHERE Id = ' + $rid)) + '"}'
+    $pending = Get-Items (Invoke-RestMethod -Method Get -Uri "$baseApi/api/SampleCollection/PendingQueue" -Headers (HeadersFor $adminToken $pendingOpt))
+    if (-not ($pending | Where-Object { (Get-RowId $_) -eq $rid })) { throw "Rejected sample not returned to collection queue for $code" }
     $rejectIds += $rid
   }
   Log "SR-04" "Sample Rejection RJ01/RJ03" "PASS" "Rejected with reasons saved"
@@ -288,12 +301,16 @@ try {
   Log "SR-04" "Sample Rejection" "FAIL" $_.Exception.Message
 }
 
-# SR-05 Recollection
+# SR-05 Recollection (explicit API on a collected sample still in receiving queue)
 try {
-  if ($rejectIds.Count -lt 1) { throw "No rejected sample available for recollection" }
-  $rejId = $rejectIds[0]
+  $recvOpt = '{"RecordPerPage":50,"CurrentPage":1}'
+  $rows = Get-Items (Invoke-RestMethod -Method Get -Uri "$baseApi/api/SampleReceiving/Queue" -Headers (HeadersFor $adminToken $recvOpt))
+  $row = $rows | Select-Object -First 1
+  if (-not $row) { throw "No collected sample in receiving queue for recollection test" }
+  $rejId = Get-RowId $row
+  $orderNo = SqlScalar ('SELECT HISRequestNo FROM TestRequestDetails WHERE Id = ' + $rejId)
   Invoke-RestMethod -Method Post -Uri "$baseApi/api/SampleReceiving/Recollect/$rejId" -Headers (HeadersFor $adminToken) | Out-Null
-  $newPending = SqlScalar ('SELECT COUNT(*) FROM TestRequestDetails WHERE ReportStatus = 0 AND (CollectedBy IS NULL OR LEN(CollectedBy) = 0) AND HISRequestNo = (SELECT HISRequestNo FROM TestRequestDetails WHERE Id = ' + $rejId + ')')
+  $newPending = SqlScalar ('SELECT COUNT(*) FROM TestRequestDetails WHERE ReportStatus = 0 AND (CollectedBy IS NULL OR LEN(CollectedBy) = 0) AND HISRequestNo = ''' + $orderNo.Replace("'", "''") + '''')
   if ([int]$newPending -lt 1) { throw "No new pending collection row after recollection" }
   Log "SR-05" "Recollection Workflow" "PASS" "New pending row created"
 } catch {

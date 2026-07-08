@@ -535,6 +535,10 @@ a:focus {
   margin-top: auto;
 }
 
+.container-main.qcontent .avilis-portal-footer {
+  margin-top: 0;
+}
+
 .body-content {
   padding-left: 0;
   padding-right: 0;
@@ -1162,6 +1166,10 @@ body.auth-page app-footer .avilis-portal-footer {
 
 .avilis-dashboard .row > [class*="col-"] {
   margin-bottom: 6px;
+}
+
+.avilis-dashboard > .row:last-of-type {
+  margin-bottom: 0;
 }
 
 .avilis-dashboard-welcome {

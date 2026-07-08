@@ -7,13 +7,13 @@ namespace Lis.Api.Migrations
     using System.Resources;
     
     [GeneratedCode("EntityFramework.Migrations", "6.4.4")]
-    public sealed partial class Fresh : IMigrationMetadata
+    public sealed partial class IdentityModelSync : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(Fresh));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(IdentityModelSync));
         
         string IMigrationMetadata.Id
         {
-            get { return "202607040238496_Fresh"; }
+            get { return "202607081804055_IdentityModelSync"; }
         }
         
         string IMigrationMetadata.Source

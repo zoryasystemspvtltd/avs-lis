@@ -166,10 +166,10 @@ export class TestReportComponent implements OnInit, OnDestroy {
   private getDiagnosticPrintStyles(): string {
     return `
       :root {
-        --diag-letterhead-height: 32mm;
         --diag-title-bar-height: 8mm;
-        --diag-header-total: 40mm;
-        --diag-footer-height: 16mm;
+        --diag-header-total: 4cm;
+        --diag-letterhead-height: calc(4cm - var(--diag-title-bar-height));
+        --diag-footer-height: 4cm;
         --diag-side-margin: 10mm;
       }
       @page { size: A4 portrait; margin: 0; }
@@ -210,19 +210,43 @@ export class TestReportComponent implements OnInit, OnDestroy {
         border-bottom: 1.5pt solid #1a7f8c;
         box-sizing: border-box;
       }
-      .report-print-footer {
+      .report-print-footer-zone {
         position: fixed;
         bottom: 0;
         left: 0;
         right: 0;
         height: var(--diag-footer-height);
-        padding: 2mm var(--diag-side-margin) 0;
+        z-index: 1000;
+        background: #fff;
+        box-sizing: border-box;
+        padding: 3mm var(--diag-side-margin) 2mm;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+      }
+      .report-footer-signature {
+        align-self: flex-start;
+        text-align: left;
+        max-width: 55%;
+        margin-bottom: 2mm;
+        font-size: 8pt;
+        line-height: 1.25;
+      }
+      .report-footer-doctor-name {
+        display: block;
+        font-weight: 600;
+        margin-top: 0.5mm;
+      }
+      .report-footer-doctor-designation {
+        display: block;
+        white-space: pre-wrap;
+        margin-top: 0.5mm;
+      }
+      .report-footer-legal {
         border-top: 0.5pt solid #888;
+        padding-top: 2mm;
         font-size: 8pt;
         color: #333;
-        background: #fff;
-        z-index: 1000;
-        box-sizing: border-box;
       }
       .report-footer-row {
         display: flex;
@@ -236,12 +260,10 @@ export class TestReportComponent implements OnInit, OnDestroy {
         white-space: nowrap;
         font-weight: 600;
       }
-      .report-footer-sign { margin-top: 1.5mm; font-size: 7.5pt; }
-      .report-footer-approved { flex: 1; display: flex; flex-direction: column; align-items: flex-start; }
-      .report-footer-approved-name { display: block; }
-      .report-signature-img { max-height: 12mm; max-width: 45mm; display: block; margin-bottom: 1mm; }
+      .report-signature-img { max-height: 14mm; max-width: 50mm; display: block; margin-bottom: 1mm; }
       .report-print-body {
-        padding: 42mm var(--diag-side-margin) 19mm var(--diag-side-margin);
+        padding: calc(var(--diag-header-total) + 2mm) var(--diag-side-margin)
+          calc(var(--diag-footer-height) + 2mm) var(--diag-side-margin);
       }
       .report-meta-table td { border: 1px solid #ccc; padding: 3px 6px; }
       .meta-label { font-weight: 600; background: #f5f5f5; width: 14%; }

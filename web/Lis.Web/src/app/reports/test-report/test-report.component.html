@@ -129,25 +129,33 @@
       </ng-template>
     </div>
 
-    <!-- Fixed on every printed page: disclaimer, approval, page number -->
-    <footer class="report-print-footer">
-      <div class="report-footer-row report-footer-main">
-        <span class="report-footer-disclaimer">
-          Computer-generated report. Results relate only to the specimen received.
-          Abnormal flags: H = High, L = Low.
+    <!-- Fixed on every printed page: signature (left) above footer separator, then disclaimer -->
+    <div class="report-print-footer-zone">
+      <div class="report-footer-signature"
+        *ngIf="report.header?.approvedBy || report.header?.approvedBySignatureImage || report.header?.approvedByDesignation">
+        <img *ngIf="report.header?.approvedBySignatureImage" [src]="report.header.approvedBySignatureImage"
+          class="report-signature-img" alt="Doctor signature" />
+        <span class="report-footer-doctor-name" *ngIf="report.header?.approvedByName || report.header?.approvedBy">
+          {{ report.header.approvedByName || report.header.approvedBy }}
         </span>
-        <span class="report-footer-pagenum" aria-label="Page number"></span>
-      </div>
-      <div class="report-footer-row report-footer-sign" *ngIf="report.header?.approvedBy || report.header?.approvedBySignatureImage">
-        <span class="report-footer-approved">
-          <img *ngIf="report.header?.approvedBySignatureImage" [src]="report.header.approvedBySignatureImage"
-            class="report-signature-img" alt="Signature" />
-          <span class="report-footer-approved-name">Approved by: {{ report.header.approvedByName || report.header.approvedBy }}<span
-              *ngIf="report.header?.approvedByDesignation">, {{ report.header.approvedByDesignation }}</span></span>
+        <span class="report-footer-doctor-designation" *ngIf="report.header?.approvedByDesignation">
+          {{ report.header.approvedByDesignation }}
         </span>
-        <span class="report-footer-sign-line" *ngIf="!report.header?.approvedBySignatureImage">Authorized signatory: _________________________</span>
+        <span class="report-footer-sign-line"
+          *ngIf="!report.header?.approvedBySignatureImage && (report.header?.approvedBy || report.header?.approvedByName)">
+          _________________________
+        </span>
       </div>
-    </footer>
+      <div class="report-footer-legal">
+        <div class="report-footer-row report-footer-main">
+          <span class="report-footer-disclaimer">
+            Computer-generated report. Results relate only to the specimen received.
+            Abnormal flags: H = High, L = Low.
+          </span>
+          <span class="report-footer-pagenum" aria-label="Page number"></span>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div class="zorya-report-empty no-print" *ngIf="searched && !report && !loading && !filterError">
