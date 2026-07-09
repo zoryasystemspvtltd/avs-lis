@@ -30,8 +30,9 @@ namespace Lis.Api.Controllers.Api
         /// </summary>
         /// <param name="Id">Request Id</param>
         /// <returns></returns>
-        [AllowAnonymous]
         [HttpGet]
+        [QAuthorize(ModuleName = "Reports", AlternateModuleName = "Samples,DoctorsApprovals",
+            ModulePermissionTypes = ModulePermissionType.CanView)]
         public IEnumerable<TestResultDetails> Get(long Id)
         {
             try

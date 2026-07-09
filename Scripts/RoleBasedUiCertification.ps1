@@ -178,7 +178,9 @@ try {
 try {
     $recvOpt = '{"RecordPerPage":25,"CurrentPage":1}'
     $rq = Invoke-RestMethod -Uri "$BaseApi/api/SampleReceiving/Queue" -Headers (Hdr $techToken $recvOpt)
-    $collId = SqlScalar "SELECT CAST(Id AS varchar(20)) FROM TestRequestDetails WHERE SampleNo = N'QA-CERT-SMP-COLL'"
+    $collId = SqlScalar "SELECT CAST(Id AS varchar(20)) FROM TestRequestDetails WHERE SampleNo = N'QA-CERT-SMP-COLL' OR HISRequestNo = N'QA-CERT-INV-COLL'"
+    if ([string]::IsNullOrWhiteSpace($collId)) { throw "QA-CERT-SMP-COLL not found" }
+    sqlcmd -S ".\SQLEXPRESS" -d ZoryaLMS -Q "UPDATE TestRequestDetails SET CollectedBy=N'$TechUser', ReceivedBy=NULL, ReceivedRemarks=NULL, ReportStatus=0 WHERE Id=$collId" -b | Out-Null
     $recvBody = @{
         testRequestId = [long]$collId
         receivedDateTime = (Get-Date).AddMinutes(-10).ToString("yyyy-MM-ddTHH:mm:ss")

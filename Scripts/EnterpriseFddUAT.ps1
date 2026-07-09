@@ -204,7 +204,7 @@ try {
   $pendingReqId = Get-RowId $pendingBarRow
   $pendingOrderNo = if ($pendingBarRow.HisRequestNo) { $pendingBarRow.HisRequestNo } elseif ($pendingBarRow.hisRequestNo) { $pendingBarRow.hisRequestNo } else { $null }
   if (-not $pendingOrderNo) { throw "Pending row missing invoice/order number for barcode print API" }
-  $barcodeApi = Invoke-RestMethod -Method Get -Uri "$baseApi/api/BarCode?Id=$([uri]::EscapeDataString($pendingOrderNo))" -Headers @{ accesskey = "DXI800" }
+  $barcodeApi = Invoke-RestMethod -Method Get -Uri "$baseApi/api/BarCode?Id=$([uri]::EscapeDataString($pendingOrderNo))" -Headers (HeadersFor $adminToken)
   if (-not $barcodeApi -or @(Get-Items $barcodeApi).Count -lt 1) { throw "Barcode print annotation API empty for pending order $pendingOrderNo" }
   Log "SC-05" "Barcode Validation" "PASS" "Unique barcode persisted; print API OK for pending sample"
 } catch {

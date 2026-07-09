@@ -60,6 +60,8 @@ namespace Lis.Api.Controllers.Api
 
         [HttpGet]
         [Route("Billing")]
+        [QAuthorize(ModuleName = "SaleInvoices", AlternateModuleName = "Masters",
+            ModulePermissionTypes = ModulePermissionType.CanView)]
         public ItemList<PatientDetail> GetBilling()
         {
             try
@@ -73,9 +75,10 @@ namespace Lis.Api.Controllers.Api
             }
         }
 
-        [AllowAnonymous]
         [HttpGet]
         [Route("")]
+        [QAuthorize(ModuleName = "Samples", AlternateModuleName = "Reports,DoctorsApprovals",
+            ModulePermissionTypes = ModulePermissionType.CanView)]
         public ItemList<TestRequestDetail> GetList()
         {
             try
@@ -89,9 +92,10 @@ namespace Lis.Api.Controllers.Api
             }
         }
 
-        [AllowAnonymous]
         [HttpGet]
         [Route("{id:long}")]
+        [QAuthorize(ModuleName = "Samples", AlternateModuleName = "Reports,DoctorsApprovals",
+            ModulePermissionTypes = ModulePermissionType.CanView)]
         public PatientDetail GetById(long id)
         {
             try
@@ -105,9 +109,10 @@ namespace Lis.Api.Controllers.Api
             }
         }
 
-        [AllowAnonymous]
         [HttpPut]
         [Route("")]
+        [QAuthorize(ModuleName = "Reports", AlternateModuleName = "DoctorsApprovals",
+            ModulePermissionTypes = ModulePermissionType.CanAuthorize | ModulePermissionType.CanReject)]
         public HttpResponseMessage Put(List<AuthorizeRequest> request)
         {
             try

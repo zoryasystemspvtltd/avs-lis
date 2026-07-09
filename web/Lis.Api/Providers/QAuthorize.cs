@@ -68,13 +68,30 @@ namespace Lis.Api.Providers
             }
 
             if (IsAuthorizedForModule(rolePermission, ModuleName)
-                || (!string.IsNullOrWhiteSpace(AlternateModuleName)
-                    && IsAuthorizedForModule(rolePermission, AlternateModuleName)))
+                || HasAlternateModuleAccess(rolePermission))
             {
                 return;
             }
 
             InvalidResponse(actionContext, true);
+        }
+
+        private bool HasAlternateModuleAccess(List<ModulePermission> rolePermission)
+        {
+            if (string.IsNullOrWhiteSpace(AlternateModuleName))
+            {
+                return false;
+            }
+
+            foreach (var moduleName in AlternateModuleName.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                if (IsAuthorizedForModule(rolePermission, moduleName.Trim()))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private bool IsAuthorizedForModule(List<ModulePermission> rolePermission, string moduleName)

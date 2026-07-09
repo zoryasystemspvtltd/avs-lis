@@ -1,4 +1,5 @@
-﻿using LIS.DtoModel.Interfaces;
+﻿using Lis.Api.Providers;
+using LIS.DtoModel.Interfaces;
 using LIS.DtoModel.Models;
 using LIS.Logger;
 using Newtonsoft.Json;
@@ -27,8 +28,9 @@ namespace Lis.Api.Controllers.Api
             logger = Logger;
         }
 
-        [AllowAnonymous]
         [HttpGet]
+        [QAuthorize(ModuleName = "SampleCollection", AlternateModuleName = "SampleReceiving,Reports,Samples",
+            ModulePermissionTypes = ModulePermissionType.CanView)]
         public IEnumerable<BarCodeDto> Get()
         {
             try
@@ -46,8 +48,9 @@ namespace Lis.Api.Controllers.Api
             }
         }
 
-        [AllowAnonymous]
         [HttpGet]
+        [QAuthorize(ModuleName = "SampleCollection", AlternateModuleName = "SampleReceiving,Reports,Samples",
+            ModulePermissionTypes = ModulePermissionType.CanView)]
         public IEnumerable<BarCodeDto> Get(string Id)
         {
             try

@@ -47,7 +47,7 @@ namespace Lis.Api.Controllers
         /// </summary>
         /// <param name="id">Role Id</param>
         /// <returns></returns>
-        [AllowAnonymous]
+        [QAuthorize(ModuleName = "Roles", ModulePermissionTypes = ModulePermissionType.CanView)]
         public dynamic Get(string id)
         {
             dynamic roles = new
@@ -72,7 +72,7 @@ namespace Lis.Api.Controllers
         /// Get List of role
         /// </summary>
         /// <returns></returns>
-        [AllowAnonymous]
+        [Authorize]
         public dynamic Get()
         {
             dynamic roles = new
