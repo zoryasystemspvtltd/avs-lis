@@ -58,6 +58,12 @@ namespace LIS.DtoModel.Models
 
         public virtual PatientDetail Patient { get; set; }
 
+        [ForeignKey("PatientVisit")]
+        public long? PatientVisitId { get; set; }
+
+        [JsonIgnore]
+        public virtual PatientVisit PatientVisit { get; set; }
+
         [JsonIgnore]
         public virtual IEnumerable<TestResult> TestResults { get; set; }
 

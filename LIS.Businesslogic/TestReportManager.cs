@@ -18,6 +18,7 @@ namespace LIS.BusinessLogic
         private readonly ModuleRepo<TestResult> resultRepo;
         private readonly ModuleRepo<TestResultDetails> resultDetailsRepo;
         private readonly ModuleRepo<PatientDetail> patientRepo;
+        private readonly ModuleRepo<PatientVisit> visitRepo;
         private readonly ModuleRepo<ReferralDoctorMaster> doctorRepo;
         private readonly ModuleRepo<CorporateMaster> corporateRepo;
         private readonly ModuleRepo<HISParameterMaster> parameterRepo;
@@ -40,6 +41,7 @@ namespace LIS.BusinessLogic
             resultRepo = new ModuleRepo<TestResult>(logger, identity, unitOfWork);
             resultDetailsRepo = new ModuleRepo<TestResultDetails>(logger, identity, unitOfWork);
             patientRepo = new ModuleRepo<PatientDetail>(logger, identity, unitOfWork);
+            visitRepo = new ModuleRepo<PatientVisit>(logger, identity, unitOfWork);
             doctorRepo = new ModuleRepo<ReferralDoctorMaster>(logger, identity, unitOfWork);
             corporateRepo = new ModuleRepo<CorporateMaster>(logger, identity, unitOfWork);
             parameterRepo = new ModuleRepo<HISParameterMaster>(logger, identity, unitOfWork);
@@ -326,6 +328,8 @@ namespace LIS.BusinessLogic
                 InvoiceNo = invoice.InvoiceNo,
                 PatientName = patient.Name,
                 PatientId = patient.HisPatientId,
+                MRNo = patient.MRNo,
+                VisitId = ResolveReportVisitId(invoice, patient, requests),
                 Age = patient.Age,
                 Gender = patient.Gender,
                 ReferralDoctor = doctorName,
@@ -542,6 +546,21 @@ namespace LIS.BusinessLogic
             }
 
             return options.Values.OrderByDescending(o => o.LabNo).ToList();
+        }
+
+        private string ResolveReportVisitId(SaleInvoice invoice, PatientDetail patient, List<TestRequestDetail> requests)
+        {
+            var visitId = PatientVisitManager.ResolveVisitId(visitRepo, patientRepo, invoice.PatientVisitId, patient.Id);
+            if (!string.IsNullOrWhiteSpace(visitId))
+            {
+                return visitId;
+            }
+
+            var requestVisitId = requests?
+                .Select(r => r.PatientVisitId)
+                .FirstOrDefault(v => v.HasValue && v.Value > 0);
+
+            return PatientVisitManager.ResolveVisitId(visitRepo, patientRepo, requestVisitId, patient.Id);
         }
     }
 }

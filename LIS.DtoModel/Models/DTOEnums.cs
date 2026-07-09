@@ -44,4 +44,12 @@
         Authorized = 3,
         Released = 4
     }
+
+    public enum VisitStatusType
+    {
+        New = 0,
+        InProgress = 1,
+        Completed = 2,
+        Cancelled = 3
+    }
 }

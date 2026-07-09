@@ -34,6 +34,7 @@ namespace LIS.Masters.Tests.Infrastructure
         public HISTestMasterManager HisTest { get; }
         public TestRateMasterManager TestRate { get; }
         public SaleInvoiceManager SaleInvoice { get; }
+        public PatientVisitManager PatientVisit { get; }
         public PatientMasterManager PatientMaster { get; }
         public PatientDetailManager PatientWorkflow { get; }
         public HisParameterMasterManager HisParameter { get; }
@@ -66,8 +67,9 @@ namespace LIS.Masters.Tests.Infrastructure
             Specimen = new SpecimenManager(Logger, Identity, Uow);
             HisTest = new HISTestMasterManager(Logger, Identity, Uow);
             TestRate = new TestRateMasterManager(Logger, Identity, Uow);
-            SaleInvoice = new SaleInvoiceManager(Logger, Identity, Uow, TestRate, TestProfile);
-            PatientMaster = new PatientMasterManager(Logger, Identity, Uow);
+            PatientVisit = new PatientVisitManager(Logger, Identity, Uow);
+            SaleInvoice = new SaleInvoiceManager(Logger, Identity, Uow, TestRate, TestProfile, PatientVisit);
+            PatientMaster = new PatientMasterManager(Logger, Identity, Uow, PatientVisit);
             PatientWorkflow = new PatientDetailManager(Logger, Identity, Uow, db);
             HisParameter = new HisParameterMasterManager(Logger, Identity, Uow);
             HisParameterRange = new HisParameterRangeCrudManager(Logger, Identity, Uow);

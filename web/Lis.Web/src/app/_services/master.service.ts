@@ -90,6 +90,26 @@ export class MasterService {
     );
   }
 
+  startPatientVisit(patientId: number): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/api/PatientVisit/StartVisit/${patientId}`, {}).pipe(
+      map(r => r?.result ?? r?.Result ?? r),
+      catchError(err => { throw err; })
+    );
+  }
+
+  getCurrentPatientVisit(patientId: number): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/api/PatientVisit/Current/${patientId}`).pipe(
+      catchError(() => of(null))
+    );
+  }
+
+  getPatientVisits(patientId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/api/PatientVisit/${patientId}`).pipe(
+      map(r => Array.isArray(r) ? r : []),
+      catchError(() => of([]))
+    );
+  }
+
   searchHisTests(searchText: string, recordPerPage = 50): Observable<any[]> {
     const option = {
       RecordPerPage: recordPerPage,

@@ -42,6 +42,10 @@ export class MasterFormComponent implements OnInit {
   readonly parameterCodeExistsMessage = 'Parameter Code already exists.';
   readonly parameterDescriptionExistsMessage = 'Description already exists.';
   readonly parameterCombinationExistsMessage = 'Parameter Code and Description combination already exists.';
+  patientMasterTab: 'details' | 'visits' = 'details';
+  visitHistory: any[] = [];
+  visitHistoryLoading = false;
+  visitStarting = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -117,8 +121,75 @@ export class MasterFormComponent implements OnInit {
       this.masterService.getItem(this.apiName, this.id).subscribe(item => {
         if (item) {
           this.patchItem(item);
+          if (this.apiName === 'PatientMaster') {
+            this.loadVisitHistory();
+          }
         }
       });
+    }
+  }
+
+  setPatientMasterTab(tab: 'details' | 'visits'): void {
+    this.patientMasterTab = tab;
+    if (tab === 'visits') {
+      this.loadVisitHistory();
+    }
+  }
+
+  loadVisitHistory(): void {
+    if (this.apiName !== 'PatientMaster' || !this.id) {
+      return;
+    }
+    this.visitHistoryLoading = true;
+    this.masterService.getPatientVisits(+this.id).subscribe(
+      rows => {
+        this.visitHistory = (rows || []).map(r => ({
+          patientVisitId: r.patientVisitId ?? r.PatientVisitId,
+          visitId: r.visitId ?? r.VisitId,
+          visitDateTime: r.visitDateTime ?? r.VisitDateTime,
+          saleInvoiceId: r.saleInvoiceId ?? r.SaleInvoiceId,
+          invoiceNo: r.invoiceNo ?? r.InvoiceNo,
+          visitStatusLabel: r.visitStatusLabel ?? r.VisitStatusLabel,
+          createdBy: r.createdBy ?? r.CreatedBy
+        }));
+        this.visitHistoryLoading = false;
+      },
+      () => {
+        this.visitHistory = [];
+        this.visitHistoryLoading = false;
+      }
+    );
+  }
+
+  startNewVisitFromMaster(): void {
+    if (!this.id || this.apiName !== 'PatientMaster' || this.visitStarting) {
+      return;
+    }
+    this.visitStarting = true;
+    this.masterService.startPatientVisit(+this.id).subscribe(
+      visit => {
+        this.visitStarting = false;
+        const payload = visit?.patientVisitId != null || visit?.PatientVisitId != null
+          ? visit
+          : (visit || {});
+        const visitId = payload.visitId ?? payload.VisitId ?? '';
+        const patientVisitId = payload.patientVisitId ?? payload.PatientVisitId ?? null;
+        this.form.patchValue({ visitId });
+        this.loadVisitHistory();
+        this.router.navigate(['/sale-invoices/create'], {
+          state: { patientId: +this.id, patientVisitId }
+        });
+      },
+      err => {
+        this.visitStarting = false;
+        this.alertService.error(extractApiError(err, 'Unable to start a new visit.'));
+      }
+    );
+  }
+
+  openVisitInvoice(invoiceId: number): void {
+    if (invoiceId && +invoiceId > 0) {
+      this.router.navigate(['/sale-invoices', +invoiceId]);
     }
   }
 

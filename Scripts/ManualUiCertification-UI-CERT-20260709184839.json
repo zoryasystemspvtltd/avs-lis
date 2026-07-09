@@ -1,0 +1,1056 @@
+{
+  "tag": "UI-CERT-20260709184839",
+  "portal": "http://localhost:8080",
+  "bundle": "main-es2015.8ec24775bb3672feecea.js",
+  "summary": {
+    "pass": 124,
+    "warn": 2,
+    "fail": 2
+  },
+  "defects": [
+    {
+      "Id": "P0-Browser suite execution",
+      "Phase": "P0",
+      "Browser": "Chrome",
+      "Scenario": "Browser suite execution",
+      "Status": "FAIL",
+      "Detail": "page.fill: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator('#login-email')\n"
+    },
+    {
+      "Id": "P0-Browser suite execution",
+      "Phase": "P0",
+      "Browser": "Edge",
+      "Scenario": "Browser suite execution",
+      "Status": "FAIL",
+      "Detail": "page.fill: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator('#login-email')\n"
+    }
+  ],
+  "results": [
+    {
+      "Id": "P1-Latest Angular bundle loaded",
+      "Phase": "P1",
+      "Browser": "Chrome",
+      "Scenario": "Latest Angular bundle loaded",
+      "Status": "PASS",
+      "Detail": "main-es2015.8ec24775bb3672feecea.js"
+    },
+    {
+      "Id": "P1-Login page loads",
+      "Phase": "P1",
+      "Browser": "Chrome",
+      "Scenario": "Login page loads",
+      "Status": "PASS",
+      "Detail": "http://localhost:8080/login"
+    },
+    {
+      "Id": "P2-Admin lands on dashboard",
+      "Phase": "P2",
+      "Browser": "Chrome",
+      "Scenario": "Admin lands on dashboard",
+      "Status": "PASS",
+      "Detail": "http://localhost:8080/"
+    },
+    {
+      "Id": "P2-Menu visible: Working Board",
+      "Phase": "P2",
+      "Browser": "Chrome",
+      "Scenario": "Menu visible: Working Board",
+      "Status": "PASS",
+      "Detail": "found"
+    },
+    {
+      "Id": "P2-Menu visible: Setup",
+      "Phase": "P2",
+      "Browser": "Chrome",
+      "Scenario": "Menu visible: Setup",
+      "Status": "PASS",
+      "Detail": "found"
+    },
+    {
+      "Id": "P2-Menu visible: Master",
+      "Phase": "P2",
+      "Browser": "Chrome",
+      "Scenario": "Menu visible: Master",
+      "Status": "PASS",
+      "Detail": "found"
+    },
+    {
+      "Id": "P2-Menu visible: Transaction",
+      "Phase": "P2",
+      "Browser": "Chrome",
+      "Scenario": "Menu visible: Transaction",
+      "Status": "PASS",
+      "Detail": "found"
+    },
+    {
+      "Id": "P2-Menu visible: Reports",
+      "Phase": "P2",
+      "Browser": "Chrome",
+      "Scenario": "Menu visible: Reports",
+      "Status": "PASS",
+      "Detail": "found"
+    },
+    {
+      "Id": "P2-Menu visible: Account",
+      "Phase": "P2",
+      "Browser": "Chrome",
+      "Scenario": "Menu visible: Account",
+      "Status": "PASS",
+      "Detail": "found"
+    },
+    {
+      "Id": "P2-Menu visible: Recent Samples",
+      "Phase": "P2",
+      "Browser": "Chrome",
+      "Scenario": "Menu visible: Recent Samples",
+      "Status": "PASS",
+      "Detail": "found"
+    },
+    {
+      "Id": "P2-Menu visible: Users",
+      "Phase": "P2",
+      "Browser": "Chrome",
+      "Scenario": "Menu visible: Users",
+      "Status": "PASS",
+      "Detail": "found"
+    },
+    {
+      "Id": "P2-Menu visible: Roles",
+      "Phase": "P2",
+      "Browser": "Chrome",
+      "Scenario": "Menu visible: Roles",
+      "Status": "PASS",
+      "Detail": "found"
+    },
+    {
+      "Id": "P2-Menu visible: Sale Invoice",
+      "Phase": "P2",
+      "Browser": "Chrome",
+      "Scenario": "Menu visible: Sale Invoice",
+      "Status": "PASS",
+      "Detail": "found"
+    },
+    {
+      "Id": "P2-Menu visible: Department",
+      "Phase": "P2",
+      "Browser": "Chrome",
+      "Scenario": "Menu visible: Department",
+      "Status": "PASS",
+      "Detail": "found"
+    },
+    {
+      "Id": "P2-Menu visible: Test Master",
+      "Phase": "P2",
+      "Browser": "Chrome",
+      "Scenario": "Menu visible: Test Master",
+      "Status": "PASS",
+      "Detail": "found"
+    },
+    {
+      "Id": "P2-Route accessible /",
+      "Phase": "P2",
+      "Browser": "Chrome",
+      "Scenario": "Route accessible /",
+      "Status": "PASS",
+      "Detail": "loaded"
+    },
+    {
+      "Id": "P2-Route accessible /users",
+      "Phase": "P2",
+      "Browser": "Chrome",
+      "Scenario": "Route accessible /users",
+      "Status": "PASS",
+      "Detail": "loaded"
+    },
+    {
+      "Id": "P2-Route accessible /roles",
+      "Phase": "P2",
+      "Browser": "Chrome",
+      "Scenario": "Route accessible /roles",
+      "Status": "PASS",
+      "Detail": "loaded"
+    },
+    {
+      "Id": "P2-Route accessible /departments",
+      "Phase": "P2",
+      "Browser": "Chrome",
+      "Scenario": "Route accessible /departments",
+      "Status": "PASS",
+      "Detail": "loaded"
+    },
+    {
+      "Id": "P2-Route accessible /sale-invoices",
+      "Phase": "P2",
+      "Browser": "Chrome",
+      "Scenario": "Route accessible /sale-invoices",
+      "Status": "PASS",
+      "Detail": "loaded"
+    },
+    {
+      "Id": "P2-Route accessible /samples",
+      "Phase": "P2",
+      "Browser": "Chrome",
+      "Scenario": "Route accessible /samples",
+      "Status": "PASS",
+      "Detail": "loaded"
+    },
+    {
+      "Id": "P2-Route accessible /reports/test-report",
+      "Phase": "P2",
+      "Browser": "Chrome",
+      "Scenario": "Route accessible /reports/test-report",
+      "Status": "PASS",
+      "Detail": "loaded"
+    },
+    {
+      "Id": "P2-No placeholder labels on /users",
+      "Phase": "P2",
+      "Browser": "Chrome",
+      "Scenario": "No placeholder labels on /users",
+      "Status": "PASS",
+      "Detail": "clean"
+    },
+    {
+      "Id": "P2-No placeholder labels on /sale-invoices/create",
+      "Phase": "P2",
+      "Browser": "Chrome",
+      "Scenario": "No placeholder labels on /sale-invoices/create",
+      "Status": "PASS",
+      "Detail": "clean"
+    },
+    {
+      "Id": "P2-No placeholder labels on /departments",
+      "Phase": "P2",
+      "Browser": "Chrome",
+      "Scenario": "No placeholder labels on /departments",
+      "Status": "PASS",
+      "Detail": "clean"
+    },
+    {
+      "Id": "P3-Technician lands on dashboard",
+      "Phase": "P3",
+      "Browser": "Chrome",
+      "Scenario": "Technician lands on dashboard",
+      "Status": "PASS",
+      "Detail": "http://localhost:8080/"
+    },
+    {
+      "Id": "P3-Menu visible: Working Board",
+      "Phase": "P3",
+      "Browser": "Chrome",
+      "Scenario": "Menu visible: Working Board",
+      "Status": "PASS",
+      "Detail": "found"
+    },
+    {
+      "Id": "P3-Menu visible: Sample Collection",
+      "Phase": "P3",
+      "Browser": "Chrome",
+      "Scenario": "Menu visible: Sample Collection",
+      "Status": "PASS",
+      "Detail": "found"
+    },
+    {
+      "Id": "P3-Menu visible: Sample Receiving",
+      "Phase": "P3",
+      "Browser": "Chrome",
+      "Scenario": "Menu visible: Sample Receiving",
+      "Status": "PASS",
+      "Detail": "found"
+    },
+    {
+      "Id": "P3-Menu visible: Recent Samples",
+      "Phase": "P3",
+      "Browser": "Chrome",
+      "Scenario": "Menu visible: Recent Samples",
+      "Status": "PASS",
+      "Detail": "found"
+    },
+    {
+      "Id": "P3-Menu visible: Technician's Approval",
+      "Phase": "P3",
+      "Browser": "Chrome",
+      "Scenario": "Menu visible: Technician's Approval",
+      "Status": "PASS",
+      "Detail": "found"
+    },
+    {
+      "Id": "P3-Menu hidden: Users",
+      "Phase": "P3",
+      "Browser": "Chrome",
+      "Scenario": "Menu hidden: Users",
+      "Status": "PASS",
+      "Detail": "not shown"
+    },
+    {
+      "Id": "P3-Menu hidden: Roles",
+      "Phase": "P3",
+      "Browser": "Chrome",
+      "Scenario": "Menu hidden: Roles",
+      "Status": "PASS",
+      "Detail": "not shown"
+    },
+    {
+      "Id": "P3-Menu hidden: Department",
+      "Phase": "P3",
+      "Browser": "Chrome",
+      "Scenario": "Menu hidden: Department",
+      "Status": "PASS",
+      "Detail": "not shown"
+    },
+    {
+      "Id": "P3-Menu hidden: Test Master",
+      "Phase": "P3",
+      "Browser": "Chrome",
+      "Scenario": "Menu hidden: Test Master",
+      "Status": "PASS",
+      "Detail": "not shown"
+    },
+    {
+      "Id": "P3-Route accessible /sample-collection",
+      "Phase": "P3",
+      "Browser": "Chrome",
+      "Scenario": "Route accessible /sample-collection",
+      "Status": "PASS",
+      "Detail": "technician route"
+    },
+    {
+      "Id": "P3-Route accessible /sample-receiving",
+      "Phase": "P3",
+      "Browser": "Chrome",
+      "Scenario": "Route accessible /sample-receiving",
+      "Status": "PASS",
+      "Detail": "technician route"
+    },
+    {
+      "Id": "P3-Route accessible /samples",
+      "Phase": "P3",
+      "Browser": "Chrome",
+      "Scenario": "Route accessible /samples",
+      "Status": "PASS",
+      "Detail": "technician route"
+    },
+    {
+      "Id": "P3-Route accessible /technicianapprovals",
+      "Phase": "P3",
+      "Browser": "Chrome",
+      "Scenario": "Route accessible /technicianapprovals",
+      "Status": "PASS",
+      "Detail": "technician route"
+    },
+    {
+      "Id": "P3-Route accessible /lab-result-entry",
+      "Phase": "P3",
+      "Browser": "Chrome",
+      "Scenario": "Route accessible /lab-result-entry",
+      "Status": "PASS",
+      "Detail": "technician route"
+    },
+    {
+      "Id": "P3-Route denied /doctorapprovals",
+      "Phase": "P3",
+      "Browser": "Chrome",
+      "Scenario": "Route denied /doctorapprovals",
+      "Status": "PASS",
+      "Detail": "http://localhost:8080/?denied=1"
+    },
+    {
+      "Id": "P3-Route denied /users",
+      "Phase": "P3",
+      "Browser": "Chrome",
+      "Scenario": "Route denied /users",
+      "Status": "PASS",
+      "Detail": "http://localhost:8080/?denied=1"
+    },
+    {
+      "Id": "P3-Route denied /roles",
+      "Phase": "P3",
+      "Browser": "Chrome",
+      "Scenario": "Route denied /roles",
+      "Status": "PASS",
+      "Detail": "http://localhost:8080/?denied=1"
+    },
+    {
+      "Id": "P3-Route denied /departments",
+      "Phase": "P3",
+      "Browser": "Chrome",
+      "Scenario": "Route denied /departments",
+      "Status": "PASS",
+      "Detail": "http://localhost:8080/?denied=1"
+    },
+    {
+      "Id": "P4-Doctor lands on dashboard (not Change Password)",
+      "Phase": "P4",
+      "Browser": "Chrome",
+      "Scenario": "Doctor lands on dashboard (not Change Password)",
+      "Status": "PASS",
+      "Detail": "http://localhost:8080/"
+    },
+    {
+      "Id": "P4-Menu visible: Doctor's Approval",
+      "Phase": "P4",
+      "Browser": "Chrome",
+      "Scenario": "Menu visible: Doctor's Approval",
+      "Status": "PASS",
+      "Detail": "found"
+    },
+    {
+      "Id": "P4-Menu visible: Reports",
+      "Phase": "P4",
+      "Browser": "Chrome",
+      "Scenario": "Menu visible: Reports",
+      "Status": "PASS",
+      "Detail": "found"
+    },
+    {
+      "Id": "P4-Menu hidden: Sample Collection",
+      "Phase": "P4",
+      "Browser": "Chrome",
+      "Scenario": "Menu hidden: Sample Collection",
+      "Status": "PASS",
+      "Detail": "not shown"
+    },
+    {
+      "Id": "P4-Menu hidden: Sample Receiving",
+      "Phase": "P4",
+      "Browser": "Chrome",
+      "Scenario": "Menu hidden: Sample Receiving",
+      "Status": "PASS",
+      "Detail": "not shown"
+    },
+    {
+      "Id": "P4-Menu hidden: Users",
+      "Phase": "P4",
+      "Browser": "Chrome",
+      "Scenario": "Menu hidden: Users",
+      "Status": "PASS",
+      "Detail": "not shown"
+    },
+    {
+      "Id": "P4-Menu hidden: Roles",
+      "Phase": "P4",
+      "Browser": "Chrome",
+      "Scenario": "Menu hidden: Roles",
+      "Status": "PASS",
+      "Detail": "not shown"
+    },
+    {
+      "Id": "P4-Menu hidden: Department",
+      "Phase": "P4",
+      "Browser": "Chrome",
+      "Scenario": "Menu hidden: Department",
+      "Status": "PASS",
+      "Detail": "not shown"
+    },
+    {
+      "Id": "P4-Route accessible /doctorapprovals",
+      "Phase": "P4",
+      "Browser": "Chrome",
+      "Scenario": "Route accessible /doctorapprovals",
+      "Status": "PASS",
+      "Detail": "doctor route"
+    },
+    {
+      "Id": "P4-Route accessible /reports/test-report",
+      "Phase": "P4",
+      "Browser": "Chrome",
+      "Scenario": "Route accessible /reports/test-report",
+      "Status": "PASS",
+      "Detail": "doctor route"
+    },
+    {
+      "Id": "P4-Route denied /sample-collection",
+      "Phase": "P4",
+      "Browser": "Chrome",
+      "Scenario": "Route denied /sample-collection",
+      "Status": "PASS",
+      "Detail": "http://localhost:8080/?denied=1"
+    },
+    {
+      "Id": "P4-Route denied /sample-receiving",
+      "Phase": "P4",
+      "Browser": "Chrome",
+      "Scenario": "Route denied /sample-receiving",
+      "Status": "PASS",
+      "Detail": "http://localhost:8080/?denied=1"
+    },
+    {
+      "Id": "P4-Route denied /users",
+      "Phase": "P4",
+      "Browser": "Chrome",
+      "Scenario": "Route denied /users",
+      "Status": "PASS",
+      "Detail": "http://localhost:8080/?denied=1"
+    },
+    {
+      "Id": "P4-Route denied /roles",
+      "Phase": "P4",
+      "Browser": "Chrome",
+      "Scenario": "Route denied /roles",
+      "Status": "PASS",
+      "Detail": "http://localhost:8080/?denied=1"
+    },
+    {
+      "Id": "P4-Route denied /departments",
+      "Phase": "P4",
+      "Browser": "Chrome",
+      "Scenario": "Route denied /departments",
+      "Status": "PASS",
+      "Detail": "http://localhost:8080/?denied=1"
+    },
+    {
+      "Id": "P5-Route accessible /radiology-doctor-approvals",
+      "Phase": "P5",
+      "Browser": "Chrome",
+      "Scenario": "Route accessible /radiology-doctor-approvals",
+      "Status": "PASS",
+      "Detail": "radiology route"
+    },
+    {
+      "Id": "P5-Route accessible /radiology-approved-reports",
+      "Phase": "P5",
+      "Browser": "Chrome",
+      "Scenario": "Route accessible /radiology-approved-reports",
+      "Status": "PASS",
+      "Detail": "radiology route"
+    },
+    {
+      "Id": "P5-Route accessible /reports/radiology/pending",
+      "Phase": "P5",
+      "Browser": "Chrome",
+      "Scenario": "Route accessible /reports/radiology/pending",
+      "Status": "PASS",
+      "Detail": "radiology route"
+    },
+    {
+      "Id": "P0-Login retry 1/3 for admin@zorya.co.in",
+      "Phase": "P0",
+      "Browser": "Chrome",
+      "Scenario": "Login retry 1/3 for admin@zorya.co.in",
+      "Status": "WARN",
+      "Detail": "×Unable to load menu permissions. Please try again."
+    },
+    {
+      "Id": "P0-Browser suite execution",
+      "Phase": "P0",
+      "Browser": "Chrome",
+      "Scenario": "Browser suite execution",
+      "Status": "FAIL",
+      "Detail": "page.fill: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator('#login-email')\n"
+    },
+    {
+      "Id": "P1-Latest Angular bundle loaded",
+      "Phase": "P1",
+      "Browser": "Edge",
+      "Scenario": "Latest Angular bundle loaded",
+      "Status": "PASS",
+      "Detail": "main-es2015.8ec24775bb3672feecea.js"
+    },
+    {
+      "Id": "P1-Login page loads",
+      "Phase": "P1",
+      "Browser": "Edge",
+      "Scenario": "Login page loads",
+      "Status": "PASS",
+      "Detail": "http://localhost:8080/login"
+    },
+    {
+      "Id": "P2-Admin lands on dashboard",
+      "Phase": "P2",
+      "Browser": "Edge",
+      "Scenario": "Admin lands on dashboard",
+      "Status": "PASS",
+      "Detail": "http://localhost:8080/"
+    },
+    {
+      "Id": "P2-Menu visible: Working Board",
+      "Phase": "P2",
+      "Browser": "Edge",
+      "Scenario": "Menu visible: Working Board",
+      "Status": "PASS",
+      "Detail": "found"
+    },
+    {
+      "Id": "P2-Menu visible: Setup",
+      "Phase": "P2",
+      "Browser": "Edge",
+      "Scenario": "Menu visible: Setup",
+      "Status": "PASS",
+      "Detail": "found"
+    },
+    {
+      "Id": "P2-Menu visible: Master",
+      "Phase": "P2",
+      "Browser": "Edge",
+      "Scenario": "Menu visible: Master",
+      "Status": "PASS",
+      "Detail": "found"
+    },
+    {
+      "Id": "P2-Menu visible: Transaction",
+      "Phase": "P2",
+      "Browser": "Edge",
+      "Scenario": "Menu visible: Transaction",
+      "Status": "PASS",
+      "Detail": "found"
+    },
+    {
+      "Id": "P2-Menu visible: Reports",
+      "Phase": "P2",
+      "Browser": "Edge",
+      "Scenario": "Menu visible: Reports",
+      "Status": "PASS",
+      "Detail": "found"
+    },
+    {
+      "Id": "P2-Menu visible: Account",
+      "Phase": "P2",
+      "Browser": "Edge",
+      "Scenario": "Menu visible: Account",
+      "Status": "PASS",
+      "Detail": "found"
+    },
+    {
+      "Id": "P2-Menu visible: Recent Samples",
+      "Phase": "P2",
+      "Browser": "Edge",
+      "Scenario": "Menu visible: Recent Samples",
+      "Status": "PASS",
+      "Detail": "found"
+    },
+    {
+      "Id": "P2-Menu visible: Users",
+      "Phase": "P2",
+      "Browser": "Edge",
+      "Scenario": "Menu visible: Users",
+      "Status": "PASS",
+      "Detail": "found"
+    },
+    {
+      "Id": "P2-Menu visible: Roles",
+      "Phase": "P2",
+      "Browser": "Edge",
+      "Scenario": "Menu visible: Roles",
+      "Status": "PASS",
+      "Detail": "found"
+    },
+    {
+      "Id": "P2-Menu visible: Sale Invoice",
+      "Phase": "P2",
+      "Browser": "Edge",
+      "Scenario": "Menu visible: Sale Invoice",
+      "Status": "PASS",
+      "Detail": "found"
+    },
+    {
+      "Id": "P2-Menu visible: Department",
+      "Phase": "P2",
+      "Browser": "Edge",
+      "Scenario": "Menu visible: Department",
+      "Status": "PASS",
+      "Detail": "found"
+    },
+    {
+      "Id": "P2-Menu visible: Test Master",
+      "Phase": "P2",
+      "Browser": "Edge",
+      "Scenario": "Menu visible: Test Master",
+      "Status": "PASS",
+      "Detail": "found"
+    },
+    {
+      "Id": "P2-Route accessible /",
+      "Phase": "P2",
+      "Browser": "Edge",
+      "Scenario": "Route accessible /",
+      "Status": "PASS",
+      "Detail": "loaded"
+    },
+    {
+      "Id": "P2-Route accessible /users",
+      "Phase": "P2",
+      "Browser": "Edge",
+      "Scenario": "Route accessible /users",
+      "Status": "PASS",
+      "Detail": "loaded"
+    },
+    {
+      "Id": "P2-Route accessible /roles",
+      "Phase": "P2",
+      "Browser": "Edge",
+      "Scenario": "Route accessible /roles",
+      "Status": "PASS",
+      "Detail": "loaded"
+    },
+    {
+      "Id": "P2-Route accessible /departments",
+      "Phase": "P2",
+      "Browser": "Edge",
+      "Scenario": "Route accessible /departments",
+      "Status": "PASS",
+      "Detail": "loaded"
+    },
+    {
+      "Id": "P2-Route accessible /sale-invoices",
+      "Phase": "P2",
+      "Browser": "Edge",
+      "Scenario": "Route accessible /sale-invoices",
+      "Status": "PASS",
+      "Detail": "loaded"
+    },
+    {
+      "Id": "P2-Route accessible /samples",
+      "Phase": "P2",
+      "Browser": "Edge",
+      "Scenario": "Route accessible /samples",
+      "Status": "PASS",
+      "Detail": "loaded"
+    },
+    {
+      "Id": "P2-Route accessible /reports/test-report",
+      "Phase": "P2",
+      "Browser": "Edge",
+      "Scenario": "Route accessible /reports/test-report",
+      "Status": "PASS",
+      "Detail": "loaded"
+    },
+    {
+      "Id": "P2-No placeholder labels on /users",
+      "Phase": "P2",
+      "Browser": "Edge",
+      "Scenario": "No placeholder labels on /users",
+      "Status": "PASS",
+      "Detail": "clean"
+    },
+    {
+      "Id": "P2-No placeholder labels on /sale-invoices/create",
+      "Phase": "P2",
+      "Browser": "Edge",
+      "Scenario": "No placeholder labels on /sale-invoices/create",
+      "Status": "PASS",
+      "Detail": "clean"
+    },
+    {
+      "Id": "P2-No placeholder labels on /departments",
+      "Phase": "P2",
+      "Browser": "Edge",
+      "Scenario": "No placeholder labels on /departments",
+      "Status": "PASS",
+      "Detail": "clean"
+    },
+    {
+      "Id": "P3-Technician lands on dashboard",
+      "Phase": "P3",
+      "Browser": "Edge",
+      "Scenario": "Technician lands on dashboard",
+      "Status": "PASS",
+      "Detail": "http://localhost:8080/"
+    },
+    {
+      "Id": "P3-Menu visible: Working Board",
+      "Phase": "P3",
+      "Browser": "Edge",
+      "Scenario": "Menu visible: Working Board",
+      "Status": "PASS",
+      "Detail": "found"
+    },
+    {
+      "Id": "P3-Menu visible: Sample Collection",
+      "Phase": "P3",
+      "Browser": "Edge",
+      "Scenario": "Menu visible: Sample Collection",
+      "Status": "PASS",
+      "Detail": "found"
+    },
+    {
+      "Id": "P3-Menu visible: Sample Receiving",
+      "Phase": "P3",
+      "Browser": "Edge",
+      "Scenario": "Menu visible: Sample Receiving",
+      "Status": "PASS",
+      "Detail": "found"
+    },
+    {
+      "Id": "P3-Menu visible: Recent Samples",
+      "Phase": "P3",
+      "Browser": "Edge",
+      "Scenario": "Menu visible: Recent Samples",
+      "Status": "PASS",
+      "Detail": "found"
+    },
+    {
+      "Id": "P3-Menu visible: Technician's Approval",
+      "Phase": "P3",
+      "Browser": "Edge",
+      "Scenario": "Menu visible: Technician's Approval",
+      "Status": "PASS",
+      "Detail": "found"
+    },
+    {
+      "Id": "P3-Menu hidden: Users",
+      "Phase": "P3",
+      "Browser": "Edge",
+      "Scenario": "Menu hidden: Users",
+      "Status": "PASS",
+      "Detail": "not shown"
+    },
+    {
+      "Id": "P3-Menu hidden: Roles",
+      "Phase": "P3",
+      "Browser": "Edge",
+      "Scenario": "Menu hidden: Roles",
+      "Status": "PASS",
+      "Detail": "not shown"
+    },
+    {
+      "Id": "P3-Menu hidden: Department",
+      "Phase": "P3",
+      "Browser": "Edge",
+      "Scenario": "Menu hidden: Department",
+      "Status": "PASS",
+      "Detail": "not shown"
+    },
+    {
+      "Id": "P3-Menu hidden: Test Master",
+      "Phase": "P3",
+      "Browser": "Edge",
+      "Scenario": "Menu hidden: Test Master",
+      "Status": "PASS",
+      "Detail": "not shown"
+    },
+    {
+      "Id": "P3-Route accessible /sample-collection",
+      "Phase": "P3",
+      "Browser": "Edge",
+      "Scenario": "Route accessible /sample-collection",
+      "Status": "PASS",
+      "Detail": "technician route"
+    },
+    {
+      "Id": "P3-Route accessible /sample-receiving",
+      "Phase": "P3",
+      "Browser": "Edge",
+      "Scenario": "Route accessible /sample-receiving",
+      "Status": "PASS",
+      "Detail": "technician route"
+    },
+    {
+      "Id": "P3-Route accessible /samples",
+      "Phase": "P3",
+      "Browser": "Edge",
+      "Scenario": "Route accessible /samples",
+      "Status": "PASS",
+      "Detail": "technician route"
+    },
+    {
+      "Id": "P3-Route accessible /technicianapprovals",
+      "Phase": "P3",
+      "Browser": "Edge",
+      "Scenario": "Route accessible /technicianapprovals",
+      "Status": "PASS",
+      "Detail": "technician route"
+    },
+    {
+      "Id": "P3-Route accessible /lab-result-entry",
+      "Phase": "P3",
+      "Browser": "Edge",
+      "Scenario": "Route accessible /lab-result-entry",
+      "Status": "PASS",
+      "Detail": "technician route"
+    },
+    {
+      "Id": "P3-Route denied /doctorapprovals",
+      "Phase": "P3",
+      "Browser": "Edge",
+      "Scenario": "Route denied /doctorapprovals",
+      "Status": "PASS",
+      "Detail": "http://localhost:8080/?denied=1"
+    },
+    {
+      "Id": "P3-Route denied /users",
+      "Phase": "P3",
+      "Browser": "Edge",
+      "Scenario": "Route denied /users",
+      "Status": "PASS",
+      "Detail": "http://localhost:8080/?denied=1"
+    },
+    {
+      "Id": "P3-Route denied /roles",
+      "Phase": "P3",
+      "Browser": "Edge",
+      "Scenario": "Route denied /roles",
+      "Status": "PASS",
+      "Detail": "http://localhost:8080/?denied=1"
+    },
+    {
+      "Id": "P3-Route denied /departments",
+      "Phase": "P3",
+      "Browser": "Edge",
+      "Scenario": "Route denied /departments",
+      "Status": "PASS",
+      "Detail": "http://localhost:8080/?denied=1"
+    },
+    {
+      "Id": "P4-Doctor lands on dashboard (not Change Password)",
+      "Phase": "P4",
+      "Browser": "Edge",
+      "Scenario": "Doctor lands on dashboard (not Change Password)",
+      "Status": "PASS",
+      "Detail": "http://localhost:8080/"
+    },
+    {
+      "Id": "P4-Menu visible: Doctor's Approval",
+      "Phase": "P4",
+      "Browser": "Edge",
+      "Scenario": "Menu visible: Doctor's Approval",
+      "Status": "PASS",
+      "Detail": "found"
+    },
+    {
+      "Id": "P4-Menu visible: Reports",
+      "Phase": "P4",
+      "Browser": "Edge",
+      "Scenario": "Menu visible: Reports",
+      "Status": "PASS",
+      "Detail": "found"
+    },
+    {
+      "Id": "P4-Menu hidden: Sample Collection",
+      "Phase": "P4",
+      "Browser": "Edge",
+      "Scenario": "Menu hidden: Sample Collection",
+      "Status": "PASS",
+      "Detail": "not shown"
+    },
+    {
+      "Id": "P4-Menu hidden: Sample Receiving",
+      "Phase": "P4",
+      "Browser": "Edge",
+      "Scenario": "Menu hidden: Sample Receiving",
+      "Status": "PASS",
+      "Detail": "not shown"
+    },
+    {
+      "Id": "P4-Menu hidden: Users",
+      "Phase": "P4",
+      "Browser": "Edge",
+      "Scenario": "Menu hidden: Users",
+      "Status": "PASS",
+      "Detail": "not shown"
+    },
+    {
+      "Id": "P4-Menu hidden: Roles",
+      "Phase": "P4",
+      "Browser": "Edge",
+      "Scenario": "Menu hidden: Roles",
+      "Status": "PASS",
+      "Detail": "not shown"
+    },
+    {
+      "Id": "P4-Menu hidden: Department",
+      "Phase": "P4",
+      "Browser": "Edge",
+      "Scenario": "Menu hidden: Department",
+      "Status": "PASS",
+      "Detail": "not shown"
+    },
+    {
+      "Id": "P4-Route accessible /doctorapprovals",
+      "Phase": "P4",
+      "Browser": "Edge",
+      "Scenario": "Route accessible /doctorapprovals",
+      "Status": "PASS",
+      "Detail": "doctor route"
+    },
+    {
+      "Id": "P4-Route accessible /reports/test-report",
+      "Phase": "P4",
+      "Browser": "Edge",
+      "Scenario": "Route accessible /reports/test-report",
+      "Status": "PASS",
+      "Detail": "doctor route"
+    },
+    {
+      "Id": "P4-Route denied /sample-collection",
+      "Phase": "P4",
+      "Browser": "Edge",
+      "Scenario": "Route denied /sample-collection",
+      "Status": "PASS",
+      "Detail": "http://localhost:8080/?denied=1"
+    },
+    {
+      "Id": "P4-Route denied /sample-receiving",
+      "Phase": "P4",
+      "Browser": "Edge",
+      "Scenario": "Route denied /sample-receiving",
+      "Status": "PASS",
+      "Detail": "http://localhost:8080/?denied=1"
+    },
+    {
+      "Id": "P4-Route denied /users",
+      "Phase": "P4",
+      "Browser": "Edge",
+      "Scenario": "Route denied /users",
+      "Status": "PASS",
+      "Detail": "http://localhost:8080/?denied=1"
+    },
+    {
+      "Id": "P4-Route denied /roles",
+      "Phase": "P4",
+      "Browser": "Edge",
+      "Scenario": "Route denied /roles",
+      "Status": "PASS",
+      "Detail": "http://localhost:8080/?denied=1"
+    },
+    {
+      "Id": "P4-Route denied /departments",
+      "Phase": "P4",
+      "Browser": "Edge",
+      "Scenario": "Route denied /departments",
+      "Status": "PASS",
+      "Detail": "http://localhost:8080/?denied=1"
+    },
+    {
+      "Id": "P5-Route accessible /radiology-doctor-approvals",
+      "Phase": "P5",
+      "Browser": "Edge",
+      "Scenario": "Route accessible /radiology-doctor-approvals",
+      "Status": "PASS",
+      "Detail": "radiology route"
+    },
+    {
+      "Id": "P5-Route accessible /radiology-approved-reports",
+      "Phase": "P5",
+      "Browser": "Edge",
+      "Scenario": "Route accessible /radiology-approved-reports",
+      "Status": "PASS",
+      "Detail": "radiology route"
+    },
+    {
+      "Id": "P5-Route accessible /reports/radiology/pending",
+      "Phase": "P5",
+      "Browser": "Edge",
+      "Scenario": "Route accessible /reports/radiology/pending",
+      "Status": "PASS",
+      "Detail": "radiology route"
+    },
+    {
+      "Id": "P0-Login retry 1/3 for admin@zorya.co.in",
+      "Phase": "P0",
+      "Browser": "Edge",
+      "Scenario": "Login retry 1/3 for admin@zorya.co.in",
+      "Status": "WARN",
+      "Detail": "×Unable to load menu permissions. Please try again."
+    },
+    {
+      "Id": "P0-Browser suite execution",
+      "Phase": "P0",
+      "Browser": "Edge",
+      "Scenario": "Browser suite execution",
+      "Status": "FAIL",
+      "Detail": "page.fill: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator('#login-email')\n"
+    }
+  ],
+  "verdict": "NOT APPROVED FOR PROD",
+  "note": "Print margins, signatures, barcode physical output, and pixel-perfect layout require human visual sign-off."
+}

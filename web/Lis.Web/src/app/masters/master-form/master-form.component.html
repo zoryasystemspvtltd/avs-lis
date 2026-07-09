@@ -11,10 +11,26 @@
       &nbsp;|&nbsp;
       <strong>MR Number:</strong> {{form.get('mrNo')?.value || '—'}}
       &nbsp;|&nbsp;
-      <strong>Visit ID:</strong> {{form.get('visitId')?.value || '—'}}
+      <strong>Current Visit:</strong> {{form.get('visitId')?.value || '—'}}
     </div>
+    <div class="patient-master-toolbar" *ngIf="apiName === 'PatientMaster' && id">
+      <button type="button" class="btn btn-warning btn-sm"
+        (click)="startNewVisitFromMaster()"
+        [disabled]="visitStarting || loading">
+        {{ visitStarting ? 'Starting visit...' : 'Start New Visit' }}
+      </button>
+    </div>
+    <ul class="nav nav-tabs" *ngIf="apiName === 'PatientMaster' && id">
+      <li [class.active]="patientMasterTab === 'details'">
+        <a href="#" (click)="$event.preventDefault(); setPatientMasterTab('details')">Patient Details</a>
+      </li>
+      <li [class.active]="patientMasterTab === 'visits'">
+        <a href="#" (click)="$event.preventDefault(); setPatientMasterTab('visits')">Visit History</a>
+      </li>
+    </ul>
     <br *ngIf="apiName === 'PatientMaster'" />
 
+    <ng-container *ngIf="apiName !== 'PatientMaster' || !id || patientMasterTab === 'details'">
     <ng-container *ngFor="let field of visibleFields()">
       <div class="row" *ngIf="field.type !== 'checkbox'">
         <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye">
@@ -50,6 +66,40 @@
       </div>
       <br *ngIf="field.type !== 'checkbox'" />
     </ng-container>
+    </ng-container>
+
+    <div *ngIf="apiName === 'PatientMaster' && id && patientMasterTab === 'visits'" class="visit-history-panel">
+      <p *ngIf="visitHistoryLoading" class="text-muted">Loading visit history...</p>
+      <table class="table table-bordered qtable" *ngIf="!visitHistoryLoading">
+        <thead>
+          <tr>
+            <th>Visit ID</th>
+            <th>Visit Date</th>
+            <th>Invoice</th>
+            <th>Status</th>
+            <th>Created By</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of visitHistory">
+            <td>{{row.visitId || '—'}}</td>
+            <td>{{row.visitDateTime | date:'dd-MMM-yyyy HH:mm'}}</td>
+            <td>{{row.invoiceNo || '—'}}</td>
+            <td>{{row.visitStatusLabel || '—'}}</td>
+            <td>{{row.createdBy || '—'}}</td>
+            <td>
+              <button type="button" class="btn btn-link btn-sm"
+                *ngIf="row.saleInvoiceId"
+                (click)="openVisitInvoice(row.saleInvoiceId)">Open Invoice</button>
+            </td>
+          </tr>
+          <tr *ngIf="!visitHistory?.length">
+            <td colspan="6" class="text-muted">No visits recorded yet.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
     <ng-container *ngIf="apiName === 'TestRate'">
       <p *ngIf="!lookupsLoaded" class="text-muted">Loading lookups...</p>

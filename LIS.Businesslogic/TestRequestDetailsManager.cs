@@ -19,6 +19,7 @@ namespace LIS.Businesslogic
         private ModuleRepo<TestMappingMaster> mappingRepo;
         private ModuleRepo<EquipmentMaster> equipmentRepo;
         private ModuleRepo<PatientDetail> patientRepo;
+        private ModuleRepo<PatientVisit> patientVisitRepo;
         private ModuleRepo<TestResult> resultRepo;
         private ModuleRepo<TestResultDetails> resultDetailsRepo;
         private ModuleRepo<TestParameter> parameterRepo;
@@ -40,6 +41,7 @@ namespace LIS.Businesslogic
             mappingRepo = new ModuleRepo<TestMappingMaster>(logger, this.identity, this.genericUnitOfWork);
             equipmentRepo = new ModuleRepo<EquipmentMaster>(logger, this.identity, this.genericUnitOfWork);
             patientRepo = new ModuleRepo<PatientDetail>(logger, this.identity, this.genericUnitOfWork);
+            patientVisitRepo = new ModuleRepo<PatientVisit>(logger, this.identity, this.genericUnitOfWork);
             resultRepo = new ModuleRepo<TestResult>(logger, this.identity, this.genericUnitOfWork);
             resultDetailsRepo = new ModuleRepo<TestResultDetails>(logger, this.identity, this.genericUnitOfWork);
             externalApiManager = new ExternalApiManager(logger, this.identity, this.genericUnitOfWork, this.file);
@@ -518,9 +520,12 @@ namespace LIS.Businesslogic
                                         .Get(p => p.ReportStatus == status);
 
             var patients = patientRepo.Get(p => p.IsActive == true);
+            var visits = patientVisitRepo.Get(v => v.IsActive);
 
             requestDetails = (from p in testRequestDetails
                               join tq in patients on p.PatientId equals tq.Id
+                              join pv in visits on p.PatientVisitId equals pv.PatientVisitId into pvJoin
+                              from pv in pvJoin.DefaultIfEmpty()
                               select new
                               {
                                   p.PatientId,
@@ -529,7 +534,7 @@ namespace LIS.Businesslogic
                                   p.HISTestName,
                                   p.SampleNo,
                                   tq.MRNo,
-                                  tq.VisitId,
+                                  VisitId = pv != null ? pv.VisitId : tq.VisitId,
                                   tq.Name
                               }).AsEnumerable().Distinct().Select(u => new BarCodeDto
                               {
@@ -621,9 +626,12 @@ namespace LIS.Businesslogic
                                                   && p.ReportStatus == status);
 
             var patients = patientRepo.Get(p => p.IsActive == true);
+            var visits = patientVisitRepo.Get(v => v.IsActive);
 
             requestDetails = (from p in testRequestDetails
                               join tq in patients on p.PatientId equals tq.Id
+                              join pv in visits on p.PatientVisitId equals pv.PatientVisitId into pvJoin
+                              from pv in pvJoin.DefaultIfEmpty()
                               select new
                               {
                                   p.PatientId,
@@ -632,7 +640,7 @@ namespace LIS.Businesslogic
                                   p.HISTestName,
                                   p.SampleNo,
                                   tq.MRNo,
-                                  tq.VisitId,
+                                  VisitId = pv != null ? pv.VisitId : tq.VisitId,
                                   tq.Name
                               }).AsEnumerable().Select(u => new BarCodeDto
                               {

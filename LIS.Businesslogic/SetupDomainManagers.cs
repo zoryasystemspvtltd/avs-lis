@@ -724,10 +724,12 @@ namespace LIS.BusinessLogic
     public class PatientMasterManager
     {
         private readonly ModuleRepo<PatientDetail> repo;
+        private readonly PatientVisitManager visitManager;
 
-        public PatientMasterManager(ILogger logger, IModuleIdentity identity, GenericUnitOfWork uow)
+        public PatientMasterManager(ILogger logger, IModuleIdentity identity, GenericUnitOfWork uow, PatientVisitManager visitManager)
         {
             repo = new ModuleRepo<PatientDetail>(logger, identity, uow);
+            this.visitManager = visitManager;
         }
 
         public ItemList<PatientDetail> Get(ListOptions option)
@@ -752,6 +754,23 @@ namespace LIS.BusinessLogic
             }
 
             var list = query.OrderBy(p => p.Name).ToList();
+            if (!string.IsNullOrEmpty(option.SearchText))
+            {
+                var visitPatientIds = visitManager.GetPatientIdsMatchingVisitSearch(option.SearchText.Trim()).ToList();
+                if (visitPatientIds.Any())
+                {
+                    var existingIds = new HashSet<long>(list.Select(p => p.Id));
+                    var extra = repo.Get()
+                        .Where(p => p.IsActive && visitPatientIds.Contains(p.Id) && !existingIds.Contains(p.Id))
+                        .OrderBy(p => p.Name)
+                        .ToList();
+                    if (extra.Any())
+                    {
+                        list = list.Concat(extra).OrderBy(p => p.Name).ToList();
+                    }
+                }
+            }
+
             result.TotalRecord = list.Count;
             int minRow = (option.CurrentPage - 1) * option.RecordPerPage;
             int pageSize = option.RecordPerPage == 0 ? result.TotalRecord : option.RecordPerPage;
@@ -776,7 +795,7 @@ namespace LIS.BusinessLogic
 
         public string GenerateNextVisitId()
         {
-            return GenerateNextCode("VIS", 5, repo.Get().Select(p => p.VisitId));
+            return visitManager.GenerateNextVisitId();
         }
 
         private static string GenerateNextCode(string prefix, int digits, IEnumerable<string> codes)
@@ -844,7 +863,9 @@ namespace LIS.BusinessLogic
                 item.Age = (decimal)item.DateOfBirth.Age();
             }
 
-            return repo.Add(item);
+            var id = repo.Add(item);
+            visitManager.CreateVisitForPatient(id, item.VisitId, null, VisitStatusType.New);
+            return id;
         }
 
         public void Update(PatientDetail item)
@@ -968,12 +989,7 @@ namespace LIS.BusinessLogic
             }
 
             var visitId = item.VisitId.Trim();
-            return repo.Get(p =>
-                p.IsActive &&
-                (!excludeId.HasValue || p.Id != excludeId.Value)).AsEnumerable()
-                .Any(p =>
-                    !string.IsNullOrWhiteSpace(p.VisitId) &&
-                    p.VisitId.Trim().Equals(visitId, StringComparison.OrdinalIgnoreCase));
+            return visitManager.ExistsVisitIdForOtherPatients(visitId, excludeId);
         }
 
         private bool ExistsDuplicatePatient(PatientDetail item, long? excludeId)

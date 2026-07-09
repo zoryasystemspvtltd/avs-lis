@@ -118,6 +118,7 @@
     <Compile Include="Migrations\202607081802343_SchemaModelSync.Designer.cs">
       <DependentUpon>202607081802343_SchemaModelSync.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202607091200000_PatientVisitManagement.cs" />
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repo\IGenericRepository.cs" />

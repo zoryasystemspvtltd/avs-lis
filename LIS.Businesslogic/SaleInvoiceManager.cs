@@ -22,6 +22,7 @@ namespace LIS.BusinessLogic
         private readonly ModuleRepo<TestRateMaster> rateRepo;
         private readonly ITestRateMasterManager rateManager;
         private readonly ITestProfileMasterManager profileManager;
+        private readonly PatientVisitManager patientVisitManager;
         private readonly IModuleIdentity identity;
         private readonly ILogger logger;
         private readonly GenericUnitOfWork unitOfWork;
@@ -32,12 +33,14 @@ namespace LIS.BusinessLogic
             IModuleIdentity identity,
             GenericUnitOfWork unitOfWork,
             ITestRateMasterManager rateManager,
-            ITestProfileMasterManager profileManager)
+            ITestProfileMasterManager profileManager,
+            PatientVisitManager patientVisitManager)
         {
             this.logger = logger;
             this.identity = identity;
             this.rateManager = rateManager;
             this.profileManager = profileManager;
+            this.patientVisitManager = patientVisitManager;
             this.unitOfWork = unitOfWork;
             invoiceRepo = new ModuleRepo<SaleInvoice>(logger, identity, unitOfWork);
             detailRepo = new ModuleRepo<SaleInvoiceDetail>(logger, identity, unitOfWork);
@@ -279,6 +282,10 @@ namespace LIS.BusinessLogic
                 throw new ArgumentException("Selected patient was not found.");
             }
 
+            header.PatientVisitId = patientVisitManager.ResolvePatientVisitIdForInvoice(
+                header.PatientId,
+                header.PatientVisitId);
+
             foreach (var line in lines)
             {
                 if (line.TestProfileId.HasValue && line.TestProfileId > 0)
@@ -351,6 +358,8 @@ namespace LIS.BusinessLogic
                     invoiceRepo.Update(header);
                 }
 
+                patientVisitManager.LinkVisitToInvoice(header.PatientVisitId, id, header.InvoiceStatus);
+
                 return id;
             }
 
@@ -387,6 +396,8 @@ namespace LIS.BusinessLogic
                 existingHeader.RequestDetailId = lines.First(l => l.RequestDetailId.HasValue && l.RequestDetailId > 0).RequestDetailId;
                 invoiceRepo.Update(existingHeader);
             }
+
+            patientVisitManager.LinkVisitToInvoice(existingHeader.PatientVisitId, existingHeader.Id, existingHeader.InvoiceStatus);
 
             return existingHeader.Id;
         }
@@ -457,10 +468,12 @@ namespace LIS.BusinessLogic
 
         public void Cancel(long id)
         {
-            UpdateStatus(id, (int)InvoiceStatusType.Cancelled, (int)PaymentStatusType.Unpaid);
             var invoice = invoiceRepo.Get(id);
+            UpdateStatus(id, (int)InvoiceStatusType.Cancelled, (int)PaymentStatusType.Unpaid);
+            invoice = invoiceRepo.Get(id);
             invoice.IsActive = false;
             invoiceRepo.Update(invoice);
+            patientVisitManager.MarkVisitCancelled(invoice.PatientVisitId, id);
         }
 
         /// <summary>
@@ -737,6 +750,7 @@ namespace LIS.BusinessLogic
             existing.PaymentStatus = incoming.PaymentStatus;
             existing.RequestDetailId = incoming.RequestDetailId;
             existing.PatientId = incoming.PatientId;
+            existing.PatientVisitId = incoming.PatientVisitId;
             existing.GrossAmount = incoming.GrossAmount;
             existing.DiscountAmount = incoming.DiscountAmount;
             existing.DiscountType = incoming.DiscountType;
@@ -886,6 +900,12 @@ namespace LIS.BusinessLogic
 
             if (request != null)
             {
+                if (!request.PatientVisitId.HasValue && invoice.PatientVisitId.HasValue)
+                {
+                    request.PatientVisitId = invoice.PatientVisitId;
+                    testRequestRepo.Update(request);
+                }
+
                 return request;
             }
 
@@ -908,6 +928,7 @@ namespace LIS.BusinessLogic
             request = new TestRequestDetail
             {
                 PatientId = invoice.PatientId,
+                PatientVisitId = invoice.PatientVisitId,
                 HISTestCode = test.HISTestCode,
                 HISTestName = test.HISTestCodeDescription,
                 HISRequestNo = reqNo,
@@ -942,6 +963,7 @@ namespace LIS.BusinessLogic
             var rad = new RadiologyRequestDetail
             {
                 PatientId = invoice.PatientId,
+                PatientVisitId = invoice.PatientVisitId,
                 HISRequestNo = reqNo,
                 AccessionNo = $"{reqNo}-{test.HISTestCode}",
                 HISTestCode = test.HISTestCode,

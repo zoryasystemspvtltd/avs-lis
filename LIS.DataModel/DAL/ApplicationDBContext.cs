@@ -39,6 +39,7 @@ namespace LIS.DataAccess
 
         //Incoming Data
         public virtual DbSet<PatientDetail> PatientDetails { get; set; }
+        public virtual DbSet<PatientVisit> PatientVisit { get; set; }
         public virtual DbSet<TestRequestDetail> TestRequestDetails { get; set; }
         public virtual DbSet<TestParameter> TestParameters { get; set; }
 

@@ -43,6 +43,8 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
   private activeBillableLineIndex = 0;
   patients: any[] = [];
   patientsLoading = false;
+  visitStarting = false;
+  currentVisitId = '';
   billableItemsLoading = false;
   corporates: any[] = [];
   doctors: any[] = [];
@@ -103,6 +105,8 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
       invoiceNo: [''],
       invoiceDate: [new Date().toISOString().substring(0, 10), Validators.required],
       patientId: [null, Validators.required],
+      patientVisitId: [null],
+      currentVisitId: [''],
       invoiceStatus: [0],
       paymentStatus: [0],
       grossAmount: [0],
@@ -137,17 +141,80 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
     });
     this.loadPatients('');
 
-    const navState = this.router.getCurrentNavigation()?.extras?.state as { patientId?: number };
+    this.form.get('patientId').valueChanges.subscribe(patientId => {
+      if (patientId && +patientId > 0) {
+        this.loadCurrentVisit(+patientId);
+      } else {
+        this.form.patchValue({ patientVisitId: null, currentVisitId: '' });
+        this.currentVisitId = '';
+      }
+    });
+
+    const navState = this.router.getCurrentNavigation()?.extras?.state as { patientId?: number; patientVisitId?: number };
     const statePatientId = navState?.patientId ?? (history.state?.patientId as number);
+    const statePatientVisitId = navState?.patientVisitId ?? (history.state?.patientVisitId as number);
 
     if (this.id) {
       this.loadInvoice(+this.id);
     } else {
       this.masterService.getNextInvoiceNo().subscribe(no => this.form.patchValue({ invoiceNo: no }));
       if (statePatientId && +statePatientId > 0) {
-        this.preselectPatient(+statePatientId);
+        this.preselectPatient(+statePatientId, statePatientVisitId);
       }
     }
+  }
+
+  loadCurrentVisit(patientId: number): void {
+    this.masterService.getCurrentPatientVisit(patientId).subscribe(visit => {
+      if (!visit) {
+        const selected = this.patients.find(p => p.id === patientId);
+        const fallbackVisitId = selected?.visitId || '';
+        this.form.patchValue({ patientVisitId: null, currentVisitId: fallbackVisitId });
+        this.currentVisitId = fallbackVisitId;
+        return;
+      }
+
+      const visitId = visit.visitId ?? visit.VisitId ?? '';
+      const patientVisitId = visit.patientVisitId ?? visit.PatientVisitId ?? null;
+      this.form.patchValue({ patientVisitId, currentVisitId: visitId });
+      this.currentVisitId = visitId;
+      this.patients = this.patients.map(p =>
+        p.id === patientId ? { ...p, visitId } : p
+      );
+    });
+  }
+
+  startNewVisit(): void {
+    const patientId = +this.form.get('patientId')?.value;
+    if (!patientId) {
+      this.alertService.error('Select a patient before starting a new visit.');
+      return;
+    }
+    if (this.visitStarting || this.isCancelled || this.isInvoiceLocked) {
+      return;
+    }
+
+    this.visitStarting = true;
+    this.masterService.startPatientVisit(patientId).subscribe(
+      visit => {
+        this.visitStarting = false;
+        const payload = visit?.patientVisitId != null || visit?.PatientVisitId != null
+          ? visit
+          : (visit || {});
+        const visitId = payload.visitId ?? payload.VisitId ?? '';
+        const patientVisitId = payload.patientVisitId ?? payload.PatientVisitId ?? null;
+        this.form.patchValue({ patientVisitId, currentVisitId: visitId });
+        this.currentVisitId = visitId;
+        this.patients = this.patients.map(p =>
+          p.id === patientId ? { ...p, visitId } : p
+        );
+        this.alertService.success(`New visit ${visitId} started.`);
+      },
+      err => {
+        this.visitStarting = false;
+        this.alertService.error(this.readApiError(err) || 'Unable to start a new visit.');
+      }
+    );
   }
 
   get modalSearchLoading(): boolean {
@@ -212,6 +279,8 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
         }
         this.form.patchValue({
           ...inv,
+          patientVisitId: inv.patientVisitId ?? inv.PatientVisitId ?? null,
+          currentVisitId: inv.currentVisitId ?? inv.CurrentVisitId ?? '',
           paymentType: inv.paymentType || 'Cash',
           discountType: discType,
           headerDiscountValue,
@@ -240,6 +309,10 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
           this.form.disable();
         }
         this.ensureSelectedPatientInList();
+        const patientId = +inv.patientId;
+        if (patientId > 0) {
+          this.loadCurrentVisit(patientId);
+        }
       }
     });
   }
@@ -991,7 +1064,7 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
       .filter(x => x.id > 0 && x.name);
   }
 
-  private preselectPatient(patientId: number): void {
+  private preselectPatient(patientId: number, patientVisitId?: number): void {
     this.masterService.getItem('PatientMaster', patientId).subscribe(patient => {
       if (!patient) {
         return;
@@ -1003,7 +1076,14 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
       if (!this.patients.some(p => p.id === normalized.id)) {
         this.patients = [normalized, ...this.patients];
       }
-      this.form.patchValue({ patientId: normalized.id });
+      const patch: any = { patientId: normalized.id };
+      if (patientVisitId && +patientVisitId > 0) {
+        patch.patientVisitId = +patientVisitId;
+      }
+      this.form.patchValue(patch);
+      if (!patientVisitId) {
+        this.loadCurrentVisit(normalized.id);
+      }
     });
   }
 
@@ -1299,6 +1379,7 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
         invoiceDate: new Date(val.invoiceDate),
         invoiceStatus: confirm ? 1 : (val.invoiceStatus || 0),
         patientId: +val.patientId,
+        patientVisitId: val.patientVisitId ? +val.patientVisitId : null,
         discountType: val.discountType || 'Fixed Amount',
         discountValue: +val.headerDiscountValue || 0,
         taxAmount: Math.max(0, +val.taxAmount || 0),

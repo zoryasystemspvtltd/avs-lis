@@ -36,6 +36,12 @@ namespace LIS.DtoModel.Models
         [JsonIgnore]
         public virtual PatientDetail PatientDetail { get; set; }
 
+        [ForeignKey("PatientVisit")]
+        public long? PatientVisitId { get; set; }
+
+        [JsonIgnore]
+        public virtual PatientVisit PatientVisit { get; set; }
+
         public decimal GrossAmount { get; set; }
 
         public decimal DiscountAmount { get; set; }

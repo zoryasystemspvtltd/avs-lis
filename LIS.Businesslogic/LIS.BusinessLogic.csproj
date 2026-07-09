@@ -83,6 +83,7 @@
     <Compile Include="MasterCrudManager.cs" />
     <Compile Include="TestRateMasterManager.cs" />
     <Compile Include="SaleInvoiceManager.cs" />
+    <Compile Include="PatientVisitManager.cs" />
     <Compile Include="LookupMasterManagers.cs" />
     <Compile Include="TestProfileMasterManager.cs" />
     <Compile Include="SetupDomainManagers.cs" />

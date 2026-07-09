@@ -23,6 +23,8 @@ namespace LIS.DtoModel.Models
         public string InvoiceNo { get; set; }
         public string PatientName { get; set; }
         public string PatientId { get; set; }
+        public string MRNo { get; set; }
+        public string VisitId { get; set; }
         public decimal Age { get; set; }
         public string Gender { get; set; }
         public string ReferralDoctor { get; set; }

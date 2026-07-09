@@ -16,6 +16,11 @@ namespace LIS.DtoModel.Models
 
         public virtual PatientDetail Patient { get; set; }
 
+        [ForeignKey("PatientVisit")]
+        public long? PatientVisitId { get; set; }
+
+        public virtual PatientVisit PatientVisit { get; set; }
+
         [MaxLength(20)]
         public string HISRequestNo { get; set; }
 

@@ -37,6 +37,25 @@
       </div>
     </div>
 
+    <div class="row patient-visit-row" *ngIf="form.get('patientId')?.value">
+      <div class="col-md-4 form-group">
+        <label>Current Visit</label>
+        <input class="form-control" [value]="form.get('currentVisitId')?.value || currentVisitId || '—'" readonly />
+      </div>
+      <div class="col-md-8 form-group visit-actions">
+        <label>&nbsp;</label>
+        <div>
+          <button type="button" class="btn btn-warning btn-sm"
+            (click)="startNewVisit()"
+            [disabled]="visitStarting || isCancelled || isInvoiceLocked || !form.get('patientId')?.value">
+            <span class="glyphicon glyphicon-plus"></span>
+            {{ visitStarting ? 'Starting visit...' : 'Start New Visit' }}
+          </button>
+          <span class="help-block text-muted visit-hint">Use for returning patients before adding invoice lines.</span>
+        </div>
+      </div>
+    </div>
+
     <div class="row">
       <div class="col-md-4 form-group">
         <label>Corporate</label>

@@ -14,6 +14,7 @@ namespace LIS.BusinessLogic
         private readonly ModuleRepo<RadiologyRequestDetail> requestRepo;
         private readonly ModuleRepo<RadiologyResultDetail> resultRepo;
         private readonly ModuleRepo<PatientDetail> patientRepo;
+        private readonly ModuleRepo<PatientVisit> visitRepo;
         private readonly ModuleRepo<SaleInvoice> invoiceRepo;
         private readonly IModuleIdentity identity;
 
@@ -23,6 +24,7 @@ namespace LIS.BusinessLogic
             requestRepo = new ModuleRepo<RadiologyRequestDetail>(logger, identity, uow);
             resultRepo = new ModuleRepo<RadiologyResultDetail>(logger, identity, uow);
             patientRepo = new ModuleRepo<PatientDetail>(logger, identity, uow);
+            visitRepo = new ModuleRepo<PatientVisit>(logger, identity, uow);
             invoiceRepo = new ModuleRepo<SaleInvoice>(logger, identity, uow);
         }
 
@@ -380,6 +382,8 @@ namespace LIS.BusinessLogic
                     InvoiceNo = request.HISRequestNo,
                     PatientName = patient.Name,
                     PatientId = patient.HisPatientId,
+                    MRNo = patient.MRNo,
+                    VisitId = PatientVisitManager.ResolveVisitId(visitRepo, patientRepo, request.PatientVisitId, patient.Id),
                     Age = patient.Age,
                     Gender = patient.Gender,
                     TestName = request.HISTestName,

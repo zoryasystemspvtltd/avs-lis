@@ -341,6 +341,8 @@ export class TestReportComponent implements OnInit, OnDestroy {
         invoiceNo: header.invoiceNo ?? header.InvoiceNo,
         patientName: header.patientName ?? header.PatientName,
         patientId: header.patientId ?? header.PatientId,
+        mrNo: header.mrNo ?? header.MRNo,
+        visitId: header.visitId ?? header.VisitId,
         age: header.age ?? header.Age,
         gender: header.gender ?? header.Gender,
         referralDoctor: header.referralDoctor ?? header.ReferralDoctor,

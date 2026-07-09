@@ -507,4 +507,58 @@ namespace Lis.Api.Controllers.Api
             }
         }
     }
+
+    [RoutePrefix("api/PatientVisit")]
+    public class PatientVisitController : ApiController
+    {
+        private readonly PatientVisitManager manager;
+        private readonly IResponseManager responseMgr;
+        private readonly ILogger logger;
+
+        public PatientVisitController(PatientVisitManager manager, IResponseManager responseManager, ILogger logger)
+        {
+            this.manager = manager;
+            responseMgr = responseManager;
+            this.logger = logger;
+        }
+
+        [HttpPost]
+        [Route("StartVisit/{patientId:long}")]
+        [QAuthorize(ModuleName = "Masters", ModulePermissionTypes = ModulePermissionType.CanAdd | ModulePermissionType.CanEdit)]
+        public HttpResponseMessage StartVisit(long patientId)
+        {
+            try
+            {
+                var visit = manager.StartVisit(patientId);
+                return Request.CreateResponse(
+                    HttpStatusCode.OK,
+                    responseMgr.CreateResponse(HttpStatusCode.OK, "Visit started successfully", null, visit));
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Request.CreateResponse(HttpStatusCode.Conflict, new { message = ex.Message });
+            }
+            catch (Exception e)
+            {
+                logger.LogException(e);
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, e.Message);
+            }
+        }
+
+        [HttpGet]
+        [Route("Current/{patientId:long}")]
+        public PatientVisit GetCurrent(long patientId)
+        {
+            try { return manager.GetCurrentVisit(patientId); }
+            catch (Exception e) { logger.LogException(e); return null; }
+        }
+
+        [HttpGet]
+        [Route("{patientId:long}")]
+        public IEnumerable<PatientVisitHistoryItem> GetHistory(long patientId)
+        {
+            try { return manager.GetVisitHistory(patientId) ?? Enumerable.Empty<PatientVisitHistoryItem>(); }
+            catch (Exception e) { logger.LogException(e); return Enumerable.Empty<PatientVisitHistoryItem>(); }
+        }
+    }
 }

@@ -1,0 +1,68 @@
+{
+  "tag": "VISIT-CERT-20260709184505",
+  "portal": "http://localhost:8080",
+  "api": "http://localhost:8081",
+  "summary": {
+    "pass": 7,
+    "warn": 2,
+    "fail": 2
+  },
+  "results": [
+    {
+      "Scenario": "API: login token",
+      "Status": "PASS",
+      "Detail": "obtained"
+    },
+    {
+      "Scenario": "API: patient search returns rows",
+      "Status": "PASS",
+      "Detail": "3 row(s)"
+    },
+    {
+      "Scenario": "API: GET Current visit",
+      "Status": "PASS",
+      "Detail": "visit=V-QA-LAB-001"
+    },
+    {
+      "Scenario": "API: POST StartVisit",
+      "Status": "PASS",
+      "Detail": "newVisit=VIS00010"
+    },
+    {
+      "Scenario": "API: visit history includes new visit",
+      "Status": "PASS",
+      "Detail": "count=2"
+    },
+    {
+      "Scenario": "API: PatientDetails.VisitId synced",
+      "Status": "PASS",
+      "Detail": "V-QA-LAB-001 -> VIS00010"
+    },
+    {
+      "Scenario": "UI: Sale Invoice has Start New Visit button",
+      "Status": "FAIL",
+      "Detail": "missing"
+    },
+    {
+      "Scenario": "UI: Current visit row visible after patient select",
+      "Status": "WARN",
+      "Detail": "checked after patient pick"
+    },
+    {
+      "Scenario": "UI: Visit row shown when patient selected",
+      "Status": "PASS",
+      "Detail": "visible"
+    },
+    {
+      "Scenario": "UI: Start New Visit updates current visit field",
+      "Status": "FAIL",
+      "Detail": " -> "
+    },
+    {
+      "Scenario": "UI: Patient Master Visit History tab",
+      "Status": "WARN",
+      "Detail": "tab opened; verify data manually"
+    }
+  ],
+  "verdict": "NOT APPROVED FOR PROD"
+}

@@ -148,6 +148,8 @@ export class RadiologyReportPrintComponent implements OnInit, OnDestroy {
         invoiceNo: h.invoiceNo ?? h.InvoiceNo,
         patientName: h.patientName ?? h.PatientName,
         patientId: h.patientId ?? h.PatientId,
+        mrNo: h.mrNo ?? h.MRNo,
+        visitId: h.visitId ?? h.VisitId,
         age: h.age ?? h.Age,
         gender: h.gender ?? h.Gender,
         testName: h.testName ?? h.TestName,
