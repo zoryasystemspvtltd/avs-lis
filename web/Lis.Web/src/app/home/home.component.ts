@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthenticationToken } from '../_models';
 import { AlertService, AuthenticationService } from '../_services';
+import { hasModuleAccess } from '../_guards/permission.util';
 
 @Component({
   selector: 'app-home',
@@ -38,17 +39,10 @@ export class HomeComponent implements OnInit {
   }
 
   hasAccess(module: string, access: number): boolean {
-    if(!this.user){
+    if (!this.user) {
       return false;
     }
-    if(!this.user.access){
-      return false;
-    }
-    let acc = this.user.access.find(a => a.name === module);
-    if (acc == null) {
-      return false;
-    }
-    return (acc.access > 0);
+    return hasModuleAccess(this.user, module, access);
   }
 
   hasGroupAccess(modules: string): boolean {

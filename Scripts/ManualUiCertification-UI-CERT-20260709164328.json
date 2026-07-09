@@ -1,0 +1,80 @@
+{
+  "tag": "UI-CERT-20260709164328",
+  "portal": "http://localhost:8080",
+  "bundle": "main-es2015.b8f5bd31b257c8d0db09.js",
+  "summary": {
+    "pass": 4,
+    "warn": 0,
+    "fail": 2
+  },
+  "defects": [
+    {
+      "Id": "P0-Browser suite execution",
+      "Phase": "P0",
+      "Browser": "Chrome",
+      "Scenario": "Browser suite execution",
+      "Status": "FAIL",
+      "Detail": "page.waitForFunction: Timeout 90000ms exceeded."
+    },
+    {
+      "Id": "P0-Browser suite execution",
+      "Phase": "P0",
+      "Browser": "Edge",
+      "Scenario": "Browser suite execution",
+      "Status": "FAIL",
+      "Detail": "page.waitForFunction: Timeout 90000ms exceeded."
+    }
+  ],
+  "results": [
+    {
+      "Id": "P1-Latest Angular bundle loaded",
+      "Phase": "P1",
+      "Browser": "Chrome",
+      "Scenario": "Latest Angular bundle loaded",
+      "Status": "PASS",
+      "Detail": "main-es2015.b8f5bd31b257c8d0db09.js"
+    },
+    {
+      "Id": "P1-Login page loads",
+      "Phase": "P1",
+      "Browser": "Chrome",
+      "Scenario": "Login page loads",
+      "Status": "PASS",
+      "Detail": "http://localhost:8080/login"
+    },
+    {
+      "Id": "P0-Browser suite execution",
+      "Phase": "P0",
+      "Browser": "Chrome",
+      "Scenario": "Browser suite execution",
+      "Status": "FAIL",
+      "Detail": "page.waitForFunction: Timeout 90000ms exceeded."
+    },
+    {
+      "Id": "P1-Latest Angular bundle loaded",
+      "Phase": "P1",
+      "Browser": "Edge",
+      "Scenario": "Latest Angular bundle loaded",
+      "Status": "PASS",
+      "Detail": "main-es2015.b8f5bd31b257c8d0db09.js"
+    },
+    {
+      "Id": "P1-Login page loads",
+      "Phase": "P1",
+      "Browser": "Edge",
+      "Scenario": "Login page loads",
+      "Status": "PASS",
+      "Detail": "http://localhost:8080/login"
+    },
+    {
+      "Id": "P0-Browser suite execution",
+      "Phase": "P0",
+      "Browser": "Edge",
+      "Scenario": "Browser suite execution",
+      "Status": "FAIL",
+      "Detail": "page.waitForFunction: Timeout 90000ms exceeded."
+    }
+  ],
+  "verdict": "NOT APPROVED FOR PROD",
+  "note": "Print margins, signatures, barcode physical output, and pixel-perfect layout require human visual sign-off."
+}

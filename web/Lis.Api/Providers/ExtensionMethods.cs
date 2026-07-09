@@ -21,7 +21,7 @@ namespace Lis.Api
             {
                 var adminrole = dbContext.Roles.FirstOrDefault(p => p.Name.Equals("Administrator", StringComparison.OrdinalIgnoreCase));
 
-                if (roleIds.Contains(adminrole.Id))
+                if (roleIds.Contains(adminrole.Id.ToLower()))
                 {
                     var roleModuleMappings = dbContext.Modules
                         .Where(p => p.ApplicationId == 1) // Application 1 is the base 

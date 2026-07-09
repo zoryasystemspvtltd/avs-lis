@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Router, CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 import { AuthenticationService } from '../_services';
-import { hasAnyModuleAccess, resolveRoutePermission } from './permission.util';
+import { hasAnyModuleAccess, isAdministrator, resolveRoutePermission } from './permission.util';
 
 @Injectable({ providedIn: 'root' })
 export class PermissionGuard implements CanActivate {
@@ -15,6 +15,10 @@ export class PermissionGuard implements CanActivate {
     if (!user || !user.accessToken) {
       this.router.navigate(['/login'], { queryParams: { returnUrl: state.url } });
       return false;
+    }
+
+    if (isAdministrator(user)) {
+      return true;
     }
 
     const routeModules = route.data['modules'] as string[];

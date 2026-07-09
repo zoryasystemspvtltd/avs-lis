@@ -3,6 +3,7 @@ import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { AuthenticationService } from '../../_services';
 import { AuthenticationToken } from '../../_models';
+import { normalizeModuleAccess, isAdministrator } from '../../_guards/permission.util';
 
 @Component({
   selector: 'app-left-nav-menu',
@@ -64,6 +65,7 @@ export class LeftNavMenuComponent implements OnInit {
   private syncUserState() {
     const current = this.authenticationService.currentUserValue;
     if (current && current.accessToken) {
+      current.access = normalizeModuleAccess(current.access) as any;
       this.authenticationService.isAuthenticated = true;
       this.isAuthenticated = true;
       this.user = current;
@@ -71,28 +73,38 @@ export class LeftNavMenuComponent implements OnInit {
   }
 
   private findAccess(module: string) {
-    if (!this.user || !this.user.access) {
+    if (!this.user) {
       return null;
     }
-    let acc = this.user.access.find(a => a.name === module);
+    if (isAdministrator(this.user)) {
+      return { name: module, access: 63 };
+    }
+    const accessList = normalizeModuleAccess(this.user.access);
+    if (!accessList.length) {
+      return null;
+    }
+    let acc = accessList.find(a => a.name === module);
     if (acc) {
       return acc;
     }
     const setupApiModules = ['Department', 'Specimens', 'ReferralDoctor', 'Corporate', 'TestGroup',
       'TestCategory', 'Unit', 'Method', 'SampleType', 'Container', 'TestProfile'];
     if (setupApiModules.indexOf(module) >= 0) {
-      return this.user.access.find(a => a.name === 'Masters');
+      return accessList.find(a => a.name === 'Masters');
     }
     if (module === 'TestRate') {
-      return this.user.access.find(a => a.name === 'TestRates');
+      return accessList.find(a => a.name === 'TestRates');
     }
     if (module === 'SaleInvoice') {
-      return this.user.access.find(a => a.name === 'SaleInvoices');
+      return accessList.find(a => a.name === 'SaleInvoices');
     }
     return null;
   }
 
   hasAccess(module: string, access: number): boolean {
+    if (isAdministrator(this.user)) {
+      return true;
+    }
     const acc = this.findAccess(module);
     if (!acc) {
       return false;

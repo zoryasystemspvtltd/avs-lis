@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Router, CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 
 import { AuthenticationService } from '../_services';
+import { isEmailConfirmed } from './permission.util';
 
 @Injectable({ providedIn: 'root' })
 export class AuthGuard implements CanActivate {
@@ -16,8 +17,7 @@ export class AuthGuard implements CanActivate {
         if (currentUser && currentUser.userName != null) {
             // authorised so return true
             const confirmed = currentUser.emailConfirmed;
-            const emailConfirmed = confirmed === 'true' || (confirmed as any) === true;
-            if (!emailConfirmed) {
+            if (!isEmailConfirmed(confirmed)) {
                 this.router.navigate(['/change-password']);
                 return false;
             }

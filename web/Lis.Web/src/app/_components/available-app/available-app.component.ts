@@ -3,6 +3,7 @@ import { AuthenticationService } from '../../_services';
 import { AvailableApps } from '../../_models';
 import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
+import { isEmailConfirmed } from '../../_guards/permission.util';
 
 @Component({
   selector: 'app-available-app',
@@ -39,17 +40,15 @@ export class AvailableAppComponent implements OnInit {
     this.authenticationService.selectedApplication = this.selectedApplication;
 
     let user = this.authenticationService.currentUserValue;
-        if(!user.emailConfirmed){
+        if (!isEmailConfirmed(user?.emailConfirmed)) {
           this.router.navigate(['/change-password']);
         }
-        else{
-          this.authenticationService.getRole().subscribe(role => {
-            //console.log(this.currentUserValue);
-            this.authenticationService.getUserAccess().subscribe(acess => {
-              //console.log(this.currentUserValue);
-              this.router.navigate(['/']);
-            })
-          })
+        else if (!user?.access || (typeof user.access === 'string') || (Array.isArray(user.access) && user.access.length === 0)) {
+          this.authenticationService.getRole().subscribe(() => {
+            this.authenticationService.getUserAccess().subscribe(() => {
+              // Permissions loaded; stay on current route (do not force redirect).
+            });
+          });
         }
   }
 }

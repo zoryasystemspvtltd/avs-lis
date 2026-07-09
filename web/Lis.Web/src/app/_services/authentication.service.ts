@@ -2,7 +2,8 @@ import { Injectable, EventEmitter } from '@angular/core';
 import { HttpClient, HttpParams, HttpHeaders, HttpParameterCodec } from '@angular/common/http';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { AuthenticationToken, UserInfo, ChangePassword, ResetPassword, KeyValuePair } from '../_models';
+import { AuthenticationToken, KeyValuePair } from '../_models';
+import { normalizeModuleAccess } from '../_guards/permission.util';
 import { environment } from '../../environments/environment';
 
 
@@ -82,10 +83,11 @@ export class AuthenticationService {
                 // login successful if there's a jwt token in the response
                 //console.log(user);
                 if (user && user.access_token) {
-                    // store user details and jwt token in local storage to keep user logged in between page refreshes
                     user.accessToken = user.access_token;
                     user.userName = user.userName || user.username;
-                    user.emailConfirmed = user.emailConfirmed;
+                    user.emailConfirmed = user.emailConfirmed === true || user.emailConfirmed === 'true'
+                        ? 'true'
+                        : 'false';
                     user.expires = user.expires;
                     user.issued = user.issued;
                     user.refreshToken = user.refresh_token;
@@ -193,18 +195,13 @@ export class AuthenticationService {
     getUserAccess() {
         return this.http.get<any>(`${environment.ApplicationServer}/api/UserAccess/${this.selectedApplication}`)
             .pipe(map(access => {
-                //console.log(access);
                 const user = this.currentUserValue;
-                if (environment.IsOldApplicationServer) {
-                    user.access = JSON.parse(access);
-                }
-                else {
-                    user.access = access;
-                }
+                user.access = normalizeModuleAccess(access);
 
                 localStorage.setItem('currentUser', JSON.stringify(user));
                 this.isAuthenticated = true;
                 this.currentUserSubject.next(user);
+                this.userChangeEvent.emit(true);
 
                 return user.access;
             }));

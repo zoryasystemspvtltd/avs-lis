@@ -1,4 +1,5 @@
 import { AuthenticationToken } from '../_models';
+import { UserAccess } from '../_models/useraccess';
 
 export interface RoutePermissionRule {
   pattern: RegExp;
@@ -60,22 +61,62 @@ export const ROUTE_PERMISSION_RULES: RoutePermissionRule[] = [
   { pattern: /^\/parameters(?:\/|$)/, modules: ['Equipments'] }
 ];
 
+/** UserAccess API returns a JSON string; normalize to array for menu/guard checks. */
+export function normalizeModuleAccess(access: any): UserAccess[] {
+  if (!access) {
+    return [];
+  }
+  if (typeof access === 'string') {
+    try {
+      const parsed = JSON.parse(access);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+  if (Array.isArray(access)) {
+    return access;
+  }
+  return [];
+}
+
+/** Mirrors server QAuthorize Administrator bypass (full module bitmask from UserAccess API). */
+export function isAdministrator(user: AuthenticationToken): boolean {
+  const modules = normalizeModuleAccess(user?.access);
+  if (modules.length < 10) {
+    return false;
+  }
+  return modules.every(m => (parseInt(m.access as any, 10) & 63) === 63);
+}
+
+export function isEmailConfirmed(value: any): boolean {
+  return value === true || value === 'true';
+}
+
 export function findModuleAccess(user: AuthenticationToken, module: string): number | null {
-  if (!user || !user.access) {
+  if (!user) {
+    return null;
+  }
+  if (isAdministrator(user)) {
+    return 63;
+  }
+
+  const accessList = normalizeModuleAccess(user.access);
+  if (!accessList.length) {
     return null;
   }
 
-  let acc = user.access.find(a => a.name === module);
+  let acc = accessList.find(a => a.name === module);
   if (acc) {
     return parseInt(acc.access as any, 10);
   }
 
   if (SETUP_API_MODULES.indexOf(module) >= 0) {
-    acc = user.access.find(a => a.name === 'Masters');
+    acc = accessList.find(a => a.name === 'Masters');
   } else if (module === 'TestRate') {
-    acc = user.access.find(a => a.name === 'TestRates');
+    acc = accessList.find(a => a.name === 'TestRates');
   } else if (module === 'SaleInvoice') {
-    acc = user.access.find(a => a.name === 'SaleInvoices');
+    acc = accessList.find(a => a.name === 'SaleInvoices');
   }
 
   if (!acc) {
@@ -86,6 +127,9 @@ export function findModuleAccess(user: AuthenticationToken, module: string): num
 }
 
 export function hasModuleAccess(user: AuthenticationToken, module: string, access = 63): boolean {
+  if (isAdministrator(user)) {
+    return true;
+  }
   const bits = findModuleAccess(user, module);
   if (bits === null) {
     return false;
