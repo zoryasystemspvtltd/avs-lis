@@ -6,7 +6,7 @@
 export const environment = {
   production: false,
   IsOldApplicationServer:true,
-  ApplicationServer:'http://zoryademo-001-site2.ktempurl.com/',
+  ApplicationServer:'https://localhost:44392/',
   ClientId: 'DXI800',
   VDName:'',
 };
