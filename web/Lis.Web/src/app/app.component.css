@@ -1,16 +1,19 @@
-.container-main.qcontent {
-  min-height: calc(100vh - var(--zorya-header-h));
-  max-height: none;
-  padding: 10px 14px 14px;
-  background-color: #eef2f4;
-  box-sizing: border-box;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
+.body-content {
+    padding: 0;
+    background: #eef2f4;
 }
 
-.body-content {
-  padding-left: 0;
-  padding-right: 0;
-  background-color: #f0f4f6;
+.container-main.qcontent {
+    width: 100%;
+    min-height: calc(100vh - var(--zorya-header-h));
+    padding: 15px;
+    background: #eef2f4;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+}
+
+.avilis-page-body {
+    width: 80%;
+    flex: 1;
 }
