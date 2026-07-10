@@ -26,7 +26,7 @@ function ApiHdr([string]$token, [string]$opt = $null) {
 }
 
 function SqlScalar([string]$q) {
-  $out = & sqlcmd -S '.\SQLEXPRESS' -d AVSLIS -E -h -1 -W -Q "SET NOCOUNT ON; $q" 2>&1
+  $out = & sqlcmd -S '.\SQLEXPRESS' -d ZoryaLMS -E -h -1 -W -Q "SET NOCOUNT ON; $q" 2>&1
   if ($LASTEXITCODE -ne 0) { throw "SQL failed: $out" }
   $line = $out | Where-Object { $_ -and $_.ToString().Trim() -ne '' } | Select-Object -First 1
   if ($null -eq $line) { return '' }

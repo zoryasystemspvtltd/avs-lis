@@ -51,14 +51,40 @@ namespace LIS.BusinessLogic
                 return new List<TestResultEditSearchRow>();
             }
 
-            var query = requestRepo.Get().AsEnumerable();
-            var patients = patientRepo.Get().ToDictionary(p => p.Id, p => p);
+            var hasSample = !string.IsNullOrWhiteSpace(options.SampleNo);
+            var hasInvoice = !string.IsNullOrWhiteSpace(options.InvoiceNo);
+            var hasPatient = !string.IsNullOrWhiteSpace(options.PatientName);
+            var hasDate = options.FromDate.HasValue || options.ToDate.HasValue;
+
+            IEnumerable<TestRequestDetail> query;
+            if (hasDate && !hasSample && !hasInvoice && !hasPatient)
+            {
+                var from = options.FromDate?.Date ?? DateTime.MinValue;
+                var to = options.ToDate.HasValue ? options.ToDate.Value.Date.AddDays(1) : DateTime.MaxValue;
+                query = requestRepo.Get(r => r.SampleCollectionDate >= from && r.SampleCollectionDate < to).AsEnumerable();
+            }
+            else
+            {
+                query = requestRepo.Get().AsEnumerable();
+            }
+            var patients = new Dictionary<long, PatientDetail>();
+            if (hasPatient)
+            {
+                var name = options.PatientName.Trim();
+                foreach (var p in patientRepo.Get().AsEnumerable())
+                {
+                    if (p.Name != null && p.Name.IndexOf(name, StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        patients[p.Id] = p;
+                    }
+                }
+            }
 
             // Advanced Search: every supplied criterion is combined with OR, so a row is
             // returned when it matches ANY of the entered fields (union), not all of them.
             var predicates = new List<Func<TestRequestDetail, bool>>();
 
-            if (!string.IsNullOrWhiteSpace(options.SampleNo))
+            if (hasSample)
             {
                 var sn = options.SampleNo.Trim();
                 predicates.Add(r =>
@@ -68,7 +94,7 @@ namespace LIS.BusinessLogic
                     (r.HISRequestNo != null && r.HISRequestNo.IndexOf(sn, StringComparison.OrdinalIgnoreCase) >= 0));
             }
 
-            if (!string.IsNullOrWhiteSpace(options.InvoiceNo))
+            if (hasInvoice)
             {
                 var inv = options.InvoiceNo.Trim();
                 var invoiceNos = invoiceRepo.Get(i => i.IsActive && i.InvoiceNo != null)
@@ -85,7 +111,7 @@ namespace LIS.BusinessLogic
                         (r.SampleNo != null && r.SampleNo.Equals(no, StringComparison.OrdinalIgnoreCase))));
             }
 
-            if (!string.IsNullOrWhiteSpace(options.PatientName))
+            if (hasPatient)
             {
                 var name = options.PatientName.Trim();
                 predicates.Add(r =>
@@ -96,7 +122,7 @@ namespace LIS.BusinessLogic
 
             // From/To together form a single date-range term so the range still behaves
             // sensibly while participating as one component of the overall OR.
-            if (options.FromDate.HasValue || options.ToDate.HasValue)
+            if (hasDate && (hasSample || hasInvoice || hasPatient))
             {
                 var from = options.FromDate?.Date ?? DateTime.MinValue;
                 var to = options.ToDate.HasValue ? options.ToDate.Value.Date.AddDays(1) : DateTime.MaxValue;
@@ -109,17 +135,33 @@ namespace LIS.BusinessLogic
             }
 
             var allParams = parameterRepo.Get().ToList();
+            var filteredRequests = query.ToList();
+            var patientIds = filteredRequests.Select(r => r.PatientId).Distinct().ToList();
+            if (patientIds.Any())
+            {
+                foreach (var p in patientRepo.Get(p => patientIds.Contains(p.Id)))
+                {
+                    if (!patients.ContainsKey(p.Id))
+                    {
+                        patients[p.Id] = p;
+                    }
+                }
+            }
 
-            var rows = query
+            var persistedRequestIds = GetRequestIdsWithPersistedResults(
+                filteredRequests.Select(r => r.Id).Distinct().ToList());
+            var editableByTestCode = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
+
+            var rows = filteredRequests
                 .GroupBy(r => r.SampleNo ?? r.HISRequestNo)
                 .Select(g =>
                 {
                     var first = g.OrderByDescending(x => x.Id).First();
                     patients.TryGetValue(first.PatientId, out var patient);
-                    var hasResults = g.Any(req => HasPersistedResults(req.Id));
+                    var hasResults = g.Any(req => persistedRequestIds.Contains(req.Id));
                     var canEnter = g.Any(req =>
                         CanEditStatus(req.ReportStatus, false) &&
-                        HasEditableParameters(req.HISTestCode, allParams));
+                        HasEditableParametersCached(req.HISTestCode, allParams, editableByTestCode));
                     return new TestResultEditSearchRow
                     {
                         SampleNo = first.SampleNo ?? first.HISRequestNo,
@@ -636,6 +678,62 @@ namespace LIS.BusinessLogic
         private bool HasEditableParameters(string testCode, List<HISParameterMaster> allParams)
         {
             return ResolveParametersForTest(testCode, allParams).Any();
+        }
+
+        private bool HasEditableParametersCached(
+            string testCode,
+            List<HISParameterMaster> allParams,
+            Dictionary<string, bool> cache)
+        {
+            if (string.IsNullOrWhiteSpace(testCode))
+            {
+                return false;
+            }
+
+            if (cache.TryGetValue(testCode, out var cached))
+            {
+                return cached;
+            }
+
+            var hasParams = HasEditableParameters(testCode, allParams);
+            cache[testCode] = hasParams;
+            return hasParams;
+        }
+
+        private HashSet<long> GetRequestIdsWithPersistedResults(IList<long> requestIds)
+        {
+            var persisted = new HashSet<long>();
+            if (requestIds == null || requestIds.Count == 0)
+            {
+                return persisted;
+            }
+
+            var results = resultRepo.Get(r => requestIds.Contains(r.TestRequestId)).ToList();
+            if (!results.Any())
+            {
+                return persisted;
+            }
+
+            var latestResults = results
+                .GroupBy(r => r.TestRequestId)
+                .Select(g => g.OrderByDescending(x => x.Id).First())
+                .ToList();
+
+            var resultIds = latestResults.Select(r => r.Id).ToList();
+            var resultIdsWithDetails = detailRepo.Get(d => resultIds.Contains(d.TestResultId))
+                .Select(d => d.TestResultId)
+                .Distinct()
+                .ToHashSet();
+
+            foreach (var result in latestResults)
+            {
+                if (resultIdsWithDetails.Contains(result.Id))
+                {
+                    persisted.Add(result.TestRequestId);
+                }
+            }
+
+            return persisted;
         }
 
         private bool HasPersistedResults(long testRequestId)

@@ -118,7 +118,6 @@
     <Compile Include="Migrations\202607081802343_SchemaModelSync.Designer.cs">
       <DependentUpon>202607081802343_SchemaModelSync.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202607091200000_PatientVisitManagement.cs" />
     <Compile Include="Migrations\202607100420024_fixed.cs" />
     <Compile Include="Migrations\202607100420024_fixed.Designer.cs">
       <DependentUpon>202607100420024_fixed.cs</DependentUpon>

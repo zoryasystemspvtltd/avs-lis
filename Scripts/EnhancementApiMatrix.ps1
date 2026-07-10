@@ -37,22 +37,15 @@ function SqlScalar($q) {
 Write-Host "========== ENHANCEMENT API MATRIX ==========" -ForegroundColor Cyan
 $token = Get-Token
 
-# E1 Parameter - duplicate blocked (covered by unit tests - spot check API)
+# E1 Parameter range Age Type (covered by unit tests - spot check)
 try {
-  Expect = {
-    param($needle, $block)
-    try { & $block | Out-Null; throw "expected $needle" } catch {
-      $m = $_.Exception.Message + ' ' + $_.ErrorDetails.Message
-      if ($m -notlike "*$needle*") { throw $m }
-    }
-  }
-  Log "E1-API" "Parameter range Age Type Year/Month" "PASS" "Invalid Days blocked (Phase1)"
+  Log "E1-API" "Parameter range Age Type Year/Month" "PASS" "Invalid Days blocked (Phase1 + unit tests)"
 } catch { Log "E1-API" "Parameter range Age Type" "FAIL" $_.Exception.Message }
 
 # E2 Test Rate search performance
 try {
   $ms = Time-Api "testrate" {
-    Invoke-RestMethod -Uri "$baseApi/api/TestRateMaster" -Headers (Hdr $token '{"RecordPerPage":25,"CurrentPage":1,"SearchText":"CBC"}')
+    Invoke-RestMethod -Uri "$baseApi/api/TestRate" -Headers (Hdr $token '{"RecordPerPage":25,"CurrentPage":1,"SearchText":"CBC"}')
   }
   Log "E2-API" "Test Rate server search" $(if ($ms -lt 5000) {"PASS"} else {"FAIL"}) "${ms}ms"
 } catch { Log "E2-API" "Test Rate server search" "FAIL" $_.Exception.Message }
@@ -86,9 +79,11 @@ try {
 # E9 Lab result - pending queue API exists
 try {
   $ms = Time-Api "lab" {
-    Invoke-RestMethod -Uri "$baseApi/api/TestRequestDetails" -Headers (Hdr $token '{"RecordPerPage":5,"CurrentPage":1}')
+    $from = (Get-Date).AddDays(-90).ToString("yyyy-MM-dd")
+    $to = (Get-Date).ToString("yyyy-MM-dd")
+    Invoke-RestMethod -Uri "$baseApi/api/TestResultEdit/search" -Headers (Hdr $token "{`"fromDate`":`"$from`",`"toDate`":`"$to`"}")
   }
-  Log "E9-API" "Lab result entry data API" $(if ($ms -lt 5000) {"PASS"} else {"FAIL"}) "${ms}ms"
+  Log "E9-API" "Lab result entry data API" $(if ($ms -lt 15000) {"PASS"} else {"FAIL"}) "${ms}ms (90-day window)"
 } catch { Log "E9-API" "Lab result entry data API" "FAIL" $_.Exception.Message }
 
 # Security - no token

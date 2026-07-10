@@ -88,8 +88,8 @@ $mapList = Invoke-RestMethod -Method Get -Uri "http://localhost:8081/api/TestMap
 $maps = Get-Items $mapList
 Assert-True ($maps.Count -gt 0) "No test mappings"
 $m0 = $maps[0]
-$tn = if ($m0.HISTestCodeDescription) { $m0.HISTestCodeDescription } else { $m0.hisTestCodeDescription }
-Assert-True ($tn -and $tn.Length -gt 0) "Test Name (HISTestCodeDescription) missing in mapping list"
+$tn = if ($m0.HISParamDescription) { $m0.HISParamDescription } elseif ($m0.hisParamDescription) { $m0.hisParamDescription } elseif ($m0.LISTestCodeDescription) { $m0.LISTestCodeDescription } else { $m0.lisTestCodeDescription }
+Assert-True ($tn -and $tn.Length -gt 0) "Test mapping description missing in mapping list"
 
 $dupMap = @{
   equipmentId = if ($m0.EquipmentId) { $m0.EquipmentId } else { $m0.equipmentId }

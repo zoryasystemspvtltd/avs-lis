@@ -18,7 +18,8 @@ $expectedDataAccess = @(
     "202607081200000_SaleInvoiceDiscountFields",
     "202607081210000_SaleInvoiceDetailNullableRequestDetail",
     "202607081220000_LabResultRestructure",
-    "202607081802343_SchemaModelSync"
+    "202607081802343_SchemaModelSync",
+    "202607100420024_fixed"
 )
 
 $expectedIdentity = @(

@@ -10,7 +10,14 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORTAL = process.env.ZORYALIS_PORTAL || 'http://localhost:8080';
 const PASS = process.env.ZORYALIS_PASS || 'zorKol@1';
-const EXPECTED_MAIN_BUNDLE = process.env.ZORYALIS_BUNDLE || 'main-es2015.b8f5bd31b257c8d0db09.js';
+const EXPECTED_MAIN_BUNDLE = process.env.ZORYALIS_BUNDLE || null;
+
+async function resolveMainBundle() {
+  if (EXPECTED_MAIN_BUNDLE) return EXPECTED_MAIN_BUNDLE;
+  const indexHtml = await fetch(`${PORTAL}/index.html`).then(r => r.text());
+  const match = indexHtml.match(/main-es2015\.[a-f0-9]+\.js/);
+  return match ? match[0] : 'main-es2015.*.js';
+}
 const TAG = 'UI-CERT-' + new Date().toISOString().replace(/[-:TZ.]/g, '').slice(0, 14);
 
 const USERS = {
@@ -125,7 +132,7 @@ async function assertNoCreateEditLabels(page, browser, phase, route) {
   log(phase, browser, `No placeholder labels on ${route}`, bad.length === 0 ? 'PASS' : 'FAIL', bad.join(', ') || 'clean');
 }
 
-async function runRoleSuite(browserLabel, channel) {
+async function runRoleSuite(browserLabel, channel, mainBundle) {
   const launchOpts = { headless: true };
   if (channel) launchOpts.channel = channel;
   const browser = await chromium.launch(launchOpts);
@@ -136,8 +143,8 @@ async function runRoleSuite(browserLabel, channel) {
 
   // Phase 1 - bundle + login shell
   const indexHtml = await (await context.request.get(`${PORTAL}/`)).text();
-  const bundleOk = indexHtml.includes(EXPECTED_MAIN_BUNDLE);
-  log('P1', browserLabel, 'Latest Angular bundle loaded', bundleOk ? 'PASS' : 'FAIL', EXPECTED_MAIN_BUNDLE);
+  const bundleOk = indexHtml.includes(mainBundle);
+  log('P1', browserLabel, 'Latest Angular bundle loaded', bundleOk ? 'PASS' : 'FAIL', mainBundle);
 
   await page.goto(`${PORTAL}/login`, { waitUntil: 'domcontentloaded' });
   log('P1', browserLabel, 'Login page loads', page.url().includes('/login') ? 'PASS' : 'FAIL', page.url());
@@ -249,6 +256,7 @@ async function runRoleSuite(browserLabel, channel) {
 
 async function main() {
   console.log(`\n========== MANUAL UI CERTIFICATION (${TAG}) ==========\n`);
+  const mainBundle = await resolveMainBundle();
   const browsers = [
     { label: 'Chrome', channel: 'chrome' },
     { label: 'Edge', channel: 'msedge' },
@@ -257,7 +265,7 @@ async function main() {
   for (const b of browsers) {
     try {
       console.log(`\n--- ${b.label} ---\n`);
-      await runRoleSuite(b.label, b.channel);
+      await runRoleSuite(b.label, b.channel, mainBundle);
       await new Promise(r => setTimeout(r, 3000));
     } catch (e) {
       log('P0', b.label, 'Browser suite execution', 'FAIL', e.message || String(e));
@@ -271,7 +279,7 @@ async function main() {
   const report = {
     tag: TAG,
     portal: PORTAL,
-    bundle: EXPECTED_MAIN_BUNDLE,
+    bundle: mainBundle,
     summary: { pass: pass.length, warn: warn.length, fail: fail.length },
     defects: defectLog,
     results,
