@@ -54,6 +54,7 @@ import { SampleReceivingComponent } from './LIS/sample-workflow/sample-receiving
 import { RadiologyReportEntryComponent } from './LIS/radiology/radiology-report-entry/radiology-report-entry.component';
 import { RadiologyDoctorApprovalComponent } from './LIS/radiology/radiology-doctor-approval/radiology-doctor-approval.component';
 import { RadiologyApprovedReportsComponent } from './LIS/radiology/radiology-approved-reports/radiology-approved-reports.component';
+import { RadiologyReportHeaderComponent } from './LIS/radiology/radiology-report-header/radiology-report-header.component';
 
 export const options: Partial<IConfig> | (() => Partial<IConfig>) = null;
 
@@ -161,7 +162,8 @@ export const options: Partial<IConfig> | (() => Partial<IConfig>) = null;
     SampleReceivingComponent,
     RadiologyReportEntryComponent,
     RadiologyDoctorApprovalComponent,
-    RadiologyApprovedReportsComponent
+    RadiologyApprovedReportsComponent,
+    RadiologyReportHeaderComponent
   ],
   imports: [
     BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),

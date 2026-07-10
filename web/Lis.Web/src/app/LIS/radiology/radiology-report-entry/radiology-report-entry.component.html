@@ -43,10 +43,11 @@
 
   <div *ngIf="showEntry && reportDetail" class="panel panel-default entry-panel">
     <div class="panel-heading entry-panel-heading">
-      <strong>{{ reportDetail.patientName }}</strong> — {{ reportDetail.testName }} ({{ reportDetail.status }})
+      <strong>{{ reportDetail.testName }}</strong> — {{ reportDetail.modality || '—' }} ({{ reportDetail.status }})
       <button class="btn btn-default btn-xs entry-back-btn" (click)="showEntry=false">Back</button>
     </div>
     <div class="panel-body">
+      <app-radiology-report-header [reportDetail]="reportDetail"></app-radiology-report-header>
       <div class="form-group"><label>Clinical History</label><textarea class="form-control" rows="2" [(ngModel)]="clinicalHistory" [readonly]="!reportDetail.canEdit"></textarea></div>
       <div class="form-group"><label>Findings <span class="text-danger">*</span></label><textarea class="form-control" rows="4" [(ngModel)]="findings" [readonly]="!reportDetail.canEdit"></textarea></div>
       <div class="form-group"><label>Impression <span class="text-danger">*</span></label><textarea class="form-control" rows="3" [(ngModel)]="impression" [readonly]="!reportDetail.canEdit"></textarea></div>

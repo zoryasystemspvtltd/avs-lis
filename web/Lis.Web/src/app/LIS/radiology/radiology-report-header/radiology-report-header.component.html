@@ -1,0 +1,23 @@
+<div class="panel panel-info radiology-report-header-panel" *ngIf="reportDetail">
+  <div class="panel-heading"><strong>Patient Details</strong></div>
+  <div class="panel-body">
+    <div class="row">
+      <div class="col-sm-3">
+        <label>Patient Name</label>
+        <div>{{ patientName }}</div>
+      </div>
+      <div class="col-sm-3">
+        <label>Invoice No</label>
+        <div>{{ invoiceNo }}</div>
+      </div>
+      <div class="col-sm-3">
+        <label>Age / Gender</label>
+        <div>{{ ageGender }}</div>
+      </div>
+      <div class="col-sm-3">
+        <label>Result Date</label>
+        <div>{{ resultDateLabel }}</div>
+      </div>
+    </div>
+  </div>
+</div>

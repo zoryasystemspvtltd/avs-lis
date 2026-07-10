@@ -1,6 +1,7 @@
 using LIS.DtoModel.Models;
 using LIS.Masters.Tests.Infrastructure;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.Linq;
 
 namespace LIS.Masters.Tests.Workflows
@@ -32,6 +33,41 @@ namespace LIS.Masters.Tests.Workflows
             {
                 Assert.AreEqual("Under Review", row.Status);
             }
+        }
+
+        [TestMethod]
+        public void GetReport_Includes_Patient_Header_Fields()
+        {
+            var suffix = Guid.NewGuid().ToString("N").Substring(0, 8);
+            var patientId = Services.PatientMaster.Add(MasterTestDataBuilder.Patient(suffix));
+            var patient = Services.PatientMaster.GetById(patientId);
+            var invoiceNo = UniqueCode("RAD");
+
+            var requestId = Services.RadiologyReport.CreateRequest(new RadiologyRequestDetail
+            {
+                PatientId = patientId,
+                HISRequestNo = invoiceNo,
+                HISTestCode = "RAD-UT",
+                HISTestName = "Radiology Header Test",
+                Modality = "X-Ray",
+                Department = "Radiology"
+            });
+
+            Services.RadiologyReport.SaveReport(new RadiologyReportSaveRequest
+            {
+                RadiologyRequestId = requestId,
+                ClinicalHistory = "History",
+                Findings = "Findings",
+                Impression = "Impression",
+                SubmitForReview = false
+            });
+
+            var detail = Services.RadiologyReport.GetReport(requestId);
+            Assert.AreEqual(patient.Name, detail.PatientName);
+            Assert.AreEqual(invoiceNo, detail.InvoiceNo);
+            Assert.AreEqual(patient.Age, detail.Age);
+            Assert.AreEqual(patient.Gender, detail.Gender);
+            Assert.IsTrue(detail.ResultDate.HasValue);
         }
     }
 }

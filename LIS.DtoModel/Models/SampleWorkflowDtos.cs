@@ -101,6 +101,9 @@ namespace LIS.DtoModel.Models
         public string AccessionNo { get; set; }
         public string HisPatientId { get; set; }
         public string PatientName { get; set; }
+        public string InvoiceNo { get; set; }
+        public decimal Age { get; set; }
+        public string Gender { get; set; }
         public string TestName { get; set; }
         public string Modality { get; set; }
         public string Department { get; set; }
@@ -112,6 +115,7 @@ namespace LIS.DtoModel.Models
         public string Recommendation { get; set; }
         public string AuthorizedBy { get; set; }
         public DateTime? AuthorizedOn { get; set; }
+        public DateTime? ResultDate { get; set; }
         public bool CanEdit { get; set; }
         public bool CanAuthorize { get; set; }
     }

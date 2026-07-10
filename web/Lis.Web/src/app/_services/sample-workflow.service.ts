@@ -84,11 +84,15 @@ export class SampleWorkflowService {
   }
 
   getRadiologyReport(id: number): Observable<any> {
-    return this.http.get<any>(`${this.baseUrl}/api/RadiologyReport/${id}`);
+    return this.http.get<any>(`${this.baseUrl}/api/RadiologyReport/${id}`).pipe(
+      map(normalizeDetail)
+    );
   }
 
   getRadiologyDoctorApprovalReport(id: number): Observable<any> {
-    return this.http.get<any>(`${this.baseUrl}/api/RadiologyReport/DoctorApproval/${id}`);
+    return this.http.get<any>(`${this.baseUrl}/api/RadiologyReport/DoctorApproval/${id}`).pipe(
+      map(normalizeDetail)
+    );
   }
 
   saveRadiologyReport(payload: any): Observable<any> {
@@ -133,13 +137,17 @@ export class SampleWorkflowService {
 }
 
 function normalizeRow(row: any): any {
-  if (!row || typeof row !== 'object') {
-    return row;
+  return normalizeDetail(row);
+}
+
+function normalizeDetail(value: any): any {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return value;
   }
   const normalized: any = {};
-  Object.keys(row).forEach(key => {
+  Object.keys(value).forEach(key => {
     const camel = key.charAt(0).toLowerCase() + key.slice(1);
-    normalized[camel] = row[key];
+    normalized[camel] = value[key];
   });
   return normalized;
 }

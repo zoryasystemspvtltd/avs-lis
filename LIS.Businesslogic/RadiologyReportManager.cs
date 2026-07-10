@@ -133,6 +133,9 @@ namespace LIS.BusinessLogic
                 AccessionNo = request.AccessionNo,
                 HisPatientId = patient?.HisPatientId,
                 PatientName = patient?.Name,
+                InvoiceNo = request.HISRequestNo,
+                Age = patient?.Age ?? 0,
+                Gender = patient?.Gender,
                 TestName = request.HISTestName,
                 Modality = request.Modality,
                 Department = request.Department,
@@ -144,6 +147,9 @@ namespace LIS.BusinessLogic
                 Recommendation = result?.Recommendation,
                 AuthorizedBy = result?.AuthorizedBy,
                 AuthorizedOn = result?.AuthorizedOn,
+                ResultDate = result != null && result.ModifiedOn > DateTime.MinValue
+                    ? (DateTime?)result.ModifiedOn
+                    : null,
                 CanEdit = editable,
                 CanAuthorize = request.ReportStatus == RadiologyReportStatus.UnderReview
             };

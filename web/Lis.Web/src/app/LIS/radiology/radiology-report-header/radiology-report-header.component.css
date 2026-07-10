@@ -1,0 +1,16 @@
+.radiology-report-header-panel {
+  margin-bottom: 16px;
+}
+
+.radiology-report-header-panel label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.radiology-report-header-panel .panel-body > .row > div > div {
+  font-size: 14px;
+  color: #333;
+}

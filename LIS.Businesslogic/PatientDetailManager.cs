@@ -83,7 +83,8 @@ namespace LIS.BusinessLogic
             if (option.ReceivedOnly)
             {
                 query = testRequestRepo.Get()
-                    .Where(p => !string.IsNullOrWhiteSpace(p.ReceivedBy))
+                    .Where(p => !string.IsNullOrWhiteSpace(p.ReceivedBy)
+                        && IsRecentSampleStatus(p.ReportStatus))
                     .ToList();
             }
             else
@@ -370,6 +371,11 @@ namespace LIS.BusinessLogic
                 .Distinct()
                 .ToList();
             return mappings;
+        }
+
+        private static bool IsRecentSampleStatus(ReportStatusType status)
+        {
+            return status == ReportStatusType.New || status == ReportStatusType.SentToEquipment;
         }
     }
 }

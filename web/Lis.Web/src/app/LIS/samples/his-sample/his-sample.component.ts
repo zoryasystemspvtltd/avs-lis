@@ -20,7 +20,7 @@ export class HisSampleComponent implements OnInit, OnDestroy {
     SortColumnName: 'sampleCollectionDate',
     SortDirection: false,
     SearchText: '',
-    Status: 0
+    ReceivedOnly: true
   };
 
   constructor(

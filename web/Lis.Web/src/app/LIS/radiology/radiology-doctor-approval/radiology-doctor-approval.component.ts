@@ -21,6 +21,8 @@ export class RadiologyDoctorApprovalComponent implements OnInit {
   selectedId: number = null;
   reportDetail: any = null;
   showDetail = false;
+  detailLoading = false;
+  detailError = '';
   doctorSignature: { name?: string; designation?: string; signatureDataUri?: string; hasSignature?: boolean } = {};
 
   constructor(
@@ -78,15 +80,42 @@ export class RadiologyDoctorApprovalComponent implements OnInit {
   }
 
   openApproval(row: any): void {
-    this.selectedId = row.id;
-    this.workflowService.getRadiologyDoctorApprovalReport(row.id).subscribe(
+    const id = row?.id ?? row?.Id;
+    if (id == null || id === '') {
+      this.alertService.error('Unable to open this report. The request id is missing.');
+      return;
+    }
+
+    this.selectedId = +id;
+    this.showDetail = true;
+    this.detailLoading = true;
+    this.detailError = '';
+    this.reportDetail = null;
+    this.digitalSignature = '';
+
+    this.workflowService.getRadiologyDoctorApprovalReport(this.selectedId).subscribe(
       detail => {
+        this.detailLoading = false;
+        if (!detail || typeof detail !== 'object') {
+          this.detailError = 'Report details could not be loaded.';
+          this.alertService.error(this.detailError);
+          return;
+        }
         this.reportDetail = detail;
-        this.digitalSignature = '';
-        this.showDetail = true;
       },
-      err => this.alertService.error(extractApiError(err))
+      err => {
+        this.detailLoading = false;
+        this.detailError = extractApiError(err);
+        this.alertService.error(this.detailError);
+      }
     );
+  }
+
+  closeDetail(): void {
+    this.showDetail = false;
+    this.detailLoading = false;
+    this.detailError = '';
+    this.reportDetail = null;
   }
 
   authorize(release: boolean): void {
@@ -102,7 +131,7 @@ export class RadiologyDoctorApprovalComponent implements OnInit {
     }).subscribe(
       () => {
         this.alertService.success(release ? 'Report released.' : 'Report authorized.');
-        this.showDetail = false;
+        this.closeDetail();
         this.search(this.currentPage);
       },
       err => this.alertService.error(extractApiError(err))

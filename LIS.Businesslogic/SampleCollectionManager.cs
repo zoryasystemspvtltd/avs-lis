@@ -16,6 +16,8 @@ namespace LIS.Businesslogic
         private readonly ModuleRepo<SampleRejectionReasonMaster> rejectionRepo;
         private readonly ModuleRepo<SaleInvoice> invoiceRepo;
         private readonly ModuleRepo<SaleInvoiceDetail> invoiceDetailRepo;
+        private readonly ModuleRepo<HisTestMaster> testRepo;
+        private readonly ModuleRepo<Departments> departmentRepo;
         private readonly ITestRequestDetailsManager testRequestManager;
         private readonly IModuleIdentity identity;
         private readonly ILogger logger;
@@ -34,6 +36,8 @@ namespace LIS.Businesslogic
             rejectionRepo = new ModuleRepo<SampleRejectionReasonMaster>(logger, identity, uow);
             invoiceRepo = new ModuleRepo<SaleInvoice>(logger, identity, uow);
             invoiceDetailRepo = new ModuleRepo<SaleInvoiceDetail>(logger, identity, uow);
+            testRepo = new ModuleRepo<HisTestMaster>(logger, identity, uow);
+            departmentRepo = new ModuleRepo<Departments>(logger, identity, uow);
         }
 
         public ItemList<SampleWorkflowQueueRow> GetPendingQueue(SampleWorkflowSearchOptions options)
@@ -48,8 +52,9 @@ namespace LIS.Businesslogic
                 .Where(r => eligibleRequestIds.Contains(r.Id));
 
             var patients = patientRepo.Get().ToDictionary(p => p.Id, p => p);
+            var departmentByTestCode = BuildDepartmentByTestCode();
             var rows = ApplySearch(query.ToList(), patients, options)
-                .Select(r => MapRow(r, patients, "Pending"))
+                .Select(r => MapRow(r, patients, "Pending", departmentByTestCode))
                 .ToList();
 
             return Paginate(rows, options, "SampleCollectionDate");
@@ -80,7 +85,7 @@ namespace LIS.Businesslogic
 
             var patients = patientRepo.Get().ToDictionary(p => p.Id, p => p);
             var status = string.IsNullOrWhiteSpace(request.CollectedBy) ? "Pending" : "Collected";
-            return MapRow(request, patients, status);
+            return MapRow(request, patients, status, BuildDepartmentByTestCode());
         }
 
         public void CollectSample(SampleCollectionAction action)
@@ -314,10 +319,48 @@ namespace LIS.Businesslogic
             return query;
         }
 
+        private Dictionary<string, string> BuildDepartmentByTestCode()
+        {
+            var departments = departmentRepo.Get()
+                .Where(d => d.Code != null)
+                .ToDictionary(d => d.Code, d => d.Name, StringComparer.OrdinalIgnoreCase);
+
+            return testRepo.Get()
+                .Where(t => !string.IsNullOrWhiteSpace(t.HISTestCode) && !string.IsNullOrWhiteSpace(t.DepartmentCode))
+                .ToList()
+                .Where(t => departments.ContainsKey(t.DepartmentCode))
+                .GroupBy(t => t.HISTestCode, StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(
+                    g => g.Key,
+                    g => departments[g.First().DepartmentCode],
+                    StringComparer.OrdinalIgnoreCase);
+        }
+
+        private static string ResolveDepartmentName(
+            TestRequestDetail request,
+            Dictionary<string, string> departmentByTestCode)
+        {
+            if (!string.IsNullOrWhiteSpace(request?.Department))
+            {
+                return request.Department;
+            }
+
+            var testCode = request?.HISTestCode ?? string.Empty;
+            if (!string.IsNullOrWhiteSpace(testCode) &&
+                departmentByTestCode != null &&
+                departmentByTestCode.TryGetValue(testCode, out var departmentName))
+            {
+                return departmentName;
+            }
+
+            return request?.Department;
+        }
+
         private static SampleWorkflowQueueRow MapRow(
             TestRequestDetail request,
             Dictionary<long, PatientDetail> patients,
-            string status)
+            string status,
+            Dictionary<string, string> departmentByTestCode)
         {
             patients.TryGetValue(request.PatientId, out var patient);
             return new SampleWorkflowQueueRow
@@ -328,7 +371,7 @@ namespace LIS.Businesslogic
                 HisPatientId = patient?.HisPatientId,
                 PatientName = patient?.Name,
                 TestName = request.HISTestName,
-                Department = request.Department,
+                Department = ResolveDepartmentName(request, departmentByTestCode),
                 Specimen = !string.IsNullOrWhiteSpace(request.SpecimenName) ? request.SpecimenName : request.SpecimenCode,
                 SampleCollectionDate = request.SampleCollectionDate,
                 SampleReceivedDate = request.SampleReceivedDate,

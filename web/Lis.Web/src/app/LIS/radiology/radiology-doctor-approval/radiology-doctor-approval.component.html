@@ -1,4 +1,6 @@
 <div class="container-fluid">
+  <alert></alert>
+
   <div class="panel panel-default filter-panel" *ngIf="!showDetail">
     <div class="panel-body">
       <div class="radiology-intro">
@@ -6,10 +8,11 @@
         <p class="text-muted">Review radiology reports submitted for doctor approval.</p>
       </div>
       <div class="row">
-      <div class="col-sm-4"><label>Search</label><input class="form-control input-sm" [(ngModel)]="searchText" (keyup.enter)="search()" /></div>
-      <div class="col-sm-3"><label>Modality</label><input class="form-control input-sm" [(ngModel)]="modality" /></div>
-      <div class="col-sm-2 filter-actions-col">
-        <button class="btn btn-primary btn-sm" (click)="search()" [disabled]="loading">Search</button>
+        <div class="col-sm-4"><label>Search</label><input class="form-control input-sm" [(ngModel)]="searchText" (keyup.enter)="search()" /></div>
+        <div class="col-sm-3"><label>Modality</label><input class="form-control input-sm" [(ngModel)]="modality" /></div>
+        <div class="col-sm-2 filter-actions-col">
+          <button class="btn btn-primary btn-sm" (click)="search()" [disabled]="loading">Search</button>
+        </div>
       </div>
     </div>
   </div>
@@ -40,33 +43,46 @@
     </div>
   </div>
 
-  <div *ngIf="showDetail && reportDetail" class="panel panel-default entry-panel">
+  <div *ngIf="showDetail" class="panel panel-default entry-panel">
     <div class="panel-heading entry-panel-heading">
-      <strong>{{ reportDetail.patientName }}</strong> — {{ reportDetail.testName }} ({{ reportDetail.status }})
-      <button class="btn btn-default btn-xs entry-back-btn" (click)="showDetail=false">Back</button>
+      <strong *ngIf="reportDetail">{{ reportDetail.testName }}</strong>
+      <strong *ngIf="!reportDetail">Radiology Report Review</strong>
+      <span *ngIf="reportDetail"> — {{ reportDetail.modality || '—' }} ({{ reportDetail.status }})</span>
+      <button class="btn btn-default btn-xs entry-back-btn" (click)="closeDetail()">Back</button>
     </div>
     <div class="panel-body">
-      <div class="form-group"><label>Clinical History</label><p class="form-control-static report-readonly">{{ reportDetail.clinicalHistory || '—' }}</p></div>
-      <div class="form-group"><label>Findings</label><p class="form-control-static report-readonly">{{ reportDetail.findings || '—' }}</p></div>
-      <div class="form-group"><label>Impression</label><p class="form-control-static report-readonly">{{ reportDetail.impression || '—' }}</p></div>
-      <div class="form-group"><label>Recommendation</label><p class="form-control-static report-readonly">{{ reportDetail.recommendation || '—' }}</p></div>
-      <div class="form-group">
-        <label>Digital Signature</label>
-        <div class="radiology-approval-signature-box">
-          <img *ngIf="doctorSignature.hasSignature" [src]="doctorSignature.signatureDataUri"
-            class="radiology-approval-signature-img" alt="Doctor signature" />
-          <span *ngIf="!doctorSignature.hasSignature" class="text-muted">
-            No digital signature uploaded for your profile.
-          </span>
-        </div>
-        <div class="radiology-approval-signature-name">
-          {{ doctorSignature.name }}<span *ngIf="doctorSignature.designation">, {{ doctorSignature.designation }}</span>
-        </div>
+      <div *ngIf="detailLoading" class="text-center workflow-loading">
+        <span class="glyphicon glyphicon-refresh glyphicon-spin"></span> Loading report details...
       </div>
-      <div class="btn-toolbar entry-actions">
-        <button class="btn btn-success" (click)="authorize(false)">Authorize</button>
-        <button class="btn btn-info" (click)="authorize(true)">Authorize &amp; Release</button>
+
+      <div *ngIf="!detailLoading && detailError" class="alert alert-warning">
+        {{ detailError }}
       </div>
+
+      <ng-container *ngIf="!detailLoading && reportDetail">
+        <app-radiology-report-header [reportDetail]="reportDetail"></app-radiology-report-header>
+        <div class="form-group"><label>Clinical History</label><p class="form-control-static report-readonly">{{ reportDetail.clinicalHistory || '—' }}</p></div>
+        <div class="form-group"><label>Findings</label><p class="form-control-static report-readonly">{{ reportDetail.findings || '—' }}</p></div>
+        <div class="form-group"><label>Impression</label><p class="form-control-static report-readonly">{{ reportDetail.impression || '—' }}</p></div>
+        <div class="form-group"><label>Recommendation</label><p class="form-control-static report-readonly">{{ reportDetail.recommendation || '—' }}</p></div>
+        <div class="form-group">
+          <label>Digital Signature</label>
+          <div class="radiology-approval-signature-box">
+            <img *ngIf="doctorSignature.hasSignature" [src]="doctorSignature.signatureDataUri"
+              class="radiology-approval-signature-img" alt="Doctor signature" />
+            <span *ngIf="!doctorSignature.hasSignature" class="text-muted">
+              No digital signature uploaded for your profile.
+            </span>
+          </div>
+          <div class="radiology-approval-signature-name">
+            {{ doctorSignature.name }}<span *ngIf="doctorSignature.designation">, {{ doctorSignature.designation }}</span>
+          </div>
+        </div>
+        <div class="btn-toolbar entry-actions">
+          <button class="btn btn-success" (click)="authorize(false)">Authorize</button>
+          <button class="btn btn-info" (click)="authorize(true)">Authorize &amp; Release</button>
+        </div>
+      </ng-container>
     </div>
   </div>
 </div>

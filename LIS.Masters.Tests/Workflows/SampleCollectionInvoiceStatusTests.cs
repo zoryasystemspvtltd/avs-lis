@@ -109,6 +109,31 @@ namespace LIS.Masters.Tests.Workflows
         }
 
         [TestMethod]
+        public void Confirmed_Invoice_Collection_Queue_Includes_Department()
+        {
+            var rateId = 0;
+            var testId = EnsureTestWithStandardRate(250m, out rateId);
+            var test = Services.HisTest.GetTestById(testId);
+            var dept = Services.Department.Get(test.DepartmentCode);
+            Assert.IsNotNull(dept);
+
+            var invoiceNo = UniqueCode("DPT");
+            CreatePatientAndInvoice(invoiceNo, testId, InvoiceStatusType.Confirmed, PaymentStatusType.Unpaid, out var requestId);
+
+            var queue = Services.SampleCollection.GetPendingQueue(new SampleWorkflowSearchOptions
+            {
+                CurrentPage = 1,
+                RecordPerPage = 500,
+                OrderNumber = invoiceNo
+            });
+            var row = queue.Items.FirstOrDefault(r => r.Id == requestId);
+            Assert.IsNotNull(row);
+            Assert.AreEqual(dept.Name, row.Department);
+
+            Services.TestRate.Delete(new TestRateMaster { Id = rateId });
+        }
+
+        [TestMethod]
         public void Confirmed_PartialPayment_Appears_In_Collection_Queue()
         {
             var rateId = 0;

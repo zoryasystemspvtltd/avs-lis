@@ -571,6 +571,26 @@ namespace LIS.BusinessLogic
             return !string.IsNullOrWhiteSpace(dept?.Name) ? dept.Name : "Radiology";
         }
 
+        private void ApplyTestDepartment(TestRequestDetail request, HisTestMaster test)
+        {
+            if (request == null || test == null || string.IsNullOrWhiteSpace(test.DepartmentCode))
+            {
+                return;
+            }
+
+            var dept = departmentRepo.Get(d =>
+                d.Code != null && d.Code.Equals(test.DepartmentCode, StringComparison.OrdinalIgnoreCase))
+                .FirstOrDefault();
+
+            if (dept == null)
+            {
+                return;
+            }
+
+            request.DepartmentId = dept.Code;
+            request.Department = dept.Name;
+        }
+
         public string GenerateInvoiceNo()
         {
             var prefix = $"INV-{DateTime.Now:yyyyMMdd}-";
@@ -900,9 +920,24 @@ namespace LIS.BusinessLogic
 
             if (request != null)
             {
+                var updated = false;
                 if (!request.PatientVisitId.HasValue && invoice.PatientVisitId.HasValue)
                 {
                     request.PatientVisitId = invoice.PatientVisitId;
+                    updated = true;
+                }
+
+                if (string.IsNullOrWhiteSpace(request.Department))
+                {
+                    ApplyTestDepartment(request, test);
+                    if (!string.IsNullOrWhiteSpace(request.Department))
+                    {
+                        updated = true;
+                    }
+                }
+
+                if (updated)
+                {
                     testRequestRepo.Update(request);
                 }
 
@@ -942,6 +977,7 @@ namespace LIS.BusinessLogic
                 CreatedOn = now,
                 CreatedBy = identity?.ActivityMember
             };
+            ApplyTestDepartment(request, test);
             request.Id = testRequestRepo.Add(request);
             return request;
         }
