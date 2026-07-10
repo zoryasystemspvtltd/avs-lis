@@ -5,3 +5,12 @@
 .edit-test-results-page .input-sm {
   min-width: 100px;
 }
+.edit-test-results-page {
+    padding: 5px 10px;
+    max-width: 100%;
+}
+
+.edit-test-results-page .panel {
+    margin-left: 0;
+    margin-right: 0;
+}
