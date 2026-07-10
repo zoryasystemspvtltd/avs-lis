@@ -417,21 +417,22 @@ namespace LIS.Businesslogic
                 return null;
             }
 
-            var testMap = mappingRepo.Get(p => p.HISParamCode != null
-                && parameterMapRepo.Get(param => param.HISTestCode.Equals(testResult.HISTestCode, StringComparison.OrdinalIgnoreCase)
-                    && param.HISParamCode.Equals(p.HISParamCode, StringComparison.OrdinalIgnoreCase)).Any()
-                && p.EquipmentId == testResult.EquipmentId).FirstOrDefault();
+            //var testMap = mappingRepo.Get(p => p.HISParamCode != null
+            //    && parameterMapRepo.Get(param => param.HISTestCode.Equals(testResult.HISTestCode, StringComparison.OrdinalIgnoreCase)
+            //        && param.HISParamCode.Equals(p.HISParamCode, StringComparison.OrdinalIgnoreCase)).Any()
+            //    && p.EquipmentId == testResult.EquipmentId).FirstOrDefault();
 
             var departmentname = testRepo.Get(t => t.HISTestCode.Equals(testResult.HISTestCode, StringComparison.OrdinalIgnoreCase))
                 .Join(departmentRepo.Get(d => d.Code != null),
                 test => test.DepartmentCode,
                 dept => dept.Code,
-                (test, dept) => new { dept.Name }).FirstOrDefault();
+                (test, dept) => new { dept.Name, test.HISSpecimenName, test.HISTestCodeDescription }).FirstOrDefault();
 
             var reviewTest = new ReviewTest
             {
                 Test = new Test
                 {
+                    MRNo = testResult.Patient.MRNo,
                     Age = testResult.Patient.Age,
                     Gender = testResult.Patient.Gender,
                     Department = departmentname != null ? departmentname.Name : string.Empty,
@@ -439,8 +440,8 @@ namespace LIS.Businesslogic
                     PatientName = testResult.Patient.Name,
                     SampleNo = testResult.SampleNo,
                     HisPatientId = testResult.Patient.HisPatientId,
-                    TestName = testMap == null ? "" : testMap.HISParamDescription,
-                    SpecimenName = testMap == null ? "" : testMap.SpecimenName,
+                    TestName = departmentname.HISTestCodeDescription,
+                    SpecimenName = departmentname.HISSpecimenName,
                     SampleCollectionDate = testResult.SampleCollectionDate,
                     SampleReceivedDate = testResult.SampleReceivedDate,
                     ReportDate = testResult.ResultDate,

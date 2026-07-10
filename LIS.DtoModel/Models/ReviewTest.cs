@@ -14,6 +14,7 @@ namespace LIS.DtoModel.Models
 
     public class Test
     {
+        public string MRNo { get; set; }
         public string HisPatientId { get; set; }
         public long PatientId { get; set; }
         public string PatientName { get; set; }
