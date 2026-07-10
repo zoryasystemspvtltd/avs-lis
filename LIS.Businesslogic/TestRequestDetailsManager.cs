@@ -534,6 +534,7 @@ namespace LIS.Businesslogic
                                   p.HISRequestNo,
                                   p.HISTestName,
                                   p.SampleNo,
+                                  p.SpecimenName,
                                   tq.MRNo,
                                   VisitId = pv != null ? pv.VisitId : tq.VisitId,
                                   tq.Name
@@ -547,6 +548,7 @@ namespace LIS.Businesslogic
                                   PatientName = u.Name,
                                   MRNo = u.MRNo,
                                   VisitId = u.VisitId,
+                                  SpecimenName = u.SpecimenName
                               }).OrderByDescending(p => p.SampleCollectionDate).ToList();
 
             return requestDetails;

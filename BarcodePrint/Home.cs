@@ -57,7 +57,7 @@ namespace BarcodePrint
                     MRNo = item.MRNo,
                     VisitId = item.VisitId,
                     LabNo = item.HISRequestNo,
-                    GroupName = Helper.GetGroupName(item.SampleNo)
+                    SpecimenName = item.SpecimenName
                 };
                 list.Add(br);
             }
@@ -182,7 +182,7 @@ namespace BarcodePrint
                             MRNo = row.Cells["MRNo"].Value == null ? "" : row.Cells["MRNo"].Value.ToString(),
                             VisitId = row.Cells["VisitId"].Value == null ? "" : row.Cells["VisitId"].Value.ToString(),
                             LabNo = row.Cells["LabNo"].Value.ToString(),
-                            GroupName = Helper.GetGroupName(row.Cells["BarcodeNo"].Value.ToString())
+                            SpecimenName = row.Cells["SpecimenName"].Value == null ? "" : row.Cells["SpecimenName"].Value.ToString()
                         };
 
                         barcodePrintList.Add(br);
@@ -240,7 +240,7 @@ namespace BarcodePrint
 
                     barcodeString = barcodeString.Replace("<SAMPLENO>", item.BarcodeNo);
                     barcodeString = barcodeString.Replace("<PATIENTNAME>", item.PatientName);
-                    barcodeString = barcodeString.Replace("<GROUPNAME>", item.GroupName);
+                    barcodeString = barcodeString.Replace("<SPECIMENNAME>", item.SpecimenName);
                     barcodeString = barcodeString.Replace("<MRNO>", item.MRNo);
                     barcodeString = barcodeString.Replace("<COLLECTIONDATE>", item.CollectionDate.ToString("dd MMM yyyy"));
                     barcodeString = barcodeString.Replace("<PATIENTNO>", item.VisitId);
@@ -296,7 +296,7 @@ namespace BarcodePrint
                         MRNo = item.MRNo,
                         VisitId = item.VisitId,
                         LabNo = item.HISRequestNo,
-                        GroupName = Helper.GetGroupName(item.SampleNo)
+                        SpecimenName = item.SpecimenName
                     };
                     list.Add(br);
                 }

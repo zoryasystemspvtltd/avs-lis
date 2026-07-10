@@ -50,10 +50,9 @@ namespace BarcodePrint
             this.PatientName = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.CollectionDate = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.TestName = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.BedNo = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.IPNo = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.SpecimenName = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.MrNo = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.LabNo = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.GroupName = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.MenuStrip1.SuspendLayout();
             this.pMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
@@ -203,10 +202,9 @@ namespace BarcodePrint
             this.PatientName,
             this.CollectionDate,
             this.TestName,
-            this.BedNo,
-            this.IPNo,
-            this.LabNo,
-            this.GroupName});
+            this.SpecimenName,
+            this.MrNo,
+            this.LabNo});
             this.dataGridView1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dataGridView1.Location = new System.Drawing.Point(0, 0);
             this.dataGridView1.Name = "dataGridView1";
@@ -226,7 +224,7 @@ namespace BarcodePrint
             this.BarcodeNo.HeaderText = "Barcode No";
             this.BarcodeNo.Name = "BarcodeNo";
             this.BarcodeNo.ReadOnly = true;
-            this.BarcodeNo.Width = 90;
+            this.BarcodeNo.Width = 150;
             // 
             // PatientName
             // 
@@ -252,37 +250,29 @@ namespace BarcodePrint
             this.TestName.ReadOnly = true;
             this.TestName.Width = 210;
             // 
-            // BedNo
+            // SpecimenName
             // 
-            this.BedNo.DataPropertyName = "BedNo";
-            this.BedNo.HeaderText = "Bed No";
-            this.BedNo.Name = "BedNo";
-            this.BedNo.ReadOnly = true;
-            this.BedNo.Width = 80;
+            this.SpecimenName.DataPropertyName = "SpecimenName";
+            this.SpecimenName.HeaderText = "Specimen";
+            this.SpecimenName.Name = "SpecimenName";
+            this.SpecimenName.ReadOnly = true;
+            this.SpecimenName.Width = 90;
             // 
-            // IPNo
+            // MrNo
             // 
-            this.IPNo.DataPropertyName = "IPNo";
-            this.IPNo.HeaderText = "IP No";
-            this.IPNo.Name = "IPNo";
-            this.IPNo.ReadOnly = true;
-            this.IPNo.Width = 80;
+            this.MrNo.DataPropertyName = "MrNo";
+            this.MrNo.HeaderText = "MR No";
+            this.MrNo.Name = "MrNo";
+            this.MrNo.ReadOnly = true;
+            this.MrNo.Width = 80;
             // 
             // LabNo
             // 
             this.LabNo.DataPropertyName = "LabNo";
-            this.LabNo.HeaderText = "Lab No";
+            this.LabNo.HeaderText = "Invoice No";
             this.LabNo.Name = "LabNo";
             this.LabNo.ReadOnly = true;
-            this.LabNo.Width = 90;
-            // 
-            // GroupName
-            // 
-            this.GroupName.DataPropertyName = "GroupName";
-            this.GroupName.HeaderText = "Group Name";
-            this.GroupName.Name = "GroupName";
-            this.GroupName.ReadOnly = true;
-            this.GroupName.Width = 90;
+            this.LabNo.Width = 120;
             // 
             // Home
             // 
@@ -329,9 +319,8 @@ namespace BarcodePrint
         private System.Windows.Forms.DataGridViewTextBoxColumn PatientName;
         private System.Windows.Forms.DataGridViewTextBoxColumn CollectionDate;
         private System.Windows.Forms.DataGridViewTextBoxColumn TestName;
-        private System.Windows.Forms.DataGridViewTextBoxColumn BedNo;
-        private System.Windows.Forms.DataGridViewTextBoxColumn IPNo;
+        private System.Windows.Forms.DataGridViewTextBoxColumn SpecimenName;
+        private System.Windows.Forms.DataGridViewTextBoxColumn MrNo;
         private System.Windows.Forms.DataGridViewTextBoxColumn LabNo;
-        private System.Windows.Forms.DataGridViewTextBoxColumn GroupName;
     }
 }

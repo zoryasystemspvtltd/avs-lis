@@ -12,6 +12,6 @@ namespace BarcodePrint
         public string MRNo { get; set; }
         public string VisitId { get; set; }
         public string LabNo { get; set; }
-        public string GroupName { get; set; }
+        public string SpecimenName { get; set; }
     }
 }
