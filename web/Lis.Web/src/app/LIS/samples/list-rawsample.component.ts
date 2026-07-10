@@ -29,7 +29,7 @@ export class ListRawSampleComponent implements OnInit {
         heading: 'Barcode No', fieldName: 'sampleNo', sortable: true, width: '12%', type: 'link'
       },
       {
-        heading: 'Lab No', fieldName: 'hisRequestNo', sortable: false, width: '10%', type: 'label'
+        heading: 'Invoice No', fieldName: 'hisRequestNo', sortable: false, width: '10%', type: 'label'
       },
       {
         heading: 'Test Name', fieldName: 'hisTestName',chieldFieldName:'name', sortable: false, width: '14%', type: 'label'
