@@ -1,0 +1,144 @@
+body{
+    background:#eef3f7;
+}
+
+
+.page-card{
+    background:#fff;
+    border:1px solid #f0c36d;
+    border-radius:8px;
+    padding:30px;
+    margin-top:20px;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+}
+
+
+.page-header-title{
+    margin-bottom:20px;
+}
+
+.page-title{
+    color:#0d5672;
+    font-size:22px;
+    font-weight:600;
+    margin:0;
+    padding-bottom:10px;
+}
+
+.single-line{
+    border-top:2px solid #f0c36d;
+}
+
+.section-title{
+    color:#0d5672;
+    font-size:18px;
+    font-weight:600;
+    margin-bottom:20px;
+}
+
+.form-row{
+    margin-bottom:20px;
+}
+
+label{
+    font-weight:600;
+    color:#444;
+}
+
+.value-text{
+    font-size:15px;
+    color:#333;
+    padding-top:7px;
+}
+
+
+
+.permission-table{
+    border:1px solid #f0c36d;
+}
+
+.permission-table thead{
+    background:#0d5672;
+    color:#fff;
+}
+
+.permission-table thead th{
+    color:#fff;
+    text-align:center;
+    vertical-align:middle;
+}
+
+.permission-table tbody td{
+    vertical-align:middle;
+    text-align:center;
+}
+
+.permission-table tbody td:first-child{
+    text-align:left;
+    font-weight:600;
+}
+
+
+
+.status-yes{
+    color:#28a745;
+    font-weight:600;
+}
+
+.status-no{
+    color:#dc3545;
+    font-weight:600;
+}
+
+
+.button-area{
+    margin-top:15px;
+}
+
+.btn{
+    min-width:120px;
+    padding:10px 25px;
+    border-radius:4px;
+    margin-right:10px;
+}
+
+.btn-update{
+    background:#0d5672;
+    color:#fff;
+    border:1px solid #0d5672;
+}
+
+.btn-update:hover{
+    background:#084356;
+    color:#fff;
+}
+
+.btn-cancel{
+    background:#fff;
+    border:1px solid #ccc;
+    color:#333;
+}
+
+.btn-cancel:hover{
+    background:#f5f5f5;
+    text-decoration:none;
+}
+
+hr{
+    border-top:1px solid #ddd;
+}
+
+@media(max-width:768px){
+
+    .page-card{
+        padding:15px;
+    }
+
+    .page-title{
+        font-size:18px;
+    }
+
+    .permission-table{
+        font-size:13px;
+    }
+}

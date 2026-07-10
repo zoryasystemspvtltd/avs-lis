@@ -1,17 +1,153 @@
-.doctor-signature-preview {
-  margin-top: 8px;
+body{
+    background:#eef3f7;
 }
 
-.doctor-designation-field {
-  resize: vertical;
-  min-height: 96px;
+
+.page-card{
+    background:#fff;
+    border:1px solid #f0c36d;
+    border-radius:8px;
+    padding:30px;
+    margin-top:20px;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
 }
 
-.doctor-signature-preview img {
-  max-width: 240px;
-  max-height: 120px;
-  border: 1px solid #d5e3ea;
-  border-radius: 4px;
-  background: #fff;
-  padding: 4px;
+
+.page-header-title{
+    margin-bottom:20px;
+}
+
+.page-title{
+    color:#0d5672;
+    font-size:22px;
+    font-weight:600;
+    margin:0;
+    padding-bottom:10px;
+}
+
+.single-line{
+    border-top:2px solid #f0c36d;
+}
+
+.section-title{
+    color:#0d5672;
+    font-size:18px;
+    font-weight:600;
+    margin-bottom:20px;
+}
+
+.form-row{
+    margin-bottom:20px;
+}
+
+label{
+    font-weight:600;
+    color:#444;
+    margin-top:8px;
+}
+
+.required{
+    color:red;
+}
+
+.form-control{
+    border:1px solid #f0c36d;
+    box-shadow:none;
+}
+
+.form-control:focus{
+    border-color:#0d5672;
+}
+
+.input-group-addon{
+    background:#fafafa;
+    border:1px solid #f0c36d;
+    color:#0d5672;
+}
+
+.error{
+    color:#d9534f;
+    font-size:12px;
+}
+
+.button-area{
+    margin-top:15px;
+}
+
+.btn{
+    min-width:120px;
+    padding:10px 25px;
+    border-radius:4px;
+    margin-right:10px;
+}
+
+.btn-update{
+    background:#0d5672;
+    color:#fff;
+    border:1px solid #0d5672;
+}
+
+.btn-update:hover{
+    background:#084356;
+    color:#fff;
+}
+
+.btn-cancel{
+    background:#fff;
+    border:1px solid #ccc;
+    color:#333;
+}
+
+.btn-cancel:hover{
+    background:#f5f5f5;
+    text-decoration:none;
+}
+
+.roles-box{
+    border:1px solid #f0c36d;
+    border-radius:4px;
+    padding:12px;
+    background:#fafafa;
+    max-height:220px;
+    overflow-y:auto;
+}
+
+.roles-box .checkbox{
+    margin:6px 0;
+}
+
+.doctor-designation-field{
+    resize:vertical;
+    min-height:100px;
+}
+
+.doctor-signature-preview{
+    margin-top:10px;
+}
+
+.doctor-signature-preview img{
+    max-width:220px;
+    border:1px solid #ddd;
+    border-radius:4px;
+    padding:4px;
+    background:#fff;
+}
+
+hr{
+    border-top:1px solid #ddd;
+}
+
+@media(max-width:768px){
+
+    .page-card{
+        padding:15px;
+    }
+
+    .page-title{
+        font-size:18px;
+    }
+
+    .roles-box{
+        max-height:none;
+    }
 }

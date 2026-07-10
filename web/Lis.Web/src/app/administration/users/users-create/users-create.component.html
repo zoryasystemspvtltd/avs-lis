@@ -1,137 +1,248 @@
-<div class="row" *ngIf="isLoaded">
-    <div class="col-sm-12 col-md-12 col-lg-12">
-        <form [formGroup]="addUserForm" (ngSubmit)="onSubmit()">
-            <h3>Add User</h3>
-            <div *ngIf="!emailConfirmed" class="alert alert-danger">
-                Once user is created, the account will be set with default password.
-                <br>Users are suggested to change the password at their first login.
-                <br>By changing password, you help make sure that only you can use your account.
-            </div>
-            <p>
-                Default password : <span class="alert-success">Admin@123</span> 
-            </p>
-            <hr />
-            <div class="row">
-                <div class="col-sm-12 col-md-12 col-lg-12">
-                    <div class="form-group">
-                        <div>
-                            <h3>Account Information</h3>
-                            <div class="row">
-                                <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label> First Name<span
-                                            class="error">*</span></label></div>
-                                <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
-                                    <div class="input-group">
-                                        <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
-                                        <input [type]="'text'" class="firstName form-control"
-                                            placeholder="Enter First Name" maxlength="25" style="width:100%;"
-                                            formControlName="first_name">
-                                    </div>
-                                    <span *ngIf="isInValid('first_name')" class="error ">First Name is required.</span>
-                                </div>
-                                <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Last Name<span
-                                            class="error">*</span></label></div>
-                                <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
-                                    <div class="input-group">
-                                        <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
-                                        <input [type]="'text'" class="form-control lastName" formControlName="last_name"
-                                            placeholder="Enter Last Name" maxlength="20">
-                                    </div>
-                                    <span *ngIf="isInValid('last_name')" class="error ">Last Name is required.</span>
-                                </div>
+<div class="container-fluid" *ngIf="isLoaded">
+    <div class="row">
+        <div class="col-md-12">
+
+            <div class="page-card">
+
+                <form [formGroup]="addUserForm" (ngSubmit)="onSubmit()">
+
+             
+                    <div class="page-header-title">
+                        <h2 class="page-title">Add User</h2>
+                        <div class="single-line"></div>
+                    </div>
+
+                    <div *ngIf="!emailConfirmed" class="alert alert-danger">
+                        Once user is created, the account will be set with default password.
+                        <br>
+                        Users are suggested to change the password at their first login.
+                        <br>
+                        By changing password, you help make sure that only you can use your account.
+                    </div>
+
+                    <div class="alert alert-info">
+                        <strong>Default Password :</strong> Admin@123
+                    </div>
+
+                    <h3 class="section-title">Account Information</h3>
+
+                
+                    <div class="row form-row">
+
+                        <div class="col-md-2">
+                            <label>First Name <span class="required">*</span></label>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="input-group">
+                                <span class="input-group-addon">
+                                    <i class="glyphicon glyphicon-user"></i>
+                                </span>
+                                <input type="text"
+                                    class="form-control"
+                                    formControlName="first_name"
+                                    placeholder="Enter First Name"
+                                    maxlength="25">
                             </div>
-                            <br />
-                            <div class="row">
-                                <div class="col-lg-2 col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Email<span
-                                            class="error">*</span></label></div>
-                                <div class="col-lg-4 col-sm-4 col-md-4 col-lg-4 form-grid-stye">
-                                    <div class="input-group">
-                                        <span class="input-group-addon"><i
-                                                class="glyphicon glyphicon-envelope"></i></span>
-                                        <input [type]="'email'" class="form-control email" formControlName="email"
-                                            placeholder="Enter Email" />
-                                    </div>
-                                    <span *ngIf="isInValid('email')" class="error ">Email Name is required.</span>
-                                    <span *ngIf="isInValidEmail('email')" class="error ">Invalid email.</span>
-                                </div>
-                                <div class="col-lg-2 col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Phone
-                                        Number</label></div>
-                                <div class="col-lg-4 col-sm-4 col-md-4 col-lg-4 form-grid-stye">
-                                    <div class="input-group">
-                                        <span class="input-group-addon"><i
-                                                class="glyphicon glyphicon-phone-alt"></i></span>
-                                        <input [type]="'text'" class="form-control" maxlength="15"
-                                            formControlName="phone_number" ui-mask="(9?9?9?) 9?9?9?-9?9?9?9?"
-                                            placeholder="(___) ___-____" ui-mask-placeholder-char="-">
-                                    </div>
-                                </div>
+
+                            <span class="error" *ngIf="isInValid('first_name')">
+                                First Name is required.
+                            </span>
+                        </div>
+
+                        <div class="col-md-2">
+                            <label>Last Name <span class="required">*</span></label>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="input-group">
+                                <span class="input-group-addon">
+                                    <i class="glyphicon glyphicon-user"></i>
+                                </span>
+
+                                <input type="text"
+                                    class="form-control"
+                                    formControlName="last_name"
+                                    placeholder="Enter Last Name"
+                                    maxlength="20">
                             </div>
-                            <br />
-                            <div class="row" *ngIf="isDoctorRoleSelected()">
-                                <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Doctor Designation<span
-                                            class="error">*</span></label></div>
-                                <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
-                                    <textarea class="form-control doctor-designation-field" rows="4"
-                                        formControlName="doctor_designation"
-                                        placeholder="e.g. Consultant Pathologist" maxlength="100"></textarea>
-                                    <span *ngIf="isInValid('doctor_designation')" class="error">Doctor designation is required.</span>
-                                    <span *ngIf="isInValidMaxLength('doctor_designation')" class="error">Doctor designation must not exceed 100 characters.</span>
-                                </div>
-                                <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Doctor Signature<span
-                                            class="error">*</span></label></div>
-                                <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
-                                    <input type="file" class="form-control" accept=".png,.jpg,.jpeg,image/png,image/jpeg"
-                                        (change)="onSignatureSelected($event)">
-                                    <span class="help-block">PNG or JPG, maximum 2 MB.</span>
-                                    <span *ngIf="signatureError" class="error">{{signatureError}}</span>
-                                    <div *ngIf="signaturePreviewUrl" class="doctor-signature-preview">
-                                        <img [src]="signaturePreviewUrl" alt="Doctor signature preview">
-                                    </div>
-                                </div>
+
+                            <span class="error" *ngIf="isInValid('last_name')">
+                                Last Name is required.
+                            </span>
+                        </div>
+
+                    </div>
+
+               
+                    <div class="row form-row">
+
+                        <div class="col-md-2">
+                            <label>Email <span class="required">*</span></label>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="input-group">
+                                <span class="input-group-addon">
+                                    <i class="glyphicon glyphicon-envelope"></i>
+                                </span>
+
+                                <input type="email"
+                                    class="form-control"
+                                    formControlName="email"
+                                    placeholder="Enter Email">
                             </div>
-                            <br *ngIf="isDoctorRoleSelected()" />
-                            <div class="row">
-                                
-                                <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Roles</label> </div>
-                                <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
-                                    <div class="input-group">
-                                        <span class="input-group-addon"><i
-                                                class="glyphicon glyphicon-plus-sign"></i></span>
-                                        <table class="form-control" style="height: 100%;">
-                                            <tr *ngFor="let role of item.roles" >
-                                                <td>
-                                                    <input [type]="'checkbox'" id="{{'c_'+role.id}}" name="user_role"
-                                                    [checked]="role.isInRole" attr.data-id="{{role.id}}" (change)="onCheckRole($event)" /> &nbsp;
-                                                    <label for="c_{{role.id}}">{{role.name}}</label>
-                                                </td>
-                                            </tr>
-                                        </table>
-                                    </div>
+
+                            <span class="error" *ngIf="isInValid('email')">
+                                Email is required.
+                            </span>
+
+                            <span class="error" *ngIf="isInValidEmail('email')">
+                                Invalid Email.
+                            </span>
+                        </div>
+
+                        <div class="col-md-2">
+                            <label>Phone Number</label>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="input-group">
+                                <span class="input-group-addon">
+                                    <i class="glyphicon glyphicon-phone-alt"></i>
+                                </span>
+
+                                <input type="text"
+                                    class="form-control"
+                                    formControlName="phone_number"
+                                    maxlength="15"
+                                    ui-mask="(9?9?9?) 9?9?9?-9?9?9?9?"
+                                    placeholder="(___) ___-____"
+                                    ui-mask-placeholder-char="-">
+                            </div>
+                        </div>
+
+                    </div>
+
+            
+                    <div class="row form-row" *ngIf="isDoctorRoleSelected()">
+
+                        <div class="col-md-2">
+                            <label>Doctor Designation <span class="required">*</span></label>
+                        </div>
+
+                        <div class="col-md-4">
+
+                            <textarea class="form-control doctor-designation-field"
+                                rows="4"
+                                formControlName="doctor_designation"
+                                placeholder="Consultant Pathologist"
+                                maxlength="100"></textarea>
+
+                            <span class="error" *ngIf="isInValid('doctor_designation')">
+                                Doctor designation is required.
+                            </span>
+
+                            <span class="error" *ngIf="isInValidMaxLength('doctor_designation')">
+                                Maximum 100 characters.
+                            </span>
+
+                        </div>
+
+                        <div class="col-md-2">
+                            <label>Doctor Signature <span class="required">*</span></label>
+                        </div>
+
+                        <div class="col-md-4">
+
+                            <input type="file"
+                                class="form-control"
+                                accept=".png,.jpg,.jpeg,image/png,image/jpeg"
+                                (change)="onSignatureSelected($event)">
+
+                            <small class="help-block">
+                                PNG/JPG, Maximum 2 MB
+                            </small>
+
+                            <span class="error" *ngIf="signatureError">
+                                {{signatureError}}
+                            </span>
+
+                            <div *ngIf="signaturePreviewUrl"
+                                class="doctor-signature-preview">
+
+                                <img [src]="signaturePreviewUrl">
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+              
+                    <div class="row form-row">
+
+                        <div class="col-md-2">
+                            <label>Roles</label>
+                        </div>
+
+                        <div class="col-md-10">
+
+                            <div class="roles-box">
+
+                                <div class="checkbox"
+                                    *ngFor="let role of item.roles">
+
+                                    <label>
+
+                                        <input type="checkbox"
+                                            id="{{'c_'+role.id}}"
+                                            [checked]="role.isInRole"
+                                            attr.data-id="{{role.id}}"
+                                            (change)="onCheckRole($event)">
+
+                                        {{role.name}}
+
+                                    </label>
 
                                 </div>
+
                             </div>
-                            
+
                         </div>
+
                     </div>
-                </div>
-            </div>
- 
-            <div class="row">
-                <div class="col-sm-12 col-md-12 col-lg-12">
+
                     <alert></alert>
-                </div>
-            </div>
-            <hr />
-            <div class="row">
-                <div class="col-sm-12 col-md-12 col-lg-12">
-                    <div style="float:left;">
-                        <button type="submit" class="btn btn-primary"
-                            *ngIf="hasAccess()">Save</button>
+
+                    <hr>
+
+                    <!-- Buttons -->
+                    <div class="button-area">
+
+                        <button
+                            type="submit"
+                            class="btn btn-update"
+                            *ngIf="hasAccess()">
+
+                            Save
+
+                        </button>
+
+                        <a
+                            [routerLink]="['/','users']"
+                            class="btn btn-cancel">
+
+                            Back
+
+                        </a>
+
                     </div>
-                    <div style="padding-left:6px; float:left;">
-                        <a [routerLink]="['/','users']" class="btn btn-default btn-default-alternet">Back to List</a>
-                    </div>
-                </div>
+
+                </form>
+
             </div>
-        </form>
+
+        </div>
     </div>
 </div>

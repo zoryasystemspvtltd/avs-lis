@@ -1,36 +1,90 @@
-<br>
-<h3>Add Role</h3>
-<br>
-<form [formGroup]="addRoleForm" (ngSubmit)="onSubmit()" *ngIf="isLoaded">
-    <div class="form-group">
-        <div class="row">
-            <div class="col-sm-2 col-md-2 col-lg-2"><label> Role Name<span class="error">*</span></label></div>
-            <div class="col-sm-4 col-md-4 col-lg-4">
-                <div class="input-group">
-                    <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
-                    <input [type]="'text'" name="name" class="form-control" formControlName="name"
-                        placeholder="Enter Role Name" maxlength="25" style="width:100%;" />
-                </div>
-                <span *ngIf="isInValid('name')" class="error ">Role Name is required.</span>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-sm-12 col-md-12 col-lg-12">
-                <alert></alert>
-            </div>
-        </div>
-        <hr>
-        <div class="row">
-            <div class="col-sm-12 col-md-12 col-lg-12">
-                <div style="float:left;">
-                    <button type="submit" class="btn btn-primary" *ngIf="hasAccess()">Save & Next</button>
-                </div>
-                <div style="padding-left:6px; float:left;">
-                    <a [routerLink]="['/','roles']" class="btn btn-default btn-default-alternet">Back to
-                        List</a>
-                </div>
-            </div>
-        </div>
+<div class="container-fluid" *ngIf="isLoaded">
+    <div class="row">
+        <div class="col-md-12">
 
+            <div class="page-card">
+
+                <form [formGroup]="addRoleForm" (ngSubmit)="onSubmit()">
+
+                 
+                    <div class="page-header-title">
+                        <h2 class="page-title">Add Role</h2>
+                        <div class="single-line"></div>
+                    </div>
+
+                    <h3 class="section-title">
+                        Role Information
+                    </h3>
+
+              
+                    <div class="row form-row">
+
+                        <div class="col-md-2">
+                            <label>
+                                Role Name
+                                <span class="required">*</span>
+                            </label>
+                        </div>
+
+                        <div class="col-md-4">
+
+                            <div class="input-group">
+
+                                <span class="input-group-addon">
+                                    <i class="glyphicon glyphicon-user"></i>
+                                </span>
+
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    formControlName="name"
+                                    placeholder="Enter Role Name"
+                                    maxlength="25">
+
+                            </div>
+
+                            <span
+                                class="error"
+                                *ngIf="isInValid('name')">
+
+                                Role Name is required.
+
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                    <alert></alert>
+
+                    <hr>
+
+                    <!-- Buttons -->
+                    <div class="button-area">
+
+                        <button
+                            type="submit"
+                            class="btn btn-update"
+                            *ngIf="hasAccess()">
+
+                            Save &amp; Next
+
+                        </button>
+
+                        <a
+                            [routerLink]="['/','roles']"
+                            class="btn btn-cancel">
+
+                            Back to List
+
+                        </a>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
     </div>
-</form>
+</div>

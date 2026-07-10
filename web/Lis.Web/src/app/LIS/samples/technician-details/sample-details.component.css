@@ -1,0 +1,228 @@
+body{
+    background:#eef3f7;
+}
+
+
+
+.page-card{
+
+    background:#fff;
+
+    border:1px solid #f0c36d;
+
+    border-radius:8px;
+
+    padding:25px 30px;
+
+    margin-top:20px;
+
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+
+}
+
+
+
+
+
+
+.page-header-title{
+
+    margin-bottom:20px;
+
+}
+
+
+.page-title{
+
+    color:#0d5672;
+
+    font-size:22px;
+
+    font-weight:600;
+
+    margin:0;
+
+    padding-bottom:10px;
+
+}
+
+
+
+
+
+.single-line{
+
+    border-top:2px solid #f0c36d;
+
+    margin-top:5px;
+
+}
+
+
+
+
+
+
+.detail-row{
+
+    margin-bottom:15px;
+
+}
+
+
+label{
+
+    font-weight:600;
+
+    color:#333;
+
+}
+
+
+
+
+
+/* Separator */
+
+hr{
+
+    border-top:1px solid #ddd;
+
+    margin:20px 0;
+
+}
+
+
+
+
+
+
+
+.panel{
+
+    border:1px solid #f0c36d;
+
+}
+
+
+.panel-heading{
+
+    background:#eaf3f7!important;
+
+    border-bottom:2px solid #f0c36d;
+
+}
+
+
+
+.panel-title{
+
+    color:#0d5672;
+
+    font-weight:600;
+
+}
+
+
+
+
+
+
+
+
+.table thead th{
+
+    background:#eaf3f7;
+
+    color:#0d5672;
+
+    border-bottom:2px solid #f0c36d;
+
+}
+
+
+
+
+
+
+
+
+textarea{
+
+    width:100%;
+
+    border:1px solid #f0c36d;
+
+    border-radius:4px;
+
+    padding:10px;
+
+    margin-top:10px;
+
+}
+
+
+
+
+
+
+
+.button-area{
+
+    margin-top:20px;
+
+}
+
+
+
+.btn{
+
+    padding:9px 18px;
+
+    margin-right:8px;
+
+    border-radius:4px;
+
+}
+
+
+
+.btn-primary{
+
+    background:#0d5672;
+
+    border-color:#0d5672;
+
+}
+
+
+
+.btn-primary:hover{
+
+    background:#084356;
+
+}
+
+
+
+.btn-default{
+
+    background:#fff;
+
+    border:1px solid #ccc;
+
+}
+
+
+
+
+
+@media(max-width:768px){
+
+    .page-card{
+
+        padding:15px;
+
+    }
+
+}

@@ -30,43 +30,125 @@
     </ul>
     <br *ngIf="apiName === 'PatientMaster'" />
 
-    <ng-container *ngIf="apiName !== 'PatientMaster' || !id || patientMasterTab === 'details'">
-    <ng-container *ngFor="let field of visibleFields()">
-      <div class="row" *ngIf="field.type !== 'checkbox'">
-        <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye">
-          <label>{{field.label}}<span class="error" *ngIf="field.required">*</span>
-            <span *ngIf="field.help" class="glyphicon glyphicon-info-sign field-help-icon" [attr.title]="field.help"></span>
-          </label>
-        </div>
-        <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
-          <select *ngIf="isUnitOrMethodDropdown(field)" class="form-control" [formControlName]="field.name">
-            <option value="">-- Select {{field.label}} --</option>
-            <option *ngFor="let opt of unitMethodOptions(field.name)" [ngValue]="opt.name || opt.Name">{{opt.name || opt.Name}}</option>
-          </select>
-          <div class="input-group" *ngIf="field.type !== 'select' && !isUnitOrMethodDropdown(field)">
-            <span class="input-group-addon"><i class="glyphicon glyphicon-pencil"></i></span>
-            <input *ngIf="field.type === 'text' || field.type === 'number' || field.type === 'date'"
-              [type]="field.type === 'number' ? 'number' : (field.type === 'date' ? 'date' : 'text')"
-              class="form-control" [formControlName]="field.name"
-              [readonly]="isFieldReadonly(field)"
-              [attr.placeholder]="apiName === 'PatientMaster' && field.name === 'hisPatientId' && !id ? 'Assigned automatically on save' : null"
-              (change)="field.name === 'dateOfBirth' && apiName === 'PatientMaster' ? onPatientDobChange() : null"
-              (input)="field.name === 'age' && apiName === 'PatientMaster' ? onPatientAgeChange() : null" />
-          </div>
-          <select *ngIf="field.type === 'select' && !isUnitOrMethodDropdown(field)" class="form-control" [formControlName]="field.name">
-            <option *ngFor="let opt of field.options" [ngValue]="opt.value">{{opt.label}}</option>
-          </select>
-          <span *ngIf="submitted && f[field.name]?.invalid" class="error">{{field.label}} is required.</span>
-        </div>
-      </div>
-      <div class="row" *ngIf="field.type === 'checkbox'">
-        <div class="col-sm-12 form-grid-stye">
-          <label><input type="checkbox" [formControlName]="field.name" /> {{field.label}}</label>
-        </div>
-      </div>
-      <br *ngIf="field.type !== 'checkbox'" />
-    </ng-container>
-    </ng-container>
+   
+  
+<ng-container *ngIf="apiName === 'PatientMaster' && (!id || patientMasterTab === 'details')">
+
+
+  <div class="row">
+    <div class="col-sm-6 form-grid-stye">
+      <label>MR Number</label>
+      <input class="form-control"
+             formControlName="mrNo">
+    </div>
+
+    <div class="col-sm-6 form-grid-stye">
+      <label>Patient Number</label>
+      <input class="form-control"
+             formControlName="hisPatientId"
+             readonly
+             placeholder="Assigned automatically on save">
+    </div>
+  </div>
+
+  <br>
+
+  <div class="row">
+    <div class="col-sm-6 form-grid-stye">
+      <label>Visit ID</label>
+      <input class="form-control"
+             formControlName="visitId"
+             readonly>
+    </div>
+
+    <div class="col-sm-6 form-grid-stye">
+    </div>
+  </div>
+
+  <br>
+
+
+  <div class="row">
+    <div class="col-sm-6 form-grid-stye">
+      <label>Salutation</label>
+      <input class="form-control"
+             formControlName="salutation">
+    </div>
+
+    <div class="col-sm-6 form-grid-stye">
+      <label>Patient Name</label>
+      <input class="form-control"
+             formControlName="patientName">
+    </div>
+  </div>
+
+  <br>
+
+
+  <div class="row">
+    <div class="col-sm-6 form-grid-stye">
+      <label>Gender</label>
+      <select class="form-control"
+              formControlName="gender">
+        <option value="">-- Select Gender --</option>
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+
+    <div class="col-sm-6 form-grid-stye">
+      <label>Phone Number</label>
+      <input class="form-control"
+             formControlName="phoneNumber">
+    </div>
+  </div>
+
+  <br>
+
+ 
+  <div class="row">
+    <div class="col-sm-6 form-grid-stye">
+      <label>Age</label>
+      <input type="number"
+             class="form-control"
+             formControlName="age"
+             (input)="onPatientAgeChange()">
+    </div>
+
+    <div class="col-sm-6 form-grid-stye">
+      <label>Date Of Birth</label>
+      <input type="date"
+             class="form-control"
+             formControlName="dateOfBirth"
+             (change)="onPatientDobChange()">
+    </div>
+  </div>
+
+  <br>
+
+  
+  <div class="row">
+    <div class="col-sm-12 form-grid-stye">
+      <label>Address</label>
+      <input class="form-control"
+             formControlName="address">
+    </div>
+  </div>
+
+</ng-container>
+
+
+
+<ng-container *ngIf="apiName !== 'PatientMaster'">
+
+  <ng-container *ngFor="let field of visibleFields()">
+
+
+
+  </ng-container>
+
+</ng-container>
 
     <div *ngIf="apiName === 'PatientMaster' && id && patientMasterTab === 'visits'" class="visit-history-panel">
       <p *ngIf="visitHistoryLoading" class="text-muted">Loading visit history...</p>

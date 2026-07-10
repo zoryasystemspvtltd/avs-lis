@@ -1,60 +1,227 @@
-<div class="row" *ngIf="isLoaded">
-    <div class="col-sm-12 col-md-12 col-lg-12">
-        <h3>Test Details</h3>
-        <hr />
-        <div class="row">
-            <div class="col-sm-12 col-md-12 col-lg-12">
-               
-                    <div class="row">
-                        <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Test Code</label></div>
-                        <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
-                            <p>{{item.hisTestCode}}</p>
-                        </div>
-                        <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Test Name</label></div>
-                        <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
-                            <p>{{item.hisTestCodeDescription}}</p>
-                        </div>
-                    </div>
+<div class="container-fluid" *ngIf="isLoaded">
 
-                    <div class="row">
-                        <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Specimen</label></div>
-                        <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
-                            <p>{{item.hisSpecimenName}}</p>
-                        </div>
-                        <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Department</label></div>
-                        <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
-                            <p>{{item.departmentName || item.department?.name || item.departmentCode}}</p>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Status</label></div>
-                        <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
-                            <p>{{item.isActive ? 'Active' : 'Inactive'}}</p>
-                        </div>
-                    </div>
-            </div>
-        </div>
+    <div class="row">
 
-        <div class="row">
-            <div class="col-sm-12 col-md-12 col-lg-12">
-                <alert></alert>
-            </div>
-        </div>
-        <hr />
-        <div class="row">
-            <div class="col-sm-12 col-md-12 col-lg-12">
-                <div>
-                    <button class="btn btn-warning" (click)="router.navigate(['/test-master/edit', item.id])">
-                        <i class="glyphicon glyphicon-pencil"></i> Edit
-                    </button>
-                    &nbsp;
-                    <button class="btn btn-danger" (click)="deleteTest()">
-                        <i class="glyphicon glyphicon-trash"></i> Delete
-                    </button>
-                    &nbsp;
-                    <button class="btn btn-default" (click)="router.navigate(['/test-master'])">Back</button>
+        <div class="col-md-12">
+
+
+            <div class="page-card">
+
+
+                <!-- Header -->
+
+                <div class="page-header-title">
+
+                    <h2 class="page-title">
+                        Test Details
+                    </h2>
+
+                    <div class="single-line"></div>
+
                 </div>
+
+
+
+
+                <!-- Details -->
+
+
+                <div class="row detail-row">
+
+
+                    <div class="col-md-2">
+
+                        <label>
+                            Test Code
+                        </label>
+
+                    </div>
+
+
+                    <div class="col-md-4">
+
+                        <p>
+                            {{item.hisTestCode}}
+                        </p>
+
+                    </div>
+
+
+
+
+                    <div class="col-md-2">
+
+                        <label>
+                            Test Name
+                        </label>
+
+                    </div>
+
+
+                    <div class="col-md-4">
+
+                        <p>
+                            {{item.hisTestCodeDescription}}
+                        </p>
+
+                    </div>
+
+
+                </div>
+
+
+
+
+
+                <div class="row detail-row">
+
+
+                    <div class="col-md-2">
+
+                        <label>
+                            Specimen
+                        </label>
+
+                    </div>
+
+
+                    <div class="col-md-4">
+
+                        <p>
+                            {{item.hisSpecimenName}}
+                        </p>
+
+                    </div>
+
+
+
+
+
+                    <div class="col-md-2">
+
+                        <label>
+                            Department
+                        </label>
+
+                    </div>
+
+
+                    <div class="col-md-4">
+
+                        <p>
+                            {{item.departmentName || item.department?.name || item.departmentCode}}
+                        </p>
+
+                    </div>
+
+
+                </div>
+
+
+
+
+
+                <div class="row detail-row">
+
+
+                    <div class="col-md-2">
+
+                        <label>
+                            Status
+                        </label>
+
+                    </div>
+
+
+                    <div class="col-md-4">
+
+                        <p>
+                            {{item.isActive ? 'Active' : 'Inactive'}}
+                        </p>
+
+                    </div>
+
+
+                </div>
+
+
+
+
+
+                <alert></alert>
+
+
+
+
+
+                <hr>
+
+
+
+
+                <!-- Buttons -->
+
+
+                <div class="button-area">
+
+
+                    <button
+                        class="btn btn-edit"
+                        (click)="router.navigate(['/test-master/edit', item.id])">
+
+
+                        <i class="glyphicon glyphicon-pencil"></i>
+
+                        Edit
+
+
+                    </button>
+
+
+
+
+
+                    <button
+                        class="btn btn-delete"
+                        (click)="deleteTest()">
+
+
+
+                        <i class="glyphicon glyphicon-trash"></i>
+
+                        Delete
+
+
+                    </button>
+
+
+
+
+
+                    <button
+                        class="btn btn-back"
+                        (click)="router.navigate(['/test-master'])">
+
+
+                        Back
+
+
+                    </button>
+
+
+
+                </div>
+
+
+
+
             </div>
+
+
         </div>
+
+
     </div>
+
+
 </div>
