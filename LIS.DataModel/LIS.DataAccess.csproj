@@ -119,6 +119,10 @@
       <DependentUpon>202607081802343_SchemaModelSync.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\202607091200000_PatientVisitManagement.cs" />
+    <Compile Include="Migrations\202607100420024_fixed.cs" />
+    <Compile Include="Migrations\202607100420024_fixed.Designer.cs">
+      <DependentUpon>202607100420024_fixed.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repo\IGenericRepository.cs" />
@@ -188,6 +192,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202607081802343_SchemaModelSync.resx">
       <DependentUpon>202607081802343_SchemaModelSync.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202607100420024_fixed.resx">
+      <DependentUpon>202607100420024_fixed.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
