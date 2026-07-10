@@ -3,22 +3,13 @@
     background: #eef2f4;
 }
 
-.container-main.qcontent {
-    min-height: calc(100vh - var(--zorya-header-h));
-    padding: 15px;
-    background: #eef2f4;
-    transition: margin-left .3s ease;
-}
-
 .avilis-page-body {
     width: 100%;
 }
 
-
 .content-with-sidebar {
-    margin-left: 270px;   
+    margin-left: 270px;
 }
-
 
 .container-main.qcontent:not(.content-with-sidebar) {
     margin-left: 0;
