@@ -6,7 +6,7 @@ import { AlertService } from '../../_services/alert.service';
 @Component({
   selector: 'app-radiology-report-print',
   templateUrl: './radiology-report-print.component.html',
-  styleUrls: ['../reports.shared.css', './radiology-report-print.component.css']
+  styleUrls: ['../reports.shared.css']
 })
 export class RadiologyReportPrintComponent implements OnInit, OnDestroy {
   readonly pageTitle = 'Radiology Report';

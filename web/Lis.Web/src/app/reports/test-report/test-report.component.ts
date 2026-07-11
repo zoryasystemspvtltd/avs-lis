@@ -12,7 +12,7 @@ export interface LabNoOption {
 @Component({
   selector: 'app-test-report',
   templateUrl: './test-report.component.html',
-  styleUrls: ['../reports.shared.css', './test-report.component.css']
+  styleUrls: ['../reports.shared.css']
 })
 export class TestReportComponent implements OnInit, OnDestroy {
   readonly pageTitle = 'Diagnostic Report';
