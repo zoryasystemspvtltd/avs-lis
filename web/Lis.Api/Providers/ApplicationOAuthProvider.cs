@@ -62,6 +62,14 @@ namespace Lis.Api.Providers
             var clientID = Appid.FirstOrDefault();
 
             oAuthIdentity.AddClaim(new Claim("modulePermisions", user.GetModulePermission(dbContext, clientID)));
+            try
+            {
+                oAuthIdentity.AddClaim(new Claim("menuPermissions", user.GetMenuPermission(dbContext, clientID) ?? "[]"));
+            }
+            catch
+            {
+                oAuthIdentity.AddClaim(new Claim("menuPermissions", "[]"));
+            }
 
             client = authRepository.FindClient(clientID);
 

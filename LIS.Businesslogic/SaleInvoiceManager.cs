@@ -20,6 +20,9 @@ namespace LIS.BusinessLogic
         private readonly ModuleRepo<HisTestMaster> testRepo;
         private readonly ModuleRepo<Departments> departmentRepo;
         private readonly ModuleRepo<TestRateMaster> rateRepo;
+        private readonly ModuleRepo<TestParameter> parameterRepo;
+        private readonly ModuleRepo<HISParameterMaster> hisParameterRepo;
+        private readonly ModuleRepo<TestParameterMappingMaster> testParameterMappingRepo;
         private readonly ITestRateMasterManager rateManager;
         private readonly ITestProfileMasterManager profileManager;
         private readonly PatientVisitManager patientVisitManager;
@@ -50,6 +53,9 @@ namespace LIS.BusinessLogic
             testRepo = new ModuleRepo<HisTestMaster>(logger, identity, unitOfWork);
             departmentRepo = new ModuleRepo<Departments>(logger, identity, unitOfWork);
             rateRepo = new ModuleRepo<TestRateMaster>(logger, identity, unitOfWork);
+            parameterRepo = new ModuleRepo<TestParameter>(logger, identity, unitOfWork);
+            hisParameterRepo = new ModuleRepo<HISParameterMaster>(logger, identity, unitOfWork);
+            testParameterMappingRepo = new ModuleRepo<TestParameterMappingMaster>(logger, identity, unitOfWork);
             processingRouter = new DepartmentProcessingRouter(departmentRepo);
         }
 
@@ -941,6 +947,7 @@ namespace LIS.BusinessLogic
                     testRequestRepo.Update(request);
                 }
 
+                SeedTestParameters(request);
                 return request;
             }
 
@@ -979,7 +986,87 @@ namespace LIS.BusinessLogic
             };
             ApplyTestDepartment(request, test);
             request.Id = testRequestRepo.Add(request);
+            SeedTestParameters(request);
             return request;
+        }
+
+        /// <summary>
+        /// Mirrors PatientDetailManager / TestRequestDetailsManager: persist parameter rows
+        /// from TestParameterMappingMaster (preferred) or legacy HISParameterMaster by test code.
+        /// </summary>
+        private void SeedTestParameters(TestRequestDetail request)
+        {
+            if (request == null || request.Id <= 0 || string.IsNullOrWhiteSpace(request.HISTestCode))
+            {
+                return;
+            }
+
+            if (parameterRepo.Get(p => p.TestRequestDetailsId == request.Id).Any())
+            {
+                return;
+            }
+
+            var testCode = request.HISTestCode.Trim();
+            var seeded = false;
+            var hisTest = testRepo.Get(t =>
+                    t.HISTestCode != null
+                    && t.HISTestCode.Equals(testCode, StringComparison.OrdinalIgnoreCase))
+                .FirstOrDefault();
+
+            if (hisTest != null)
+            {
+                var mappings = testParameterMappingRepo
+                    .Get(m => m.IsActive && m.HisTestId == hisTest.Id)
+                    .ToList();
+
+                foreach (var map in mappings)
+                {
+                    var param = hisParameterRepo.Get(map.HisParameterId);
+                    if (param == null || string.IsNullOrWhiteSpace(param.HISParamCode))
+                    {
+                        continue;
+                    }
+
+                    parameterRepo.Add(new TestParameter
+                    {
+                        HISParamCode = param.HISParamCode,
+                        HISParamName = param.HISParamDescription,
+                        HISTestCode = testCode,
+                        TestRequestDetailsId = request.Id,
+                        CreatedBy = identity?.ActivityMember,
+                        CreatedOn = DateTime.UtcNow
+                    });
+                    seeded = true;
+                }
+            }
+
+            if (seeded)
+            {
+                return;
+            }
+
+            var legacy = hisParameterRepo
+                .Get(p => p.HISTestCode != null
+                    && p.HISTestCode.Equals(testCode, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            foreach (var param in legacy)
+            {
+                if (string.IsNullOrWhiteSpace(param.HISParamCode))
+                {
+                    continue;
+                }
+
+                parameterRepo.Add(new TestParameter
+                {
+                    HISParamCode = param.HISParamCode,
+                    HISParamName = param.HISParamDescription,
+                    HISTestCode = testCode,
+                    TestRequestDetailsId = request.Id,
+                    CreatedBy = identity?.ActivityMember,
+                    CreatedOn = DateTime.UtcNow
+                });
+            }
         }
 
         private void EnsureRadiologyRequest(SaleInvoice invoice, HisTestMaster test, string requestNo, DateTime now)

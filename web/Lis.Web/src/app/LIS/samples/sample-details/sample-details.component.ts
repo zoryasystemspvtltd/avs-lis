@@ -37,9 +37,20 @@ export class RawSampleDetailsComponent implements OnInit {
   getItemDetails(id: number) {
     this.sampleService.getSample(id)
       .subscribe(response => {
-        this.item = response;
-        this.item.patient.gender = this.getGender(this.item.patient.gender);
+        this.item = response || {};
+        if (!this.item.parameters) {
+          this.item.parameters = [];
+        }
+        if (this.item.patient) {
+          this.item.patient.gender = this.getGender(this.item.patient.gender);
+        }
+        if (!this.item.barcodeText) {
+          this.item.barcodeText = this.sampleService.buildBarcodeAnnotation(this.item);
+        }
         this.isLoaded = true;
+      }, () => {
+        this.isLoaded = true;
+        this.alertService.error('Unable to load sample details.');
       });
   }
   getGender(gender: any): string {
@@ -82,5 +93,27 @@ export class RawSampleDetailsComponent implements OnInit {
           this.message = (message != "") ? message : 'Data not saved.';
           this.alertService.error(this.message);
         });
+  }
+
+  printBarcode() {
+    const section = document.getElementById('print-section');
+    if (!section) {
+      this.alertService.error('Barcode is not ready to print.');
+      return;
+    }
+    const popup = window.open('', '_blank', 'top=0,left=0,width=480,height=360');
+    if (!popup) {
+      this.alertService.error('Popup blocked. Allow popups to print barcode.');
+      return;
+    }
+    popup.document.open();
+    popup.document.write(
+      '<html><head><title>Print Barcode</title>' +
+      '<style>body{margin:8px;font-family:Arial,Helvetica,sans-serif;} @media print{body{margin:0;}}</style>' +
+      '</head><body>' + section.innerHTML +
+      '<script>window.onload=function(){window.focus();window.print();}</script>' +
+      '</body></html>'
+    );
+    popup.document.close();
   }
 }

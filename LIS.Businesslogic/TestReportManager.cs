@@ -428,13 +428,14 @@ namespace LIS.BusinessLogic
             }
             else if (matchedRange != null)
             {
-                if (matchedRange.MinValue > 0 || matchedRange.MaxValue > 0)
+                // Prefer Parameter Range Master "Range Value"; fall back to numeric min/max.
+                if (!string.IsNullOrWhiteSpace(matchedRange.HISRangeValue))
+                {
+                    row.ReferenceRange = matchedRange.HISRangeValue.Trim();
+                }
+                else if (matchedRange.MinValue > 0 || matchedRange.MaxValue > 0)
                 {
                     row.ReferenceRange = $"{FormatDecimal(matchedRange.MinValue)} - {FormatDecimal(matchedRange.MaxValue)}";
-                }
-                else if (!string.IsNullOrWhiteSpace(matchedRange.HISRangeValue))
-                {
-                    row.ReferenceRange = matchedRange.HISRangeValue;
                 }
             }
 

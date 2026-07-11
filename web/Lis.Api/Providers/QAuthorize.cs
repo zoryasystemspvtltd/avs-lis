@@ -10,7 +10,6 @@ using System.Security.Claims;
 using System.Web;
 using System.Web.Http.Controllers;
 using System.Web.Http.Filters;
-//using System.Web.Script.Serialization;
 
 namespace Lis.Api.Providers
 {
@@ -22,6 +21,13 @@ namespace Lis.Api.Providers
 
         /// <summary>Optional second module — user is authorized if either module grants the required permission bits.</summary>
         public string AlternateModuleName { get; set; }
+
+        /// <summary>
+        /// Optional menu key. When set and the role has menu rows for the module,
+        /// menu-level bits are also required. When unset or no menu rows exist for the module,
+        /// existing module-only authorization applies (backward compatible).
+        /// </summary>
+        public string MenuKey { get; set; }
 
         public ModulePermissionType ModulePermissionTypes { get; set; }
 
@@ -70,7 +76,10 @@ namespace Lis.Api.Providers
             if (IsAuthorizedForModule(rolePermission, ModuleName)
                 || HasAlternateModuleAccess(rolePermission))
             {
-                return;
+                if (IsAuthorizedForOptionalMenu(identity))
+                {
+                    return;
+                }
             }
 
             InvalidResponse(actionContext, true);
@@ -118,6 +127,77 @@ namespace Lis.Api.Providers
             return (((int)ModulePermissionTypes & access) != 0);
         }
 
+        /// <summary>
+        /// Menu check is additive and optional. No MenuKey or no configured menu rows for the module → allow.
+        /// </summary>
+        private bool IsAuthorizedForOptionalMenu(ClaimsIdentity identity)
+        {
+            if (string.IsNullOrWhiteSpace(MenuKey))
+            {
+                return true;
+            }
+
+            var menuClaim = identity.Claims.FirstOrDefault(p => p.Type.Equals("menuPermissions", StringComparison.OrdinalIgnoreCase));
+            if (menuClaim == null || string.IsNullOrWhiteSpace(menuClaim.Value) || menuClaim.Value == "[]")
+            {
+                return true;
+            }
+
+            List<MenuPermissionClaim> menus;
+            try
+            {
+                menus = JsonConvert.DeserializeObject<List<MenuPermissionClaim>>(menuClaim.Value,
+                    new JsonSerializerSettings()
+                    {
+                        ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+                    });
+            }
+            catch
+            {
+                return true;
+            }
+
+            if (menus == null || !menus.Any())
+            {
+                return true;
+            }
+
+            var moduleName = ModuleName;
+            if (string.IsNullOrWhiteSpace(moduleName))
+            {
+                var def = MenuCatalog.Find(MenuKey);
+                moduleName = def?.ModuleName;
+            }
+
+            if (string.IsNullOrWhiteSpace(moduleName))
+            {
+                return true;
+            }
+
+            var moduleMenus = menus
+                .Where(m => string.Equals(m.ModuleName, moduleName, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            // No menu overlay for this module → module-only behaviour.
+            if (!moduleMenus.Any())
+            {
+                return true;
+            }
+
+            var normalizedKey = MenuCatalog.NormalizeKey(MenuKey);
+            var menu = moduleMenus
+                .Where(m => string.Equals(MenuCatalog.NormalizeKey(m.MenuKey), normalizedKey, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            if (!menu.Any())
+            {
+                return false;
+            }
+
+            var access = menu.Aggregate(0, (acc, curr) => acc | curr.Access);
+            return (((int)ModulePermissionTypes & access) != 0);
+        }
+
         private void InvalidResponse(HttpActionContext actionContext, bool isAuthenticated)
         {
             var message = isAuthenticated ? "Insufficient privilege." : "Authentication required.";
@@ -146,5 +226,13 @@ namespace Lis.Api.Providers
         public string Url { get; set; }
         public int Access { get; set; }
 
+    }
+
+    public class MenuPermissionClaim
+    {
+        public string MenuKey { get; set; }
+        public long ModuleId { get; set; }
+        public string ModuleName { get; set; }
+        public int Access { get; set; }
     }
 }

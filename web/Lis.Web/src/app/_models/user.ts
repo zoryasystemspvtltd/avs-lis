@@ -1,4 +1,5 @@
 import { UserAccess } from './useraccess';
+import { MenuAccess } from './useraccess';
 
 export class AuthenticationToken {
     id: string;
@@ -14,6 +15,8 @@ export class AuthenticationToken {
     refreshToken: string;
     roles: string[];
     access: UserAccess[];
+    /** Menu overlay; empty/undefined = module-only behaviour (backward compatible). */
+    menuAccess?: MenuAccess[];
     displayName: string;
 }
 

@@ -1,130 +1,256 @@
 <div *ngIf="authenticationService.isAuthenticated" id="sidenav" class="sidenav" [ngClass]="{'hidden': authenticationService.hideSideNav }">
+
     <div class="sidenav-header-bar">
+
         <app-available-app></app-available-app>
+
         <div class="closebtn-area">
+
             <button (click)="authenticationService.toggleSideNav()" class="closebtn" type="button" title="Close">&times;</button>
+
         </div>
+
     </div>
+
     <div class="sidenav-menu-scroll">
+
         <div class="panel-group" id="accordion">
-            <div class="panel panel-default" *ngIf="hasGroupAccess('Reports,Samples,DoctorsApprovals,SampleCollection,SampleReceiving,RadiologyReportEntry')">
+
+            <div class="panel panel-default" *ngIf="hasGroupAccess('Reports,Samples,DoctorsApprovals,SampleCollection,SampleReceiving,RadiologyReportEntry,RadiologyDoctorApprovals')">
+
                 <div class="panel-heading">
+
                     <h4 class="panel-title">
+
                         <a data-toggle="collapse" data-parent="#accordion" target="_self" href="#collapseWorkingBoard">
+
                             <span class="glyphicon glyphicon-folder-close"></span> Working Board
+
                         </a>
+
                     </h4>
+
                 </div>
+
                 <div id="collapseWorkingBoard" class="panel-collapse collapse" [ngClass]="{'in': expandWorkingBoard}">
+
                     <div class="panel-body">
+
                         <table class="table">
-                            <tr *ngIf="hasAccess('Samples',63)">
+
+                            <tr *ngIf="hasMenu('Samples','workingboard.recentSamples')">
+
                                 <td><span class="glyphicon glyphicon-blackboard nav-icon"></span><a routerLink="/samples" routerLinkActive="active-menu-link">Recent Samples</a></td>
+
                             </tr>
-                            <tr *ngIf="hasAccess('SampleCollection',63)">
+
+                            <tr *ngIf="hasMenu('SampleCollection','workingboard.sampleCollection')">
+
                                 <td><span class="glyphicon glyphicon-tint nav-icon"></span><a routerLink="/sample-collection" routerLinkActive="active-menu-link">Sample Collection</a></td>
+
                             </tr>
-                            <tr *ngIf="hasAccess('SampleReceiving',63)">
+
+                            <tr *ngIf="hasMenu('SampleReceiving','workingboard.sampleReceiving')">
+
                                 <td><span class="glyphicon glyphicon-import nav-icon"></span><a routerLink="/sample-receiving" routerLinkActive="active-menu-link">Sample Receiving</a></td>
+
                             </tr>
-                            <tr *ngIf="hasAccess('RadiologyReportEntry',63)">
+
+                            <tr *ngIf="hasMenu('RadiologyReportEntry','workingboard.radiologyReportEntry')">
+
                                 <td><span class="glyphicon glyphicon-picture nav-icon"></span><a routerLink="/radiology-report-entry" routerLinkActive="active-menu-link">Radiology Report Entry</a></td>
+
                             </tr>
-                            <tr *ngIf="hasAccess('RadiologyDoctorApprovals',63)">
+
+                            <tr *ngIf="hasMenu('RadiologyDoctorApprovals','workingboard.radiologyDoctorApproval')">
+
                                 <td><span class="glyphicon glyphicon-check nav-icon"></span><a routerLink="/radiology-doctor-approvals" routerLinkActive="active-menu-link">Radiology Doctor Approval</a></td>
+
                             </tr>
-                            <tr *ngIf="hasAccess('RadiologyDoctorApprovals',63)">
+
+                            <tr *ngIf="hasMenu('RadiologyDoctorApprovals','workingboard.radiologyApproved')">
+
                                 <td><span class="glyphicon glyphicon-ok-circle nav-icon"></span><a routerLink="/radiology-approved-reports" routerLinkActive="active-menu-link">Approved Radiology Reports</a></td>
+
                             </tr>
-                            <tr *ngIf="hasAccess('Reports',63)">
+
+                            <tr *ngIf="hasMenu('Reports','workingboard.technicianApproval')">
+
                                 <td><span class="glyphicon glyphicon-filter nav-icon"></span><a routerLink="/technicianapprovals" routerLinkActive="active-menu-link">Technician's Approval</a></td>
+
                             </tr>
-                            <tr *ngIf="hasAccess('Reports',63) || hasAccess('Samples',63)">
+
+                            <tr *ngIf="hasMenu('Reports','workingboard.testResultEdit') || hasMenu('Samples','workingboard.testResultEdit')">
+
                                 <td><span class="glyphicon glyphicon-edit nav-icon"></span><a routerLink="/edit-test-results" routerLinkActive="active-menu-link">Test Result Edit</a></td>
+
                             </tr>
-                            <tr *ngIf="hasAccess('DoctorsApprovals',63)">
+
+                            <tr *ngIf="hasMenu('DoctorsApprovals','workingboard.doctorApproval')">
+
                                 <td><span class="glyphicon glyphicon-scissors nav-icon"></span><a routerLink="/doctorapprovals" routerLinkActive="active-menu-link">Doctor's Approval</a></td>
+
                             </tr>
-                            <tr *ngIf="hasGroupAccess('Reports,DoctorsApprovals')">
+
+                            <tr *ngIf="hasMenu('Reports','workingboard.approvedSamples') || hasMenu('DoctorsApprovals','workingboard.approvedSamples')">
+
                                 <td><span class="glyphicon glyphicon-thumbs-up nav-icon"></span><a routerLink="/approvedsamples" routerLinkActive="active-menu-link">Approved Samples</a></td>
+
                             </tr>
-                            <tr *ngIf="hasGroupAccess('Reports,DoctorsApprovals')">
+
+                            <tr *ngIf="hasMenu('Reports','workingboard.rejectedSamples') || hasMenu('DoctorsApprovals','workingboard.rejectedSamples')">
+
                                 <td><span class="glyphicon glyphicon-thumbs-down nav-icon"></span><a routerLink="/rejectedsamples" routerLinkActive="active-menu-link">Rejected Samples</a></td>
+
                             </tr>
-                            <tr *ngIf="hasGroupAccess('Reports,DoctorsApprovals')">
+
+                            <tr *ngIf="hasMenu('Reports','workingboard.qualityControls') || hasMenu('DoctorsApprovals','workingboard.qualityControls')">
+
                                 <td><span class="glyphicon glyphicon-scale nav-icon"></span><a routerLink="/quality-controls" routerLinkActive="active-menu-link">Quality Controls</a></td>
+
                             </tr>
+
                         </table>
+
                     </div>
+
                 </div>
+
             </div>
+
+
 
             <div class="panel panel-default" *ngIf="hasSetupAccess()">
+
                 <div class="panel-heading">
+
                     <h4 class="panel-title">
+
                         <a data-toggle="collapse" data-parent="#accordion" target="_self" href="#collapseSetup">
+
                             <span class="glyphicon glyphicon-cog"></span> Setup
+
                         </a>
+
                     </h4>
+
                 </div>
+
                 <div id="collapseSetup" class="panel-collapse collapse" [ngClass]="{'in': expandSetup}">
+
                     <div class="panel-body">
+
                         <table class="table">
-                            <tr *ngIf="hasAccess('Masters',63)"><td><span class="glyphicon glyphicon-list nav-icon"></span><a routerLink="/departments" routerLinkActive="active-menu-link">Department</a></td></tr>
-                            <tr *ngIf="hasAccess('Masters',63)"><td><span class="glyphicon glyphicon-resize-horizontal nav-icon"></span><a routerLink="/units" routerLinkActive="active-menu-link">Unit</a></td></tr>
-                            <tr *ngIf="hasAccess('Masters',63)"><td><span class="glyphicon glyphicon-wrench nav-icon"></span><a routerLink="/methods" routerLinkActive="active-menu-link">Method</a></td></tr>
-                            <tr *ngIf="hasAccess('Equipments',63)"><td><span class="glyphicon glyphicon-hdd nav-icon"></span><a routerLink="/equipments" routerLinkActive="active-menu-link">Equipment</a></td></tr>
-                            <tr *ngIf="hasAccess('Equipments',63)"><td><span class="glyphicon glyphicon-heart nav-icon"></span><a routerLink="/equipment-heartbeat" routerLinkActive="active-menu-link">Equipment Heartbeat</a></td></tr>
+
+                            <tr *ngIf="hasMenu('Masters','setup.department')"><td><span class="glyphicon glyphicon-list nav-icon"></span><a routerLink="/departments" routerLinkActive="active-menu-link">Department</a></td></tr>
+
+                            <tr *ngIf="hasMenu('Masters','setup.unit')"><td><span class="glyphicon glyphicon-resize-horizontal nav-icon"></span><a routerLink="/units" routerLinkActive="active-menu-link">Unit</a></td></tr>
+
+                            <tr *ngIf="hasMenu('Masters','setup.method')"><td><span class="glyphicon glyphicon-wrench nav-icon"></span><a routerLink="/methods" routerLinkActive="active-menu-link">Method</a></td></tr>
+
+                            <tr *ngIf="hasMenu('Equipments','setup.equipment')"><td><span class="glyphicon glyphicon-hdd nav-icon"></span><a routerLink="/equipments" routerLinkActive="active-menu-link">Equipment</a></td></tr>
+
+                            <tr *ngIf="hasMenu('Equipments','setup.equipmentHeartbeat')"><td><span class="glyphicon glyphicon-heart nav-icon"></span><a routerLink="/equipment-heartbeat" routerLinkActive="active-menu-link">Equipment Heartbeat</a></td></tr>
+
                         </table>
+
                     </div>
+
                 </div>
+
             </div>
+
+
 
             <div class="panel panel-default" *ngIf="hasMasterAccess()">
+
                 <div class="panel-heading">
+
                     <h4 class="panel-title">
+
                         <a data-toggle="collapse" data-parent="#accordion" target="_self" href="#collapseMaster">
+
                             <span class="glyphicon glyphicon-book"></span> Master
+
                         </a>
+
                     </h4>
+
                 </div>
+
                 <div id="collapseMaster" class="panel-collapse collapse" [ngClass]="{'in': expandMaster}">
+
                     <div class="panel-body">
+
                         <table class="table">
-                            <tr *ngIf="hasAccess('HisTest',63)"><td><span class="glyphicon glyphicon-list-alt nav-icon"></span><a routerLink="/test-master" routerLinkActive="active-menu-link">Test Master</a></td></tr>
-                            <tr *ngIf="hasAccess('Masters',63)"><td><span class="glyphicon glyphicon-th nav-icon"></span><a routerLink="/test-profiles" routerLinkActive="active-menu-link">Test Profile</a></td></tr>
-                            <tr *ngIf="hasAccess('Masters',63)"><td><span class="glyphicon glyphicon-tint nav-icon"></span><a routerLink="/specimens" routerLinkActive="active-menu-link">Specimen</a></td></tr>
-                            <tr *ngIf="hasAccess('TestRates',63)"><td><span class="glyphicon glyphicon-usd nav-icon"></span><a routerLink="/test-rates" routerLinkActive="active-menu-link">Test Rate</a></td></tr>
-                            <tr *ngIf="hasAccess('Masters',63)"><td><span class="glyphicon glyphicon-user nav-icon"></span><a routerLink="/referral-doctors" routerLinkActive="active-menu-link">Referral Doctor</a></td></tr>
-                            <tr *ngIf="hasAccess('Masters',63)"><td><span class="glyphicon glyphicon-briefcase nav-icon"></span><a routerLink="/corporates" routerLinkActive="active-menu-link">Corporate</a></td></tr>
-                            <tr *ngIf="hasAccess('Masters',63)"><td><span class="glyphicon glyphicon-filter nav-icon"></span><a routerLink="/his-parameters" routerLinkActive="active-menu-link">Parameter Master</a></td></tr>
-                            <tr *ngIf="hasAccess('Masters',63)"><td><span class="glyphicon glyphicon-list nav-icon"></span><a routerLink="/test-parameters" routerLinkActive="active-menu-link">Test Parameter Mapping</a></td></tr>
-                            <tr *ngIf="hasAccess('Masters',63)"><td><span class="glyphicon glyphicon-random nav-icon"></span><a routerLink="/test-mappings" routerLinkActive="active-menu-link">Analyzer Parameter Mapping</a></td></tr>
-                            <tr *ngIf="hasAccess('Masters',63)"><td><span class="glyphicon glyphicon-signal nav-icon"></span><a routerLink="/his-parameter-ranges" routerLinkActive="active-menu-link">Parameter Range</a></td></tr>
+
+                            <tr *ngIf="hasMenu('HisTest','masters.testMaster')"><td><span class="glyphicon glyphicon-list-alt nav-icon"></span><a routerLink="/test-master" routerLinkActive="active-menu-link">Test Master</a></td></tr>
+
+                            <tr *ngIf="hasMenu('Masters','masters.testProfile')"><td><span class="glyphicon glyphicon-th nav-icon"></span><a routerLink="/test-profiles" routerLinkActive="active-menu-link">Test Profile</a></td></tr>
+
+                            <tr *ngIf="hasMenu('Masters','masters.specimen')"><td><span class="glyphicon glyphicon-tint nav-icon"></span><a routerLink="/specimens" routerLinkActive="active-menu-link">Specimen</a></td></tr>
+
+                            <tr *ngIf="hasMenu('TestRates','masters.testRate')"><td><span class="glyphicon glyphicon-usd nav-icon"></span><a routerLink="/test-rates" routerLinkActive="active-menu-link">Test Rate</a></td></tr>
+
+                            <tr *ngIf="hasMenu('Masters','masters.referralDoctor')"><td><span class="glyphicon glyphicon-user nav-icon"></span><a routerLink="/referral-doctors" routerLinkActive="active-menu-link">Referral Doctor</a></td></tr>
+
+                            <tr *ngIf="hasMenu('Masters','masters.corporate')"><td><span class="glyphicon glyphicon-briefcase nav-icon"></span><a routerLink="/corporates" routerLinkActive="active-menu-link">Corporate</a></td></tr>
+
+                            <tr *ngIf="hasMenu('Masters','masters.parameter')"><td><span class="glyphicon glyphicon-filter nav-icon"></span><a routerLink="/his-parameters" routerLinkActive="active-menu-link">Parameter Master</a></td></tr>
+
+                            <tr *ngIf="hasMenu('Masters','masters.testParamMapping')"><td><span class="glyphicon glyphicon-list nav-icon"></span><a routerLink="/test-parameters" routerLinkActive="active-menu-link">Test Parameter Mapping</a></td></tr>
+
+                            <tr *ngIf="hasMenu('Masters','masters.analyzerParamMapping')"><td><span class="glyphicon glyphicon-random nav-icon"></span><a routerLink="/test-mappings" routerLinkActive="active-menu-link">Analyzer Parameter Mapping</a></td></tr>
+
+                            <tr *ngIf="hasMenu('Masters','masters.parameterRange')"><td><span class="glyphicon glyphicon-signal nav-icon"></span><a routerLink="/his-parameter-ranges" routerLinkActive="active-menu-link">Parameter Range</a></td></tr>
+
                         </table>
+
                     </div>
+
                 </div>
+
             </div>
+
+
 
             <div class="panel panel-default" *ngIf="hasTransactionAccess()">
+
                 <div class="panel-heading">
+
                     <h4 class="panel-title">
+
                         <a data-toggle="collapse" data-parent="#accordion" target="_self" href="#collapseTransaction">
+
                             <span class="glyphicon glyphicon-transfer"></span> Transaction
+
                         </a>
+
                     </h4>
+
                 </div>
+
                 <div id="collapseTransaction" class="panel-collapse collapse" [ngClass]="{'in': expandTransaction}">
+
                     <div class="panel-body">
+
                         <table class="table">
-                            <tr *ngIf="hasAccess('Masters',63)"><td><span class="glyphicon glyphicon-user nav-icon"></span><a routerLink="/patient-master" routerLinkActive="active-menu-link">Patient Details</a></td></tr>
-                            <tr *ngIf="hasAccess('SaleInvoices',63)"><td><span class="glyphicon glyphicon-file nav-icon"></span><a routerLink="/sale-invoices" routerLinkActive="active-menu-link">Sale Invoice</a></td></tr>
+
+                            <tr *ngIf="hasMenu('PatientDetails','transaction.patientDetails')"><td><span class="glyphicon glyphicon-user nav-icon"></span><a routerLink="/patient-master" routerLinkActive="active-menu-link">Patient Details</a></td></tr>
+
+                            <tr *ngIf="hasMenu('SaleInvoices','transaction.saleInvoice')"><td><span class="glyphicon glyphicon-file nav-icon"></span><a routerLink="/sale-invoices" routerLinkActive="active-menu-link">Sale Invoice</a></td></tr>
+
                         </table>
+
                     </div>
+
                 </div>
+
             </div>
 
-            <div class="panel panel-default" *ngIf="hasReportAccess()">
+
+
+                        <div class="panel panel-default" *ngIf="hasReportAccess()">
                 <div class="panel-heading">
                     <h4 class="panel-title">
                         <a data-toggle="collapse" data-parent="#accordion" target="_self" href="#collapseReports">
@@ -135,49 +261,49 @@
                 <div id="collapseReports" class="panel-collapse collapse" [ngClass]="{'in': expandReports}">
                     <div class="panel-body">
                         <table class="table">
-                            <tr *ngIf="hasReportAccess()">
+                            <tr *ngIf="showReportMenu('Reports','reports.saleInvoiceRegister')">
                                 <td><span class="glyphicon glyphicon-list-alt nav-icon"></span><a routerLink="/reports/sale-invoice-register" routerLinkActive="active-menu-link">Sale Invoice Register</a></td>
                             </tr>
-                            <tr *ngIf="hasReportAccess()">
+                            <tr *ngIf="showReportMenu('Reports','reports.testBookingRegister')">
                                 <td><span class="glyphicon glyphicon-book nav-icon"></span><a routerLink="/reports/test-booking-register" routerLinkActive="active-menu-link">Test Booking Register</a></td>
                             </tr>
-                            <tr *ngIf="hasReportAccess()">
+                            <tr *ngIf="showReportMenu('Reports','reports.diagnosticReport')">
                                 <td><span class="glyphicon glyphicon-print nav-icon"></span><a routerLink="/reports/test-report" routerLinkActive="active-menu-link">Diagnostic Report</a></td>
                             </tr>
-                            <tr *ngIf="hasAccess('RadiologyReports',63) || hasReportAccess()">
+                            <tr *ngIf="showReportMenu('RadiologyReports','reports.radiologyReportPrint')">
                                 <td><span class="glyphicon glyphicon-print nav-icon"></span><a routerLink="/reports/radiology-report" routerLinkActive="active-menu-link">Radiology Report Print</a></td>
                             </tr>
-                            <tr *ngIf="hasReportAccess()">
+                            <tr *ngIf="showReportMenu('Reports','reports.collectionSummary')">
                                 <td><span class="glyphicon glyphicon-tint nav-icon"></span><a routerLink="/reports/collection-summary" routerLinkActive="active-menu-link">Collection Summary</a></td>
                             </tr>
-                            <tr *ngIf="hasReportAccess()">
+                            <tr *ngIf="showReportMenu('Reports','reports.collectorWise')">
                                 <td><span class="glyphicon glyphicon-user nav-icon"></span><a routerLink="/reports/collector-wise" routerLinkActive="active-menu-link">Collector Wise Report</a></td>
                             </tr>
-                            <tr *ngIf="hasReportAccess()">
+                            <tr *ngIf="showReportMenu('Reports','reports.pendingCollection')">
                                 <td><span class="glyphicon glyphicon-time nav-icon"></span><a routerLink="/reports/pending-collection" routerLinkActive="active-menu-link">Pending Collection</a></td>
                             </tr>
-                            <tr *ngIf="hasReportAccess()">
+                            <tr *ngIf="showReportMenu('Reports','reports.recollection')">
                                 <td><span class="glyphicon glyphicon-repeat nav-icon"></span><a routerLink="/reports/recollection" routerLinkActive="active-menu-link">Recollection Report</a></td>
                             </tr>
-                            <tr *ngIf="hasReportAccess()">
+                            <tr *ngIf="showReportMenu('Reports','reports.receivedSamples')">
                                 <td><span class="glyphicon glyphicon-ok nav-icon"></span><a routerLink="/reports/received-samples" routerLinkActive="active-menu-link">Received Samples</a></td>
                             </tr>
-                            <tr *ngIf="hasReportAccess()">
+                            <tr *ngIf="showReportMenu('Reports','reports.rejectedSamples')">
                                 <td><span class="glyphicon glyphicon-remove nav-icon"></span><a routerLink="/reports/rejected-samples" routerLinkActive="active-menu-link">Rejected Samples</a></td>
                             </tr>
-                            <tr *ngIf="hasReportAccess()">
+                            <tr *ngIf="showReportMenu('Reports','reports.turnaround')">
                                 <td><span class="glyphicon glyphicon-dashboard nav-icon"></span><a routerLink="/reports/sample-turnaround" routerLinkActive="active-menu-link">Turnaround Time</a></td>
                             </tr>
-                            <tr *ngIf="hasAccess('RadiologyReports',63) || hasReportAccess()">
+                            <tr *ngIf="showReportMenu('RadiologyReports','reports.radiologyPending')">
                                 <td><span class="glyphicon glyphicon-picture nav-icon"></span><a routerLink="/reports/radiology/pending" routerLinkActive="active-menu-link">Pending Radiology Cases</a></td>
                             </tr>
-                            <tr *ngIf="hasAccess('RadiologyReports',63) || hasReportAccess()">
+                            <tr *ngIf="showReportMenu('RadiologyReports','reports.radiologyAuthorized')">
                                 <td><span class="glyphicon glyphicon-check nav-icon"></span><a routerLink="/reports/radiology/authorized" routerLinkActive="active-menu-link">Authorized Radiology</a></td>
                             </tr>
-                            <tr *ngIf="hasAccess('RadiologyReports',63) || hasReportAccess()">
+                            <tr *ngIf="showReportMenu('RadiologyReports','reports.radiologyModality')">
                                 <td><span class="glyphicon glyphicon-signal nav-icon"></span><a routerLink="/reports/radiology/modality-stats" routerLinkActive="active-menu-link">Modality Statistics</a></td>
                             </tr>
-                            <tr *ngIf="hasAccess('RadiologyReports',63) || hasReportAccess()">
+                            <tr *ngIf="showReportMenu('RadiologyReports','reports.radiologyProductivity')">
                                 <td><span class="glyphicon glyphicon-stats nav-icon"></span><a routerLink="/reports/radiology/productivity" routerLinkActive="active-menu-link">Radiologist Productivity</a></td>
                             </tr>
                         </table>
@@ -185,34 +311,65 @@
                 </div>
             </div>
 
-            <div class="panel panel-default">
+<div class="panel panel-default">
+
                 <div class="panel-heading">
+
                     <h4 class="panel-title">
+
                         <a data-toggle="collapse" data-parent="#accordion" target="_self" href="#collapseAccount">
+
                             <span class="glyphicon glyphicon-user"></span> Account
+
                         </a>
+
                     </h4>
+
                 </div>
+
                 <div id="collapseAccount" class="panel-collapse collapse" [ngClass]="{'in': expandAccount}">
+
                     <div class="panel-body">
+
                         <table class="table">
-                            <tr *ngIf="hasAccess('Users',63)">
+
+                            <tr *ngIf="hasMenu('Users','account.users')">
+
                                 <td><span class="glyphicon glyphicon-user nav-icon"></span><a routerLink="/users" routerLinkActive="active-menu-link">Users</a></td>
+
                             </tr>
-                            <tr *ngIf="hasAccess('Roles',63)">
+
+                            <tr *ngIf="hasMenu('Roles','account.roles')">
+
                                 <td><span class="glyphicon glyphicon-th-list nav-icon"></span><a routerLink="/roles" routerLinkActive="active-menu-link">Roles</a></td>
+
                             </tr>
+
                             <tr>
+
                                 <td><span class="glyphicon glyphicon-lock nav-icon"></span><a routerLink="/change-password" routerLinkActive="active-menu-link">Change Password</a></td>
+
                             </tr>
+
                         </table>
+
                     </div>
+
                 </div>
+
             </div>
+
         </div>
+
     </div>
+
     <div class="equipment-status-strip">
+
         <span class="equipment-status-label">Equipment</span>
+
         <app-equipment-alert></app-equipment-alert>
+
     </div>
+
 </div>
+

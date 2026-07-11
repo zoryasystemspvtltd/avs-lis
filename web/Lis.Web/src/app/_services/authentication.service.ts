@@ -1,9 +1,9 @@
 import { Injectable, EventEmitter } from '@angular/core';
-import { HttpClient, HttpParams, HttpHeaders, HttpParameterCodec } from '@angular/common/http';
-import { BehaviorSubject, Observable, of } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { HttpClient, HttpParams, HttpParameterCodec } from '@angular/common/http';
+import { BehaviorSubject, Observable, of, forkJoin } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 import { AuthenticationToken, KeyValuePair } from '../_models';
-import { normalizeModuleAccess } from '../_guards/permission.util';
+import { normalizeModuleAccess, normalizeMenuAccess } from '../_guards/permission.util';
 import { environment } from '../../environments/environment';
 
 
@@ -24,8 +24,42 @@ export class AuthenticationService {
 
     public selectedApplication: string = environment.ClientId;
     constructor(private http: HttpClient) {
-        this.currentUserSubject = new BehaviorSubject<AuthenticationToken>(JSON.parse(localStorage.getItem('currentUser')));
+        let stored: AuthenticationToken = null;
+        try {
+            const raw = localStorage.getItem('currentUser');
+            // Guard against corrupted values like the literal string "null" from older login page bugs.
+            if (raw && raw !== 'null') {
+                stored = JSON.parse(raw);
+                if (!stored || !stored.accessToken) {
+                    stored = null;
+                }
+            }
+        } catch {
+            stored = null;
+            try { localStorage.removeItem('currentUser'); } catch { /* ignore */ }
+        }
+        this.currentUserSubject = new BehaviorSubject<AuthenticationToken>(stored);
         this.currentUser = this.currentUserSubject.asObservable();
+        if (stored) {
+            this.isAuthenticated = true;
+            this.hideSideNav = false;
+        }
+    }
+
+    /** Persist session; never throw (incognito / blocked storage must not break login). */
+    private persistCurrentUser(user: AuthenticationToken): void {
+        try {
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            localStorage.setItem('applicationServae', environment.ApplicationServer);
+        } catch {
+            // Memory session via BehaviorSubject still works for this tab.
+        }
+    }
+
+    private apiUrl(path: string): string {
+        const base = (environment.ApplicationServer || '').replace(/\/+$/, '');
+        const suffix = path.startsWith('/') ? path : '/' + path;
+        return base + suffix;
     }
 
     isExpired(): Observable<boolean> {
@@ -44,8 +78,6 @@ export class AuthenticationService {
 
     isAuthenticated: boolean = false;
     isLoggedIn(): Observable<boolean> {
-        //console.log(this.currentUserValue);
-
         if (this.currentUserValue && this.currentUserValue.accessToken) {
             this.isAuthenticated = true;
             this.userChangeEvent.emit(true);
@@ -76,12 +108,8 @@ export class AuthenticationService {
             };
         }
 
-
-        return this.http.post<any>(`${environment.ApplicationServer}/TOKEN`,
-            formBody)
+        return this.http.post<any>(this.apiUrl('/Token'), formBody)
             .pipe(map(user => {
-                // login successful if there's a jwt token in the response
-                //console.log(user);
                 if (user && user.access_token) {
                     user.accessToken = user.access_token;
                     user.userName = user.userName || user.username;
@@ -91,8 +119,7 @@ export class AuthenticationService {
                     user.expires = user.expires;
                     user.issued = user.issued;
                     user.refreshToken = user.refresh_token;
-                    localStorage.setItem('currentUser', JSON.stringify(user));
-                    localStorage.setItem('applicationServae', environment.ApplicationServer);
+                    this.persistCurrentUser(user);
                     this.isAuthenticated = true;
                     this.currentUserSubject.next(user);
                 }
@@ -102,8 +129,6 @@ export class AuthenticationService {
     }
 
     relogin() {
-        //console.log('Relogin requested');
-
         let formBody: any;
         if (environment.IsOldApplicationServer) {
             formBody = new HttpParams({ encoder: new HttpFormEncodingCodec() })
@@ -118,24 +143,15 @@ export class AuthenticationService {
             };
         }
 
-        return this.http.post<any>(`${environment.ApplicationServer}/TOKEN`,
-            formBody)
+        return this.http.post<any>(this.apiUrl('/Token'), formBody)
             .pipe(map(user => {
-                // login successful if there's a jwt token in the response
-                //console.log(user);
                 if (user && user.access_token) {
-                    // store user details and jwt token in local storage to keep user logged in between page refreshes
-                    localStorage.setItem('currentUser', JSON.stringify(user));
-                    localStorage.setItem('applicationServae', environment.ApplicationServer);
-
-
-                    this.getRole().subscribe(role => {
-                        //console.log(this.currentUserValue);
-                        this.getUserAccess().subscribe(acess => {
-
-                        })
-                    })
-
+                    user.accessToken = user.access_token;
+                    user.userName = user.userName || user.username;
+                    this.persistCurrentUser(user);
+                    this.getRole().subscribe(() => {
+                        this.getUserAccess().subscribe(() => { });
+                    });
                     this.currentUserSubject.next(user);
                 }
 
@@ -144,91 +160,150 @@ export class AuthenticationService {
     }
 
     loginExternal(user: AuthenticationToken) {
-        //console.log(user);
-        localStorage.setItem('currentUser', JSON.stringify(user));
-        localStorage.setItem('applicationServae', environment.ApplicationServer);
+        if (user && (user as any).access_token && !user.accessToken) {
+            user.accessToken = (user as any).access_token;
+        }
+        this.persistCurrentUser(user);
         this.currentUserSubject.next(user);
         return this.isLoggedIn();
     }
 
     logout() {
-        return this.http.post<any>(`${environment.ApplicationServer}/api/Account/Logout`, {})
-            .pipe(map(roles => {
-                localStorage.removeItem('currentUser');
-                this.currentUserSubject = new BehaviorSubject<AuthenticationToken>(JSON.parse(localStorage.getItem('currentUser')));
-                this.currentUser = this.currentUserSubject.asObservable();
-                this.isAuthenticated = false;
-                this.hideSideNav = true;
-                this.currentUserSubject.next(null);
-                return true;
-            },
-                error => {
-                    localStorage.removeItem('currentUser');
-                    this.currentUserSubject = new BehaviorSubject<AuthenticationToken>(JSON.parse(localStorage.getItem('currentUser')));
-                    this.currentUser = this.currentUserSubject.asObservable();
-                    this.isAuthenticated = false;
-                    this.hideSideNav = true;
-                    this.currentUserSubject.next(null);
+        const clearSession = () => {
+            try { localStorage.removeItem('currentUser'); } catch { /* ignore */ }
+            this.isAuthenticated = false;
+            this.hideSideNav = true;
+            this.currentUserSubject.next(null);
+            this.userChangeEvent.emit(false);
+        };
+
+        return this.http.post<any>(this.apiUrl('/api/Account/Logout'), {})
+            .pipe(
+                map(() => {
+                    clearSession();
                     return true;
-                }));
-        // remove user from local storage to log user out
+                }),
+                catchError(() => {
+                    clearSession();
+                    return of(true);
+                })
+            );
     }
 
     getRole() {
+        // Must not require Roles module permission — used by every user at login.
+        return this.http.get<any>(this.apiUrl('/api/Roles'))
+            .pipe(
+                map(roles => {
+                    const items = (roles && Array.isArray(roles.items)) ? roles.items : [];
+                    const rolenames = items.map(function (role) {
+                        return role.name;
+                    });
 
-        return this.http.get<any>(`${environment.ApplicationServer}/api/Roles/`)
-            .pipe(map(roles => {
-                //console.log(roles);
-                const rolenames = roles.items.map(function (role) {
-                    return role.name;
-                });
+                    const user = this.currentUserValue;
+                    if (user) {
+                        user.roles = rolenames;
+                        this.persistCurrentUser(user);
+                        this.currentUserSubject.next(user);
+                    }
 
-                const user = this.currentUserValue;
-                user.roles = rolenames;
-                localStorage.setItem('currentUser', JSON.stringify(user));
-                this.currentUserSubject.next(user);
-
-                return true;
-            }));
+                    return true;
+                }),
+                catchError(() => of(true))
+            );
     }
 
     getUserAccess() {
-        return this.http.get<any>(`${environment.ApplicationServer}/api/UserAccess/${this.selectedApplication}`)
-            .pipe(map(access => {
+        const clientId = this.selectedApplication;
+        // Fail-soft: never block login on permission API/storage errors.
+        return forkJoin([
+            this.http.get<any>(this.apiUrl(`/api/UserAccess/${clientId}`))
+                .pipe(catchError(() => of('[]'))),
+            this.http.get<any>(this.apiUrl(`/api/UserAccess/${clientId}/menus`))
+                .pipe(catchError(() => of('[]')))
+        ]).pipe(
+            map(([modules, menus]) => {
                 const user = this.currentUserValue;
-                user.access = normalizeModuleAccess(access);
+                if (!user) {
+                    return [];
+                }
+                try {
+                    user.access = normalizeModuleAccess(modules);
+                    user.menuAccess = normalizeMenuAccess(menus);
+                    this.persistCurrentUser(user);
+                    this.isAuthenticated = true;
+                    this.hideSideNav = false;
+                    this.currentUserSubject.next(user);
+                    this.userChangeEvent.emit(true);
+                } catch {
+                    this.isAuthenticated = true;
+                    this.hideSideNav = false;
+                    this.userChangeEvent.emit(true);
+                }
+                return user.access || [];
+            }),
+            catchError(() => {
+                const user = this.currentUserValue;
+                if (user) {
+                    if (!user.access) {
+                        user.access = [];
+                    }
+                    if (!user.menuAccess) {
+                        user.menuAccess = [];
+                    }
+                    this.isAuthenticated = true;
+                    this.hideSideNav = false;
+                    this.currentUserSubject.next(user);
+                    this.userChangeEvent.emit(true);
+                }
+                return of([]);
+            })
+        );
+    }
 
-                localStorage.setItem('currentUser', JSON.stringify(user));
-                this.isAuthenticated = true;
-                this.currentUserSubject.next(user);
-                this.userChangeEvent.emit(true);
-
-                return user.access;
-            }));
-
+    getUserMenuAccess() {
+        return this.http.get<any>(this.apiUrl(`/api/UserAccess/${this.selectedApplication}/menus`))
+            .pipe(
+                map(menus => {
+                    const user = this.currentUserValue;
+                    if (!user) {
+                        return [];
+                    }
+                    user.menuAccess = normalizeMenuAccess(menus);
+                    this.persistCurrentUser(user);
+                    this.currentUserSubject.next(user);
+                    this.userChangeEvent.emit(true);
+                    return user.menuAccess;
+                }),
+                catchError(() => of([]))
+            );
     }
 
     getUserApps() {
-        return this.http.get<any>(`${environment.ApplicationServer}/api/UserAccess/`)
-            .pipe(map(apps => {
-                //console.log(access);
-                return apps;
-            }));
-
+        return this.http.get<any>(this.apiUrl('/api/UserAccess/'))
+            .pipe(map(apps => apps));
     }
 
     getResources() {
-        return this.http.get<any>(`${environment.ApplicationServer}/api/Resources/`)
-            .pipe(map(resources => {
-                //console.log(resources);
-                localStorage.setItem('resources', JSON.stringify(resources));
-            }));
+        return this.http.get<any>(this.apiUrl('/api/Resources/'))
+            .pipe(
+                map(resources => {
+                    try {
+                        localStorage.setItem('resources', JSON.stringify(resources));
+                    } catch { /* ignore */ }
+                }),
+                catchError(() => of(null))
+            );
     }
 
     getResource(key: string) {
-        let resources = <KeyValuePair[]>JSON.parse(localStorage.getItem('resources'));
-        const resource = resources.find(p => p.key === key)
-        return resource ? resource.value : '';
+        try {
+            const resources = <KeyValuePair[]>JSON.parse(localStorage.getItem('resources'));
+            const resource = resources && resources.find(p => p.key === key);
+            return resource ? resource.value : '';
+        } catch {
+            return '';
+        }
     }
 
     hideSideNav: boolean = true;

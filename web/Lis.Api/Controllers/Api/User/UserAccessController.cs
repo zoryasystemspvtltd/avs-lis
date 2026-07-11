@@ -33,9 +33,50 @@ namespace Lis.Api.Controllers
         /// <returns></returns>
         public string Get(string id)
         {
-            var userid = User.Identity.GetUserId();
-            var user = dbContext.Users.FirstOrDefault(p => p.Id.Equals(userid, StringComparison.OrdinalIgnoreCase));
-            return user.GetModulePermission(this.dbContext,id);
+            try
+            {
+                var userid = User.Identity.GetUserId();
+                if (string.IsNullOrWhiteSpace(userid))
+                {
+                    return "[]";
+                }
+
+                var user = dbContext.Users.FirstOrDefault(p => p.Id.Equals(userid, StringComparison.OrdinalIgnoreCase));
+                if (user == null)
+                {
+                    return "[]";
+                }
+
+                return user.GetModulePermission(this.dbContext, id) ?? "[]";
+            }
+            catch
+            {
+                return "[]";
+            }
+        }
+
+        /// <summary>
+        /// Get menu-level permission overlay for the client.
+        /// Empty array = no overlay (fall back to module permissions).
+        /// </summary>
+        [HttpGet]
+        [Route("api/UserAccess/{id}/menus")]
+        public string GetMenus(string id)
+        {
+            try
+            {
+                var userid = User.Identity.GetUserId();
+                var user = dbContext.Users.FirstOrDefault(p => p.Id.Equals(userid, StringComparison.OrdinalIgnoreCase));
+                if (user == null)
+                {
+                    return "[]";
+                }
+                return user.GetMenuPermission(this.dbContext, id) ?? "[]";
+            }
+            catch
+            {
+                return "[]";
+            }
         }
 
         /// <summary>

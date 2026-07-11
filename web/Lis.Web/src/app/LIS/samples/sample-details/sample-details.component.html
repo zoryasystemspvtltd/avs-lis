@@ -354,9 +354,9 @@
 
 
                     <button
+                        type="button"
                         class="btn btn-update"
-                        printSectionId="print-section"
-                        ngxPrint>
+                        (click)="printBarcode()">
 
                         Print Barcode
 
@@ -381,7 +381,7 @@
 
 
 
-<div style="display:none;visibility:hidden;" *ngIf="isLoaded">
+<div style="position:absolute;left:-10000px;top:0;" *ngIf="isLoaded">
 
     <div id="print-section">
 

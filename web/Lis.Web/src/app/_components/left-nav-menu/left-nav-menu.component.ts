@@ -3,7 +3,7 @@ import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { AuthenticationService } from '../../_services';
 import { AuthenticationToken } from '../../_models';
-import { normalizeModuleAccess, isAdministrator } from '../../_guards/permission.util';
+import { normalizeModuleAccess, normalizeMenuAccess, isAdministrator, hasMenuAccess } from '../../_guards/permission.util';
 
 @Component({
   selector: 'app-left-nav-menu',
@@ -66,9 +66,13 @@ export class LeftNavMenuComponent implements OnInit {
     const current = this.authenticationService.currentUserValue;
     if (current && current.accessToken) {
       current.access = normalizeModuleAccess(current.access) as any;
+      current.menuAccess = normalizeMenuAccess((current as any).menuAccess) as any;
       this.authenticationService.isAuthenticated = true;
       this.isAuthenticated = true;
       this.user = current;
+    } else {
+      this.isAuthenticated = false;
+      this.user = null;
     }
   }
 
@@ -112,10 +116,16 @@ export class LeftNavMenuComponent implements OnInit {
     return (parseInt(acc.access as any, 10) & access) === access;
   }
 
+  /** Module + optional menu overlay (fallback to module when no menu rows for that module). */
+  hasMenu(module: string, menuKey: string, access = 32): boolean {
+    return hasMenuAccess(this.user, module, menuKey, access);
+  }
+
   hasGroupAccess(modules: string): boolean {
     const moduleArray = modules.split(',');
     for (let i = 0; i < moduleArray.length; i++) {
-      if (this.hasAccess(moduleArray[i], 63)) {
+      // Section headers: CanView is enough to expand the group.
+      if (this.hasAccess(moduleArray[i], 32)) {
         return true;
       }
     }
@@ -123,15 +133,36 @@ export class LeftNavMenuComponent implements OnInit {
   }
 
   hasSetupAccess(): boolean {
-    return this.hasAccess('Masters', 63) || this.hasAccess('Equipments', 63);
+    return this.hasMenu('Masters', 'setup.department')
+      || this.hasMenu('Masters', 'setup.unit')
+      || this.hasMenu('Masters', 'setup.method')
+      || this.hasMenu('Equipments', 'setup.equipment')
+      || this.hasMenu('Equipments', 'setup.equipmentHeartbeat')
+      || this.hasAccess('Masters', 63)
+      || this.hasAccess('Equipments', 63);
   }
 
   hasMasterAccess(): boolean {
-    return this.hasAccess('Masters', 63) || this.hasAccess('HisTest', 63) || this.hasAccess('TestRates', 63);
+    return this.hasMenu('HisTest', 'masters.testMaster')
+      || this.hasMenu('Masters', 'masters.testProfile')
+      || this.hasMenu('Masters', 'masters.specimen')
+      || this.hasMenu('TestRates', 'masters.testRate')
+      || this.hasMenu('Masters', 'masters.referralDoctor')
+      || this.hasMenu('Masters', 'masters.corporate')
+      || this.hasMenu('Masters', 'masters.parameter')
+      || this.hasMenu('Masters', 'masters.testParamMapping')
+      || this.hasMenu('Masters', 'masters.analyzerParamMapping')
+      || this.hasMenu('Masters', 'masters.parameterRange')
+      || this.hasAccess('Masters', 63)
+      || this.hasAccess('HisTest', 63)
+      || this.hasAccess('TestRates', 63);
   }
 
   hasTransactionAccess(): boolean {
-    return this.hasAccess('SaleInvoices', 63) || this.hasAccess('Masters', 63);
+    return this.hasMenu('PatientDetails', 'transaction.patientDetails')
+      || this.hasMenu('SaleInvoices', 'transaction.saleInvoice')
+      || this.hasAccess('SaleInvoices', 63)
+      || this.hasAccess('PatientDetails', 63);
   }
 
   hasReportAccess(): boolean {
@@ -139,5 +170,28 @@ export class LeftNavMenuComponent implements OnInit {
       || this.hasAccess('SaleInvoices', 63)
       || this.hasAccess('Samples', 63)
       || this.hasAccess('RadiologyReports', 63);
+  }
+
+  /** True when the role has at least one menu row for the module (overlay active). */
+  hasMenuOverlay(module: string): boolean {
+    if (!this.user || !this.user.menuAccess) {
+      return false;
+    }
+    const name = (module || '').toLowerCase();
+    return this.user.menuAccess.some(m => (m.moduleName || '').toLowerCase() === name);
+  }
+
+  /**
+   * Report menus: when overlay exists for the owning module, enforce menu bits;
+   * otherwise keep legacy hasReportAccess / RadiologyReports behaviour.
+   */
+  showReportMenu(module: string, menuKey: string): boolean {
+    if (this.hasMenuOverlay(module)) {
+      return this.hasMenu(module, menuKey);
+    }
+    if (module === 'RadiologyReports') {
+      return this.hasAccess('RadiologyReports', 63) || this.hasReportAccess();
+    }
+    return this.hasReportAccess();
   }
 }

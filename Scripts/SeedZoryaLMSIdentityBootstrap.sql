@@ -66,6 +66,7 @@ INSERT INTO @Modules (Name, Url, [Order], IsSystem) VALUES
     (N'TestRates', N'/test-rates', 9, 0),
     (N'SaleInvoices', N'/sale-invoices', 10, 0),
     (N'HisTest', N'/test-master', 11, 0),
+    (N'PatientDetails', N'/patient-master', 12, 0),
     (N'SampleCollection', N'/sample-collection', 20, 0),
     (N'SampleReceiving', N'/sample-receiving', 21, 0),
     (N'RadiologyReportEntry', N'/radiology-report-entry', 22, 0),

@@ -36,13 +36,14 @@ namespace LIS.BusinessLogic
 
             if (matchedRange != null)
             {
-                if (matchedRange.MinValue > 0 || matchedRange.MaxValue > 0)
+                // Prefer Parameter Range Master "Range Value"; fall back to numeric min/max.
+                if (!string.IsNullOrWhiteSpace(matchedRange.HISRangeValue))
+                {
+                    referenceRange = matchedRange.HISRangeValue.Trim();
+                }
+                else if (matchedRange.MinValue > 0 || matchedRange.MaxValue > 0)
                 {
                     referenceRange = $"{FormatDecimal(matchedRange.MinValue)} - {FormatDecimal(matchedRange.MaxValue)}";
-                }
-                else if (!string.IsNullOrWhiteSpace(matchedRange.HISRangeValue))
-                {
-                    referenceRange = matchedRange.HISRangeValue;
                 }
             }
 

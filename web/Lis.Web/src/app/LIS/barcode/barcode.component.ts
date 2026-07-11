@@ -20,16 +20,21 @@ export class BarcodeComponent implements OnInit {
   groupName: string;
   ngOnInit(): void {
     this.currentDate = new Date();
-    let vals = this.text.split('#');
-    this.trustedHtml = this.sanitizer.bypassSecurityTrustHtml(vals[0]);
-    this.bedNo= vals[1];
-    this.ipNo= vals[2];
-    this.mrNo= vals[3];
+    const rawText = this.text == null ? '' : String(this.text);
+    const vals = rawText.split('#');
+    this.trustedHtml = this.sanitizer.bypassSecurityTrustHtml(vals[0] || '');
+    this.bedNo = vals[1] || '';
+    this.ipNo = vals[2] || '';
+    this.mrNo = vals[3] || '';
     this.getGroupName();
-    this.codeLower = this.code.toLowerCase();
+    this.codeLower = (this.code || '').toLowerCase();
   }
 
   getGroupName() {
+    if (!this.code) {
+      this.groupName = '';
+      return;
+    }
     let groupTag = this.code.charAt(this.code.length - 1);
     switch (groupTag) {
       case 'c':

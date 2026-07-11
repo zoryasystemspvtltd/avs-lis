@@ -300,6 +300,14 @@ namespace Lis.Api.Controllers
                 CookieAuthenticationDefaults.AuthenticationType);
 
             oAuthIdentity.AddClaim(new Claim("modulePermisions", user.GetModulePermission(dbContext, clientId)));
+            try
+            {
+                oAuthIdentity.AddClaim(new Claim("menuPermissions", user.GetMenuPermission(dbContext, clientId) ?? "[]"));
+            }
+            catch
+            {
+                oAuthIdentity.AddClaim(new Claim("menuPermissions", "[]"));
+            }
 
             client = authRepository.FindClient(clientId);
 

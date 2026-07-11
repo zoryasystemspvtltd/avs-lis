@@ -317,6 +317,8 @@ namespace Lis.Api.Controllers.Api
 
         [HttpGet]
         [Route("")]
+        [QAuthorize(ModuleName = "PatientDetails", AlternateModuleName = "Masters",
+            ModulePermissionTypes = ModulePermissionType.CanView)]
         public ItemList<PatientDetail> Get()
         {
             try { return manager.Get(ApiOption) ?? new ItemList<PatientDetail> { TotalRecord = 0, Items = new List<PatientDetail>() }; }
@@ -325,6 +327,8 @@ namespace Lis.Api.Controllers.Api
 
         [HttpGet]
         [Route("{id:long}")]
+        [QAuthorize(ModuleName = "PatientDetails", AlternateModuleName = "Masters",
+            ModulePermissionTypes = ModulePermissionType.CanView)]
         public PatientDetail Get(long id)
         {
             try { return manager.GetById(id); }
@@ -333,6 +337,8 @@ namespace Lis.Api.Controllers.Api
 
         [HttpGet]
         [Route("NextPatientId")]
+        [QAuthorize(ModuleName = "PatientDetails", AlternateModuleName = "Masters",
+            ModulePermissionTypes = ModulePermissionType.CanView | ModulePermissionType.CanAdd)]
         public IHttpActionResult NextPatientId()
         {
             try { return Ok(new { patientId = manager.GenerateNextPatientId() }); }
@@ -341,6 +347,8 @@ namespace Lis.Api.Controllers.Api
 
         [HttpGet]
         [Route("NextMrNo")]
+        [QAuthorize(ModuleName = "PatientDetails", AlternateModuleName = "Masters",
+            ModulePermissionTypes = ModulePermissionType.CanView | ModulePermissionType.CanAdd)]
         public IHttpActionResult NextMrNo()
         {
             try { return Ok(new { mrNo = manager.GenerateNextMrNo() }); }
@@ -349,6 +357,8 @@ namespace Lis.Api.Controllers.Api
 
         [HttpGet]
         [Route("NextVisitId")]
+        [QAuthorize(ModuleName = "PatientDetails", AlternateModuleName = "Masters",
+            ModulePermissionTypes = ModulePermissionType.CanView | ModulePermissionType.CanAdd)]
         public IHttpActionResult NextVisitId()
         {
             try { return Ok(new { visitId = manager.GenerateNextVisitId() }); }
@@ -357,6 +367,8 @@ namespace Lis.Api.Controllers.Api
 
         [HttpGet]
         [Route("GetAll")]
+        [QAuthorize(ModuleName = "PatientDetails", AlternateModuleName = "Masters,SaleInvoices",
+            ModulePermissionTypes = ModulePermissionType.CanView)]
         public IEnumerable<PatientDetail> GetAll()
         {
             try { return manager.GetAllActive(); }
@@ -365,7 +377,8 @@ namespace Lis.Api.Controllers.Api
 
         [HttpPost]
         [Route("")]
-        [QAuthorize(ModuleName = "Masters", ModulePermissionTypes = ModulePermissionType.CanAdd)]
+        [QAuthorize(ModuleName = "PatientDetails", AlternateModuleName = "Masters",
+            ModulePermissionTypes = ModulePermissionType.CanAdd)]
         public HttpResponseMessage Post(PatientDetail item)
         {
             try
@@ -378,7 +391,8 @@ namespace Lis.Api.Controllers.Api
 
         [HttpPost]
         [ActionName("Put")]
-        [QAuthorize(ModuleName = "Masters", ModulePermissionTypes = ModulePermissionType.CanEdit)]
+        [QAuthorize(ModuleName = "PatientDetails", AlternateModuleName = "Masters",
+            ModulePermissionTypes = ModulePermissionType.CanEdit)]
         public HttpResponseMessage Put(PatientDetail item)
         {
             try
@@ -391,7 +405,8 @@ namespace Lis.Api.Controllers.Api
 
         [HttpPost]
         [ActionName("Delete")]
-        [QAuthorize(ModuleName = "Masters", ModulePermissionTypes = ModulePermissionType.CanDelete)]
+        [QAuthorize(ModuleName = "PatientDetails", AlternateModuleName = "Masters",
+            ModulePermissionTypes = ModulePermissionType.CanDelete)]
         public HttpResponseMessage Delete(PatientDetail item)
         {
             try
@@ -524,7 +539,8 @@ namespace Lis.Api.Controllers.Api
 
         [HttpPost]
         [Route("StartVisit/{patientId:long}")]
-        [QAuthorize(ModuleName = "Masters", ModulePermissionTypes = ModulePermissionType.CanAdd | ModulePermissionType.CanEdit)]
+        [QAuthorize(ModuleName = "PatientDetails", AlternateModuleName = "Masters",
+            ModulePermissionTypes = ModulePermissionType.CanAdd | ModulePermissionType.CanEdit)]
         public HttpResponseMessage StartVisit(long patientId)
         {
             try
@@ -547,6 +563,8 @@ namespace Lis.Api.Controllers.Api
 
         [HttpGet]
         [Route("Current/{patientId:long}")]
+        [QAuthorize(ModuleName = "PatientDetails", AlternateModuleName = "Masters,SaleInvoices",
+            ModulePermissionTypes = ModulePermissionType.CanView)]
         public PatientVisit GetCurrent(long patientId)
         {
             try { return manager.GetCurrentVisit(patientId); }
@@ -555,6 +573,8 @@ namespace Lis.Api.Controllers.Api
 
         [HttpGet]
         [Route("{patientId:long}")]
+        [QAuthorize(ModuleName = "PatientDetails", AlternateModuleName = "Masters,SaleInvoices",
+            ModulePermissionTypes = ModulePermissionType.CanView)]
         public IEnumerable<PatientVisitHistoryItem> GetHistory(long patientId)
         {
             try { return manager.GetVisitHistory(patientId) ?? Enumerable.Empty<PatientVisitHistoryItem>(); }

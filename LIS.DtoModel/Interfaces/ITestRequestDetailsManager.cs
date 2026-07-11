@@ -37,6 +37,11 @@ namespace LIS.DtoModel.Interfaces
 
         IEnumerable<TestParameter> GetTestParametersByRequestId(long RequestId);
 
+        /// <summary>
+        /// Ensures TestParameters exist for a request (mapping fallback for Sale Invoice samples).
+        /// </summary>
+        IList<TestParameter> EnsureTestParameters(TestRequestDetail request);
+
         string GenerateNextRequestNo();
     }
 }

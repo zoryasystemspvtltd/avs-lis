@@ -1,4 +1,4 @@
-﻿using LIS.BusinessLogic;
+using LIS.BusinessLogic;
 using LIS.DataAccess.Repo;
 using LIS.DtoModel;
 using LIS.DtoModel.Interfaces;
@@ -24,6 +24,7 @@ namespace LIS.Businesslogic
         private ModuleRepo<TestResultDetails> resultDetailsRepo;
         private ModuleRepo<TestParameter> parameterRepo;
         private ModuleRepo<HISParameterMaster> parameterMapRepo;
+        private ModuleRepo<TestParameterMappingMaster> testParameterMappingRepo;
         private ModuleRepo<HisTestMaster> testRepo;
         private ModuleRepo<Departments> departmentRepo;
         private ModuleRepo<HISParameterRangMaster> parameteRangeRepo;
@@ -47,6 +48,7 @@ namespace LIS.Businesslogic
             externalApiManager = new ExternalApiManager(logger, this.identity, this.genericUnitOfWork, this.file);
             parameterRepo = new ModuleRepo<TestParameter>(logger, this.identity, this.genericUnitOfWork);
             parameterMapRepo = new ModuleRepo<HISParameterMaster>(logger, this.identity, this.genericUnitOfWork);
+            testParameterMappingRepo = new ModuleRepo<TestParameterMappingMaster>(logger, this.identity, this.genericUnitOfWork);
             parameteRangeRepo = new ModuleRepo<HISParameterRangMaster>(logger, this.identity, this.genericUnitOfWork);
             testRepo = new ModuleRepo<HisTestMaster>(logger, this.identity, this.genericUnitOfWork);
             departmentRepo = new ModuleRepo<Departments>(logger, this.identity, this.genericUnitOfWork);
@@ -373,17 +375,8 @@ namespace LIS.Businesslogic
                         item.HISParamCode = paramMap.HISParamCode;
                         item.HISParamName = paramMap.HISParamDescription;
 
-                        var paramRanges = parameteRangeRepo
-                            .Get(p => p.HISRangeCode.Equals(paramMap.HISParamCode, StringComparison.OrdinalIgnoreCase))
-                            .ToList()
-                            .Distinct();
-                        var ranges = new List<string>();
-                        foreach (var range in paramRanges)
-                        {
-                            ranges.Add($"{range.Gender} {range.AgeFrom} - {range.AgeTo} {range.AgeType} : ( {range.HISRangeValue} )");
-                        }
-
-                        item.HISRangeValues = ranges.Distinct().ToArray();
+                        // Ranges belong to HISParameterMaster via HisParameterId (not HISRangeCode == HISParamCode).
+                        item.HISRangeValues = BuildRangeValueDisplay(paramMap.Id);
 
                         if (string.IsNullOrEmpty(item.ParamUnit))
                         {
@@ -392,10 +385,47 @@ namespace LIS.Businesslogic
                     }
                     else
                     {
-                        if (string.IsNullOrEmpty(item.HISParamName))
+                        // Fallback 1: legacy HISParameterMaster rows keyed by HISTestCode.
+                        var hisParam = parameterMapRepo.Get(p =>
+                                p.HISTestCode != null
+                                && result.HISTestCode != null
+                                && p.HISTestCode.Equals(result.HISTestCode, StringComparison.OrdinalIgnoreCase)
+                                && (
+                                    (p.LISParamCode != null && item.LISParamCode != null
+                                        && p.LISParamCode.Equals(item.LISParamCode, StringComparison.OrdinalIgnoreCase))
+                                    || (p.HISParamCode != null && item.LISParamCode != null
+                                        && p.HISParamCode.Equals(item.LISParamCode, StringComparison.OrdinalIgnoreCase))
+                                    || (p.HISParamCode != null && item.HISParamCode != null
+                                        && p.HISParamCode.Equals(item.HISParamCode, StringComparison.OrdinalIgnoreCase))))
+                            .FirstOrDefault();
+
+                        // Fallback 2: Sale Invoice / Test Parameter Mapping — parameter may belong to another
+                        // HISTestCode on HISParameterMaster while linked to this test via TestParameterMappingMaster.
+                        if (hisParam == null)
                         {
-                            var eqptest = availableTest.FirstOrDefault(t => t.Code != null && t.Code.Equals(item.LISParamCode, StringComparison.OrdinalIgnoreCase));
-                            item.HISParamName = eqptest?.Description ?? item.LISParamCode;
+                            hisParam = ResolveParameterViaTestMapping(
+                                result.HISTestCode,
+                                item.LISParamCode,
+                                item.HISParamCode);
+                        }
+
+                        if (hisParam != null)
+                        {
+                            item.HISParamCode = hisParam.HISParamCode;
+                            if (string.IsNullOrEmpty(item.HISParamName))
+                            {
+                                item.HISParamName = hisParam.HISParamDescription ?? hisParam.HISParamCode;
+                            }
+                            if (string.IsNullOrEmpty(item.ParamUnit))
+                            {
+                                item.ParamUnit = hisParam.HISParamUnit;
+                            }
+                            item.HISRangeValues = BuildRangeValueDisplay(hisParam.Id);
+                        }
+                        else if (string.IsNullOrEmpty(item.HISParamName))
+                        {
+                            var equipmentTest = availableTest.FirstOrDefault(t => t.Code != null && t.Code.Equals(item.LISParamCode, StringComparison.OrdinalIgnoreCase));
+                            item.HISParamName = equipmentTest != null ? equipmentTest.Description : item.LISParamCode;
                         }
                     }
                 }
@@ -407,6 +437,112 @@ namespace LIS.Businesslogic
 
             return testRuns;
         }
+
+        /// <summary>
+        /// Resolves HISParameterMaster for a test via TestParameterMappingMaster when the parameter's
+        /// own HISTestCode does not match the request test (Sale Invoice / mapping-master model).
+        /// </summary>
+        private HISParameterMaster ResolveParameterViaTestMapping(
+            string hisTestCode,
+            string lisParamCode,
+            string hisParamCode)
+        {
+            if (string.IsNullOrWhiteSpace(hisTestCode))
+            {
+                return null;
+            }
+
+            var hisTest = testRepo.Get(t =>
+                    t.HISTestCode != null
+                    && t.HISTestCode.Equals(hisTestCode.Trim(), StringComparison.OrdinalIgnoreCase))
+                .FirstOrDefault();
+            if (hisTest == null)
+            {
+                return null;
+            }
+
+            var mappings = testParameterMappingRepo
+                .Get(m => m.IsActive && m.HisTestId == hisTest.Id)
+                .ToList();
+            if (mappings.Count == 0)
+            {
+                return null;
+            }
+
+            foreach (var map in mappings)
+            {
+                var param = parameterMapRepo.Get(map.HisParameterId);
+                if (param == null)
+                {
+                    continue;
+                }
+
+                if (!string.IsNullOrWhiteSpace(lisParamCode)
+                    && (
+                        (param.LISParamCode != null
+                            && param.LISParamCode.Equals(lisParamCode, StringComparison.OrdinalIgnoreCase))
+                        || (param.HISParamCode != null
+                            && param.HISParamCode.Equals(lisParamCode, StringComparison.OrdinalIgnoreCase))))
+                {
+                    return param;
+                }
+
+                if (!string.IsNullOrWhiteSpace(hisParamCode)
+                    && param.HISParamCode != null
+                    && param.HISParamCode.Equals(hisParamCode, StringComparison.OrdinalIgnoreCase))
+                {
+                    return param;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Builds reference-range lines from Parameter Range Master for approval / report screens.
+        /// Uses HisParameterId linkage and surfaces HISRangeValue (Range Value).
+        /// </summary>
+        private string[] BuildRangeValueDisplay(int hisParameterId)
+        {
+            if (hisParameterId <= 0)
+            {
+                return Array.Empty<string>();
+            }
+
+            var paramRanges = parameteRangeRepo.Get(p => p.HisParameterId == hisParameterId).ToList();
+            if (paramRanges.Count == 0)
+            {
+                return Array.Empty<string>();
+            }
+
+            var ranges = new List<string>();
+            foreach (var range in paramRanges)
+            {
+                var rangeValue = !string.IsNullOrWhiteSpace(range.HISRangeValue)
+                    ? range.HISRangeValue.Trim()
+                    : FormatMinMaxRange(range.MinValue, range.MaxValue);
+
+                if (string.IsNullOrWhiteSpace(rangeValue))
+                {
+                    continue;
+                }
+
+                ranges.Add($"{range.Gender} {range.AgeFrom} - {range.AgeTo} {range.AgeType} : ( {rangeValue} )");
+            }
+
+            return ranges.Distinct().ToArray();
+        }
+
+        private static string FormatMinMaxRange(decimal minValue, decimal maxValue)
+        {
+            if (minValue <= 0 && maxValue <= 0)
+            {
+                return null;
+            }
+
+            return $"{minValue} - {maxValue}";
+        }
+
         public ReviewTest GetTestResultByRequestId(long RequestId)
         {
             var testResult = resultRepo.Get(p => p.TestRequestId == RequestId)
@@ -834,7 +970,98 @@ namespace LIS.Businesslogic
         {
             var parameters = parameterRepo.Get(p => p.TestRequestDetailsId == RequestId)
                .ToList();
-            return parameters;
+            if (parameters != null && parameters.Count > 0)
+            {
+                return parameters;
+            }
+
+            // Sale Invoice / modern intake may create TestRequestDetails without TestParameters rows.
+            // Resolve from mapping masters and persist so detail screens and result entry work.
+            var request = testRequestDetailsRepo.Get(p => p.Id == RequestId).FirstOrDefault();
+            if (request == null)
+            {
+                return parameters ?? new List<TestParameter>();
+            }
+
+            return EnsureTestParameters(request);
+        }
+
+        /// <summary>
+        /// Creates TestParameters for a request from TestParameterMappingMaster (preferred)
+        /// or legacy HISParameterMaster.HISTestCode links. No-op when rows already exist.
+        /// </summary>
+        public IList<TestParameter> EnsureTestParameters(TestRequestDetail request)
+        {
+            var existing = parameterRepo.Get(p => p.TestRequestDetailsId == request.Id).ToList();
+            if (existing != null && existing.Count > 0)
+            {
+                return existing;
+            }
+
+            if (request == null || string.IsNullOrWhiteSpace(request.HISTestCode))
+            {
+                return new List<TestParameter>();
+            }
+
+            var created = new List<TestParameter>();
+            var testCode = request.HISTestCode.Trim();
+            var hisTest = testRepo.Get(t =>
+                    t.HISTestCode != null
+                    && t.HISTestCode.Equals(testCode, StringComparison.OrdinalIgnoreCase))
+                .FirstOrDefault();
+
+            if (hisTest != null)
+            {
+                var mappings = testParameterMappingRepo
+                    .Get(m => m.IsActive && m.HisTestId == hisTest.Id)
+                    .ToList();
+
+                foreach (var map in mappings)
+                {
+                    var param = parameterMapRepo.Get(map.HisParameterId);
+                    if (param == null || string.IsNullOrWhiteSpace(param.HISParamCode))
+                    {
+                        continue;
+                    }
+
+                    created.Add(AddParameterRow(request.Id, testCode, param.HISParamCode, param.HISParamDescription));
+                }
+            }
+
+            if (created.Count == 0)
+            {
+                var legacy = parameterMapRepo
+                    .Get(p => p.HISTestCode != null
+                        && p.HISTestCode.Equals(testCode, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+
+                foreach (var param in legacy)
+                {
+                    if (string.IsNullOrWhiteSpace(param.HISParamCode))
+                    {
+                        continue;
+                    }
+
+                    created.Add(AddParameterRow(request.Id, testCode, param.HISParamCode, param.HISParamDescription));
+                }
+            }
+
+            return created;
+        }
+
+        private TestParameter AddParameterRow(long requestId, string testCode, string paramCode, string paramName)
+        {
+            var row = new TestParameter
+            {
+                HISParamCode = paramCode,
+                HISParamName = paramName,
+                HISTestCode = testCode,
+                TestRequestDetailsId = requestId,
+                CreatedBy = identity?.ActivityMember,
+                CreatedOn = DateTime.UtcNow
+            };
+            row.Id = parameterRepo.Add(row);
+            return row;
         }
 
         public long[] GetTestResultByRequestId(string SampleNumber)

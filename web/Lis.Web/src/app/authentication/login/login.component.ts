@@ -38,24 +38,20 @@ export class LoginComponent implements OnInit, OnDestroy {
         }
 
         const user = <AuthenticationToken>this.getFragment();
-        //console.log(user);
-        if (user) {
+        // External OAuth redirect only — never write null/empty fragment over currentUser
+        // (that wiped the session on every visit to /login and broke menus after re-login).
+        if (user && (user as any).access_token) {
             this.authenticationService.loginExternal(user).subscribe(data => {
-                //console.log(data);
                 if (data) {
                     const redirectUri = location.protocol + '//' + location.host;
                     window.location.href = redirectUri;
-                    //this.router.navigate(['/']);
                 }
                 else {
-                    const redirectUri = location.protocol + '//' + location.host + environment.VDName + '/login';
-                    //window.location.href = redirectUri;
                     this.router.navigate(['/login']);
                 }
             });
         }
 
-        localStorage.setItem('currentUser', JSON.stringify(user));
         let rememberUser = localStorage.getItem('rememberUser');
         if(rememberUser && rememberUser == '1'){
             this.isRemember = true;
@@ -145,8 +141,11 @@ export class LoginComponent implements OnInit, OnDestroy {
 
     getUserAccess() {
         this.authenticationService.getUserAccess().subscribe(
-            () => this.finishLoginRedirect(),
-            () => this.onLoginSetupFailed('Unable to load menu permissions. Please try again.')
+            (access) => {
+                // Empty access still completes login; left nav shows what the role allows.
+                this.finishLoginRedirect();
+            },
+            () => this.finishLoginRedirect()
         );
     }
 

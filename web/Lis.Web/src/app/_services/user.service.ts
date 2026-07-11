@@ -89,28 +89,29 @@ export class UserService {
     }
 
     getRoleById(id:string) {
-        return this.http.get<any>(`${environment.ApplicationServer}/api/roles/${id}`)
+        const base = (environment.ApplicationServer || '').replace(/\/+$/, '');
+        return this.http.get<any>(`${base}/api/Roles/${id}`)
             .pipe(map(response => {
-                //console.log(response);
-
                 return response;
             }));
     }
 
     addRole(item: any) {
-        return this.http.post<any>(`${environment.ApplicationServer}/api/roles/`,item)
+        const base = (environment.ApplicationServer || '').replace(/\/+$/, '');
+        return this.http.post<any>(`${base}/api/Roles`, item)
         .pipe(map(response => {
-            //console.log(response);
-
+            if (response && !response.id && response.Id) {
+                response.id = response.Id;
+            }
             return response;
         }));
     }
 
     editRole(item: any) {
-        return this.http.put<any>(`${environment.ApplicationServer}/api/roles/${item.id}`,item)
+        const base = (environment.ApplicationServer || '').replace(/\/+$/, '');
+        const id = item && (item.id || item.Id);
+        return this.http.put<any>(`${base}/api/Roles/${id}`, item)
         .pipe(map(response => {
-            //console.log(response);
-
             return response;
         }));
     }

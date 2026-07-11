@@ -35,7 +35,13 @@ export class RolesDetailsComponent implements OnInit {
 
     this.userService.getRoleById(id)
       .subscribe(response => {
-        this.item = response.items[0];
+        this.item = (response && response.items && response.items[0]) ? response.items[0] : { name: '', rolePermission: [] };
+        if (!this.item.rolePermission) {
+          this.item.rolePermission = this.item.RolePermission || [];
+        }
+        this.isLoaded = true;
+      }, () => {
+        this.item = { name: '', rolePermission: [] };
         this.isLoaded = true;
       });
   }

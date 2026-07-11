@@ -1,7 +1,12 @@
 import { Injectable } from '@angular/core';
 import { Router, CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 import { AuthenticationService } from '../_services';
-import { hasAnyModuleAccess, isAdministrator, resolveRoutePermission } from './permission.util';
+import {
+  hasAnyMenuAccess,
+  hasAnyModuleAccess,
+  isAdministrator,
+  resolveRoutePermission
+} from './permission.util';
 
 @Injectable({ providedIn: 'root' })
 export class PermissionGuard implements CanActivate {
@@ -23,10 +28,14 @@ export class PermissionGuard implements CanActivate {
 
     const routeModules = route.data['modules'] as string[];
     const routeAccess = route.data['access'] as number;
+    const routeMenuKey = route.data['menuKey'] as string;
 
     if (routeModules && routeModules.length > 0) {
       const access = routeAccess != null ? routeAccess : 63;
-      if (hasAnyModuleAccess(user, routeModules, access)) {
+      const allowed = routeMenuKey
+        ? hasAnyMenuAccess(user, routeModules, routeMenuKey, access)
+        : hasAnyModuleAccess(user, routeModules, access);
+      if (allowed) {
         return true;
       }
       this.router.navigate(['/'], { queryParams: { denied: '1' } });
@@ -39,7 +48,11 @@ export class PermissionGuard implements CanActivate {
     }
 
     const access = rule.access != null ? rule.access : 63;
-    if (hasAnyModuleAccess(user, rule.modules, access)) {
+    const allowed = rule.menuKey
+      ? hasAnyMenuAccess(user, rule.modules, rule.menuKey, access, rule.alternateMenuKeys)
+      : hasAnyModuleAccess(user, rule.modules, access);
+
+    if (allowed) {
       return true;
     }
 

@@ -92,7 +92,7 @@ namespace Lis.Api.Controllers.Api
             }
         }
 
-        [QAuthorize(ModuleName = "Masters", ModulePermissionTypes = ModulePermissionType.CanAdd)]
+        [QAuthorize(ModuleName = "Masters", MenuKey = "MASTER_DEPARTMENT", ModulePermissionTypes = ModulePermissionType.CanAdd)]
         [HttpPost]
         [Route("")]
         public HttpResponseMessage Post(Departments department)
@@ -110,7 +110,7 @@ namespace Lis.Api.Controllers.Api
             }
         }
 
-        [QAuthorize(ModuleName = "Masters", ModulePermissionTypes = ModulePermissionType.CanEdit)]
+        [QAuthorize(ModuleName = "Masters", MenuKey = "MASTER_DEPARTMENT", ModulePermissionTypes = ModulePermissionType.CanEdit)]
         [HttpPost]
         [ActionName("Put")]
         [Route("Put")]
@@ -129,7 +129,7 @@ namespace Lis.Api.Controllers.Api
             }
         }
 
-        [QAuthorize(ModuleName = "Masters", ModulePermissionTypes = ModulePermissionType.CanDelete)]
+        [QAuthorize(ModuleName = "Masters", MenuKey = "MASTER_DEPARTMENT", ModulePermissionTypes = ModulePermissionType.CanDelete)]
         [HttpPost]
         [ActionName("Delete")]
         [Route("Delete")]

@@ -30,7 +30,7 @@ namespace Lis.Api.Controllers.Api
         /// </summary>
         /// <param name="specimen"> Specimen object of type LIS.DtoModel</param>
         /// <returns>HttpResponseMessage</returns>
-        [QAuthorize(ModuleName = "Masters", ModulePermissionTypes = ModulePermissionType.CanAdd)]
+        [QAuthorize(ModuleName = "Masters", MenuKey = "MASTER_SPECIMEN", ModulePermissionTypes = ModulePermissionType.CanAdd)]
         [HttpPost]
         [Route("")]
         public HttpResponseMessage Post(HISSpecimenMaster specimen)
@@ -67,7 +67,7 @@ namespace Lis.Api.Controllers.Api
             }
         }
 
-        [QAuthorize(ModuleName = "Masters", ModulePermissionTypes = ModulePermissionType.CanEdit)]
+        [QAuthorize(ModuleName = "Masters", MenuKey = "MASTER_SPECIMEN", ModulePermissionTypes = ModulePermissionType.CanEdit)]
         [HttpPost]
         [ActionName("Put")]
         [Route("Put")]
@@ -105,7 +105,7 @@ namespace Lis.Api.Controllers.Api
             }
         }
 
-        [QAuthorize(ModuleName = "Masters", ModulePermissionTypes = ModulePermissionType.CanDelete)]
+        [QAuthorize(ModuleName = "Masters", MenuKey = "MASTER_SPECIMEN", ModulePermissionTypes = ModulePermissionType.CanDelete)]
         [HttpPost]
         [ActionName("Delete")]
         [Route("Delete")]

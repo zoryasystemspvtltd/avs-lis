@@ -1,0 +1,2 @@
+SchemaName	TriggerName	ParentTable	is_disabled	create_date
+----------	-----------	-----------	-----------	-----------

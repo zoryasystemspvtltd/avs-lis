@@ -64,6 +64,7 @@ namespace Lis.Api.Models
         }
 
         public virtual DbSet<RoleModuleMappings> RoleModuleMappings { get; set; }
+        public virtual DbSet<RoleMenuPermission> RoleMenuPermissions { get; set; }
         public virtual DbSet<UserModule> Modules { get; set; }
         public virtual DbSet<ClientApplication> ClientApplications { get; set; }
         public virtual DbSet<UserApplicationMapping> UserApplicationMappings { get; set; }

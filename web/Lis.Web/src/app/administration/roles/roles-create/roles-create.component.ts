@@ -57,26 +57,33 @@ export class RolesCreateComponent implements OnInit {
 
   onSubmit() {
     this.submitted = true;
-    // stop here if form is invalid
     if (this.addRoleForm.invalid) {
       return;
     }
-    let item = this.addRoleForm.value;
-
-    this.userService.addRole(item)
-      .subscribe(data => {
-        
-        this.loading = false;
-        this.router.navigate(['/roles/edit/',data.id]);
-      },
-        (error) => {
-          let message: string = error;
-          this.loading = false;
-          this.message = (message != "") ? message : 'Data not saved.';
-          this.alertService.error(this.message);
-        });
+    const item = this.addRoleForm.value;
 
     this.loading = true;
+    this.userService.addRole(item)
+      .subscribe(data => {
+        this.loading = false;
+        const id = data && (data.id || data.Id);
+        if (!id) {
+          this.alertService.error('Role created but id was not returned.');
+          return;
+        }
+        this.router.navigate(['/roles/edit/', id]);
+      },
+        (error) => {
+          this.loading = false;
+          let message = '';
+          if (typeof error === 'string') {
+            message = error;
+          } else if (error && error.message) {
+            message = error.message;
+          }
+          this.message = message !== '' ? message : 'Data not saved.';
+          this.alertService.error(this.message);
+        });
   }
 
   getUserApps() {

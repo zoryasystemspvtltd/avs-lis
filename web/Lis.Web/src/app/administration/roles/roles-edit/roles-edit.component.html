@@ -1,202 +1,168 @@
 <div class="container-fluid" *ngIf="isLoaded">
 
     <div class="row">
-
         <div class="col-md-12">
-
             <div class="page-card">
 
                 <form [formGroup]="editRoleForm" (ngSubmit)="onSubmit()">
 
                     <div class="page-header-title">
-
-                        <h2 class="page-title">
-                            Edit Role
-                        </h2>
-
+                        <h2 class="page-title">Edit Role</h2>
                         <div class="single-line"></div>
-
                     </div>
 
-                    <h3 class="section-title">
-                        Role Information
-                    </h3>
-
-         
+                    <h3 class="section-title">Role Information</h3>
 
                     <div class="row form-row">
-
                         <div class="col-md-2">
-
-                            <label>
-                                Role Name
-                                <span class="required">*</span>
-                            </label>
-
+                            <label>Role Name <span class="required">*</span></label>
                         </div>
-
                         <div class="col-md-4">
-
                             <div class="input-group">
-
                                 <span class="input-group-addon">
                                     <i class="glyphicon glyphicon-user"></i>
                                 </span>
+                                <input type="text" class="form-control" formControlName="name"
+                                       placeholder="Enter Role Name" maxlength="25">
+                            </div>
+                            <span class="error" *ngIf="isInValid('name')">Role Name is required.</span>
+                            <input type="hidden" formControlName="id">
+                        </div>
+                    </div>
 
-                                <input
-                                    type="text"
-                                    class="form-control"
-                                    formControlName="name"
-                                    placeholder="Enter Role Name"
-                                    maxlength="25">
+                    <alert></alert>
 
+                    <hr>
+
+                    <div class="button-area">
+                        <button type="submit" class="btn btn-update" *ngIf="hasAccess()" [disabled]="loading">Save</button>
+                        <a class="btn btn-cancel" [routerLink]="['/','roles']">Back to List</a>
+                    </div>
+
+                    <hr>
+
+                    <h3 class="section-title">Role Permissions</h3>
+                    <p class="permission-hint">
+                        <strong>Module Enabled</strong> turns the module on or off.
+                        Expand a section to choose individual <strong>menus</strong>.
+                        Use <strong>Other Modules</strong> below for full View/Add/Edit/Delete/Authorize/Reject flags,
+                        including row-wise and table-wide Select All / De-select All.
+                    </p>
+
+                    <div class="permission-tree">
+
+                        <div class="perm-section" *ngFor="let section of sections">
+
+                            <div class="perm-section-header">
+                                <a class="tree-toggle" href="javascript:void(0)" (click)="toggleSection(section.id)">
+                                    <span class="glyphicon"
+                                          [ngClass]="isExpanded(section.id) ? 'glyphicon-chevron-down' : 'glyphicon-chevron-right'"></span>
+                                </a>
+                                <label class="module-enable-label">
+                                    <input type="checkbox"
+                                           [checked]="isSectionModulesEnabled(section)"
+                                           (change)="onSectionModuleToggle(section, $event)">
+                                    <strong>{{ section.title }}</strong>
+                                    <span class="module-enable-text">Module Enabled</span>
+                                </label>
+                                <span class="section-actions" *ngIf="isExpanded(section.id)">
+                                    <a href="javascript:void(0)" (click)="selectAllMenusInSection(section, true)">Select All Menus</a>
+                                    <a href="javascript:void(0)" (click)="selectAllMenusInSection(section, false)">Clear Menus</a>
+                                </span>
                             </div>
 
-                            <span
-                                class="error"
-                                *ngIf="isInValid('name')">
-
-                                Role Name is required.
-
-                            </span>
-
-                            <input
-                                type="hidden"
-                                formControlName="id">
+                            <div class="perm-section-body" *ngIf="isExpanded(section.id)">
+                                <div class="menu-permissions-title">Menu Permissions</div>
+                                <ul class="menu-permission-list">
+                                    <li *ngFor="let menu of section.menus" class="menu-permission-item">
+                                        <label [class.menu-disabled]="!canEditMenus(menu.moduleName)">
+                                            <input type="checkbox"
+                                                   [checked]="isMenuEnabled(menu.menuKey)"
+                                                   [disabled]="!canEditMenus(menu.moduleName)"
+                                                   (change)="onMenuToggle(menu.menuKey, menu.moduleName, $event)">
+                                            <span class="menu-label">{{ menu.label }}</span>
+                                            <span class="menu-module-tag" title="Parent module">{{ menu.moduleName }}</span>
+                                        </label>
+                                    </li>
+                                </ul>
+                            </div>
 
                         </div>
 
                     </div>
 
-                    <alert></alert>
-
-                    <hr>
-
-                    <div class="button-area">
-
-                        <button
-                            type="submit"
-                            class="btn btn-update"
-                            *ngIf="hasAccess()">
-
-                            Save
-
-                        </button>
-
-                        <a
-                            class="btn btn-cancel"
-                            [routerLink]="['/','roles']">
-
-                            Back to List
-
-                        </a>
-
-                    </div>
-
-                    <hr>
-
-                    <h3 class="section-title">
-                        Role Permissions
-                    </h3>
-
-                    <div class="table-responsive">
-
-                        <table class="table permission-table">
-
-                            <thead>
-
-                                <tr>
-
-                                    <th>Module</th>
-                                    <th>View</th>
-                                    <th>Add</th>
-                                    <th>Edit</th>
-                                    <th>Delete</th>
-                                    <th>Authorize</th>
-                                    <th>Reject</th>
-
-                                </tr>
-
-                            </thead>
-
-                            <tbody>
-
-                                <tr *ngFor="let perm of item.rolePermission">
-
-                                    <td class="module-name">
-
-                                        <strong>{{perm.name}}</strong>
-
-                                        <div class="permission-links">
-
-                                            <a
-                                                *ngIf="!isAllSelected(perm)"
-                                                (click)="selectAll(perm,true)">
-
-                                                Select All
-
-                                            </a>
-
-                                            <a
-                                                *ngIf="isNoneSelected(perm)"
-                                                (click)="selectAll(perm,false)">
-
-                                                De-select All
-
-                                            </a>
-
-                                        </div>
-
-                                    </td>
-
-                                    <td>
-                                        <input
-                                            type="checkbox"
-                                            [checked]="perm.canView"
-                                            (change)="onCheckRole($event,perm,32)">
-                                    </td>
-
-                                    <td>
-                                        <input
-                                            type="checkbox"
-                                            [checked]="perm.canAdd"
-                                            (change)="onCheckRole($event,perm,1)">
-                                    </td>
-
-                                    <td>
-                                        <input
-                                            type="checkbox"
-                                            [checked]="perm.canEdit"
-                                            (change)="onCheckRole($event,perm,2)">
-                                    </td>
-
-                                    <td>
-                                        <input
-                                            type="checkbox"
-                                            [checked]="perm.canDelete"
-                                            (change)="onCheckRole($event,perm,16)">
-                                    </td>
-
-                                    <td>
-                                        <input
-                                            type="checkbox"
-                                            [checked]="perm.canAuthorize"
-                                            (change)="onCheckRole($event,perm,4)">
-                                    </td>
-
-                                    <td>
-                                        <input
-                                            type="checkbox"
-                                            [checked]="perm.canReject"
-                                            (change)="onCheckRole($event,perm,8)">
-                                    </td>
-
-                                </tr>
-
-                            </tbody>
-
-                        </table>
-
+                    <div class="other-modules" *ngIf="item.rolePermission?.length">
+                        <div class="other-modules-header">
+                            <h4 class="other-modules-title">Other Modules</h4>
+                            <span class="other-modules-actions">
+                                <a href="javascript:void(0)" (click)="selectAllOtherModules(true)">Select All</a>
+                                <a href="javascript:void(0)" (click)="selectAllOtherModules(false)">De-select All</a>
+                            </span>
+                        </div>
+                        <p class="permission-hint">
+                            Advanced bitmask permissions for every module. Use row links to select/deselect one module,
+                            or the header links to select/deselect all rows.
+                        </p>
+                        <div class="table-responsive">
+                            <table class="table permission-table">
+                                <thead>
+                                    <tr>
+                                        <th>Module</th>
+                                        <th>View</th>
+                                        <th>Add</th>
+                                        <th>Edit</th>
+                                        <th>Delete</th>
+                                        <th>Authorize</th>
+                                        <th>Reject</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let perm of item.rolePermission">
+                                        <td class="module-name">
+                                            <strong>{{ perm.name }}</strong>
+                                            <div class="permission-links">
+                                                <a *ngIf="!isAllSelected(perm)"
+                                                   href="javascript:void(0)"
+                                                   (click)="selectAll(perm, true)">Select All</a>
+                                                <a *ngIf="isNoneSelected(perm)"
+                                                   href="javascript:void(0)"
+                                                   (click)="selectAll(perm, false)">De-select All</a>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <input type="checkbox"
+                                                   [checked]="perm.canView"
+                                                   (change)="onCheckRole($event, perm, 32)">
+                                        </td>
+                                        <td>
+                                            <input type="checkbox"
+                                                   [checked]="perm.canAdd"
+                                                   (change)="onCheckRole($event, perm, 1)">
+                                        </td>
+                                        <td>
+                                            <input type="checkbox"
+                                                   [checked]="perm.canEdit"
+                                                   (change)="onCheckRole($event, perm, 2)">
+                                        </td>
+                                        <td>
+                                            <input type="checkbox"
+                                                   [checked]="perm.canDelete"
+                                                   (change)="onCheckRole($event, perm, 16)">
+                                        </td>
+                                        <td>
+                                            <input type="checkbox"
+                                                   [checked]="perm.canAuthorize"
+                                                   (change)="onCheckRole($event, perm, 4)">
+                                        </td>
+                                        <td>
+                                            <input type="checkbox"
+                                                   [checked]="perm.canReject"
+                                                   (change)="onCheckRole($event, perm, 8)">
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
 
                     <alert></alert>
@@ -204,32 +170,12 @@
                     <hr>
 
                     <div class="button-area">
-
-                        <button
-                            type="submit"
-                            class="btn btn-update"
-                            *ngIf="hasAccess()">
-
-                            Save
-
-                        </button>
-
-                        <a
-                            class="btn btn-cancel"
-                            [routerLink]="['/','roles']">
-
-                            Back to List
-
-                        </a>
-
+                        <button type="submit" class="btn btn-update" *ngIf="hasAccess()" [disabled]="loading">Save</button>
+                        <a class="btn btn-cancel" [routerLink]="['/','roles']">Back to List</a>
                     </div>
 
                 </form>
-
             </div>
-
         </div>
-
     </div>
-
 </div>

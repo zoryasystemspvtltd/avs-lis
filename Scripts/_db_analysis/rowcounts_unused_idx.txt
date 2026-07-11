@@ -1,0 +1,77 @@
+TableName	RowCnt
+---------	------
+AspNetRoles	3
+AspNetUserClaims	0
+AspNetUserLogins	0
+AspNetUserRoles	10
+AspNetUsers	8
+ClientApplication	1
+ContainerMaster	49
+ControlResultDetails	3
+ControlResults	2
+CorporateMaster	286
+Department	16
+EquipmentHeartBeat	1
+EquipmentMaster	144
+HISParameterMaster	36
+HISParameterRangMaster	34
+HISSpecimenMaster	62
+HISTestMaster	3091
+MethodMaster	49
+MigrationHistory	13
+PatientDetails	1820
+PatientVisit	1832
+RadiologyRequestDetail	160
+RadiologyResultDetail	51
+ReferralDoctorMaster	240
+RefreshTokens	5
+RoleMenuPermission	0
+RoleModuleMappings	37
+SaleInvoice	1654
+SaleInvoiceDetail	1885
+SampleRejectionReasonMaster	6
+SampleTypeMaster	48
+TestCategoryMaster	48
+TestGroupMaster	49
+TestMappingMaster	201
+TestParameterMappingMaster	31
+TestParameters	1
+TestProfileDetail	492
+TestProfileMaster	452
+TestRateMaster	3270
+TestRequestDetails	1574
+TestResultDetails	30
+TestResults	15
+UnitMaster	96
+UserApplicationMappings	3
+UserModules	17
+CType	Cnt
+-----	---
+PK	45
+UQ	0
+FK	42
+DEFAULT	22
+CHECK	0
+INDEX_NONPK	45
+TableName	IndexName	Reads	Writes
+---------	---------	-----	------
+RoleModuleMappings	IX_RoleId	0	117
+RoleModuleMappings	IX_ApplicationId	0	117
+SaleInvoiceDetail	IX_TestId	0	20
+SaleInvoiceDetail	IX_RequestDetailId	0	20
+SaleInvoice	IX_RequestDetailId	0	14
+SaleInvoice	IX_PatientId	0	14
+TestResults	IX_PatientId	0	10
+PatientVisit	UX_PatientVisit_VisitId	0	9
+PatientDetails	UX_PatientDetails_MRNo	0	4
+PatientDetails	UX_PatientDetails_VisitId	0	4
+RadiologyRequestDetail	IX_RadiologyRequest_Patient	0	3
+RadiologyRequestDetail	IX_RadiologyRequest_Status	0	3
+RoleMenuPermission	IX_RoleMenuPermission_ModuleId	0	2
+UserApplicationMappings	IX_ClientApplicationId	0	1
+UserModules	IX_ApplicationId	0	1
+AspNetUserClaims	IX_UserId	0	0
+ControlResultDetails	IX_ControlResultId	0	0
+TestParameters	IX_TestRequestDetailsId	0	0
+TestProfileDetail	IX_TestProfileId	0	0
+TestProfileDetail	IX_TestId	0	0
