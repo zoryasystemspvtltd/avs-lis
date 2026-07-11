@@ -15,6 +15,7 @@ namespace LIS.BusinessLogic
         private ModuleRepo<TestMappingMaster> repo;
         private ModuleRepo<EquipmentMaster> equipmentRepo;
         private ModuleRepo<HisTestMaster> hisTestRepo;
+        private ModuleRepo<HISParameterMaster> paramRepoHis;
         private IModuleIdentity identity;
         private IFileHandler file;
         private GenericUnitOfWork genericUnitOfWork;
@@ -31,6 +32,7 @@ namespace LIS.BusinessLogic
             repo = new ModuleRepo<TestMappingMaster>(logger, this.identity, this.genericUnitOfWork);
             equipmentRepo = new ModuleRepo<EquipmentMaster>(logger, this.identity, this.genericUnitOfWork);
             hisTestRepo = new ModuleRepo<HisTestMaster>(logger, this.identity, this.genericUnitOfWork);
+            paramRepoHis = new ModuleRepo<HISParameterMaster>(logger, this.identity, this.genericUnitOfWork);
         }
 
         public IEnumerable<TestPanelMapping> Get(int equeipmentId)
@@ -121,14 +123,14 @@ namespace LIS.BusinessLogic
 
             foreach (var mapping in mappings)
             {
-                var hisParam = hisTestRepo.Get(p => p.HISTestCode.Equals(mapping.HISParamCode, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+                var specimen = ResolveSpecimenFromParam(mapping.HISParamCode);
                 if (mapping.Id == 0)
                 {
                     mapping.EquipmentId = equipmentId;
-                    if (hisParam != null)
+                    if (specimen != null)
                     {
-                        mapping.SpecimenCode = hisParam.HISSpecimenCode;
-                        mapping.SpecimenName = hisParam.HISSpecimenName;
+                        mapping.SpecimenCode = specimen.HISSpecimenCode;
+                        mapping.SpecimenName = specimen.HISSpecimenName;
                     }
                     repo.Add(mapping);
                 }
@@ -136,10 +138,10 @@ namespace LIS.BusinessLogic
                 {
                     var map = repo.Get(mapping.Id);
                     map.EquipmentId = equipmentId;
-                    if (hisParam != null)
+                    if (specimen != null)
                     {
-                        map.SpecimenCode = hisParam.HISSpecimenCode;
-                        map.SpecimenName = hisParam.HISSpecimenName;
+                        map.SpecimenCode = specimen.HISSpecimenCode;
+                        map.SpecimenName = specimen.HISSpecimenName;
                     }
                     map.LISTestCode = mapping.LISTestCode;
                     map.LISTestCodeDescription = mapping.LISTestCodeDescription;
@@ -148,6 +150,43 @@ namespace LIS.BusinessLogic
                 }
 
             }
+        }
+
+        private HisTestMaster ResolveSpecimenFromParam(string hisParamCode)
+        {
+            if (string.IsNullOrWhiteSpace(hisParamCode))
+            {
+                return null;
+            }
+
+            var hisParam = paramRepoHis.Get(p =>
+                    p.HISParamCode != null
+                    && p.HISParamCode.Equals(hisParamCode, StringComparison.OrdinalIgnoreCase))
+                .FirstOrDefault();
+
+            if (hisParam == null)
+            {
+                return null;
+            }
+
+            if (hisParam.HisTestId.HasValue && hisParam.HisTestId.Value > 0)
+            {
+                var byId = hisTestRepo.Get(hisParam.HisTestId.Value);
+                if (byId != null)
+                {
+                    return byId;
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(hisParam.HISTestCode))
+            {
+                return null;
+            }
+
+            return hisTestRepo.Get(p =>
+                    p.HISTestCode != null
+                    && p.HISTestCode.Equals(hisParam.HISTestCode, StringComparison.OrdinalIgnoreCase))
+                .FirstOrDefault();
         }
     }
 }

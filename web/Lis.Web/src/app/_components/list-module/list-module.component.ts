@@ -330,7 +330,12 @@ export class ListModuleComponent implements OnInit, OnChanges {
       this.option.ReceivedOnly = true;
     }
 
-    if (this.schemma.allowedFilter && this.filterStatus >= 0 && !this.schemma.receivedOnly) {
+    // Apply status for fixed queues (technician/doctor/approved) and status-tab filters.
+    // Previously Status was only sent when allowedFilter was set, so technicianapprovals
+    // never got filterStatus:2 and listed New samples without results.
+    if (!this.schemma.receivedOnly
+      && this.filterStatus >= 0
+      && (this.schemma.filterStatus != null || this.schemma.allowedFilter)) {
       this.option.SearchCondition = {
         'Name': 'Status',
         'Value': this.filterStatus

@@ -24,6 +24,7 @@ namespace LIS.BusinessLogic
         private ModuleRepo<Departments> departmentRepo;
         private ModuleRepo<TestMappingMaster> mappingRepo;
         private ModuleRepo<TestResult> testResultRepo;
+        private ModuleRepo<TestResultDetails> testResultDetailsRepo;
         public PatientDetailManager(ILogger Logger
             , IModuleIdentity identity
             , GenericUnitOfWork genericUnitOfWork
@@ -40,6 +41,7 @@ namespace LIS.BusinessLogic
             mappingRepo = new ModuleRepo<TestMappingMaster>(logger, this.identity, this.genericUnitOfWork);
             departmentRepo = new ModuleRepo<Departments>(logger, this.identity, this.genericUnitOfWork);
             testResultRepo = new ModuleRepo<TestResult>(logger, this.identity, this.genericUnitOfWork);
+            testResultDetailsRepo = new ModuleRepo<TestResultDetails>(logger, this.identity, this.genericUnitOfWork);
         }
         public long Add(PatientDetail patientDetail)
         {
@@ -92,6 +94,18 @@ namespace LIS.BusinessLogic
                 query = testRequestRepo.Get()
                     .Where(p => p.ReportStatus == option.Status)
                     .ToList();
+            }
+
+            // Technician approval queue: only tests with entered/received parameter values.
+            if (!option.ReceivedOnly && option.Status == ReportStatusType.ReportGenerated)
+            {
+                query = FilterRequestsWithEnteredResults(query, requireTechnicianReview: false);
+            }
+
+            // Doctor approval queue: only tests already approved by technician (ReviewedBy set + results present).
+            if (!option.ReceivedOnly && option.Status == ReportStatusType.TechnicianApproved)
+            {
+                query = FilterRequestsWithEnteredResults(query, requireTechnicianReview: true);
             }
 
             if (!string.IsNullOrWhiteSpace(option.SearchText))
@@ -376,6 +390,49 @@ namespace LIS.BusinessLogic
         private static bool IsRecentSampleStatus(ReportStatusType status)
         {
             return status == ReportStatusType.New || status == ReportStatusType.SentToEquipment;
+        }
+
+        /// <summary>
+        /// Keeps only requests that have a TestResult with at least one non-blank parameter value.
+        /// When requireTechnicianReview is true (doctor queue), also requires ReviewedBy to be set.
+        /// </summary>
+        private IEnumerable<TestRequestDetail> FilterRequestsWithEnteredResults(
+            IEnumerable<TestRequestDetail> requests,
+            bool requireTechnicianReview)
+        {
+            var list = requests?.ToList() ?? new List<TestRequestDetail>();
+            if (list.Count == 0)
+            {
+                return list;
+            }
+
+            var requestIds = list.Select(r => r.Id).Distinct().ToList();
+            var results = testResultRepo.Get(r => requestIds.Contains(r.TestRequestId)).ToList();
+            if (results.Count == 0)
+            {
+                return Enumerable.Empty<TestRequestDetail>();
+            }
+
+            var latestByRequest = results
+                .GroupBy(r => r.TestRequestId)
+                .Select(g => g.OrderByDescending(x => x.Id).First())
+                .ToList();
+
+            var resultIds = latestByRequest.Select(r => r.Id).ToList();
+            var resultIdsWithValues = new HashSet<long>(
+                testResultDetailsRepo.Get(d => resultIds.Contains(d.TestResultId))
+                    .AsEnumerable()
+                    .Where(d => !string.IsNullOrWhiteSpace(d.ParamValue))
+                    .Select(d => d.TestResultId)
+                    .Distinct());
+
+            var requestIdsWithValues = new HashSet<long>(
+                latestByRequest
+                    .Where(r => resultIdsWithValues.Contains(r.Id)
+                        && (!requireTechnicianReview || !string.IsNullOrWhiteSpace(r.ReviewedBy)))
+                    .Select(r => r.TestRequestId));
+
+            return list.Where(r => requestIdsWithValues.Contains(r.Id));
         }
     }
 }

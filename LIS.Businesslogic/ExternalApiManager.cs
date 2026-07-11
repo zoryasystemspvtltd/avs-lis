@@ -85,16 +85,21 @@ namespace LIS.BusinessLogic
             var lstResultDetails = new List<TestResultDetailsDto>();
             foreach (var resultDetail in result.ResultDetails)
             {
-                var paramCodeHis = paramRepoHis.Get(p => p.LISParamCode.Equals(resultDetail.LISParamCode, StringComparison.OrdinalIgnoreCase)
-                                                    && p.HISTestCode.Equals(result.TestResult.HISTestCode, StringComparison.OrdinalIgnoreCase)
-                                                    ).FirstOrDefault().HISParamCode;
+                var hisParam = paramRepoHis.Get(p =>
+                        p.LISParamCode != null
+                        && resultDetail.LISParamCode != null
+                        && p.LISParamCode.Equals(resultDetail.LISParamCode, StringComparison.OrdinalIgnoreCase)
+                        && p.HISTestCode != null
+                        && result.TestResult.HISTestCode != null
+                        && p.HISTestCode.Equals(result.TestResult.HISTestCode, StringComparison.OrdinalIgnoreCase))
+                    .FirstOrDefault();
 
                 var testResultDetail = new TestResultDetailsDto
                 {
                     CreatedBy = resultDetail.CreatedBy,
                     CreatedOn = resultDetail.CreatedOn,
                     Id = resultDetail.Id,
-                    LISParamCode = paramCodeHis,
+                    LISParamCode = hisParam?.HISParamCode,
                     LISParamUnit = resultDetail.ParamUnit,
                     LISParamValue = resultDetail.ParamValue,
                     TestResultId = result.TestResult.Id
