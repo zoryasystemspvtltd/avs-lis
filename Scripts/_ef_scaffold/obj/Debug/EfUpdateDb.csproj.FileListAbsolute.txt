@@ -1,0 +1,11 @@
+I:\Projects\LIS\avs-lis\Scripts\_ef_scaffold\bin\UpdateDb\EfUpdateDb.exe
+I:\Projects\LIS\avs-lis\Scripts\_ef_scaffold\bin\UpdateDb\EfUpdateDb.pdb
+I:\Projects\LIS\avs-lis\Scripts\_ef_scaffold\bin\UpdateDb\EntityFramework.dll
+I:\Projects\LIS\avs-lis\Scripts\_ef_scaffold\bin\UpdateDb\EntityFramework.SqlServer.dll
+I:\Projects\LIS\avs-lis\Scripts\_ef_scaffold\bin\UpdateDb\EntityFramework.xml
+I:\Projects\LIS\avs-lis\Scripts\_ef_scaffold\bin\UpdateDb\EntityFramework.SqlServer.xml
+I:\Projects\LIS\avs-lis\Scripts\_ef_scaffold\obj\Debug\EfUpdateDb.csproj.AssemblyReference.cache
+I:\Projects\LIS\avs-lis\Scripts\_ef_scaffold\obj\Debug\EfUpdateDb.csproj.CoreCompileInputs.cache
+I:\Projects\LIS\avs-lis\Scripts\_ef_scaffold\obj\Debug\EfUpdateDb.csproj.Up2Date
+I:\Projects\LIS\avs-lis\Scripts\_ef_scaffold\obj\Debug\EfUpdateDb.exe
+I:\Projects\LIS\avs-lis\Scripts\_ef_scaffold\obj\Debug\EfUpdateDb.pdb

@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\..\packages\EntityFramework.6.4.4\build\EntityFramework.props" Condition="Exists('..\..\packages\EntityFramework.6.4.4\build\EntityFramework.props')" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.Default.props" Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.Default.props')" />
@@ -248,6 +248,9 @@
       <DependentUpon>202607081804055_IdentityModelSync.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\202607111930000_AddRoleMenuPermission.cs" />
+    <Compile Include="Migrations\202607111930000_AddRoleMenuPermission.Designer.cs">
+      <DependentUpon>202607111930000_AddRoleMenuPermission.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\ClientApplication.cs" />
     <Compile Include="Models\ModuleIdentity.cs" />
@@ -331,6 +334,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202607081804055_IdentityModelSync.resx">
       <DependentUpon>202607081804055_IdentityModelSync.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202607111930000_AddRoleMenuPermission.resx">
+      <DependentUpon>202607111930000_AddRoleMenuPermission.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

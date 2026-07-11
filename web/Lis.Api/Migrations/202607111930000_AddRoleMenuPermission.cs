@@ -2,51 +2,56 @@ namespace Lis.Api.Migrations
 {
     using System.Data.Entity.Migrations;
 
-    public class AddRoleMenuPermission : DbMigration
+    /// <summary>
+    /// Adds RoleMenuPermission overlay table for menu-level role permissions.
+    /// Idempotent: safe when table already exists (SQL script / prior deploy).
+    /// </summary>
+    public partial class AddRoleMenuPermission : DbMigration
     {
         public override void Up()
         {
-            CreateTable(
-                "dbo.RoleMenuPermission",
-                c => new
-                {
-                    Id = c.Long(nullable: false, identity: true),
-                    RoleId = c.String(nullable: false, maxLength: 128),
-                    ModuleId = c.Long(nullable: false),
-                    MenuKey = c.String(nullable: false, maxLength: 100),
-                    CanView = c.Boolean(nullable: false),
-                    CanAdd = c.Boolean(nullable: false),
-                    CanEdit = c.Boolean(nullable: false),
-                    CanDelete = c.Boolean(nullable: false),
-                    CanAuthorize = c.Boolean(nullable: false),
-                    CanReject = c.Boolean(nullable: false),
-                    IsActive = c.Boolean(nullable: false),
-                    ApplicationId = c.Int(),
-                    CreatedBy = c.String(maxLength: 128),
-                    CreatedOn = c.DateTime(),
-                    ModifiedBy = c.String(maxLength: 128),
-                    ModifiedOn = c.DateTime(),
-                })
-                .PrimaryKey(t => t.Id)
-                .ForeignKey("dbo.AspNetRoles", t => t.RoleId, cascadeDelete: true)
-                .ForeignKey("dbo.UserModules", t => t.ModuleId, cascadeDelete: true)
-                .ForeignKey("dbo.ClientApplication", t => t.ApplicationId)
-                .Index(t => t.RoleId)
-                .Index(t => t.ModuleId)
-                .Index(t => t.ApplicationId)
-                .Index(t => new { t.RoleId, t.ModuleId, t.MenuKey, t.ApplicationId }, unique: true, name: "IX_RoleMenuPermission_Unique");
+            Sql(@"
+IF OBJECT_ID(N'dbo.RoleMenuPermission', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.RoleMenuPermission
+    (
+        Id              BIGINT IDENTITY(1,1) NOT NULL CONSTRAINT PK_RoleMenuPermission PRIMARY KEY,
+        RoleId          NVARCHAR(128) NOT NULL,
+        ModuleId        BIGINT NOT NULL,
+        MenuKey         NVARCHAR(100) NOT NULL,
+        CanView         BIT NOT NULL CONSTRAINT DF_RoleMenuPermission_CanView DEFAULT(0),
+        CanAdd          BIT NOT NULL CONSTRAINT DF_RoleMenuPermission_CanAdd DEFAULT(0),
+        CanEdit         BIT NOT NULL CONSTRAINT DF_RoleMenuPermission_CanEdit DEFAULT(0),
+        CanDelete       BIT NOT NULL CONSTRAINT DF_RoleMenuPermission_CanDelete DEFAULT(0),
+        CanAuthorize    BIT NOT NULL CONSTRAINT DF_RoleMenuPermission_CanAuthorize DEFAULT(0),
+        CanReject       BIT NOT NULL CONSTRAINT DF_RoleMenuPermission_CanReject DEFAULT(0),
+        IsActive        BIT NOT NULL CONSTRAINT DF_RoleMenuPermission_IsActive DEFAULT(1),
+        ApplicationId   INT NULL,
+        CreatedBy       NVARCHAR(128) NULL,
+        CreatedOn       DATETIME NULL,
+        ModifiedBy      NVARCHAR(128) NULL,
+        ModifiedOn      DATETIME NULL,
+        CONSTRAINT FK_RoleMenuPermission_Role FOREIGN KEY (RoleId) REFERENCES dbo.AspNetRoles(Id) ON DELETE CASCADE,
+        CONSTRAINT FK_RoleMenuPermission_Module FOREIGN KEY (ModuleId) REFERENCES dbo.UserModules(Id) ON DELETE CASCADE,
+        CONSTRAINT FK_RoleMenuPermission_App FOREIGN KEY (ApplicationId) REFERENCES dbo.ClientApplication(Id)
+    );
+
+    CREATE INDEX IX_RoleMenuPermission_RoleId ON dbo.RoleMenuPermission(RoleId);
+    CREATE INDEX IX_RoleMenuPermission_ModuleId ON dbo.RoleMenuPermission(ModuleId);
+    CREATE INDEX IX_RoleMenuPermission_ApplicationId ON dbo.RoleMenuPermission(ApplicationId);
+
+    CREATE UNIQUE INDEX IX_RoleMenuPermission_Unique
+        ON dbo.RoleMenuPermission(RoleId, ModuleId, MenuKey, ApplicationId);
+END
+");
         }
 
         public override void Down()
         {
-            DropForeignKey("dbo.RoleMenuPermission", "ApplicationId", "dbo.ClientApplication");
-            DropForeignKey("dbo.RoleMenuPermission", "ModuleId", "dbo.UserModules");
-            DropForeignKey("dbo.RoleMenuPermission", "RoleId", "dbo.AspNetRoles");
-            DropIndex("dbo.RoleMenuPermission", "IX_RoleMenuPermission_Unique");
-            DropIndex("dbo.RoleMenuPermission", new[] { "ApplicationId" });
-            DropIndex("dbo.RoleMenuPermission", new[] { "ModuleId" });
-            DropIndex("dbo.RoleMenuPermission", new[] { "RoleId" });
-            DropTable("dbo.RoleMenuPermission");
+            Sql(@"
+IF OBJECT_ID(N'dbo.RoleMenuPermission', N'U') IS NOT NULL
+    DROP TABLE dbo.RoleMenuPermission;
+");
         }
     }
 }
