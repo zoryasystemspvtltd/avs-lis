@@ -70,7 +70,8 @@
             <div class="col-md-4" *ngIf="!schemma.hideSearch">
                 <div class="input-group">
                     <span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>
-                    <input type="text" class="form-control ng-pristine ng-untouched ng-valid ng-empty" placeholder="Search" (keyup)="doSearch();" [(ngModel)]="searchText">
+                    <input type="text" class="form-control ng-pristine ng-untouched ng-valid ng-empty" placeholder="Search"
+                        (ngModelChange)="doSearch()" [(ngModel)]="searchText">
                 </div>
             </div>
         </div>

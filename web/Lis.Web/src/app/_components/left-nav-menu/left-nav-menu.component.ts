@@ -40,7 +40,7 @@ export class LeftNavMenuComponent implements OnInit {
     this.expandWorkingBoard = this.matchesAny(path, [
       '/samples', '/sample-collection', '/sample-receiving', '/radiology-report-entry',
       '/radiology-doctor-approvals', '/radiology-approved-reports',
-      '/lab-result-entry', '/technicianapprovals', '/doctorapprovals', '/approvedsamples',
+      '/lab-result-entry', '/edit-test-results', '/technicianapprovals', '/doctorapprovals', '/approvedsamples',
       '/rejectedsamples', '/quality-controls'
     ]);
     this.expandSetup = this.matchesAny(path, ['/departments', '/units', '/methods', '/equipments', '/equipment-heartbeat']);

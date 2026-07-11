@@ -11,6 +11,8 @@ namespace LIS.DtoModel.Models.TestResultEdit
         public string PatientName { get; set; }
         public DateTime? FromDate { get; set; }
         public DateTime? ToDate { get; set; }
+        /// <summary>When true, only samples ready for technician approval (ReportGenerated) are returned.</summary>
+        public bool ReadyForTechnicianApproval { get; set; }
     }
 
     public class TestResultEditSearchRow

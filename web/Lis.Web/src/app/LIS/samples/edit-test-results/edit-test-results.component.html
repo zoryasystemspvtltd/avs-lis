@@ -4,10 +4,11 @@
   <alert></alert>
   <hr />
 
-  <div class="panel panel-default" *ngIf="!data && !directSampleMode">
-    <div class="panel-heading"><strong>Search Sample</strong></div>
+  <div class="panel panel-default" *ngIf="!data && !directSampleMode && !sampleRouteActive">
+    <div class="panel-heading"><strong>{{ isTestResultEditMode ? 'Samples Ready for Technician Approval' : 'Search Sample' }}</strong></div>
     <div class="panel-body">
-      <p class="text-muted">Select a sample from <a routerLink="/samples">Recent Samples</a>, or search below.</p>
+      <p class="text-muted" *ngIf="!isTestResultEditMode">Select a sample from <a routerLink="/samples">Recent Samples</a>, or search below.</p>
+      <p class="text-muted" *ngIf="isTestResultEditMode">Only tests with status <strong>Report Generated</strong> (ready for technician approval) are listed. Search to narrow the list, or open a sample to edit parameter values.</p>
       <div class="row">
         <div class="col-sm-3 form-group">
           <label>Sample / Lab No</label>
@@ -36,9 +37,9 @@
             <span class="glyphicon glyphicon-search"></span> Open Sample
           </button>
           <button type="button" class="btn btn-default" (click)="search()" [disabled]="loading" style="margin-left: 8px;">
-            Advanced Search
+            {{ isTestResultEditMode ? 'Refresh / Search' : 'Advanced Search' }}
           </button>
-          <button type="button" class="btn btn-default" (click)="backToSamples()" [disabled]="loading" style="margin-left: 8px;">
+          <button type="button" class="btn btn-default" *ngIf="!isTestResultEditMode" (click)="backToSamples()" [disabled]="loading" style="margin-left: 8px;">
             Recent Samples
           </button>
         </div>
@@ -69,7 +70,7 @@
             <td>
               <button type="button" class="btn btn-xs btn-primary" (click)="openSample(row)"
                 [disabled]="!canOpenSample(row)">
-                {{ row.hasResults ? 'Edit' : 'Enter' }}
+                Edit
               </button>
             </td>
           </tr>
@@ -78,10 +79,12 @@
     </div>
   </div>
 
-  <p *ngIf="directSampleMode && loading && !data"><span class="glyphicon glyphicon-refresh glyphicon-spin"></span> Loading sample...</p>
-  <div class="alert alert-danger" *ngIf="directSampleMode && !loading && !data && loadError">
+  <p *ngIf="(directSampleMode || sampleRouteActive) && loading && !data"><span class="glyphicon glyphicon-refresh glyphicon-spin"></span> Loading sample...</p>
+  <div class="alert alert-danger" *ngIf="(directSampleMode || sampleRouteActive) && !loading && !data && loadError">
     {{ loadError }}
-    <button type="button" class="btn btn-default btn-sm" style="margin-left: 12px;" (click)="backToSamples()">Back to Recent Samples</button>
+    <button type="button" class="btn btn-default btn-sm" style="margin-left: 12px;" (click)="backToList()">
+      {{ isTestResultEditMode ? 'Back to List' : 'Back to Recent Samples' }}
+    </button>
   </div>
   <p class="text-danger" *ngIf="directSampleMode && filterError">{{ filterError }}</p>
 
@@ -89,7 +92,9 @@
     <div class="panel panel-info">
       <div class="panel-heading">
         <strong>Sample Header</strong>
-        <button type="button" class="btn btn-xs btn-default pull-right" (click)="backToSamples()">Back to Recent Samples</button>
+        <button type="button" class="btn btn-xs btn-default pull-right" (click)="backToList()">
+          {{ isTestResultEditMode ? 'Back to List' : 'Back to Recent Samples' }}
+        </button>
       </div>
       <div class="panel-body">
         <div class="row">

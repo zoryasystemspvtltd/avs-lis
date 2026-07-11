@@ -55,17 +55,29 @@ namespace LIS.BusinessLogic
             var hasInvoice = !string.IsNullOrWhiteSpace(options.InvoiceNo);
             var hasPatient = !string.IsNullOrWhiteSpace(options.PatientName);
             var hasDate = options.FromDate.HasValue || options.ToDate.HasValue;
+            var readyForTech = options.ReadyForTechnicianApproval;
 
             IEnumerable<TestRequestDetail> query;
-            if (hasDate && !hasSample && !hasInvoice && !hasPatient)
+            if (readyForTech && !hasSample && !hasInvoice && !hasPatient && !hasDate)
+            {
+                query = requestRepo.Get(r => r.ReportStatus == ReportStatusType.ReportGenerated).AsEnumerable();
+            }
+            else if (hasDate && !hasSample && !hasInvoice && !hasPatient)
             {
                 var from = options.FromDate?.Date ?? DateTime.MinValue;
                 var to = options.ToDate.HasValue ? options.ToDate.Value.Date.AddDays(1) : DateTime.MaxValue;
-                query = requestRepo.Get(r => r.SampleCollectionDate >= from && r.SampleCollectionDate < to).AsEnumerable();
+                query = readyForTech
+                    ? requestRepo.Get(r =>
+                        r.ReportStatus == ReportStatusType.ReportGenerated &&
+                        r.SampleCollectionDate >= from &&
+                        r.SampleCollectionDate < to).AsEnumerable()
+                    : requestRepo.Get(r => r.SampleCollectionDate >= from && r.SampleCollectionDate < to).AsEnumerable();
             }
             else
             {
-                query = requestRepo.Get().AsEnumerable();
+                query = readyForTech
+                    ? requestRepo.Get(r => r.ReportStatus == ReportStatusType.ReportGenerated).AsEnumerable()
+                    : requestRepo.Get().AsEnumerable();
             }
             var patients = new Dictionary<long, PatientDetail>();
             if (hasPatient)
@@ -156,10 +168,18 @@ namespace LIS.BusinessLogic
                 .GroupBy(r => r.SampleNo ?? r.HISRequestNo)
                 .Select(g =>
                 {
-                    var first = g.OrderByDescending(x => x.Id).First();
+                    var statusGroup = readyForTech
+                        ? g.Where(req => req.ReportStatus == ReportStatusType.ReportGenerated).ToList()
+                        : g.ToList();
+                    if (!statusGroup.Any())
+                    {
+                        return null;
+                    }
+
+                    var first = statusGroup.OrderByDescending(x => x.Id).First();
                     patients.TryGetValue(first.PatientId, out var patient);
-                    var hasResults = g.Any(req => persistedRequestIds.Contains(req.Id));
-                    var canEnter = g.Any(req =>
+                    var hasResults = statusGroup.Any(req => persistedRequestIds.Contains(req.Id));
+                    var canEnter = statusGroup.Any(req =>
                         CanEditStatus(req.ReportStatus, false) &&
                         HasEditableParametersCached(req.HISTestCode, allParams, editableByTestCode));
                     return new TestResultEditSearchRow
@@ -174,6 +194,7 @@ namespace LIS.BusinessLogic
                         CanEnter = canEnter
                     };
                 })
+                .Where(r => r != null)
                 .OrderByDescending(r =>
                     !string.IsNullOrWhiteSpace(options.SampleNo) &&
                     r.SampleNo != null &&

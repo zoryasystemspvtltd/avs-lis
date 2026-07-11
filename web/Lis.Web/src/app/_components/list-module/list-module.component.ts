@@ -150,6 +150,9 @@ export class ListModuleComponent implements OnInit, OnChanges {
   subscription: Subscription
 
   getItems() {
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+    }
     if (!this.schemma.auto_refresh) {
       this.subscription = this.refreshItems().subscribe(() => { });
     }
@@ -257,7 +260,10 @@ export class ListModuleComponent implements OnInit, OnChanges {
         const haystack = [
           item.name, item.Name, item.code, item.Code,
           item.hisTestCode, item.hisTestCodeDescription,
-          item.hisParamCode, item.hisParamDescription,
+          item.hisParamCode, item.hISParamCode, item.HISParamCode,
+          item.hisParamDescription, item.hISParamDescription, item.HISParamDescription,
+          item.hisParamUnit, item.HISParamUnit,
+          item.hisParamMethod, item.HISParamMethod,
           item.hisSpecimenName, item.departmentName,
           item.invoiceNo, item.patientName, item.phone,
           item.hisPatientId, item.lisTestCode
@@ -324,7 +330,7 @@ export class ListModuleComponent implements OnInit, OnChanges {
       this.option.ReceivedOnly = true;
     }
 
-    if (this.filterStatus >= 0 && !this.schemma.receivedOnly) {
+    if (this.schemma.allowedFilter && this.filterStatus >= 0 && !this.schemma.receivedOnly) {
       this.option.SearchCondition = {
         'Name': 'Status',
         'Value': this.filterStatus
@@ -470,6 +476,10 @@ export class ListModuleComponent implements OnInit, OnChanges {
     const aliases: { [key: string]: string[] } = {
       hisTestCode: ['histTestCode', 'HISTestCode', 'hiSTestCode', 'histestCode'],
       hisTestCodeDescription: ['histTestCodeDescription', 'HISTestCodeDescription', 'hiSTestCodeDescription', 'histestCodeDescription'],
+      hisParamCode: ['hISParamCode', 'HISParamCode', 'hisparamCode'],
+      hisParamDescription: ['hISParamDescription', 'HISParamDescription', 'hisparamDescription'],
+      hisParamUnit: ['hISParamUnit', 'HISParamUnit'],
+      hisParamMethod: ['hISParamMethod', 'HISParamMethod'],
       hisSpecimenName: ['hisSpecimenName', 'HISSpecimenName'],
       departmentName: ['departmentName', 'DepartmentName'],
       rateTypeLabel: ['rateTypeLabel', 'RateTypeLabel'],
@@ -497,6 +507,12 @@ export class ListModuleComponent implements OnInit, OnChanges {
     n.hisTestCode = n.hisTestCode ?? n.hiSTestCode ?? n.HISTestCode ?? n.histestCode ?? n.histTestCode;
     n.hisTestCodeDescription = n.hisTestCodeDescription ?? n.hiSTestCodeDescription ?? n.HISTestCodeDescription
       ?? n.histestCodeDescription ?? n.histTestCodeDescription;
+    n.hisParamCode = n.hisParamCode ?? n.hISParamCode ?? n.HISParamCode ?? n.hisparamCode;
+    n.hisParamDescription = n.hisParamDescription ?? n.hISParamDescription ?? n.HISParamDescription
+      ?? n.hisparamDescription;
+    n.hisParamUnit = n.hisParamUnit ?? n.hISParamUnit ?? n.HISParamUnit;
+    n.hisParamMethod = n.hisParamMethod ?? n.hISParamMethod ?? n.HISParamMethod;
+    n.lisParamCode = n.lisParamCode ?? n.LISParamCode ?? n.lISParamCode;
     n.hisSpecimenName = n.hisSpecimenName ?? n.HISSpecimenName;
     n.departmentName = n.departmentName ?? n.DepartmentName;
     n.lisTestCode = n.lisTestCode ?? n.LISTestCode;

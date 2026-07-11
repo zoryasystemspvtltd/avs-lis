@@ -9,6 +9,7 @@ export interface TestResultEditSearchOptions {
   patientName?: string;
   fromDate?: string;
   toDate?: string;
+  readyForTechnicianApproval?: boolean;
 }
 
 @Injectable({ providedIn: 'root' })

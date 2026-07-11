@@ -4,6 +4,9 @@ import { TestResultEditService } from '../../../_services/test-result-edit.servi
 import { AlertService } from '../../../_services/alert.service';
 import { extractApiError } from '../../../_helpers/api-error';
 
+/** ReportStatusType.ReportGenerated — ready for technician approval. */
+const REPORT_GENERATED = 2;
+
 @Component({
   selector: 'app-edit-test-results',
   templateUrl: './edit-test-results.component.html',
@@ -23,8 +26,12 @@ export class EditTestResultsComponent implements OnInit {
   loadError = '';
   data: any = null;
   selectedTestIndex = 0;
-  /** True when opened directly for a sample (from Recent Samples workflow). */
+  /** True when opened directly for a sample (from Recent Samples / lab-result-entry). */
   directSampleMode = false;
+  /** True for Working Board → Test Result Edit (only Report Generated). */
+  isTestResultEditMode = false;
+  /** True when URL includes a sample number. */
+  sampleRouteActive = false;
 
   constructor(
     private testResultEditService: TestResultEditService,
@@ -33,21 +40,30 @@ export class EditTestResultsComponent implements OnInit {
     private router: Router) { }
 
   ngOnInit(): void {
+    this.isTestResultEditMode = (this.router.url || '').toLowerCase().indexOf('/edit-test-results') >= 0;
     this.route.params.subscribe(params => {
       const sn = (params['sampleNo'] || '').trim();
+      this.isTestResultEditMode = (this.router.url || '').toLowerCase().indexOf('/edit-test-results') >= 0;
+      this.sampleRouteActive = !!sn;
       if (sn) {
-        this.directSampleMode = true;
+        this.directSampleMode = !this.isTestResultEditMode;
         this.loadSample(decodeURIComponent(sn));
+      } else if (this.isTestResultEditMode) {
+        this.directSampleMode = false;
+        this.data = null;
+        this.search();
       }
     });
   }
 
   get pageTitle(): string {
-    return 'Lab Result Entry';
+    return this.isTestResultEditMode ? 'Test Result Edit' : 'Lab Result Entry';
   }
 
   get pageSubtitle(): string {
-    return 'Enter or update laboratory results for the selected sample.';
+    return this.isTestResultEditMode
+      ? 'Edit results for tests that are ready for technician approval.'
+      : 'Enter or update laboratory results for the selected sample.';
   }
 
   get selectedTest(): any {
@@ -62,12 +78,16 @@ export class EditTestResultsComponent implements OnInit {
     return test && !test.testResultId;
   }
 
+  private basePath(): string {
+    return this.isTestResultEditMode ? '/edit-test-results' : '/lab-result-entry';
+  }
+
   search() {
     this.filterError = '';
     this.data = null;
     const hasText = !!(this.sampleNo?.trim() || this.invoiceNo?.trim() || this.patientName?.trim());
     const hasDates = !!(this.fromDate || this.toDate);
-    if (!hasText && !hasDates) {
+    if (!this.isTestResultEditMode && !hasText && !hasDates) {
       this.filterError = 'Enter at least one search criterion (Sample / Lab No, Invoice No, Patient Name, or date range).';
       return;
     }
@@ -77,15 +97,28 @@ export class EditTestResultsComponent implements OnInit {
       invoiceNo: this.invoiceNo?.trim() || null,
       patientName: this.patientName?.trim() || null,
       fromDate: this.fromDate || null,
-      toDate: this.toDate || null
+      toDate: this.toDate || null,
+      readyForTechnicianApproval: this.isTestResultEditMode ? true : undefined
     }).subscribe(
       rows => {
-        this.searchRows = rows || [];
+        this.searchRows = (rows || []).map((r: any) => ({
+          ...r,
+          sampleNo: r.sampleNo ?? r.SampleNo,
+          invoiceNo: r.invoiceNo ?? r.InvoiceNo,
+          patientName: r.patientName ?? r.PatientName,
+          collectionDate: r.collectionDate ?? r.CollectionDate,
+          reportStatus: r.reportStatus ?? r.ReportStatus,
+          reportStatusLabel: r.reportStatusLabel ?? r.ReportStatusLabel,
+          hasResults: r.hasResults ?? r.HasResults,
+          canEnter: r.canEnter ?? r.CanEnter
+        }));
         this.loading = false;
-        if (this.searchRows.length === 1) {
+        if (this.searchRows.length === 1 && (hasText || hasDates)) {
           this.openSample(this.searchRows[0]);
         } else if (this.searchRows.length === 0) {
-          this.filterError = 'No matching samples found.';
+          this.filterError = this.isTestResultEditMode
+            ? 'No samples ready for technician approval match the criteria.'
+            : 'No matching samples found.';
         }
       },
       err => {
@@ -100,15 +133,21 @@ export class EditTestResultsComponent implements OnInit {
       return;
     }
     if (!this.canOpenSample(row)) {
-      this.filterError = 'This sample cannot be edited in its current status, or no parameters are configured for its test(s).';
+      this.filterError = this.isTestResultEditMode
+        ? 'Only tests ready for technician approval can be edited.'
+        : 'This sample cannot be edited in its current status, or no parameters are configured for its test(s).';
       return;
     }
-    this.router.navigate(['/lab-result-entry', encodeURIComponent(row.sampleNo)]);
+    this.router.navigate([this.basePath(), encodeURIComponent(row.sampleNo)]);
   }
 
   canOpenSample(row: any): boolean {
     if (!row) {
       return false;
+    }
+    if (this.isTestResultEditMode) {
+      const status = row.reportStatus ?? row.ReportStatus;
+      return status === REPORT_GENERATED;
     }
     const hasResults = row.hasResults ?? row.HasResults;
     const canEnter = row.canEnter ?? row.CanEnter;
@@ -130,10 +169,16 @@ export class EditTestResultsComponent implements OnInit {
     this.testResultEditService.getBySampleNo(sampleNo).subscribe(
       d => {
         this.data = this.normalizeSampleDto(d);
+        if (this.isTestResultEditMode && this.data?.tests?.length) {
+          this.data.tests = this.data.tests.filter((t: any) =>
+            (t.reportStatus ?? t.ReportStatus) === REPORT_GENERATED);
+        }
         this.selectedTestIndex = 0;
         this.loading = false;
         if (!this.data?.tests?.length) {
-          this.loadError = 'No editable tests found for this sample. Configure Test Parameter Mapping for the test(s), or check the approval status.';
+          this.loadError = this.isTestResultEditMode
+            ? 'No tests ready for technician approval were found for this sample.'
+            : 'No editable tests found for this sample. Configure Test Parameter Mapping for the test(s), or check the approval status.';
           this.data = null;
         } else {
           const hasParams = this.data.tests.some((t: any) => (t.parameters || []).length > 0);
@@ -158,7 +203,7 @@ export class EditTestResultsComponent implements OnInit {
       return;
     }
     this.searchRows = [];
-    this.router.navigate(['/lab-result-entry', encodeURIComponent(this.sampleNo.trim())]);
+    this.router.navigate([this.basePath(), encodeURIComponent(this.sampleNo.trim())]);
   }
 
   selectTest(index: number) {
@@ -197,6 +242,10 @@ export class EditTestResultsComponent implements OnInit {
       this.alertService.error('This test result is read-only in the current approval status.');
       return;
     }
+    if (this.isTestResultEditMode && (test.reportStatus ?? test.ReportStatus) !== REPORT_GENERATED) {
+      this.alertService.error('Only tests ready for technician approval can be edited.');
+      return;
+    }
     if (!test.testRequestId) {
       return;
     }
@@ -229,12 +278,23 @@ export class EditTestResultsComponent implements OnInit {
     );
   }
 
-  backToSamples() {
+  backToList() {
+    if (this.isTestResultEditMode) {
+      this.data = null;
+      this.loadError = '';
+      this.filterError = '';
+      this.router.navigate(['/edit-test-results']);
+      return;
+    }
     this.router.navigate(['/samples']);
   }
 
+  backToSamples() {
+    this.backToList();
+  }
+
   clear() {
-    this.backToSamples();
+    this.backToList();
   }
 
   private normalizeSampleDto(d: any): any {
@@ -254,6 +314,7 @@ export class EditTestResultsComponent implements OnInit {
         hisTestCode: t.hisTestCode ?? t.HisTestCode,
         hisTestName: t.hisTestName ?? t.HisTestName,
         equipmentName: t.equipmentName ?? t.EquipmentName,
+        reportStatus: t.reportStatus ?? t.ReportStatus,
         reportStatusLabel: t.reportStatusLabel ?? t.ReportStatusLabel,
         resultDate: t.resultDate ?? t.ResultDate,
         canEdit: t.canEdit ?? t.CanEdit,

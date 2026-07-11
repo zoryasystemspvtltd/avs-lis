@@ -154,13 +154,76 @@ namespace LIS.BusinessLogic
 
         public override ItemList<HISParameterMaster> Get(ListOptions option)
         {
-            var result = base.Get(option);
-            if (result?.Items != null)
+            if (option == null)
+            {
+                return null;
+            }
+
+            var result = new ItemList<HISParameterMaster>();
+            var query = Repo.Get().AsEnumerable();
+
+            if (!string.IsNullOrWhiteSpace(option.SearchText))
+            {
+                var search = option.SearchText.Trim();
+                query = query.Where(p =>
+                    (!string.IsNullOrEmpty(p.HISParamCode) &&
+                        p.HISParamCode.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                    (!string.IsNullOrEmpty(p.HISParamDescription) &&
+                        p.HISParamDescription.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                    (!string.IsNullOrEmpty(p.HISParamUnit) &&
+                        p.HISParamUnit.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                    (!string.IsNullOrEmpty(p.HISParamMethod) &&
+                        p.HISParamMethod.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                    (!string.IsNullOrEmpty(p.LISParamCode) &&
+                        p.LISParamCode.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                    (!string.IsNullOrEmpty(p.HISTestCode) &&
+                        p.HISTestCode.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0));
+            }
+
+            var list = query.ToList();
+            result.TotalRecord = list.Count;
+
+            var sortColumn = ResolveParameterSortColumn(option.SortColumnName);
+            int minRow = Math.Max(0, (option.CurrentPage - 1) * option.RecordPerPage);
+            int pageSize = option.RecordPerPage <= 0 ? result.TotalRecord : option.RecordPerPage;
+
+            result.Items = list
+                .OrderBy(sortColumn, option.SortDirection)
+                .Skip(minRow)
+                .Take(pageSize)
+                .ToList();
+
+            try
             {
                 Enrich(result.Items);
             }
+            catch (Exception)
+            {
+                // Enrichment is non-critical for list/search; never fail the page.
+            }
 
             return result;
+        }
+
+        private string ResolveParameterSortColumn(string sortColumnName)
+        {
+            if (string.IsNullOrWhiteSpace(sortColumnName))
+            {
+                return "HISParamCode";
+            }
+
+            var prop = typeof(HISParameterMaster).GetProperty(
+                sortColumnName.Trim(),
+                System.Reflection.BindingFlags.Public |
+                System.Reflection.BindingFlags.Instance |
+                System.Reflection.BindingFlags.IgnoreCase);
+
+            if (prop != null)
+            {
+                return prop.Name;
+            }
+
+            return "HISParamCode";
         }
 
         public override HISParameterMaster GetById(int id)

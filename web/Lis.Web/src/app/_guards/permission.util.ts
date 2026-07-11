@@ -26,6 +26,7 @@ export const ROUTE_PERMISSION_RULES: RoutePermissionRule[] = [
   { pattern: /^\/technicianapprovals(?:\/|$)/, modules: ['Reports'] },
   { pattern: /^\/technician-samples(?:\/|$)/, modules: ['Reports'] },
   { pattern: /^\/lab-result-entry(?:\/|$)/, modules: ['Reports', 'Samples'] },
+  { pattern: /^\/edit-test-results(?:\/|$)/, modules: ['Reports', 'Samples'] },
   { pattern: /^\/samples(?:\/|$)/, modules: ['Samples'] },
   { pattern: /^\/approvedsamples(?:\/|$)/, modules: ['Reports', 'DoctorsApprovals'] },
   { pattern: /^\/rejectedsamples(?:\/|$)/, modules: ['Reports', 'DoctorsApprovals'] },
