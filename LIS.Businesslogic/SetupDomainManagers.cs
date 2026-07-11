@@ -819,7 +819,6 @@ namespace LIS.BusinessLogic
         public long Add(PatientDetail item)
         {
             NormalizePatientFields(item);
-            ValidatePatientRequiredFields(item);
 
             if (string.IsNullOrWhiteSpace(item.HisPatientId))
             {
@@ -835,6 +834,8 @@ namespace LIS.BusinessLogic
             {
                 item.VisitId = GenerateNextVisitId();
             }
+
+            ValidatePatientRequiredFields(item);
 
             if (ExistsDuplicateMrNo(item, null))
             {

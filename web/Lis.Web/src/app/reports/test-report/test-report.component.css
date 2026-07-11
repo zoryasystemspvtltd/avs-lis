@@ -3,7 +3,9 @@
   --diag-title-bar-height: 8mm;
   --diag-header-total: 4cm;
   --diag-letterhead-height: calc(4cm - var(--diag-title-bar-height));
-  --diag-footer-height: 4cm;
+  --diag-footer-gap: 5cm;
+  --diag-footer-signature-space: 28mm;
+  --diag-footer-height: calc(var(--diag-footer-gap) + var(--diag-footer-signature-space));
   --diag-side-margin: 10mm;
 }
 
@@ -46,13 +48,20 @@
 
 .test-report-page .report-print-footer-zone {
   margin-top: 16px;
+  padding-bottom: var(--diag-footer-gap);
   font-size: 10px;
   color: #555;
+  border: none;
 }
 
 .test-report-page .report-footer-legal {
-  border-top: 1px solid #ccc;
-  padding-top: 8px;
+  display: none;
+}
+
+.test-report-page .report-footer-signature {
+  text-align: left;
+  margin-bottom: 0;
+  max-width: 55%;
 }
 
 /* On screen, header/footer are in document flow (not fixed) */
@@ -63,7 +72,7 @@
 
 .test-report-page .report-footer-signature {
   text-align: left;
-  margin-bottom: 10px;
+  margin-bottom: 0;
   max-width: 55%;
 }
 
@@ -243,10 +252,11 @@ body.test-report-print-mode .report-print-footer-zone {
   z-index: 1000;
   background: #fff;
   box-sizing: border-box;
-  padding: 3mm var(--diag-side-margin) 2mm;
+  padding: 2mm var(--diag-side-margin) var(--diag-footer-gap);
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
+  border: none;
 }
 
 .diagnostic-report-print-doc .report-footer-signature,
@@ -254,7 +264,17 @@ body.test-report-print-mode .report-footer-signature {
   align-self: flex-start;
   text-align: left;
   max-width: 55%;
-  margin-bottom: 2mm;
+  margin-bottom: 0;
+  font-size: 8pt;
+  line-height: 1.25;
+}
+
+.diagnostic-report-print-doc .report-footer-signature,
+body.test-report-print-mode .report-footer-signature {
+  align-self: flex-start;
+  text-align: left;
+  max-width: 55%;
+  margin-bottom: 0;
   font-size: 8pt;
   line-height: 1.25;
 }
@@ -275,10 +295,8 @@ body.test-report-print-mode .report-footer-doctor-designation {
 
 .diagnostic-report-print-doc .report-footer-legal,
 body.test-report-print-mode .report-footer-legal {
-  border-top: 0.5pt solid #888;
-  padding-top: 2mm;
-  font-size: 8pt;
-  color: #333;
+  display: none;
+  border-top: none;
 }
 
 .diagnostic-report-print-doc .report-footer-row,

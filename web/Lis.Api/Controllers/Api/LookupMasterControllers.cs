@@ -45,6 +45,15 @@ namespace Lis.Api.Controllers.Api
 
         [HttpGet, Route("GetAll")]
         public IEnumerable<CorporateMaster> GetAllRecords() => FetchAllActiveCore();
+
+        [HttpPost, Route("")]
+        public override HttpResponseMessage Post(CorporateMaster item) => base.Post(item);
+
+        [HttpPost, Route("Put")]
+        public override HttpResponseMessage Put(CorporateMaster item) => base.Put(item);
+
+        [HttpPost, Route("Delete")]
+        public override HttpResponseMessage Delete(CorporateMaster item) => base.Delete(item);
     }
 
     [RoutePrefix("api/TestGroup")]

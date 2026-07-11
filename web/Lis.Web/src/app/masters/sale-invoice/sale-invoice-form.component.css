@@ -638,11 +638,11 @@ body.modal-open.sale-invoice-modal-open {
   background: transparent;
 }
 
-/* —— A4 portrait letterhead print —— */
+/* —— A4 portrait: top letterhead margin, blank footer (no footer content) —— */
 @media print {
   @page {
     size: A4 portrait;
-    margin: 32mm 8mm 0 8mm;
+    margin: 32mm 8mm 5cm 8mm;
   }
 
   html,

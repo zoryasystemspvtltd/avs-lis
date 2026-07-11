@@ -169,7 +169,9 @@ export class TestReportComponent implements OnInit, OnDestroy {
         --diag-title-bar-height: 8mm;
         --diag-header-total: 4cm;
         --diag-letterhead-height: calc(4cm - var(--diag-title-bar-height));
-        --diag-footer-height: 4cm;
+        --diag-footer-gap: 5cm;
+        --diag-footer-signature-space: 28mm;
+        --diag-footer-height: calc(var(--diag-footer-gap) + var(--diag-footer-signature-space));
         --diag-side-margin: 10mm;
       }
       @page { size: A4 portrait; margin: 0; }
@@ -219,16 +221,17 @@ export class TestReportComponent implements OnInit, OnDestroy {
         z-index: 1000;
         background: #fff;
         box-sizing: border-box;
-        padding: 3mm var(--diag-side-margin) 2mm;
+        padding: 2mm var(--diag-side-margin) var(--diag-footer-gap);
         display: flex;
         flex-direction: column;
         justify-content: flex-end;
+        border: none;
       }
       .report-footer-signature {
         align-self: flex-start;
         text-align: left;
         max-width: 55%;
-        margin-bottom: 2mm;
+        margin-bottom: 0;
         font-size: 8pt;
         line-height: 1.25;
       }
@@ -243,10 +246,8 @@ export class TestReportComponent implements OnInit, OnDestroy {
         margin-top: 0.5mm;
       }
       .report-footer-legal {
-        border-top: 0.5pt solid #888;
-        padding-top: 2mm;
-        font-size: 8pt;
-        color: #333;
+        display: none;
+        border-top: none;
       }
       .report-footer-row {
         display: flex;

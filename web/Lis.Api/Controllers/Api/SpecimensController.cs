@@ -43,8 +43,8 @@ namespace Lis.Api.Controllers.Api
                 {
                     try
                     {
-                        manager.Add(specimen);
-                        aPIResponse = responseMgr.CreateResponse(HttpStatusCode.OK, "Specimen added successfully", null, null);
+                        var id = manager.Add(specimen);
+                        aPIResponse = responseMgr.CreateResponse(HttpStatusCode.OK, "Specimen added successfully", null, id);
                     }
                     catch (Exception ex)
                     {
