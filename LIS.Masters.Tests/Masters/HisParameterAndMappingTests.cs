@@ -26,15 +26,14 @@ namespace LIS.Masters.Tests.Masters
 
         private int EnsureEquipmentId()
         {
-            var key = UniqueCode("EQ", 12);
-            return (int)Services.Equipment.Add(new EquipmentMaster
+            // Equipment master is not seeded by tests; reuse an existing active equipment.
+            var existing = Services.Equipment.Get().FirstOrDefault(e => e.IsActive);
+            if (existing == null)
             {
-                Name = "UT Equipment",
-                Model = "M1",
-                AccessKey = key,
-                IsActive = true,
-                CreatedOn = DateTime.Now
-            });
+                Assert.Inconclusive("No active equipment available; add one via the Equipments UI.");
+            }
+
+            return existing.Id;
         }
 
         [TestMethod]
@@ -91,6 +90,14 @@ namespace LIS.Masters.Tests.Masters
 
             var ranges = Services.HisParameterRange.Get(ListOptionsFactory.Create());
             Assert.IsTrue(ranges.Items.Any(r => r.Id == rangeId));
+
+            var rangeCodeSearch = Services.HisParameterRange.Get(
+                ListOptionsFactory.Create("HISRangeCode", 1, 500, loadedRange.HISRangeCode));
+            Assert.IsTrue(rangeCodeSearch.Items.Any(r => r.Id == rangeId));
+
+            var parameterNameSearch = Services.HisParameterRange.Get(
+                ListOptionsFactory.Create("HISRangeCode", 1, 500, param.HISParamDescription));
+            Assert.IsTrue(parameterNameSearch.Items.Any(r => r.Id == rangeId));
 
             loadedRange.Gender = "Female";
             Services.HisParameterRange.Update(loadedRange);
@@ -376,7 +383,6 @@ namespace LIS.Masters.Tests.Masters
 
             Services.TestMapping.Delete(new TestMappingMaster { Id = mapId });
             Services.HisParameter.Delete(new HISParameterMaster { Id = paramId });
-            Services.Equipment.Delete(new EquipmentMaster { Id = equipId });
         }
     }
 }

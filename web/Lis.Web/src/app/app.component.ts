@@ -19,6 +19,10 @@ export class AppComponent {
     if (user && user.accessToken) {
       this.authenticationService.isAuthenticated = true;
       this.authenticationService.hideSideNav = false;
+      // Re-sync module/menu permissions on every full load (browser refresh)
+      // so role permission changes apply without re-login; fail-soft keeps the
+      // cached session when the API is unreachable.
+      this.authenticationService.getUserAccess().subscribe(() => { });
     }
     this.authenticationService.getResources().subscribe(() => { });
   }

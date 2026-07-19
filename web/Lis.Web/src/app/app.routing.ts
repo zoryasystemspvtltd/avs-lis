@@ -38,6 +38,11 @@ const LOOKUP_FIELDS = {
     { name: 'name', label: 'Name', type: 'text', required: true },
     { name: 'isActive', label: 'Active', type: 'checkbox' }
   ],
+  method: [
+    { name: 'code', label: 'Code', type: 'text', required: true },
+    { name: 'name', label: 'Method Name', type: 'text', required: true, maxLength: 300 },
+    { name: 'isActive', label: 'Active', type: 'checkbox' }
+  ],
   referral: [
     { name: 'code', label: 'Code', type: 'text', required: true },
     { name: 'name', label: 'Name', type: 'text', required: true },
@@ -95,6 +100,7 @@ const LOOKUP_FIELDS = {
     { name: 'hisParamDescription', label: 'Description', type: 'text', required: true },
     { name: 'hisParamUnit', label: 'Unit', type: 'text' },
     { name: 'hisParamMethod', label: 'Method', type: 'text' },
+    { name: 'comments', label: 'Comment', type: 'editor' },
     { name: 'isActive', label: 'Active', type: 'checkbox' }
   ],
   hisParameterRange: [
@@ -150,6 +156,7 @@ const LOOKUP_FIELDS = {
     { name: 'isActive', label: 'Active', type: 'checkbox' }
   ],
   testParameter: [
+    { name: 'sequence', label: 'Sequence', type: 'number', required: true, min: 1 },
     { name: 'isActive', label: 'Active', type: 'checkbox' }
   ]
 };
@@ -252,8 +259,8 @@ const appRoutes: Routes = [
     { path: 'units/:id', component: MasterFormComponent, data: { apiName: 'Unit', returnUrl: '/units', title: 'Unit', fields: LOOKUP_FIELDS.codeName }, canActivate: ROUTE_GUARDS },
 
     { path: 'methods', component: MasterListComponent, data: { masterKey: 'method' }, canActivate: ROUTE_GUARDS },
-    { path: 'methods/create', component: MasterFormComponent, data: { apiName: 'Method', returnUrl: '/methods', title: 'Method', fields: LOOKUP_FIELDS.codeName }, canActivate: ROUTE_GUARDS },
-    { path: 'methods/:id', component: MasterFormComponent, data: { apiName: 'Method', returnUrl: '/methods', title: 'Method', fields: LOOKUP_FIELDS.codeName }, canActivate: ROUTE_GUARDS },
+    { path: 'methods/create', component: MasterFormComponent, data: { apiName: 'Method', returnUrl: '/methods', title: 'Method', fields: LOOKUP_FIELDS.method }, canActivate: ROUTE_GUARDS },
+    { path: 'methods/:id', component: MasterFormComponent, data: { apiName: 'Method', returnUrl: '/methods', title: 'Method', fields: LOOKUP_FIELDS.method }, canActivate: ROUTE_GUARDS },
 
     { path: 'sample-types', component: MasterListComponent, data: { masterKey: 'sampleType' }, canActivate: ROUTE_GUARDS },
     { path: 'sample-types/create', component: MasterFormComponent, data: { apiName: 'SampleType', returnUrl: '/sample-types', title: 'Sample Type', fields: LOOKUP_FIELDS.codeName }, canActivate: ROUTE_GUARDS },

@@ -16,7 +16,7 @@
 
         <div class="panel-group" id="accordion">
 
-            <div class="panel panel-default" *ngIf="hasGroupAccess('Reports,Samples,DoctorsApprovals,SampleCollection,SampleReceiving,RadiologyReportEntry,RadiologyDoctorApprovals')">
+            <div class="panel panel-default" *ngIf="hasWorkingBoardAccess()">
 
                 <div class="panel-heading">
 
@@ -250,7 +250,7 @@
 
 
 
-                        <div class="panel panel-default" *ngIf="hasReportAccess()">
+                        <div class="panel panel-default" *ngIf="hasReportsSectionAccess()">
                 <div class="panel-heading">
                     <h4 class="panel-title">
                         <a data-toggle="collapse" data-parent="#accordion" target="_self" href="#collapseReports">

@@ -433,9 +433,78 @@ namespace LIS.Businesslogic
                 run.ReviewDate = run.ReviewDate == null ? result.ResultDate : run.ReviewDate;
             }
 
-
+            // Display parameters in ascending Sequence from Test Parameter Mapping
+            // (Technician/Doctor Approval, Approved and Rejected sample details).
+            var sequenceByParamCode = BuildParameterSequenceLookup(result.HISTestCode);
+            if (sequenceByParamCode.Count > 0)
+            {
+                foreach (var run in testRuns)
+                {
+                    run.TestValues = run.TestValues
+                        .OrderBy(v => GetParameterSequence(sequenceByParamCode, v))
+                        .ToList();
+                }
+            }
 
             return testRuns;
+        }
+
+        /// <summary>
+        /// Maps HIS/LIS parameter codes of the test's active Test Parameter Mappings to their Sequence.
+        /// </summary>
+        private Dictionary<string, int> BuildParameterSequenceLookup(string hisTestCode)
+        {
+            var lookup = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            if (string.IsNullOrWhiteSpace(hisTestCode))
+            {
+                return lookup;
+            }
+
+            var hisTest = testRepo.Get(t =>
+                    t.HISTestCode != null
+                    && t.HISTestCode.Equals(hisTestCode.Trim(), StringComparison.OrdinalIgnoreCase))
+                .FirstOrDefault();
+            if (hisTest == null)
+            {
+                return lookup;
+            }
+
+            var mappings = testParameterMappingRepo
+                .Get(m => m.IsActive && m.HisTestId == hisTest.Id)
+                .ToList();
+            foreach (var map in mappings)
+            {
+                var param = parameterMapRepo.Get(map.HisParameterId);
+                if (param == null)
+                {
+                    continue;
+                }
+
+                if (!string.IsNullOrWhiteSpace(param.HISParamCode) && !lookup.ContainsKey(param.HISParamCode))
+                {
+                    lookup[param.HISParamCode] = map.Sequence;
+                }
+                if (!string.IsNullOrWhiteSpace(param.LISParamCode) && !lookup.ContainsKey(param.LISParamCode))
+                {
+                    lookup[param.LISParamCode] = map.Sequence;
+                }
+            }
+
+            return lookup;
+        }
+
+        private static int GetParameterSequence(Dictionary<string, int> sequenceByParamCode, TestValues value)
+        {
+            if (value.HISParamCode != null && sequenceByParamCode.TryGetValue(value.HISParamCode, out var seq))
+            {
+                return seq;
+            }
+            if (value.LISParamCode != null && sequenceByParamCode.TryGetValue(value.LISParamCode, out seq))
+            {
+                return seq;
+            }
+
+            return int.MaxValue;
         }
 
         /// <summary>

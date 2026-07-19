@@ -66,15 +66,12 @@ IF NOT EXISTS (SELECT 1 FROM HISSpecimenMaster WHERE Code = N'QA-SER')
     INSERT INTO HISSpecimenMaster (Code, Name, IsActive, CreatedBy, CreatedOn)
     VALUES (N'QA-SER', N'QA Serum', 1, @User, @Now);
 
+-- Equipment master is NOT seeded (managed manually via the Equipments UI).
+-- Reuse an existing equipment for downstream mappings.
 DECLARE @EquipId INT;
-IF NOT EXISTS (SELECT 1 FROM EquipmentMaster WHERE AccessKey = N'QA-CERT-EQ-KEY')
-BEGIN
-    INSERT INTO EquipmentMaster (Name, Model, AccessKey, IsActive, CreatedBy, CreatedOn)
-    VALUES (N'QA Cert Analyzer', N'QA-CERT-A1', N'QA-CERT-EQ-KEY', 1, @User, @Now);
-    SET @EquipId = SCOPE_IDENTITY();
-END
-ELSE
-    SET @EquipId = (SELECT TOP 1 Id FROM EquipmentMaster WHERE AccessKey = N'QA-CERT-EQ-KEY');
+SET @EquipId = (SELECT TOP 1 Id FROM EquipmentMaster WHERE AccessKey = N'QA-CERT-EQ-KEY');
+IF @EquipId IS NULL
+    SET @EquipId = (SELECT TOP 1 Id FROM EquipmentMaster WHERE IsActive = 1 ORDER BY Id);
 
 -- ---------------------------------------------------------------------------
 -- 3. Tests: analyzer (QA-CERT-ANLZ), manual (QA-CERT-MAN), radiology (QA-CERT-MRI)

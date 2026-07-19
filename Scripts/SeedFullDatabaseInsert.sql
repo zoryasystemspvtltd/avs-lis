@@ -117,13 +117,9 @@ WHERE NOT EXISTS (SELECT 1 FROM HISParameterRangMaster r WHERE r.HisParameterId 
 -- ---------------------------------------------------------------------------
 -- D. Equipment + test mappings
 -- ---------------------------------------------------------------------------
+-- Equipment master is NOT seeded (managed manually via the Equipments UI).
+-- Reuse an existing active equipment for downstream mappings.
 DECLARE @EquipId INT = (SELECT TOP 1 Id FROM EquipmentMaster WHERE IsActive = 1 ORDER BY Id);
-IF @EquipId IS NULL
-BEGIN
-    INSERT INTO EquipmentMaster (Name, Model, AccessKey, IsActive, CreatedBy, CreatedOn)
-    VALUES (N'Demo Analyzer', N'Demo-01', N'DEMO-EQ-KEY-001', 1, @User, @Now);
-    SET @EquipId = SCOPE_IDENTITY();
-END
 
 INSERT INTO TestMappingMaster (HISTestCode, HISTestCodeDescription, SpecimenCode, SpecimenName, LISTestCode, LISTestCodeDescription, IsActive, CreatedBy, CreatedOn, GroupName, EquipmentId)
 SELECT t.HISTestCode, t.HISTestCodeDescription, t.HISSpecimenCode, t.HISSpecimenName,

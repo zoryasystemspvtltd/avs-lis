@@ -11,14 +11,9 @@ SET XACT_ABORT ON;
 
 DECLARE @User NVARCHAR(80) = N'diag-demo-seed';
 DECLARE @Now DATETIME = GETDATE();
+-- Equipment master is NOT seeded (managed manually via the Equipments UI).
+-- Reuse an existing active equipment for downstream references.
 DECLARE @EquipId INT = (SELECT TOP 1 Id FROM EquipmentMaster WHERE IsActive = 1 ORDER BY Id);
-
-IF @EquipId IS NULL
-BEGIN
-    INSERT INTO EquipmentMaster (Name, Model, AccessKey, IsActive, CreatedBy, CreatedOn)
-    VALUES (N'Demo Analyzer', N'DXI800', N'DEMO-EQ-KEY', 1, @User, @Now);
-    SET @EquipId = SCOPE_IDENTITY();
-END
 
 -- Patient
 IF NOT EXISTS (SELECT 1 FROM PatientDetails WHERE HisPatientId = N'DIAG-DEMO-001')

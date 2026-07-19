@@ -29,6 +29,9 @@ namespace LIS.Masters.Tests.Masters
             Services.Equipment.Delete(new EquipmentMaster { Id = id });
             var after = Services.Equipment.Get(id);
             Assert.IsFalse(after.IsActive);
+
+            // Hard-delete the test row so equipment master data does not accumulate.
+            Services.Db.Database.ExecuteSqlCommand("DELETE FROM EquipmentMaster WHERE Id = @p0", id);
         }
 
         [TestMethod]

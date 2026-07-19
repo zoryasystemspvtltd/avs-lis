@@ -16,7 +16,7 @@ namespace LIS.DtoModel.Models
         public string Code { get; set; }
 
         [Required]
-        [MaxLength(100)]
+        [MaxLength(300)]
         public string Name { get; set; }
 
         public bool IsActive { get; set; }

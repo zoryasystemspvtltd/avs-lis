@@ -30,6 +30,10 @@ namespace LIS.DtoModel.Models
         [JsonProperty("isActive")]
         public bool IsActive { get; set; }
 
+        [Range(1, int.MaxValue)]
+        [JsonProperty("sequence")]
+        public int Sequence { get; set; }
+
         public string CreatedBy { get; set; }
         public DateTime CreatedOn { get; set; }
 

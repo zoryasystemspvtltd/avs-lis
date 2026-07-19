@@ -22,6 +22,18 @@ namespace LIS.Masters.Tests.Masters
             return (int)Services.HisTest.Add(MasterTestDataBuilder.HisTest(UniqueCode("TST"), dept.Code, specimen.Code));
         }
 
+        /// <summary>Equipment master is not seeded by tests; reuse an existing active equipment.</summary>
+        private int GetExistingEquipmentId()
+        {
+            var existing = Services.Equipment.Get().FirstOrDefault(e => e.IsActive);
+            if (existing == null)
+            {
+                Assert.Inconclusive("No active equipment available; add one via the Equipments UI.");
+            }
+
+            return existing.Id;
+        }
+
         private static TestRateMaster Rate(int testId, DateTime start, DateTime end, int rateType = (int)RateType.Standard,
             int? corporateId = null, int? doctorId = null, int? profileId = null)
         {
@@ -183,13 +195,7 @@ namespace LIS.Masters.Tests.Masters
         {
             var testId = CreateTest();
             var test = Services.HisTest.GetTestById(testId);
-            var equipId = (int)Services.Equipment.Add(new EquipmentMaster
-            {
-                Name = "EQ " + UniqueCode("EQ"),
-                Model = "M",
-                AccessKey = UniqueCode("AK"),
-                IsActive = true
-            });
+            var equipId = GetExistingEquipmentId();
             var lis = UniqueCode("LIS");
 
             var paramCode = UniqueCode("P");
@@ -220,7 +226,6 @@ namespace LIS.Masters.Tests.Masters
 
             Services.TestMapping.Delete(new TestMappingMaster { Id = mapId });
             Services.HisParameter.Delete(new HISParameterMaster { Id = paramId });
-            Services.Equipment.Delete(new EquipmentMaster { Id = equipId });
         }
 
         [TestMethod]
@@ -228,13 +233,7 @@ namespace LIS.Masters.Tests.Masters
         {
             var testId = CreateTest();
             var test = Services.HisTest.GetTestById(testId);
-            var equipId = (int)Services.Equipment.Add(new EquipmentMaster
-            {
-                Name = "EQ " + UniqueCode("EQ"),
-                Model = "M2",
-                AccessKey = UniqueCode("AK"),
-                IsActive = true
-            });
+            var equipId = GetExistingEquipmentId();
 
             var paramCode = UniqueCode("P");
             var paramId = (int)Services.HisParameter.Add(new HISParameterMaster
@@ -263,7 +262,6 @@ namespace LIS.Masters.Tests.Masters
             Services.TestMapping.Delete(new TestMappingMaster { Id = id1 });
             Services.TestMapping.Delete(new TestMappingMaster { Id = id2 });
             Services.HisParameter.Delete(new HISParameterMaster { Id = paramId });
-            Services.Equipment.Delete(new EquipmentMaster { Id = equipId });
         }
 
         [TestMethod]

@@ -66,20 +66,12 @@ IF NOT EXISTS (SELECT 1 FROM CorporateMaster WHERE Code = N'CRUD-CO')
 -- ===========================================================================
 -- 2. EQUIPMENT + HEARTBEAT + TEST MAPPING
 -- ===========================================================================
+-- Equipment master is NOT seeded (managed manually via the Equipments UI).
+-- Reuse an existing equipment for downstream mappings.
 DECLARE @EquipId INT;
-
-IF NOT EXISTS (SELECT 1 FROM EquipmentMaster WHERE AccessKey = N'CRUD-EQ-KEY-001')
-BEGIN
-    INSERT INTO EquipmentMaster (Name, Model, AccessKey, IsActive, CreatedBy, CreatedOn)
-    VALUES (N'CRUD Analyzer 01', N'CRUD-Model-X', N'CRUD-EQ-KEY-001', 1, @User, @Now);
-    SET @EquipId = SCOPE_IDENTITY();
-END
-ELSE
-    SET @EquipId = (SELECT TOP 1 Id FROM EquipmentMaster WHERE AccessKey = N'CRUD-EQ-KEY-001');
-
-IF NOT EXISTS (SELECT 1 FROM EquipmentHeartBeat WHERE AccessKey = N'CRUD-EQ-KEY-001')
-    INSERT INTO EquipmentHeartBeat (AccessKey, IsAlive, CreatedBy, CreatedOn)
-    VALUES (N'CRUD-EQ-KEY-001', 1, @User, @Now);
+SET @EquipId = (SELECT TOP 1 Id FROM EquipmentMaster WHERE AccessKey = N'CRUD-EQ-KEY-001');
+IF @EquipId IS NULL
+    SET @EquipId = (SELECT TOP 1 Id FROM EquipmentMaster WHERE IsActive = 1 ORDER BY Id);
 
 -- ===========================================================================
 -- 3. HIS TEST + PARAMETERS + RANGES

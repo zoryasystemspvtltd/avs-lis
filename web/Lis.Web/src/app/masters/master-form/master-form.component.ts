@@ -382,7 +382,7 @@ export class MasterFormComponent implements OnInit {
         }
         if (data.params) {
           const params = (data.params.items || data.params.Items || data.params) || [];
-          this.hisParameters = this.isTestParameterScreen
+          this.hisParameters = (this.isTestParameterScreen || this.apiName === 'HisParameterRangeMaster')
             ? params.map((p: any) => this.toParameterPickerOption(p))
             : params;
           this.parameterOptions = this.hisParameters;

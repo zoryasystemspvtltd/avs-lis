@@ -69,7 +69,7 @@ export const MASTER_LIST_SCHEMAS: { [key: string]: any } = {
     url: 'methods', heading: 'Method Master', module: 'Method', hideAction: true,
     elements: [
       { heading: 'Code', fieldName: 'code', sortable: true, width: '20%', type: 'link' },
-      { heading: 'Name', fieldName: 'name', sortable: true, width: '60%', type: 'label' }
+      { heading: 'Method Name', fieldName: 'name', sortable: true, width: '60%', type: 'label', wrap: true }
     ]
   },
   sampleType: {
@@ -141,10 +141,12 @@ export const MASTER_LIST_SCHEMAS: { [key: string]: any } = {
   testParameter: {
     url: 'test-parameters', heading: 'Test Parameter Mapping', module: 'TestParameterMappingMaster', hideAction: true, hideCreate: false,
     elements: [
-      { heading: 'Test Code', fieldName: 'hisTestCode', sortable: true, width: '18%', type: 'link' },
-      { heading: 'Parameter Code', fieldName: 'hisParamCode', sortable: true, width: '18%', type: 'label' },
-      { heading: 'Parameter Name', fieldName: 'hisParamDescription', sortable: true, width: '34%', type: 'label' },
-      { heading: 'Active', fieldName: 'isActive', sortable: false, width: '12%', type: 'label' }
+      { heading: 'Test Code', fieldName: 'hisTestCode', sortable: true, width: '14%', type: 'link' },
+      { heading: 'Test Name', fieldName: 'hisTestCodeDescription', sortable: true, width: '22%', type: 'label' },
+      { heading: 'Parameter Code', fieldName: 'hisParamCode', sortable: true, width: '14%', type: 'label' },
+      { heading: 'Parameter Name', fieldName: 'hisParamDescription', sortable: true, width: '20%', type: 'label' },
+      { heading: 'Sequence', fieldName: 'sequence', sortable: false, width: '8%', type: 'label' },
+      { heading: 'Active', fieldName: 'isActive', sortable: false, width: '10%', type: 'label' }
     ]
   },
   patientMaster: {

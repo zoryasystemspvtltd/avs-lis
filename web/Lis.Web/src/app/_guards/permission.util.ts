@@ -66,12 +66,14 @@ export const ROUTE_PERMISSION_RULES: RoutePermissionRule[] = [
   { pattern: /^\/specimens(?:\/|$)/, modules: ['Masters'], menuKey: 'MASTER_SPECIMEN' },
   { pattern: /^\/referral-doctors(?:\/|$)/, modules: ['Masters'], menuKey: 'MASTER_REFERRAL_DOCTOR' },
   { pattern: /^\/corporates(?:\/|$)/, modules: ['Masters'], menuKey: 'MASTER_CORPORATE' },
-  { pattern: /^\/test-groups(?:\/|$)/, modules: ['Masters'] },
-  { pattern: /^\/test-categories(?:\/|$)/, modules: ['Masters'] },
+  // These masters have no MenuCatalog entry (not grantable in Role edit): when the role
+  // has a Masters menu overlay, the unknown key denies access; module-only roles keep access.
+  { pattern: /^\/test-groups(?:\/|$)/, modules: ['Masters'], menuKey: 'MASTER_TEST_GROUP' },
+  { pattern: /^\/test-categories(?:\/|$)/, modules: ['Masters'], menuKey: 'MASTER_TEST_CATEGORY' },
   { pattern: /^\/units(?:\/|$)/, modules: ['Masters'], menuKey: 'MASTER_UNIT' },
   { pattern: /^\/methods(?:\/|$)/, modules: ['Masters'], menuKey: 'MASTER_METHOD' },
-  { pattern: /^\/sample-types(?:\/|$)/, modules: ['Masters'] },
-  { pattern: /^\/containers(?:\/|$)/, modules: ['Masters'] },
+  { pattern: /^\/sample-types(?:\/|$)/, modules: ['Masters'], menuKey: 'MASTER_SAMPLE_TYPE' },
+  { pattern: /^\/containers(?:\/|$)/, modules: ['Masters'], menuKey: 'MASTER_CONTAINER' },
   { pattern: /^\/test-profiles(?:\/|$)/, modules: ['Masters'], menuKey: 'MASTER_TESTPROFILE' },
   { pattern: /^\/his-parameters(?:\/|$)/, modules: ['Masters'], menuKey: 'MASTER_PARAMETER' },
   { pattern: /^\/test-parameters(?:\/|$)/, modules: ['Masters'], menuKey: 'MASTER_TEST_PARAM_MAPPING' },

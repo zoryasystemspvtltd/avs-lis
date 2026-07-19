@@ -35,15 +35,12 @@ IF NOT EXISTS (SELECT 1 FROM HISSpecimenMaster WHERE Code = N'LRE-EDTA')
     INSERT INTO HISSpecimenMaster (Code, Name, IsActive, CreatedBy, CreatedOn)
     VALUES (N'LRE-EDTA', N'EDTA Whole Blood (LRE)', 1, @User, @Now);
 
+-- Equipment master is NOT seeded (managed manually via the Equipments UI).
+-- Reuse an existing equipment for downstream mappings.
 DECLARE @EquipId INT;
-IF NOT EXISTS (SELECT 1 FROM EquipmentMaster WHERE AccessKey = N'LRE-EQ-KEY-001')
-BEGIN
-    INSERT INTO EquipmentMaster (Name, Model, AccessKey, IsActive, CreatedBy, CreatedOn)
-    VALUES (N'LRE Analyzer', N'LRE-Model-A', N'LRE-EQ-KEY-001', 1, @User, @Now);
-    SET @EquipId = SCOPE_IDENTITY();
-END
-ELSE
-    SET @EquipId = (SELECT TOP 1 Id FROM EquipmentMaster WHERE AccessKey = N'LRE-EQ-KEY-001');
+SET @EquipId = (SELECT TOP 1 Id FROM EquipmentMaster WHERE AccessKey = N'LRE-EQ-KEY-001');
+IF @EquipId IS NULL
+    SET @EquipId = (SELECT TOP 1 Id FROM EquipmentMaster WHERE IsActive = 1 ORDER BY Id);
 
 -- ===========================================================================
 -- 2. TEST A: Lipid Profile (LRE-LIPID) + 4 parameters + ranges

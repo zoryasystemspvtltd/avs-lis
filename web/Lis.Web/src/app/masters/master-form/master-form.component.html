@@ -31,8 +31,15 @@
     <br *ngIf="apiName === 'PatientMaster'" />
 
     <ng-container *ngIf="apiName !== 'PatientMaster' || !id || patientMasterTab === 'details'">
+    <!-- Test Parameter Mapping renders these schema fields (Sequence, Active) below the Parameter field instead. -->
+    <ng-container *ngIf="apiName !== 'TestParameterMappingMaster'">
+      <ng-container *ngTemplateOutlet="schemaFields"></ng-container>
+    </ng-container>
+    </ng-container>
+
+    <ng-template #schemaFields>
     <ng-container *ngFor="let field of visibleFields()">
-      <div class="row" *ngIf="field.type !== 'checkbox'">
+      <div class="row" *ngIf="field.type !== 'checkbox' && field.type !== 'editor'">
         <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye">
           <label>{{field.label}}<span class="error" *ngIf="field.required">*</span>
             <span *ngIf="field.help" class="glyphicon glyphicon-info-sign field-help-icon" [attr.title]="field.help"></span>
@@ -49,6 +56,8 @@
               [type]="field.type === 'number' ? 'number' : (field.type === 'date' ? 'date' : 'text')"
               class="form-control" [formControlName]="field.name"
               [readonly]="isFieldReadonly(field)"
+              [attr.maxlength]="field.maxLength || null"
+              [attr.min]="field.min != null ? field.min : null"
               [attr.placeholder]="patientAutoPlaceholder(field)"
               (change)="field.name === 'dateOfBirth' && apiName === 'PatientMaster' ? onPatientDobChange() : null"
               (input)="field.name === 'age' && apiName === 'PatientMaster' ? onPatientAgeChange() : null" />
@@ -59,6 +68,15 @@
           <span *ngIf="submitted && f[field.name]?.invalid" class="error">{{field.label}} is required.</span>
         </div>
       </div>
+      <div class="row" *ngIf="field.type === 'editor'">
+        <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye">
+          <label>{{field.label}}<span class="error" *ngIf="field.required">*</span></label>
+        </div>
+        <div class="col-sm-10 col-md-10 col-lg-10 form-grid-stye">
+          <app-tiny-mce-editor [formControlName]="field.name"></app-tiny-mce-editor>
+          <span *ngIf="submitted && f[field.name]?.invalid" class="error">{{field.label}} is required.</span>
+        </div>
+      </div>
       <div class="row" *ngIf="field.type === 'checkbox'">
         <div class="col-sm-12 form-grid-stye">
           <label><input type="checkbox" [formControlName]="field.name" /> {{field.label}}</label>
@@ -66,7 +84,7 @@
       </div>
       <br *ngIf="field.type !== 'checkbox'" />
     </ng-container>
-    </ng-container>
+    </ng-template>
 
     <div *ngIf="apiName === 'PatientMaster' && id && patientMasterTab === 'visits'" class="visit-history-panel">
       <p *ngIf="visitHistoryLoading" class="text-muted">Loading visit history...</p>
@@ -177,10 +195,21 @@
       <div class="row">
         <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Parameter<span class="error">*</span></label></div>
         <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
-          <select class="form-control" formControlName="hisParameterId" [disabled]="!lookupsLoaded">
-            <option [ngValue]="null">-- Select Parameter --</option>
-            <option *ngFor="let p of hisParameters" [ngValue]="p.id">{{p.hisParamCode}} - {{p.hisParamDescription}}</option>
-          </select>
+          <ng-select
+            [items]="hisParameters"
+            bindLabel="displayLabel"
+            bindValue="id"
+            formControlName="hisParameterId"
+            placeholder="Type to search parameters..."
+            [searchable]="true"
+            [clearable]="true"
+            [loading]="!lookupsLoaded"
+            [minTermLength]="0"
+            typeToSearchText="Type to filter parameters..."
+            appendTo="body"
+            notFoundText="No matching parameters"
+            class="test-rate-test-select">
+          </ng-select>
         </div>
       </div>
       <br />
@@ -262,6 +291,8 @@
         </div>
       </div>
       <br />
+      <!-- Sequence and Active appear below the Parameter field. -->
+      <ng-container *ngTemplateOutlet="schemaFields"></ng-container>
     </ng-container>
 
     <button type="submit" class="btn btn-primary" [disabled]="loading">Save</button>

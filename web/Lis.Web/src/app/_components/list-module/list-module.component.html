@@ -103,7 +103,7 @@
                                 <input type="checkbox" name="chk_item" (change)="deSelectAll();" [(ngModel)]="item.IsSelected" />
                                 <app-you-frame [html]="item.reportStatus | statusType"></app-you-frame>
                             </td>
-                            <td *ngFor="let element of schemma.elements;" width="{{element.width}}">
+                            <td *ngFor="let element of schemma.elements;" width="{{element.width}}" [class.wrap-cell]="element.wrap">
                                 <div [ngSwitch]="element.type">
                                     <div *ngSwitchCase="'label'">
                                         {{fieldValue(item, element.fieldName)}}

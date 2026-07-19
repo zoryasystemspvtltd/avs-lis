@@ -80,8 +80,7 @@ namespace QuestionsForU.Authentication.Controllers
         /// Get all User list
         /// </summary>
         /// <returns></returns>
-
-        //TODO Authorization
+        [QAuthorize(ModuleName = "Users", ModulePermissionTypes = ModulePermissionType.CanView)]
         public dynamic Get()
         {
             dynamic users = new
@@ -130,8 +129,7 @@ namespace QuestionsForU.Authentication.Controllers
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        //[Authorize(Roles = "SuperAdmin")]
-        //TODO Authorization
+        [QAuthorize(ModuleName = "Users", ModulePermissionTypes = ModulePermissionType.CanView)]
         public dynamic Get(string id)
         {
             var user = userManager.FindById(id);

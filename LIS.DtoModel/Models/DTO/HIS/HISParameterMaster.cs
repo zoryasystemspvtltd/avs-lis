@@ -32,6 +32,10 @@ namespace LIS.DtoModel.Models
 
         [JsonProperty("lisParamCode")]
         public string LISParamCode { get; set; }
+
+        [JsonProperty("comments")]
+        public string Comments { get; set; }
+
         public DateTime CreatedOn { get; set; }
 
         /* DTO Relation */

@@ -122,6 +122,18 @@
     <Compile Include="Migrations\202607100420024_fixed.Designer.cs">
       <DependentUpon>202607100420024_fixed.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202607190610000_ParameterMasterComments.cs" />
+    <Compile Include="Migrations\202607190610000_ParameterMasterComments.Designer.cs">
+      <DependentUpon>202607190610000_ParameterMasterComments.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202607190625000_MethodNameLength300.cs" />
+    <Compile Include="Migrations\202607190625000_MethodNameLength300.Designer.cs">
+      <DependentUpon>202607190625000_MethodNameLength300.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202607190636000_TestParameterMappingSequence.cs" />
+    <Compile Include="Migrations\202607190636000_TestParameterMappingSequence.Designer.cs">
+      <DependentUpon>202607190636000_TestParameterMappingSequence.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repo\IGenericRepository.cs" />
@@ -194,6 +206,15 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202607100420024_fixed.resx">
       <DependentUpon>202607100420024_fixed.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202607190610000_ParameterMasterComments.resx">
+      <DependentUpon>202607190610000_ParameterMasterComments.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202607190625000_MethodNameLength300.resx">
+      <DependentUpon>202607190625000_MethodNameLength300.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202607190636000_TestParameterMappingSequence.resx">
+      <DependentUpon>202607190636000_TestParameterMappingSequence.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -19,6 +19,7 @@ export class LoginComponent implements OnInit, OnDestroy {
     returnUrl: string;
     isRemember: boolean = false;
     rememberUserName:string;
+    showPassword: boolean = false;
     public message: string;
 
     constructor(
@@ -219,5 +220,9 @@ export class LoginComponent implements OnInit, OnDestroy {
 
     AllowRememberMe(event:any) {
         this.isRemember = event.target.checked;
+    }
+
+    togglePasswordVisibility() {
+        this.showPassword = !this.showPassword;
     }
 }

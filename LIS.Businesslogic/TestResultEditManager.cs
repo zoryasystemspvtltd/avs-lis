@@ -457,10 +457,13 @@ namespace LIS.BusinessLogic
             List<HISParameterRangMaster> allRanges,
             bool canEdit)
         {
+            // Sequence-ordered parameter list for this test (Test Parameter Mapping).
+            var orderedParams = ResolveParametersForTest(testCode, allParams);
             var list = new List<TestResultEditParameterDto>();
+            var sortKeys = new Dictionary<TestResultEditParameterDto, int>();
             foreach (var detail in details)
             {
-                var paramMaster = ResolveParametersForTest(testCode, allParams).FirstOrDefault(p =>
+                var paramMaster = orderedParams.FirstOrDefault(p =>
                     (p.LISParamCode != null && p.LISParamCode.Equals(detail.LISParamCode, StringComparison.OrdinalIgnoreCase)) ||
                      p.HISParamCode != null && p.HISParamCode.Equals(detail.LISParamCode, StringComparison.OrdinalIgnoreCase) ||
                      (detail.HISParamCode != null && p.HISParamCode != null && p.HISParamCode.Equals(detail.HISParamCode, StringComparison.OrdinalIgnoreCase)));
@@ -474,7 +477,7 @@ namespace LIS.BusinessLogic
                     out var flag,
                     out var isAbnormal);
 
-                list.Add(new TestResultEditParameterDto
+                var dto = new TestResultEditParameterDto
                 {
                     DetailId = detail.Id,
                     ParameterCode = paramMaster?.HISParamCode ?? detail.LISParamCode,
@@ -486,10 +489,16 @@ namespace LIS.BusinessLogic
                     IsAbnormal = isAbnormal,
                     Method = paramMaster?.HISParamMethod,
                     IsEditable = canEdit
-                });
+                };
+                list.Add(dto);
+                var seqIndex = paramMaster != null ? orderedParams.IndexOf(paramMaster) : int.MaxValue;
+                sortKeys[dto] = seqIndex;
             }
 
-            return list.OrderBy(p => p.ParameterName).ToList();
+            return list
+                .OrderBy(p => sortKeys[p])
+                .ThenBy(p => p.ParameterName)
+                .ToList();
         }
 
         private IList<TestResultEditParameterDto> BuildScaffoldParameters(
@@ -662,14 +671,17 @@ namespace LIS.BusinessLogic
                     t.HISTestCode.Equals(testCode.Trim(), StringComparison.OrdinalIgnoreCase));
             if (test != null)
             {
-                var mappedIds = testParamMappingRepo.Get(m => m.IsActive && m.HisTestId == test.Id)
-                    .Select(m => m.HisParameterId)
-                    .ToHashSet();
-                if (mappedIds.Any())
+                // Order mapped parameters by ascending Sequence from Test Parameter Mapping.
+                var sequenceByParamId = testParamMappingRepo.Get(m => m.IsActive && m.HisTestId == test.Id)
+                    .AsEnumerable()
+                    .GroupBy(m => m.HisParameterId)
+                    .ToDictionary(g => g.Key, g => g.Min(m => m.Sequence));
+                if (sequenceByParamId.Any())
                 {
                     return allParams
-                        .Where(p => mappedIds.Contains(p.Id))
-                        .OrderBy(p => p.HISParamDescription ?? p.HISParamCode)
+                        .Where(p => sequenceByParamId.ContainsKey(p.Id))
+                        .OrderBy(p => sequenceByParamId[p.Id])
+                        .ThenBy(p => p.HISParamDescription ?? p.HISParamCode)
                         .ToList();
                 }
             }

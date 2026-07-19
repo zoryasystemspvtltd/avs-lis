@@ -150,6 +150,7 @@ namespace LIS.BusinessLogic
             item.HISParamUnit = (item.HISParamUnit ?? string.Empty).Trim();
             item.HISParamMethod = (item.HISParamMethod ?? string.Empty).Trim();
             item.LISParamCode = (item.LISParamCode ?? string.Empty).Trim();
+            item.Comments = (item.Comments ?? string.Empty).Trim();
         }
 
         public override ItemList<HISParameterMaster> Get(ListOptions option)
@@ -365,11 +366,36 @@ namespace LIS.BusinessLogic
 
         public override ItemList<HISParameterRangMaster> Get(ListOptions option)
         {
-            var result = base.Get(option);
-            if (result?.Items != null)
+            if (option == null)
             {
-                Enrich(result.Items);
+                return null;
             }
+
+            var ranges = Repo.Get().ToList();
+            Enrich(ranges);
+
+            if (!string.IsNullOrWhiteSpace(option.SearchText))
+            {
+                var search = option.SearchText.Trim();
+                ranges = ranges.Where(r =>
+                        (!string.IsNullOrWhiteSpace(r.HISRangeCode) &&
+                            r.HISRangeCode.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                        (!string.IsNullOrWhiteSpace(r.HisParamDescription) &&
+                            r.HisParamDescription.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0))
+                    .ToList();
+            }
+
+            var result = new ItemList<HISParameterRangMaster>
+            {
+                TotalRecord = ranges.Count
+            };
+            var minRow = Math.Max(0, (option.CurrentPage - 1) * option.RecordPerPage);
+            var pageSize = option.RecordPerPage <= 0 ? result.TotalRecord : option.RecordPerPage;
+            result.Items = ranges
+                .OrderBy(ResolveSortColumn(option.SortColumnName), option.SortDirection)
+                .Skip(minRow)
+                .Take(pageSize)
+                .ToList();
 
             return result;
         }
@@ -628,6 +654,8 @@ namespace LIS.BusinessLogic
                 throw new InvalidOperationException("Test and Parameter are required.");
             }
 
+            ValidateSequence(item);
+
             if (ExistsDuplicate(item, null))
             {
                 throw new InvalidOperationException(BuildDuplicateMessage(item));
@@ -640,6 +668,8 @@ namespace LIS.BusinessLogic
 
         public new void Update(TestParameterMappingMaster item)
         {
+            ValidateSequence(item);
+
             if (ExistsDuplicate(item, item.Id))
             {
                 throw new InvalidOperationException(BuildDuplicateMessage(item));
@@ -660,13 +690,58 @@ namespace LIS.BusinessLogic
 
         public override ItemList<TestParameterMappingMaster> Get(ListOptions option)
         {
-            var result = base.Get(option);
-            if (result?.Items != null)
+            if (option == null)
             {
-                Enrich(result.Items);
+                return null;
             }
 
+            var mappings = Repo.Get().ToList();
+            Enrich(mappings);
+
+            if (!string.IsNullOrWhiteSpace(option.SearchText))
+            {
+                var search = option.SearchText.Trim();
+                mappings = mappings.Where(item =>
+                    (!string.IsNullOrEmpty(item.HISTestCode) &&
+                        item.HISTestCode.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                    (!string.IsNullOrEmpty(item.HISTestCodeDescription) &&
+                        item.HISTestCodeDescription.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                    (!string.IsNullOrEmpty(item.HISParamCode) &&
+                        item.HISParamCode.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                    (!string.IsNullOrEmpty(item.HISParamDescription) &&
+                        item.HISParamDescription.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0))
+                    .ToList();
+            }
+
+            var result = new ItemList<TestParameterMappingMaster>
+            {
+                TotalRecord = mappings.Count
+            };
+            var minRow = Math.Max(0, (option.CurrentPage - 1) * option.RecordPerPage);
+            var pageSize = option.RecordPerPage <= 0 ? result.TotalRecord : option.RecordPerPage;
+
+            result.Items = mappings
+                .OrderBy(item => item.HISTestCode, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(item => item.Sequence)
+                .ThenBy(item => item.HISParamCode, StringComparer.OrdinalIgnoreCase)
+                .Skip(minRow)
+                .Take(pageSize)
+                .ToList();
+
             return result;
+        }
+
+        private static void ValidateSequence(TestParameterMappingMaster item)
+        {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
+            if (item.Sequence < 1)
+            {
+                throw new InvalidOperationException("Sequence must be greater than zero.");
+            }
         }
 
         public override TestParameterMappingMaster GetById(int id)

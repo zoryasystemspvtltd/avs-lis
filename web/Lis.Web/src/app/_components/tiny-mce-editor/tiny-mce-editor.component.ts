@@ -28,16 +28,15 @@ export class TinyMceEditorComponent implements ControlValueAccessor {
     return this.html;
   }
 
-  changeHtml($event: any) {
-    this.writeValue(this.html);
+  /** Fires on every editor content change (keystroke, paste, undo/redo) and pushes it to the outer form control. */
+  onEditorModelChange(html: string): void {
+    this.html = html;
+    this.onTouched();
+    this.onChange(html);
   }
 
   writeValue(html: string): void {
-    if (html !== undefined) {
-      this.html = html;
-      this.onTouched();
-      this.onChange(this.html);
-    }
+    this.html = html == null ? '' : html;
   }
 
   registerOnChange(fn: (html: string) => void): void {
@@ -58,7 +57,7 @@ export class TinyMceEditorComponent implements ControlValueAccessor {
     height: this.height,
     menubar: false,
     statusbar: false,
-    plugins: ['advlist autolink lists link image charmap print preview anchor searchreplace visualblocks fullscreen insertdatetime media table contextmenu paste template'],
+    plugins: ['advlist autolink lists link image charmap print preview anchor searchreplace visualblocks fullscreen insertdatetime media table paste template'],
     toolbar: 'formatselect | undo redo | insert | styleselect | bold italic strikethrough forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image  media qimage | template | removeformat',
     templates: [
       //{ title: 'Some title 1', description: 'Some desc 1', content: 'My content' },

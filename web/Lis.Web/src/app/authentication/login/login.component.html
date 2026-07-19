@@ -22,8 +22,14 @@
                             <label for="login-password">Password</label>
                             <div class="input-group">
                                 <span class="input-group-addon"><i class="glyphicon glyphicon-lock"></i></span>
-                                <input id="login-password" type="password" autocomplete="current-password" placeholder="Password"
+                                <input id="login-password" [type]="showPassword ? 'text' : 'password'" autocomplete="current-password" placeholder="Password"
                                     class="form-control" formControlName="password" />
+                                <span class="input-group-addon password-toggle-addon" style="cursor: pointer;"
+                                    (click)="togglePasswordVisibility()"
+                                    [attr.title]="showPassword ? 'Hide password' : 'Show password'"
+                                    [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'">
+                                    <i class="glyphicon" [ngClass]="showPassword ? 'glyphicon-eye-close' : 'glyphicon-eye-open'"></i>
+                                </span>
                             </div>
                             <span *ngIf="submitted && f.password.errors" class="help-block error">Password is required.</span>
                         </div>

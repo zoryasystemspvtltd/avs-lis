@@ -41,13 +41,19 @@ namespace Lis.Api.Controllers
                     return "[]";
                 }
 
-                var user = dbContext.Users.FirstOrDefault(p => p.Id.Equals(userid, StringComparison.OrdinalIgnoreCase));
-                if (user == null)
+                // Use a private DbContext: the injected one is a shared singleton and EF contexts
+                // are not thread-safe. Login fires modules/menus/apps calls concurrently, and the
+                // race made this endpoint intermittently return "[]" (menus lost → wrong nav).
+                using (var db = new Models.IdentityDbContext())
                 {
-                    return "[]";
-                }
+                    var user = db.Users.FirstOrDefault(p => p.Id.Equals(userid, StringComparison.OrdinalIgnoreCase));
+                    if (user == null)
+                    {
+                        return "[]";
+                    }
 
-                return user.GetModulePermission(this.dbContext, id) ?? "[]";
+                    return user.GetModulePermission(db, id) ?? "[]";
+                }
             }
             catch
             {
@@ -66,12 +72,16 @@ namespace Lis.Api.Controllers
             try
             {
                 var userid = User.Identity.GetUserId();
-                var user = dbContext.Users.FirstOrDefault(p => p.Id.Equals(userid, StringComparison.OrdinalIgnoreCase));
-                if (user == null)
+                // Private DbContext for the same thread-safety reason as Get(id) above.
+                using (var db = new Models.IdentityDbContext())
                 {
-                    return "[]";
+                    var user = db.Users.FirstOrDefault(p => p.Id.Equals(userid, StringComparison.OrdinalIgnoreCase));
+                    if (user == null)
+                    {
+                        return "[]";
+                    }
+                    return user.GetMenuPermission(db, id) ?? "[]";
                 }
-                return user.GetMenuPermission(this.dbContext, id) ?? "[]";
             }
             catch
             {
@@ -85,21 +95,25 @@ namespace Lis.Api.Controllers
         /// <returns></returns>
         public List<ClientApplication> Get()
         {
-            if (User.IsInRole("Administrator"))
+            // Private DbContext: called concurrently with modules/menus during login.
+            using (var db = new Models.IdentityDbContext())
             {
-                var allapplications = dbContext.ClientApplications
-                .ToList();
+                if (User.IsInRole("Administrator"))
+                {
+                    var allapplications = db.ClientApplications
+                    .ToList();
 
-                return allapplications;
+                    return allapplications;
+                }
+                var userid = User.Identity.GetUserId();
+                var applications = db.UserApplicationMappings
+                    .Include("ClientApplication")
+                    .Where(p => p.UserId.Equals(userid, StringComparison.OrdinalIgnoreCase))
+                    .Select(q => q.ClientApplication)
+                    .ToList();
+
+                return applications;
             }
-            var userid = User.Identity.GetUserId();
-            var applications = dbContext.UserApplicationMappings
-                .Include("ClientApplication")
-                .Where(p => p.UserId.Equals(userid, StringComparison.OrdinalIgnoreCase))
-                .Select(q=>q.ClientApplication)
-                .ToList();
-
-            return applications;
         }
     }
 }

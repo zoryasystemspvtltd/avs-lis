@@ -24,6 +24,11 @@
               "src/web.config",
               {
                 "glob": "**/*",
+                "input": "node_modules/tinymce/icons",
+                "output": "/tinymce/icons/"
+              },
+              {
+                "glob": "**/*",
                 "input": "node_modules/tinymce/skins",
                 "output": "/tinymce/skins/"
               },

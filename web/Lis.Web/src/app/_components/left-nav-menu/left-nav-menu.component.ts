@@ -132,14 +132,35 @@ export class LeftNavMenuComponent implements OnInit {
     return false;
   }
 
+  /**
+   * Section headers show only when at least one menu item inside is visible
+   * (module fallback still applies for roles without a menu overlay).
+   */
+  hasWorkingBoardAccess(): boolean {
+    return this.hasMenu('Samples', 'workingboard.recentSamples')
+      || this.hasMenu('SampleCollection', 'workingboard.sampleCollection')
+      || this.hasMenu('SampleReceiving', 'workingboard.sampleReceiving')
+      || this.hasMenu('RadiologyReportEntry', 'workingboard.radiologyReportEntry')
+      || this.hasMenu('RadiologyDoctorApprovals', 'workingboard.radiologyDoctorApproval')
+      || this.hasMenu('RadiologyDoctorApprovals', 'workingboard.radiologyApproved')
+      || this.hasMenu('Reports', 'workingboard.technicianApproval')
+      || this.hasMenu('Reports', 'workingboard.testResultEdit')
+      || this.hasMenu('Samples', 'workingboard.testResultEdit')
+      || this.hasMenu('DoctorsApprovals', 'workingboard.doctorApproval')
+      || this.hasMenu('Reports', 'workingboard.approvedSamples')
+      || this.hasMenu('DoctorsApprovals', 'workingboard.approvedSamples')
+      || this.hasMenu('Reports', 'workingboard.rejectedSamples')
+      || this.hasMenu('DoctorsApprovals', 'workingboard.rejectedSamples')
+      || this.hasMenu('Reports', 'workingboard.qualityControls')
+      || this.hasMenu('DoctorsApprovals', 'workingboard.qualityControls');
+  }
+
   hasSetupAccess(): boolean {
     return this.hasMenu('Masters', 'setup.department')
       || this.hasMenu('Masters', 'setup.unit')
       || this.hasMenu('Masters', 'setup.method')
       || this.hasMenu('Equipments', 'setup.equipment')
-      || this.hasMenu('Equipments', 'setup.equipmentHeartbeat')
-      || this.hasAccess('Masters', 63)
-      || this.hasAccess('Equipments', 63);
+      || this.hasMenu('Equipments', 'setup.equipmentHeartbeat');
   }
 
   hasMasterAccess(): boolean {
@@ -152,17 +173,12 @@ export class LeftNavMenuComponent implements OnInit {
       || this.hasMenu('Masters', 'masters.parameter')
       || this.hasMenu('Masters', 'masters.testParamMapping')
       || this.hasMenu('Masters', 'masters.analyzerParamMapping')
-      || this.hasMenu('Masters', 'masters.parameterRange')
-      || this.hasAccess('Masters', 63)
-      || this.hasAccess('HisTest', 63)
-      || this.hasAccess('TestRates', 63);
+      || this.hasMenu('Masters', 'masters.parameterRange');
   }
 
   hasTransactionAccess(): boolean {
     return this.hasMenu('PatientDetails', 'transaction.patientDetails')
-      || this.hasMenu('SaleInvoices', 'transaction.saleInvoice')
-      || this.hasAccess('SaleInvoices', 63)
-      || this.hasAccess('PatientDetails', 63);
+      || this.hasMenu('SaleInvoices', 'transaction.saleInvoice');
   }
 
   hasReportAccess(): boolean {
@@ -170,6 +186,25 @@ export class LeftNavMenuComponent implements OnInit {
       || this.hasAccess('SaleInvoices', 63)
       || this.hasAccess('Samples', 63)
       || this.hasAccess('RadiologyReports', 63);
+  }
+
+  /** Reports section header: visible only when at least one report item is visible. */
+  hasReportsSectionAccess(): boolean {
+    return this.showReportMenu('Reports', 'reports.saleInvoiceRegister')
+      || this.showReportMenu('Reports', 'reports.testBookingRegister')
+      || this.showReportMenu('Reports', 'reports.diagnosticReport')
+      || this.showReportMenu('RadiologyReports', 'reports.radiologyReportPrint')
+      || this.showReportMenu('Reports', 'reports.collectionSummary')
+      || this.showReportMenu('Reports', 'reports.collectorWise')
+      || this.showReportMenu('Reports', 'reports.pendingCollection')
+      || this.showReportMenu('Reports', 'reports.recollection')
+      || this.showReportMenu('Reports', 'reports.receivedSamples')
+      || this.showReportMenu('Reports', 'reports.rejectedSamples')
+      || this.showReportMenu('Reports', 'reports.turnaround')
+      || this.showReportMenu('RadiologyReports', 'reports.radiologyPending')
+      || this.showReportMenu('RadiologyReports', 'reports.radiologyAuthorized')
+      || this.showReportMenu('RadiologyReports', 'reports.radiologyModality')
+      || this.showReportMenu('RadiologyReports', 'reports.radiologyProductivity');
   }
 
   /** True when the role has at least one menu row for the module (overlay active). */
