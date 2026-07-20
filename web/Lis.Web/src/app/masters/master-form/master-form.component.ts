@@ -11,6 +11,7 @@ import { extractApiError } from '../../_helpers/api-error';
   templateUrl: './master-form.component.html'
 })
 export class MasterFormComponent implements OnInit {
+
   form: FormGroup;
   submitted = false;
   loading = false;
@@ -1220,4 +1221,13 @@ export class MasterFormComponent implements OnInit {
   cancel() {
     this.router.navigate([this.returnUrl]);
   }
+  getFieldByName(name: string): any {
+    return this.fields.find(f => f.name === name);
+  }
+
+  isFieldRequired(name: string): boolean {
+    const field = this.getFieldByName(name);
+    return field?.required === true;
+  }
 }
+

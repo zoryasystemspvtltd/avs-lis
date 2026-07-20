@@ -1,4 +1,8 @@
 @import "~@ng-select/ng-select/themes/default.theme.css";
+/* Ensure the root element does not produce a vertical scrollbar */
+html {
+    overflow-y: hidden;
+}
 body {
     padding-top: 52px;
     padding-bottom: 0;
@@ -197,6 +201,20 @@ body {
     font-size: 18px;
     float: right;
 }
+
+
+::-webkit-scrollbar {
+    width: 0px;
+    height: 0px;
+    display: none;
+}
+
+
+* {
+    scrollbar-width: none; 
+    -ms-overflow-style: none;
+}
+
 
 .loginBtn {
     box-sizing: border-box;

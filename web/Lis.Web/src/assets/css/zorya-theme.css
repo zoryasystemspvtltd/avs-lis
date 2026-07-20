@@ -6,8 +6,8 @@
 :root {
   --zorya-primary: #125d74;
   --zorya-primary-dark: #0e4a5c;
-  --zorya-menu-bg: #003c4f;
-  --zorya-menu-bg-hover: #004a61;
+  --zorya-menu-bg: #125d74;
+  --zorya-menu-bg-hover: #0e4a5c;;
   --zorya-primary-light: #1a7a96;
   --zorya-primary-soft: #e8f2f5;
   --zorya-accent: #e9b513;

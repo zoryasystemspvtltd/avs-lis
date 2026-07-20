@@ -4,7 +4,7 @@
     <hr />
     <alert></alert>
 
-    <div class="patient-identity-banner" *ngIf="apiName === 'PatientMaster'">
+    <!-- <div class="patient-identity-banner" *ngIf="apiName === 'PatientMaster'">
       <strong>Patient Number:</strong> {{form.get('hisPatientId')?.value || 'Assigned on save'}}
       &nbsp;|&nbsp;
       <strong>Patient Name:</strong> {{patientDisplayName}}
@@ -12,7 +12,8 @@
       <strong>MR Number:</strong> {{form.get('mrNo')?.value || '—'}}
       &nbsp;|&nbsp;
       <strong>Current Visit:</strong> {{form.get('visitId')?.value || '—'}}
-    </div>
+    </div> -->
+
     <div class="patient-master-toolbar" *ngIf="apiName === 'PatientMaster' && id">
       <button type="button" class="btn btn-warning btn-sm"
         (click)="startNewVisitFromMaster()"
@@ -20,6 +21,7 @@
         {{ visitStarting ? 'Starting visit...' : 'Start New Visit' }}
       </button>
     </div>
+
     <ul class="nav nav-tabs" *ngIf="apiName === 'PatientMaster' && id">
       <li [class.active]="patientMasterTab === 'details'">
         <a href="#" (click)="$event.preventDefault(); setPatientMasterTab('details')">Patient Details</a>
@@ -30,95 +32,217 @@
     </ul>
     <br *ngIf="apiName === 'PatientMaster'" />
 
-    <ng-container *ngIf="apiName !== 'PatientMaster' || !id || patientMasterTab === 'details'">
-    <!-- Test Parameter Mapping renders these schema fields (Sequence, Active) below the Parameter field instead. -->
-    <ng-container *ngIf="apiName !== 'TestParameterMappingMaster'">
-      <ng-container *ngTemplateOutlet="schemaFields"></ng-container>
-    </ng-container>
-    </ng-container>
+    <!-- ====================== PATIENT MASTER - 2 COLUMN LAYOUT ====================== -->
+    <ng-container *ngIf="apiName === 'PatientMaster' && (!id || patientMasterTab === 'details')">
 
-    <ng-template #schemaFields>
-    <ng-container *ngFor="let field of visibleFields()">
-      <div class="row" *ngIf="field.type !== 'checkbox' && field.type !== 'editor'">
-        <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye">
-          <label>{{field.label}}<span class="error" *ngIf="field.required">*</span>
-            <span *ngIf="field.help" class="glyphicon glyphicon-info-sign field-help-icon" [attr.title]="field.help"></span>
-          </label>
-        </div>
-        <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
-          <select *ngIf="isUnitOrMethodDropdown(field)" class="form-control" [formControlName]="field.name">
-            <option value="">-- Select {{field.label}} --</option>
-            <option *ngFor="let opt of unitMethodOptions(field.name)" [ngValue]="opt.name || opt.Name">{{opt.name || opt.Name}}</option>
-          </select>
-          <div class="input-group" *ngIf="field.type !== 'select' && !isUnitOrMethodDropdown(field)">
-            <span class="input-group-addon"><i class="glyphicon glyphicon-pencil"></i></span>
-            <input *ngIf="field.type === 'text' || field.type === 'number' || field.type === 'date'"
-              [type]="field.type === 'number' ? 'number' : (field.type === 'date' ? 'date' : 'text')"
-              class="form-control" [formControlName]="field.name"
-              [readonly]="isFieldReadonly(field)"
-              [attr.maxlength]="field.maxLength || null"
-              [attr.min]="field.min != null ? field.min : null"
-              [attr.placeholder]="patientAutoPlaceholder(field)"
-              (change)="field.name === 'dateOfBirth' && apiName === 'PatientMaster' ? onPatientDobChange() : null"
-              (input)="field.name === 'age' && apiName === 'PatientMaster' ? onPatientAgeChange() : null" />
+      <!-- Row 1 -->
+      <div class="row" style="margin-bottom: 10px;">
+        <div class="col-md-6">
+          <div class="row">
+            <div class="col-sm-3 form-grid-stye">
+              <label>MR Number<span class="error" *ngIf="isFieldRequired('mrNo')">*</span></label>
+            </div>
+            <div class="col-sm-9 form-grid-stye">
+              <div class="input-group">
+                <span class="input-group-addon"><i class="glyphicon glyphicon-pencil"></i></span>
+                <input type="text" class="form-control" formControlName="mrNo"
+                       [readonly]="isFieldReadonly(getFieldByName('mrNo'))"
+                       [attr.placeholder]="patientAutoPlaceholder(getFieldByName('mrNo'))" />
+              </div>
+            </div>
           </div>
-          <select *ngIf="field.type === 'select' && !isUnitOrMethodDropdown(field)" class="form-control" [formControlName]="field.name">
-            <option *ngFor="let opt of field.options" [value]="opt.value">{{opt.label}}</option>
-          </select>
-          <span *ngIf="submitted && f[field.name]?.invalid" class="error">{{field.label}} is required.</span>
+        </div>
+        <div class="col-md-6">
+          <div class="row">
+            <div class="col-sm-3 form-grid-stye">
+              <label>Patient Number<span class="error" *ngIf="isFieldRequired('hisPatientId')">*</span></label>
+            </div>
+            <div class="col-sm-9 form-grid-stye">
+              <div class="input-group">
+                <span class="input-group-addon"><i class="glyphicon glyphicon-pencil"></i></span>
+                <input type="text" class="form-control" formControlName="hisPatientId" readonly
+                       [attr.placeholder]="patientAutoPlaceholder(getFieldByName('hisPatientId'))" />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="row" *ngIf="field.type === 'editor'">
-        <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye">
-          <label>{{field.label}}<span class="error" *ngIf="field.required">*</span></label>
+      <br />
+
+      <!-- Row 2 -->
+      <div class="row" style="margin-bottom: 10px;">
+        <div class="col-md-6">
+          <div class="row">
+            <div class="col-sm-3 form-grid-stye">
+              <label>Visit Id<span class="error" *ngIf="isFieldRequired('visitId')">*</span></label>
+            </div>
+            <div class="col-sm-9 form-grid-stye">
+              <div class="input-group">
+                <span class="input-group-addon"><i class="glyphicon glyphicon-pencil"></i></span>
+                <input type="text" class="form-control" formControlName="visitId"
+                       [readonly]="isFieldReadonly(getFieldByName('visitId'))"
+                       [attr.placeholder]="patientAutoPlaceholder(getFieldByName('visitId'))" />
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="col-sm-10 col-md-10 col-lg-10 form-grid-stye">
-          <app-tiny-mce-editor [formControlName]="field.name"></app-tiny-mce-editor>
-          <span *ngIf="submitted && f[field.name]?.invalid" class="error">{{field.label}} is required.</span>
+        <div class="col-md-6">
+          <div class="row">
+            <div class="col-sm-3 form-grid-stye">
+              <label>Salutation<span class="error">*</span></label>
+            </div>
+            <div class="col-sm-9 form-grid-stye">
+              <select class="form-control" formControlName="patientPrefix">
+                <option value="">-- Select Salutation --</option>
+                <option value="Mr">Mr</option>
+                <option value="Mrs">Mrs</option>
+                <option value="Miss">Miss</option>
+                <option value="Master">Master</option>
+                <option value="Dr">Dr</option>
+              </select>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="row" *ngIf="field.type === 'checkbox'">
-        <div class="col-sm-12 form-grid-stye">
-          <label><input type="checkbox" [formControlName]="field.name" /> {{field.label}}</label>
+      <br />
+
+      <!-- Row 3 -->
+      <div class="row" style="margin-bottom: 10px;">
+        <div class="col-md-6">
+          <div class="row">
+            <div class="col-sm-3 form-grid-stye">
+              <label>Patient Name<span class="error">*</span></label>
+            </div>
+            <div class="col-sm-9 form-grid-stye">
+              <div class="input-group">
+                <span class="input-group-addon"><i class="glyphicon glyphicon-pencil"></i></span>
+                <input type="text" class="form-control" formControlName="name" />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="row">
+            <div class="col-sm-3 form-grid-stye">
+              <label>Gender<span class="error">*</span></label>
+            </div>
+            <div class="col-sm-9 form-grid-stye">
+              <select class="form-control" formControlName="gender">
+                <option value="">-- Select Gender --</option>
+                <option value="M">Male</option>
+                <option value="F">Female</option>
+                <option value="O">Other</option>
+              </select>
+            </div>
+          </div>
         </div>
       </div>
-      <br *ngIf="field.type !== 'checkbox'" />
+      <br />
+
+      <!-- Row 4 -->
+      <div class="row" style="margin-bottom: 10px;">
+        <div class="col-md-6">
+          <div class="row">
+            <div class="col-sm-3 form-grid-stye">
+              <label>Phone Number<span class="error">*</span></label>
+            </div>
+            <div class="col-sm-9 form-grid-stye">
+              <div class="input-group">
+                <span class="input-group-addon"><i class="glyphicon glyphicon-pencil"></i></span>
+                <input type="text" class="form-control" formControlName="phone" />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="row">
+            <div class="col-sm-3 form-grid-stye">
+              <label>Age</label>
+            </div>
+            <div class="col-sm-9 form-grid-stye">
+              <div class="input-group">
+                <span class="input-group-addon"><i class="glyphicon glyphicon-pencil"></i></span>
+                <input type="number" class="form-control" formControlName="age"
+                       (input)="onPatientAgeChange()" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <br />
+
+      <!-- Row 5 -->
+      <div class="row" style="margin-bottom: 10px;">
+        <div class="col-md-6">
+          <div class="row">
+            <div class="col-sm-3 form-grid-stye">
+              <label>Date of Birth</label>
+            </div>
+            <div class="col-sm-9 form-grid-stye">
+              <div class="input-group">
+                <span class="input-group-addon"><i class="glyphicon glyphicon-pencil"></i></span>
+                <input type="date" class="form-control" formControlName="dateOfBirth"
+                       (change)="onPatientDobChange()" />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="row">
+            <div class="col-sm-3 form-grid-stye">
+              <label>Address</label>
+            </div>
+            <div class="col-sm-9 form-grid-stye">
+              <textarea class="form-control" formControlName="address" rows="3"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+      <br />
+
+      <input type="hidden" formControlName="isActive" />
     </ng-container>
-    </ng-template>
 
-    <div *ngIf="apiName === 'PatientMaster' && id && patientMasterTab === 'visits'" class="visit-history-panel">
-      <p *ngIf="visitHistoryLoading" class="text-muted">Loading visit history...</p>
-      <table class="table table-bordered qtable" *ngIf="!visitHistoryLoading">
-        <thead>
-          <tr>
-            <th>Visit ID</th>
-            <th>Visit Date</th>
-            <th>Invoice</th>
-            <th>Status</th>
-            <th>Created By</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let row of visitHistory">
-            <td>{{row.visitId || '—'}}</td>
-            <td>{{row.visitDateTime | date:'dd-MMM-yyyy HH:mm'}}</td>
-            <td>{{row.invoiceNo || '—'}}</td>
-            <td>{{row.visitStatusLabel || '—'}}</td>
-            <td>{{row.createdBy || '—'}}</td>
-            <td>
-              <button type="button" class="btn btn-link btn-sm"
-                *ngIf="row.saleInvoiceId"
-                (click)="openVisitInvoice(row.saleInvoiceId)">Open Invoice</button>
-            </td>
-          </tr>
-          <tr *ngIf="!visitHistory?.length">
-            <td colspan="6" class="text-muted">No visits recorded yet.</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <!-- ====================== DEFAULT FIELDS FOR OTHER MASTERS ====================== -->
+    <ng-container *ngIf="apiName !== 'PatientMaster' || (id && patientMasterTab === 'details')">
+      <ng-container *ngFor="let field of visibleFields()">
+        <div class="row" *ngIf="field.type !== 'checkbox'">
+          <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye">
+            <label>{{field.label}}<span class="error" *ngIf="field.required">*</span>
+              <span *ngIf="field.help" class="glyphicon glyphicon-info-sign field-help-icon" [attr.title]="field.help"></span>
+            </label>
+          </div>
+          <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
+            <select *ngIf="isUnitOrMethodDropdown(field)" class="form-control" [formControlName]="field.name">
+              <option value="">-- Select {{field.label}} --</option>
+              <option *ngFor="let opt of unitMethodOptions(field.name)" [ngValue]="opt.name || opt.Name">{{opt.name || opt.Name}}</option>
+            </select>
+            <div class="input-group" *ngIf="field.type !== 'select' && !isUnitOrMethodDropdown(field)">
+              <span class="input-group-addon"><i class="glyphicon glyphicon-pencil"></i></span>
+              <input *ngIf="field.type === 'text' || field.type === 'number' || field.type === 'date'"
+                [type]="field.type === 'number' ? 'number' : (field.type === 'date' ? 'date' : 'text')"
+                class="form-control" [formControlName]="field.name"
+                [readonly]="isFieldReadonly(field)"
+                [attr.placeholder]="patientAutoPlaceholder(field)"
+                (change)="field.name === 'dateOfBirth' && apiName === 'PatientMaster' ? onPatientDobChange() : null"
+                (input)="field.name === 'age' && apiName === 'PatientMaster' ? onPatientAgeChange() : null" />
+            </div>
+            <select *ngIf="field.type === 'select' && !isUnitOrMethodDropdown(field)" class="form-control" [formControlName]="field.name">
+              <option *ngFor="let opt of field.options" [value]="opt.value">{{opt.label}}</option>
+            </select>
+            <span *ngIf="submitted && f[field.name]?.invalid" class="error">{{field.label}} is required.</span>
+          </div>
+        </div>
+        <div class="row" *ngIf="field.type === 'checkbox'">
+          <div class="col-sm-12 form-grid-stye">
+            <label><input type="checkbox" [formControlName]="field.name" /> {{field.label}}</label>
+          </div>
+        </div>
+        <br *ngIf="field.type !== 'checkbox'" />
+      </ng-container>
+    </ng-container>
 
+    <!-- ====================== SPECIAL FORMS ====================== -->
     <ng-container *ngIf="apiName === 'TestRate'">
       <p *ngIf="!lookupsLoaded" class="text-muted">Loading lookups...</p>
       <div class="row">
@@ -195,21 +319,10 @@
       <div class="row">
         <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Parameter<span class="error">*</span></label></div>
         <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
-          <ng-select
-            [items]="hisParameters"
-            bindLabel="displayLabel"
-            bindValue="id"
-            formControlName="hisParameterId"
-            placeholder="Type to search parameters..."
-            [searchable]="true"
-            [clearable]="true"
-            [loading]="!lookupsLoaded"
-            [minTermLength]="0"
-            typeToSearchText="Type to filter parameters..."
-            appendTo="body"
-            notFoundText="No matching parameters"
-            class="test-rate-test-select">
-          </ng-select>
+          <select class="form-control" formControlName="hisParameterId" [disabled]="!lookupsLoaded">
+            <option [ngValue]="null">-- Select Parameter --</option>
+            <option *ngFor="let p of hisParameters" [ngValue]="p.id">{{p.hisParamCode}} - {{p.hisParamDescription}}</option>
+          </select>
         </div>
       </div>
       <br />
@@ -291,9 +404,41 @@
         </div>
       </div>
       <br />
-      <!-- Sequence and Active appear below the Parameter field. -->
-      <ng-container *ngTemplateOutlet="schemaFields"></ng-container>
     </ng-container>
+
+    <!-- Visit History -->
+    <div *ngIf="apiName === 'PatientMaster' && id && patientMasterTab === 'visits'" class="visit-history-panel">
+      <p *ngIf="visitHistoryLoading" class="text-muted">Loading visit history...</p>
+      <table class="table table-bordered qtable" *ngIf="!visitHistoryLoading">
+        <thead>
+          <tr>
+            <th>Visit ID</th>
+            <th>Visit Date</th>
+            <th>Invoice</th>
+            <th>Status</th>
+            <th>Created By</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of visitHistory">
+            <td>{{row.visitId || '—'}}</td>
+            <td>{{row.visitDateTime | date:'dd-MMM-yyyy HH:mm'}}</td>
+            <td>{{row.invoiceNo || '—'}}</td>
+            <td>{{row.visitStatusLabel || '—'}}</td>
+            <td>{{row.createdBy || '—'}}</td>
+            <td>
+              <button type="button" class="btn btn-link btn-sm"
+                *ngIf="row.saleInvoiceId"
+                (click)="openVisitInvoice(row.saleInvoiceId)">Open Invoice</button>
+            </td>
+          </tr>
+          <tr *ngIf="!visitHistory?.length">
+            <td colspan="6" class="text-muted">No visits recorded yet.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
     <button type="submit" class="btn btn-primary" [disabled]="loading">Save</button>
     <button type="button" class="btn btn-default" (click)="cancel()">Cancel</button>
