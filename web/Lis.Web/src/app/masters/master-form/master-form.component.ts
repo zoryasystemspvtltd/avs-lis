@@ -904,6 +904,7 @@ export class MasterFormComponent implements OnInit {
     if (patch.HISParamUnit != null && patch.hisParamUnit == null) { patch.hisParamUnit = patch.HISParamUnit; }
     if (patch.HISParamMethod != null && patch.hisParamMethod == null) { patch.hisParamMethod = patch.HISParamMethod; }
     if (patch.LISParamCode != null && patch.lisParamCode == null) { patch.lisParamCode = patch.LISParamCode; }
+    if (patch.Comments != null && patch.comments == null) { patch.comments = patch.Comments; }
     if (patch.MRNo != null && patch.mrNo == null) { patch.mrNo = patch.MRNo; }
     if (patch.VisitId != null && patch.visitId == null) { patch.visitId = patch.VisitId; }
     if (patch.PatientPrefix != null && patch.patientPrefix == null) { patch.patientPrefix = patch.PatientPrefix; }
@@ -1065,6 +1066,7 @@ export class MasterFormComponent implements OnInit {
     if (item.code) { item.code = ('' + item.code).trim(); }
     if (item.name) { item.name = ('' + item.name).trim(); }
     if (item.hisParamCode) { item.hisParamCode = ('' + item.hisParamCode).trim(); }
+    if (item.comments != null) { item.comments = '' + item.comments; }
     if (item.effectiveStart) { item.effectiveStart = this.toApiDateString(item.effectiveStart); }
     if (item.effectiveEnd) { item.effectiveEnd = this.toApiDateString(item.effectiveEnd); }
     if (item.dateOfBirth) { item.dateOfBirth = this.toApiDateString(item.dateOfBirth); }

@@ -206,7 +206,18 @@
     <!-- ====================== DEFAULT FIELDS FOR OTHER MASTERS ====================== -->
     <ng-container *ngIf="apiName !== 'PatientMaster' || (id && patientMasterTab === 'details')">
       <ng-container *ngFor="let field of visibleFields()">
-        <div class="row" *ngIf="field.type !== 'checkbox'">
+        <div class="row" *ngIf="field.type === 'editor'">
+          <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye">
+            <label>{{field.label}}<span class="error" *ngIf="field.required">*</span>
+              <span *ngIf="field.help" class="glyphicon glyphicon-info-sign field-help-icon" [attr.title]="field.help"></span>
+            </label>
+          </div>
+          <div class="col-sm-10 col-md-10 col-lg-10 form-grid-stye">
+            <app-tiny-mce-editor [formControlName]="field.name" [height]="220"></app-tiny-mce-editor>
+            <span *ngIf="submitted && f[field.name]?.invalid" class="error">{{field.label}} is required.</span>
+          </div>
+        </div>
+        <div class="row" *ngIf="field.type !== 'checkbox' && field.type !== 'editor'">
           <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye">
             <label>{{field.label}}<span class="error" *ngIf="field.required">*</span>
               <span *ngIf="field.help" class="glyphicon glyphicon-info-sign field-help-icon" [attr.title]="field.help"></span>

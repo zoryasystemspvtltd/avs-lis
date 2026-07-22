@@ -1,28 +1,39 @@
-/* Letterhead + fixed header/footer dimensions (A4 portrait) */
+/* Diagnostic Report — blank 5 cm header/footer; doctor block 1 cm above footer */
 :root {
-  --diag-title-bar-height: 8mm;
-  --diag-header-total: 4cm;
-  --diag-letterhead-height: calc(4cm - var(--diag-title-bar-height));
-  --diag-footer-gap: 5cm;
-  --diag-footer-signature-space: 28mm;
-  --diag-footer-height: calc(var(--diag-footer-gap) + var(--diag-footer-signature-space));
-  --diag-side-margin: 10mm;
+  --diag-brand: #1a7f8c;
+  --diag-header-total: 5cm;
+  --diag-footer-height: 5cm;
+  --diag-doctor-gap: 1cm;
+  --diag-doctor-block-height: 28mm;
+  --diag-side-margin: 12mm;
+  --diag-border: #333;
 }
 
 .test-report-page .diagnostic-report {
+  font-family: "Segoe UI", Arial, Helvetica, sans-serif;
   font-size: 12px;
-  color: #222;
+  color: #111;
   position: relative;
+  background: #fff;
 }
 
-/* Screen preview of letterhead reserved area */
-.test-report-page .report-letterhead-zone {
-  min-height: var(--diag-letterhead-height);
+/* Blank header / footer — screen hints only */
+.test-report-page .report-print-header,
+.test-report-page .report-print-footer-zone {
+  position: static;
+  min-height: var(--diag-header-total);
   border: 1px dashed #c5d5d8;
   background: #f8fbfc;
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-bottom: 8px;
+}
+
+.test-report-page .report-print-footer-zone {
+  min-height: var(--diag-footer-height);
+  margin-top: 8px;
+  margin-bottom: 0;
 }
 
 .test-report-page .letterhead-screen-hint {
@@ -31,155 +42,123 @@
   font-style: italic;
 }
 
-.test-report-page .report-print-title-bar {
-  text-align: center;
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  padding: 4px 0;
-  border-bottom: 2px solid #1a7f8c;
-  margin-bottom: 8px;
-}
-
 .test-report-page .report-print-body {
   padding: 0;
 }
 
-.test-report-page .report-print-footer-zone {
-  margin-top: 16px;
-  padding-bottom: var(--diag-footer-gap);
-  font-size: 10px;
-  color: #555;
-  border: none;
+/* Patient info panel */
+.test-report-page .report-patient-panel {
+  margin-bottom: 14px;
 }
 
-.test-report-page .report-footer-legal {
-  display: none;
-}
-
-.test-report-page .report-footer-signature {
-  text-align: left;
-  margin-bottom: 0;
-  max-width: 55%;
-}
-
-/* On screen, header/footer are in document flow (not fixed) */
-.test-report-page .report-print-header,
-.test-report-page .report-print-footer-zone {
-  position: static;
-}
-
-.test-report-page .report-footer-signature {
-  text-align: left;
-  margin-bottom: 0;
-  max-width: 55%;
-}
-
-.test-report-page .report-footer-doctor-name {
-  display: block;
-  font-weight: 600;
-  margin-top: 4px;
-}
-
-.test-report-page .report-footer-doctor-designation {
-  display: block;
-  white-space: pre-wrap;
-  margin-top: 2px;
-  line-height: 1.35;
-}
-
-.test-report-page .report-footer-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 12px;
-  margin-bottom: 4px;
-}
-
-.test-report-page .report-footer-disclaimer {
-  flex: 1;
-}
-
-.test-report-page .report-footer-sign {
-  margin-top: 6px;
-}
-
-.test-report-page .report-footer-sign-line {
-  white-space: nowrap;
-}
-
-.test-report-page .report-signature-img {
-  max-height: 48px;
-  max-width: 200px;
-  display: block;
-  margin-bottom: 3px;
-}
-
-.test-report-page .report-meta-table {
+.test-report-page .patient-info-table {
   width: 100%;
   border-collapse: collapse;
-  margin-bottom: 10px;
+  border: 1.5px solid var(--diag-border);
   font-size: 11px;
 }
 
-.test-report-page .report-meta-table td {
-  border: 1px solid #ccc;
+.test-report-page .patient-info-table td {
+  border: 1px solid #bbb;
   padding: 4px 8px;
-  vertical-align: top;
+  vertical-align: middle;
 }
 
-.test-report-page .meta-label {
-  width: 14%;
-  font-weight: 600;
-  background: #f5f5f5;
+.test-report-page .pi-label {
+  width: 16%;
+  font-weight: 700;
+  background: #f3f7f8;
+  color: #222;
 }
 
-.test-report-page .test-block-header {
-  background: #e8f4f6;
-  border: 1px solid #b8d4da;
-  padding: 5px 8px;
-  margin: 12px 0 4px;
-  font-size: 12px;
+.test-report-page .pi-value {
+  width: 34%;
+}
+
+.test-report-page .pi-strong {
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.test-report-page .report-department-header {
+  margin: 16px 0 8px;
+  padding: 6px 8px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #111;
+  border-top: 2px solid var(--diag-brand);
+  border-bottom: 2px solid var(--diag-brand);
+  background: #f0f7f8;
 }
 
 .test-report-page .report-profile-header {
-  margin: 16px 0 8px;
-  padding: 8px 10px;
+  margin: 14px 0 6px;
+  padding: 6px 8px;
   text-align: center;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: #1a4a52;
-  border-top: 2px solid #1a7f8c;
-  border-bottom: 2px solid #1a7f8c;
+  border-top: 2px solid var(--diag-brand);
+  border-bottom: 2px solid var(--diag-brand);
 }
 
-.test-report-page .report-profile-group .report-test-block:first-of-type .test-block-header {
-  margin-top: 6px;
+.test-report-page .test-block-header {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid #999;
+  padding: 8px 0 3px;
+  margin: 12px 0 4px;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: #111;
 }
 
-.test-report-page .test-meta {
-  font-weight: normal;
-  color: #444;
+.test-report-page .report-test-block {
+  page-break-inside: avoid;
+  margin-bottom: 10px;
 }
 
 .test-report-page .report-results-table {
-  margin-bottom: 8px;
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 6px;
   font-size: 11px;
 }
 
 .test-report-page .report-results-table th {
-  background: #1a7f8c;
-  color: #fff;
-  padding: 4px 6px;
+  background: #e8eef0;
+  color: #111;
+  font-weight: 700;
+  border: 1px solid #666;
+  padding: 5px 6px;
   font-size: 10px;
+  text-transform: uppercase;
 }
 
 .test-report-page .report-results-table td {
-  padding: 3px 6px;
+  border: 1px solid #999;
+  padding: 4px 6px;
   vertical-align: middle;
+}
+
+.test-report-page .col-param { width: 42%; text-align: left; }
+.test-report-page .col-result { width: 18%; }
+.test-report-page .col-unit { width: 15%; }
+.test-report-page .col-ref { width: 25%; }
+
+.test-report-page .param-section-heading {
+  font-weight: 700;
+  text-transform: uppercase;
+  background: #f5f5f5;
+  letter-spacing: 0.04em;
+  padding: 5px 6px !important;
+  border-top: 1.5px solid #555 !important;
 }
 
 .test-report-page .abnormal-row {
@@ -191,17 +170,80 @@
   color: #b71c1c;
 }
 
-.test-report-page .flag-cell {
+.test-report-page .result-flag {
   font-weight: 700;
-  width: 48px;
+  margin-left: 2px;
 }
 
-/* Shared print layout (screen print preview + iframe document) */
+.test-report-page .test-comment-block {
+  margin: 4px 0 10px;
+  padding: 4px 2px;
+  font-size: 11px;
+}
+
+.test-report-page .test-comment-label {
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.test-report-page .test-comment-text {
+  white-space: pre-wrap;
+  line-height: 1.35;
+  color: #222;
+}
+
+.test-report-page .report-doctor-approval-comment {
+  margin: 16px 0 12px;
+  padding: 8px 0;
+  border-top: 1px solid #999;
+  font-size: 11px;
+  page-break-inside: avoid;
+}
+
+/* Doctor signature — screen preview */
+.test-report-page .report-doctor-signature-zone {
+  text-align: left;
+  margin: 24px 0 16px;
+  max-width: 55%;
+  padding: 8px 0;
+}
+
+.test-report-page .report-signature-img {
+  max-height: 48px;
+  max-width: 180px;
+  display: block;
+  margin: 0 0 4px;
+}
+
+.test-report-page .report-footer-doctor-name {
+  display: block;
+  font-weight: 700;
+  font-size: 12px;
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+
+.test-report-page .report-footer-doctor-qualification,
+.test-report-page .report-footer-doctor-designation {
+  display: block;
+  white-space: pre-wrap;
+  margin-top: 2px;
+  line-height: 1.35;
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.test-report-page .report-footer-sign-line {
+  display: block;
+  margin-top: 8px;
+}
+
+/* ===== Print / iframe document ===== */
 .diagnostic-report-print-doc,
 body.test-report-print-mode .diagnostic-report {
-  font-family: "Segoe UI", Arial, sans-serif;
-  font-size: 11px;
-  color: #222;
+  font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+  font-size: 10pt;
+  color: #111;
 }
 
 .diagnostic-report-print-doc .report-print-header,
@@ -213,13 +255,9 @@ body.test-report-print-mode .report-print-header {
   height: var(--diag-header-total);
   z-index: 1000;
   background: #fff;
-}
-
-.diagnostic-report-print-doc .report-letterhead-zone,
-body.test-report-print-mode .report-letterhead-zone {
-  height: var(--diag-letterhead-height);
-  background: transparent;
   border: none;
+  margin: 0;
+  padding: 0;
 }
 
 .diagnostic-report-print-doc .letterhead-screen-hint,
@@ -227,21 +265,173 @@ body.test-report-print-mode .letterhead-screen-hint {
   display: none;
 }
 
-.diagnostic-report-print-doc .report-print-title-bar,
-body.test-report-print-mode .report-print-title-bar {
-  height: var(--diag-title-bar-height);
-  line-height: var(--diag-title-bar-height);
-  padding: 0 var(--diag-side-margin);
-  margin: 0;
+.diagnostic-report-print-doc .report-print-body,
+body.test-report-print-mode .report-print-body {
+  padding: calc(var(--diag-header-total) + 2mm) var(--diag-side-margin)
+    calc(var(--diag-footer-height) + var(--diag-doctor-gap) + var(--diag-doctor-block-height) + 2mm)
+    var(--diag-side-margin);
+}
+
+.diagnostic-report-print-doc .patient-info-table,
+body.test-report-print-mode .patient-info-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1.2pt solid #333;
+  margin-bottom: 3mm;
+}
+
+.diagnostic-report-print-doc .patient-info-table td,
+body.test-report-print-mode .patient-info-table td {
+  border: 0.6pt solid #999;
+  padding: 1.2mm 2mm;
+}
+
+.diagnostic-report-print-doc .pi-label,
+body.test-report-print-mode .pi-label {
+  font-weight: 700;
+  background: #f3f7f8;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.diagnostic-report-print-doc .report-department-header,
+body.test-report-print-mode .report-department-header {
+  margin: 4mm 0 2mm;
+  padding: 1.5mm 2mm;
   text-align: center;
   font-size: 11pt;
   font-weight: 700;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
+  border-top: 1.5pt solid #1a7f8c;
   border-bottom: 1.5pt solid #1a7f8c;
-  box-sizing: border-box;
+  background: #f0f7f8;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+  page-break-after: avoid;
 }
 
+.diagnostic-report-print-doc .test-block-header,
+body.test-report-print-mode .test-block-header {
+  background: transparent;
+  border: none;
+  border-bottom: 0.8pt solid #666;
+  padding: 2mm 0 1mm;
+  margin: 3mm 0 1mm;
+  font-size: 11pt;
+  font-weight: 700;
+  text-transform: uppercase;
+  page-break-after: avoid;
+}
+
+.diagnostic-report-print-doc .report-results-table,
+body.test-report-print-mode .report-results-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 2mm;
+}
+
+.diagnostic-report-print-doc .report-results-table th,
+body.test-report-print-mode .report-results-table th {
+  background: #e8eef0;
+  color: #111;
+  font-weight: 700;
+  border: 0.8pt solid #555;
+  padding: 1.2mm 1.5mm;
+  font-size: 8pt;
+  text-transform: uppercase;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.diagnostic-report-print-doc .report-results-table td,
+body.test-report-print-mode .report-results-table td {
+  border: 0.6pt solid #888;
+  padding: 1mm 1.5mm;
+}
+
+.diagnostic-report-print-doc .param-section-heading,
+body.test-report-print-mode .param-section-heading {
+  font-weight: 700;
+  text-transform: uppercase;
+  background: #f5f5f5;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.diagnostic-report-print-doc .report-test-block,
+body.test-report-print-mode .report-test-block {
+  page-break-inside: avoid;
+}
+
+.diagnostic-report-print-doc .test-comment-block,
+body.test-report-print-mode .test-comment-block {
+  margin: 1mm 0 2.5mm;
+  font-size: 9pt;
+}
+
+.diagnostic-report-print-doc .test-comment-label,
+body.test-report-print-mode .test-comment-label {
+  font-weight: 700;
+}
+
+.diagnostic-report-print-doc .report-doctor-approval-comment,
+body.test-report-print-mode .report-doctor-approval-comment {
+  margin: 4mm 0 3mm;
+  padding-top: 2mm;
+  border-top: 0.8pt solid #666;
+  font-size: 9pt;
+  page-break-inside: avoid;
+}
+
+/* Doctor block: bottom edge sits 1 cm above the blank 5 cm footer */
+.diagnostic-report-print-doc .report-doctor-signature-zone,
+body.test-report-print-mode .report-doctor-signature-zone {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--diag-footer-height) + var(--diag-doctor-gap));
+  height: var(--diag-doctor-block-height);
+  z-index: 1001;
+  box-sizing: border-box;
+  padding: 0 var(--diag-side-margin);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-end;
+  text-align: left;
+  background: transparent;
+  font-size: 8pt;
+  line-height: 1.25;
+}
+
+.diagnostic-report-print-doc .report-signature-img,
+body.test-report-print-mode .report-signature-img {
+  max-height: 14mm;
+  max-width: 50mm;
+  display: block;
+  margin: 0 0 1mm;
+}
+
+.diagnostic-report-print-doc .report-footer-doctor-name,
+body.test-report-print-mode .report-footer-doctor-name {
+  display: block;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 9pt;
+}
+
+.diagnostic-report-print-doc .report-footer-doctor-qualification,
+.diagnostic-report-print-doc .report-footer-doctor-designation,
+body.test-report-print-mode .report-footer-doctor-qualification,
+body.test-report-print-mode .report-footer-doctor-designation {
+  display: block;
+  white-space: pre-wrap;
+  text-transform: uppercase;
+  font-size: 7.5pt;
+}
+
+/* Blank footer band */
 .diagnostic-report-print-doc .report-print-footer-zone,
 body.test-report-print-mode .report-print-footer-zone {
   position: fixed;
@@ -251,162 +441,9 @@ body.test-report-print-mode .report-print-footer-zone {
   height: var(--diag-footer-height);
   z-index: 1000;
   background: #fff;
-  box-sizing: border-box;
-  padding: 2mm var(--diag-side-margin) var(--diag-footer-gap);
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
   border: none;
-}
-
-.diagnostic-report-print-doc .report-footer-signature,
-body.test-report-print-mode .report-footer-signature {
-  align-self: flex-start;
-  text-align: left;
-  max-width: 55%;
-  margin-bottom: 0;
-  font-size: 8pt;
-  line-height: 1.25;
-}
-
-.diagnostic-report-print-doc .report-footer-signature,
-body.test-report-print-mode .report-footer-signature {
-  align-self: flex-start;
-  text-align: left;
-  max-width: 55%;
-  margin-bottom: 0;
-  font-size: 8pt;
-  line-height: 1.25;
-}
-
-.diagnostic-report-print-doc .report-footer-doctor-name,
-body.test-report-print-mode .report-footer-doctor-name {
-  display: block;
-  font-weight: 600;
-  margin-top: 0.5mm;
-}
-
-.diagnostic-report-print-doc .report-footer-doctor-designation,
-body.test-report-print-mode .report-footer-doctor-designation {
-  display: block;
-  white-space: pre-wrap;
-  margin-top: 0.5mm;
-}
-
-.diagnostic-report-print-doc .report-footer-legal,
-body.test-report-print-mode .report-footer-legal {
-  display: none;
-  border-top: none;
-}
-
-.diagnostic-report-print-doc .report-footer-row,
-body.test-report-print-mode .report-footer-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 8mm;
-}
-
-.diagnostic-report-print-doc .report-footer-disclaimer,
-body.test-report-print-mode .report-footer-disclaimer {
-  flex: 1;
-  line-height: 1.25;
-}
-
-.diagnostic-report-print-doc .report-footer-pagenum::after,
-body.test-report-print-mode .report-footer-pagenum::after {
-  content: "Page " counter(page) " of " counter(pages);
-  white-space: nowrap;
-  font-weight: 600;
-}
-
-.diagnostic-report-print-doc .report-signature-img,
-body.test-report-print-mode .report-signature-img {
-  max-height: 14mm;
-  max-width: 50mm;
-  display: block;
-  margin-bottom: 1mm;
-}
-
-.diagnostic-report-print-doc .report-print-body,
-body.test-report-print-mode .report-print-body {
-  padding: calc(var(--diag-header-total) + 2mm) var(--diag-side-margin)
-    calc(var(--diag-footer-height) + 3mm) var(--diag-side-margin);
-}
-
-.diagnostic-report-print-doc .report-meta-table,
-body.test-report-print-mode .report-meta-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 8px;
-}
-
-.diagnostic-report-print-doc .report-meta-table td,
-body.test-report-print-mode .report-meta-table td {
-  border: 1px solid #ccc;
-  padding: 3px 6px;
-}
-
-.diagnostic-report-print-doc .meta-label,
-body.test-report-print-mode .meta-label {
-  font-weight: 600;
-  background: #f5f5f5;
-  width: 14%;
-  -webkit-print-color-adjust: exact;
-  print-color-adjust: exact;
-}
-
-.diagnostic-report-print-doc .test-block-header,
-body.test-report-print-mode .test-block-header {
-  background: #e8f4f6;
-  border: 1px solid #b8d4da;
-  padding: 4px 6px;
-  margin: 10px 0 3px;
-  -webkit-print-color-adjust: exact;
-  print-color-adjust: exact;
-}
-
-.diagnostic-report-print-doc .report-profile-header,
-body.test-report-print-mode .report-profile-header {
-  margin: 14px 0 6px;
-  padding: 6px 8px;
-  text-align: center;
-  font-size: 12pt;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  border-top: 1.5pt solid #1a7f8c;
-  border-bottom: 1.5pt solid #1a7f8c;
-  -webkit-print-color-adjust: exact;
-  print-color-adjust: exact;
-}
-
-.diagnostic-report-print-doc .report-results-table,
-body.test-report-print-mode .report-results-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 6px;
-}
-
-.diagnostic-report-print-doc .report-results-table th,
-body.test-report-print-mode .report-results-table th {
-  background: #1a7f8c;
-  color: #fff;
-  padding: 3px 5px;
-  text-align: left;
-  -webkit-print-color-adjust: exact;
-  print-color-adjust: exact;
-}
-
-.diagnostic-report-print-doc .report-results-table td,
-body.test-report-print-mode .report-results-table td {
-  border: 1px solid #ddd;
-  padding: 2px 5px;
-}
-
-.diagnostic-report-print-doc .report-test-block,
-body.test-report-print-mode .report-test-block {
-  page-break-inside: avoid;
+  margin: 0;
+  padding: 0;
 }
 
 .diagnostic-report-print-doc .abnormal-value,

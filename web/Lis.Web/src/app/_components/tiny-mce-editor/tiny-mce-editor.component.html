@@ -1,7 +1,6 @@
- <editor
-   apiKey="tinyMceApiKey"
-   [ngModel]="html"
-   (ngModelChange)="onEditorModelChange($event)"
-   [init]="tinymceOptions"
-   >
- </editor>
+<editor
+  [ngModel]="html"
+  (ngModelChange)="onEditorModelChange($event)"
+  [init]="tinymceOptions"
+  [disabled]="disabled">
+</editor>

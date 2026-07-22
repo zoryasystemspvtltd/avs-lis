@@ -9,6 +9,7 @@ using Microsoft.AspNet.Identity;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -146,6 +147,7 @@ namespace Lis.Api.Controllers.Api
             {
                 var report = testReportManager.GetDiagnosticTestReport(labNo, invoiceNo);
                 EnrichLabApprover(report);
+                EnrichReportBranding(report);
                 return Ok(report);
             }
             catch (TestReportValidationException ex)
@@ -274,8 +276,74 @@ namespace Lis.Api.Controllers.Api
             }
 
             header.ApprovedByName = BuildDisplayName(user, header.ApprovedBy);
+            header.ApprovedByQualification = user.Qualification;
             header.ApprovedByDesignation = user.DoctorDesignation;
             header.ApprovedBySignatureImage = DoctorSignatureStorage.GetSignatureDataUri(user.DoctorSignaturePath);
+        }
+
+        /// <summary>
+        /// Fills laboratory branding / footer fields from Web.config appSettings (Report:* keys)
+        /// and ClientApplication name as fallback. No hard-coded lab identity.
+        /// </summary>
+        private void EnrichReportBranding(DiagnosticTestReportDto report)
+        {
+            var header = report?.Header;
+            if (header == null)
+            {
+                return;
+            }
+
+            header.LabName = ReadSetting("Report:LabName") ?? ReadSetting("Report.LabName");
+            header.Tagline = ReadSetting("Report:Tagline") ?? ReadSetting("Report.Tagline");
+            header.CentreName = ReadSetting("Report:CentreName") ?? ReadSetting("Report.CentreName");
+            header.LogoUrl = ReadSetting("Report:LogoUrl") ?? ReadSetting("Report.LogoUrl");
+            header.LicenseName = ReadSetting("Report:LicenseName") ?? ReadSetting("Report.LicenseName");
+            header.Address = ReadSetting("Report:Address") ?? ReadSetting("Report.Address");
+            header.Email = ReadSetting("Report:Email") ?? ReadSetting("Report.Email");
+            header.ContactNumbers = ReadSetting("Report:ContactNumbers") ?? ReadSetting("Report.ContactNumbers");
+            header.PharmacyContact = ReadSetting("Report:PharmacyContact") ?? ReadSetting("Report.PharmacyContact");
+            header.AppointmentContact = ReadSetting("Report:AppointmentContact") ?? ReadSetting("Report.AppointmentContact");
+
+            if (string.IsNullOrWhiteSpace(header.LabName) || string.IsNullOrWhiteSpace(header.CentreName))
+            {
+                try
+                {
+                    using (var db = new IdentityDbContext())
+                    {
+                        var app = db.ClientApplications.OrderBy(a => a.Id).FirstOrDefault();
+                        if (app != null)
+                        {
+                            if (string.IsNullOrWhiteSpace(header.LabName))
+                            {
+                                header.LabName = app.Name;
+                            }
+                            if (string.IsNullOrWhiteSpace(header.Tagline) && !string.IsNullOrWhiteSpace(app.Description))
+                            {
+                                header.Tagline = app.Description;
+                            }
+                            if (string.IsNullOrWhiteSpace(header.CentreName))
+                            {
+                                header.CentreName = app.Name;
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex.Message);
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(header.LicenseName))
+            {
+                header.LicenseName = header.LabName;
+            }
+        }
+
+        private static string ReadSetting(string key)
+        {
+            var value = ConfigurationManager.AppSettings[key];
+            return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
         }
 
         private void EnrichRadiologyApprover(DiagnosticRadiologyReportDto report)

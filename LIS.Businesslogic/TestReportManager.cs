@@ -27,6 +27,8 @@ namespace LIS.BusinessLogic
         private readonly ModuleRepo<Departments> departmentRepo;
         private readonly ModuleRepo<TestProfileMaster> profileRepo;
         private readonly ModuleRepo<TestProfileDetail> profileDetailRepo;
+        private readonly ModuleRepo<TestMappingMaster> mappingRepo;
+        private readonly ModuleRepo<TestParameterMappingMaster> testParamMappingRepo;
         private readonly ITestRequestDetailsManager testRequestManager;
 
         public TestReportManager(
@@ -50,6 +52,8 @@ namespace LIS.BusinessLogic
             departmentRepo = new ModuleRepo<Departments>(logger, identity, unitOfWork);
             profileRepo = new ModuleRepo<TestProfileMaster>(logger, identity, unitOfWork);
             profileDetailRepo = new ModuleRepo<TestProfileDetail>(logger, identity, unitOfWork);
+            mappingRepo = new ModuleRepo<TestMappingMaster>(logger, identity, unitOfWork);
+            testParamMappingRepo = new ModuleRepo<TestParameterMappingMaster>(logger, identity, unitOfWork);
             testRequestManager = testRequestDetailsManager;
         }
 
@@ -107,12 +111,16 @@ namespace LIS.BusinessLogic
                 throw new TestReportValidationException("Test results are not available for printing.");
             }
 
+            header.DoctorApprovalComment = BuildDoctorApprovalComment(requests);
+
             var grouped = BuildProfileGroupedSections(invoice, requests, sectionByRequestId);
+            var departmentGroups = BuildDepartmentGroups(invoice, requests, sectionByRequestId);
 
             return new DiagnosticTestReportDto
             {
                 Header = header,
                 ProfileGroups = grouped.ProfileGroups,
+                DepartmentGroups = departmentGroups,
                 Sections = grouped.StandaloneSections
             };
         }
@@ -191,15 +199,106 @@ namespace LIS.BusinessLogic
             return (profileGroups.Any() ? profileGroups : null, standalone);
         }
 
-        private static List<DiagnosticTestReportSection> OrderSections(
+        private List<DiagnosticTestReportSection> OrderSections(
             List<TestRequestDetail> requests,
             Dictionary<long, DiagnosticTestReportSection> sectionByRequestId)
         {
+            var orderLookup = BuildInvoiceTestOrderLookup(requests);
             return requests
-                .OrderBy(r => r.HISTestName ?? r.HISTestCode)
                 .Where(r => sectionByRequestId.ContainsKey(r.Id))
+                .OrderBy(r => orderLookup.ContainsKey(r.Id) ? orderLookup[r.Id] : int.MaxValue)
+                .ThenBy(r => r.Id)
                 .Select(r => sectionByRequestId[r.Id])
                 .ToList();
+        }
+
+        /// <summary>
+        /// Groups printable sections by department. Department sequence follows Sale Invoice
+        /// booking order (first appearance of a test from that department), not alphabetically.
+        /// </summary>
+        private List<DiagnosticTestReportDepartmentGroup> BuildDepartmentGroups(
+            SaleInvoice invoice,
+            List<TestRequestDetail> requests,
+            Dictionary<long, DiagnosticTestReportSection> sectionByRequestId)
+        {
+            var orderLookup = BuildInvoiceTestOrderLookup(requests);
+            var orderedSections = requests
+                .Where(r => sectionByRequestId.ContainsKey(r.Id))
+                .OrderBy(r => orderLookup.ContainsKey(r.Id) ? orderLookup[r.Id] : int.MaxValue)
+                .ThenBy(r => r.Id)
+                .Select(r => sectionByRequestId[r.Id])
+                .ToList();
+
+            if (!orderedSections.Any())
+            {
+                return null;
+            }
+
+            var groups = new List<DiagnosticTestReportDepartmentGroup>();
+            var indexByDept = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var section in orderedSections)
+            {
+                var deptName = string.IsNullOrWhiteSpace(section.Department)
+                    ? "General"
+                    : section.Department.Trim();
+
+                int idx;
+                if (!indexByDept.TryGetValue(deptName, out idx))
+                {
+                    idx = groups.Count;
+                    indexByDept[deptName] = idx;
+                    groups.Add(new DiagnosticTestReportDepartmentGroup
+                    {
+                        DepartmentName = deptName,
+                        Sections = new List<DiagnosticTestReportSection>()
+                    });
+                }
+
+                groups[idx].Sections.Add(section);
+            }
+
+            return groups;
+        }
+
+        /// <summary>
+        /// Maps TestRequestDetail.Id → booking sequence from SaleInvoiceDetail (and request create order as fallback).
+        /// </summary>
+        private Dictionary<long, int> BuildInvoiceTestOrderLookup(List<TestRequestDetail> requests)
+        {
+            var lookup = new Dictionary<long, int>();
+            if (requests == null || !requests.Any())
+            {
+                return lookup;
+            }
+
+            // Prefer invoice line order via RequestDetailId.
+            var requestIds = requests.Select(r => r.Id).ToList();
+            var lines = detailRepo.Get()
+                .Where(d => d.IsActive && d.RequestDetailId.HasValue && requestIds.Contains(d.RequestDetailId.Value))
+                .OrderBy(d => d.Id)
+                .ToList();
+
+            var seq = 0;
+            foreach (var line in lines)
+            {
+                var rid = line.RequestDetailId.Value;
+                if (!lookup.ContainsKey(rid))
+                {
+                    lookup[rid] = seq++;
+                }
+            }
+
+            // Remaining requests: preserve CreatedOn then Id.
+            foreach (var request in requests.OrderBy(r => r.CreatedOn).ThenBy(r => r.Id))
+            {
+                if (!lookup.ContainsKey(request.Id))
+                {
+                    lookup[request.Id] = seq++;
+                }
+            }
+
+            return lookup;
         }
 
         private SaleInvoice ResolveInvoice(string labNo, string invoiceNo)
@@ -322,6 +421,16 @@ namespace LIS.BusinessLogic
                 .OrderByDescending(r => r.AuthorizationDate ?? r.ResultDate)
                 .FirstOrDefault();
 
+            DateTime? receivedDate = null;
+            var receivedCandidates = requests
+                .Where(r => r.SampleReceivedDate > DateTime.MinValue)
+                .Select(r => (DateTime?)r.SampleReceivedDate)
+                .ToList();
+            if (receivedCandidates.Any())
+            {
+                receivedDate = receivedCandidates.Min();
+            }
+
             return new DiagnosticTestReportHeader
             {
                 LabNo = firstRequest?.HISRequestNo ?? invoice.InvoiceNo,
@@ -335,7 +444,9 @@ namespace LIS.BusinessLogic
                 ReferralDoctor = doctorName,
                 Corporate = corporateName,
                 CollectionDate = firstRequest?.SampleCollectionDate,
+                ReceivedDate = receivedDate,
                 ReportDate = latestResult?.AuthorizationDate ?? latestResult?.ResultDate ?? DateTime.Now,
+                Status = "Final",
                 ApprovedBy = latestResult?.AuthorizedBy
             };
         }
@@ -370,16 +481,269 @@ namespace LIS.BusinessLogic
             }
 
             var parameters = values.Select(v => MapParameter(v, request.HISTestCode, patient)).Where(p => p != null).ToList();
+            ApplyParameterSectionNames(parameters);
+            var comment = BuildTestComment(request.HISTestCode, parameters);
 
             return new DiagnosticTestReportSection
             {
                 TestCode = request.HISTestCode,
-                TestName = review.Test.TestName ?? request.HISTestName,
+                TestName = FormatTestHeading(review.Test.TestName ?? request.HISTestName, review.Test.SpecimenName ?? request.SpecimenName),
                 Specimen = review.Test.SpecimenName ?? request.SpecimenName,
                 SampleNo = request.SampleNo,
                 Department = department,
+                Comment = comment,
                 Parameters = parameters
             };
+        }
+
+        private static string FormatTestHeading(string testName, string specimen)
+        {
+            var name = (testName ?? string.Empty).Trim();
+            var spec = (specimen ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                return spec;
+            }
+            if (string.IsNullOrWhiteSpace(spec))
+            {
+                return name;
+            }
+            // Avoid duplicating specimen when already part of the test name.
+            if (name.IndexOf(spec, StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return name;
+            }
+            return name + ", " + spec.ToUpperInvariant();
+        }
+
+        private string BuildTestComment(string testCode, List<DiagnosticTestReportParameter> parameters)
+        {
+            var comments = new List<string>();
+            if (parameters == null || !parameters.Any())
+            {
+                return null;
+            }
+
+            // Parameter Master is independent of Test — resolve comments by parameter code
+            // (and by Test↔Parameter mapping when available), not by HISTestCode alone.
+            var masters = new List<HISParameterMaster>();
+
+            foreach (var parameter in parameters)
+            {
+                var master = ResolveParameterMaster(testCode, parameter.ParameterCode, parameter.ParameterCode);
+                if (master != null && !string.IsNullOrWhiteSpace(master.Comments))
+                {
+                    masters.Add(master);
+                }
+            }
+
+            // Also include mapped parameters for this test that have comments (even if not in result set codes mismatch).
+            if (!string.IsNullOrWhiteSpace(testCode))
+            {
+                var testEntity = testRepo.Get()
+                    .FirstOrDefault(t => t.HISTestCode != null
+                        && t.HISTestCode.Equals(testCode, StringComparison.OrdinalIgnoreCase));
+                if (testEntity != null)
+                {
+                    var mappedIds = testParamMappingRepo.Get(m => m.IsActive && m.HisTestId == testEntity.Id)
+                        .Select(m => m.HisParameterId)
+                        .Distinct()
+                        .ToList();
+
+                    foreach (var paramId in mappedIds)
+                    {
+                        var mapped = parameterRepo.Get(paramId);
+                        if (mapped != null
+                            && !string.IsNullOrWhiteSpace(mapped.Comments)
+                            && !masters.Any(m => m.Id == mapped.Id))
+                        {
+                            // Only include if this mapped parameter appears on the printed result set.
+                            var onReport = parameters.Any(p =>
+                                (!string.IsNullOrWhiteSpace(mapped.HISParamCode)
+                                    && p.ParameterCode != null
+                                    && p.ParameterCode.Equals(mapped.HISParamCode, StringComparison.OrdinalIgnoreCase))
+                                || (!string.IsNullOrWhiteSpace(mapped.LISParamCode)
+                                    && p.ParameterCode != null
+                                    && p.ParameterCode.Equals(mapped.LISParamCode, StringComparison.OrdinalIgnoreCase)));
+                            if (onReport)
+                            {
+                                masters.Add(mapped);
+                            }
+                        }
+                    }
+                }
+            }
+
+            foreach (var master in masters)
+            {
+                var text = StripHtmlToPlain(master.Comments);
+                if (!string.IsNullOrWhiteSpace(text) && !comments.Any(c => c.Equals(text, StringComparison.OrdinalIgnoreCase)))
+                {
+                    comments.Add(text.Trim());
+                }
+            }
+
+            return comments.Any() ? string.Join(Environment.NewLine, comments) : null;
+        }
+
+        /// <summary>
+        /// Resolves Parameter Master without requiring HISTestCode (Parameter Master is test-independent).
+        /// Prefers a row whose HISTestCode matches when present.
+        /// </summary>
+        private HISParameterMaster ResolveParameterMaster(string testCode, string hisParamCode, string lisParamCode)
+        {
+            if (string.IsNullOrWhiteSpace(hisParamCode) && string.IsNullOrWhiteSpace(lisParamCode))
+            {
+                return null;
+            }
+
+            var hisCode = (hisParamCode ?? string.Empty).Trim();
+            var lisCode = (lisParamCode ?? string.Empty).Trim();
+
+            var candidates = parameterRepo.Get()
+                .AsEnumerable()
+                .Where(p =>
+                    (!string.IsNullOrWhiteSpace(hisCode)
+                        && p.HISParamCode != null
+                        && p.HISParamCode.Trim().Equals(hisCode, StringComparison.OrdinalIgnoreCase))
+                    || (!string.IsNullOrWhiteSpace(lisCode)
+                        && p.LISParamCode != null
+                        && p.LISParamCode.Trim().Equals(lisCode, StringComparison.OrdinalIgnoreCase))
+                    || (!string.IsNullOrWhiteSpace(lisCode)
+                        && p.HISParamCode != null
+                        && p.HISParamCode.Trim().Equals(lisCode, StringComparison.OrdinalIgnoreCase))
+                    || (!string.IsNullOrWhiteSpace(hisCode)
+                        && p.LISParamCode != null
+                        && p.LISParamCode.Trim().Equals(hisCode, StringComparison.OrdinalIgnoreCase)))
+                .ToList();
+
+            if (!candidates.Any())
+            {
+                return null;
+            }
+
+            if (!string.IsNullOrWhiteSpace(testCode))
+            {
+                var byTest = candidates.FirstOrDefault(p =>
+                    !string.IsNullOrWhiteSpace(p.HISTestCode)
+                    && p.HISTestCode.Trim().Equals(testCode, StringComparison.OrdinalIgnoreCase));
+                if (byTest != null)
+                {
+                    return byTest;
+                }
+            }
+
+            // Prefer a row that has comments when duplicates exist.
+            return candidates.FirstOrDefault(p => !string.IsNullOrWhiteSpace(p.Comments))
+                ?? candidates.FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Collects distinct doctor approval notes from authorized TestResult rows for this invoice.
+        /// </summary>
+        private string BuildDoctorApprovalComment(List<TestRequestDetail> requests)
+        {
+            if (requests == null || !requests.Any())
+            {
+                return null;
+            }
+
+            var notes = new List<string>();
+            foreach (var request in requests.OrderBy(r => r.Id))
+            {
+                var result = resultRepo.Get(r => r.TestRequestId == request.Id)
+                    .OrderByDescending(r => r.Id)
+                    .FirstOrDefault();
+
+                if (result == null || string.IsNullOrWhiteSpace(result.DoctorNote))
+                {
+                    continue;
+                }
+
+                var text = StripHtmlToPlain(result.DoctorNote);
+                if (string.IsNullOrWhiteSpace(text))
+                {
+                    continue;
+                }
+
+                text = text.Trim();
+                if (!notes.Any(n => n.Equals(text, StringComparison.OrdinalIgnoreCase)))
+                {
+                    notes.Add(text);
+                }
+            }
+
+            return notes.Any() ? string.Join(Environment.NewLine + Environment.NewLine, notes) : null;
+        }
+
+        private static string StripHtmlToPlain(string html)
+        {
+            if (string.IsNullOrWhiteSpace(html))
+            {
+                return null;
+            }
+            var text = System.Text.RegularExpressions.Regex.Replace(html, "<[^>]+>", " ");
+            text = System.Net.WebUtility.HtmlDecode(text);
+            text = System.Text.RegularExpressions.Regex.Replace(text, @"\s+", " ").Trim();
+            return text;
+        }
+
+        /// <summary>
+        /// Applies optional section headings from Analyzer Parameter Mapping GroupName when
+        /// a test has multiple distinct groups (e.g. Physical / Biochemical). Does not hardcode names.
+        /// </summary>
+        private void ApplyParameterSectionNames(List<DiagnosticTestReportParameter> parameters)
+        {
+            if (parameters == null || parameters.Count == 0)
+            {
+                return;
+            }
+
+            var codes = parameters
+                .Select(p => p.ParameterCode)
+                .Where(c => !string.IsNullOrWhiteSpace(c))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            if (!codes.Any())
+            {
+                return;
+            }
+
+            var mappings = mappingRepo.Get(m => m.IsActive && m.HISParamCode != null)
+                .AsEnumerable()
+                .Where(m => codes.Any(c => c.Equals(m.HISParamCode, StringComparison.OrdinalIgnoreCase)))
+                .ToList();
+
+            var groupByCode = mappings
+                .Where(m => !string.IsNullOrWhiteSpace(m.GroupName))
+                .GroupBy(m => m.HISParamCode, StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(g => g.Key, g => g.First().GroupName.Trim(), StringComparer.OrdinalIgnoreCase);
+
+            if (groupByCode.Count == 0)
+            {
+                return;
+            }
+
+            var distinctGroups = groupByCode.Values
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            // Only emit section headers when grouping adds structure (2+ distinct groups).
+            if (distinctGroups.Count < 2)
+            {
+                return;
+            }
+
+            foreach (var parameter in parameters)
+            {
+                string group;
+                if (!string.IsNullOrWhiteSpace(parameter.ParameterCode)
+                    && groupByCode.TryGetValue(parameter.ParameterCode, out group))
+                {
+                    parameter.SectionName = group;
+                }
+            }
         }
 
         private DiagnosticTestReportParameter MapParameter(TestValues value, string testCode, PatientDetail patient)
@@ -397,11 +761,10 @@ namespace LIS.BusinessLogic
                 Unit = value.ParamUnit
             };
 
-            var paramMaster = parameterRepo.Get(p =>
-                    p.HISTestCode.Equals(testCode, StringComparison.OrdinalIgnoreCase) &&
-                    (p.HISParamCode.Equals(row.ParameterCode, StringComparison.OrdinalIgnoreCase) ||
-                     p.LISParamCode.Equals(value.LISParamCode, StringComparison.OrdinalIgnoreCase)))
-                .FirstOrDefault();
+            var paramMaster = ResolveParameterMaster(
+                testCode,
+                value.HISParamCode ?? row.ParameterCode,
+                value.LISParamCode);
 
             ApplyReferenceRange(row, paramMaster, patient, value);
 

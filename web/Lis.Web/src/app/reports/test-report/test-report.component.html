@@ -1,815 +1,216 @@
 <div class="container-fluid test-report-page"
      [class.print-report]="isPrintView">
 
+  <!-- Search Panel -->
+  <div class="panel panel-default filter-panel no-print" *ngIf="!isPrintView">
+    <div class="panel-body">
+      <div class="intro">
+        <h3 class="panel-title">
+          <span class="glyphicon glyphicon-print"></span>
+          {{ pageTitle }}
+        </h3>
+        <p class="text-muted">Final diagnostic report — paid invoices with approved results only</p>
+      </div>
 
-    <!-- Search Panel -->
-    <div class="panel panel-default filter-panel no-print"
-         *ngIf="!isPrintView">
-
-        <div class="panel-body">
-
-
-            <div class="intro">
-
-                <h3 class="panel-title">
-                    <span class="glyphicon glyphicon-print"></span>
-                    {{ pageTitle }}
-                </h3>
-
-                <p class="text-muted">
-                    Final diagnostic report — paid invoices with approved results only
-                </p>
-
-            </div>
-
-
-            <div class="row">
-
-                <div class="col-md-8 col-sm-12">
-
-                    <div class="form-group">
-
-                        <label>
-                            Lab No
-                        </label>
-
-
-                        <ng-select
-                            [items]="labNumbers"
-                            bindLabel="displayLabel"
-                            bindValue="labNo"
-                            [(ngModel)]="labNo"
-                            placeholder="Select lab number"
-                            [clearable]="true"
-                            [searchable]="true"
-                            [loading]="labNumbersLoading"
-                            (keyup.enter)="search()">
-
-                        </ng-select>
-
-
-                    </div>
-
-                </div>
-
-
-            </div>
-
-
-            <p class="text-danger"
-               *ngIf="filterError">
-
-                {{ filterError }}
-
-            </p>
-
-
-
-            <div class="filter-actions">
-
-
-                <button
-                    type="button"
-                    class="btn btn-default btn-sm"
-                    (click)="loadLabNumbers()"
-                    [disabled]="labNumbersLoading"
-                    title="Refresh list">
-
-
-                    <span class="glyphicon glyphicon-refresh"
-                          [class.glyphicon-spin]="labNumbersLoading">
-                    </span>
-
-
-                </button>
-
-
-
-                <button
-                    type="button"
-                    class="btn btn-primary btn-sm"
-                    (click)="search()"
-                    [disabled]="loading || !labNo">
-
-
-                    <span class="glyphicon glyphicon-search"></span>
-                    Search
-
-
-                </button>
-
-
-
-                <button
-                    type="button"
-                    class="btn btn-default btn-sm"
-                    (click)="clear()"
-                    [disabled]="loading">
-
-
-                    Reset
-
-
-                </button>
-
-
-
-
-                <button
-                    type="button"
-                    class="btn btn-success btn-sm"
-                    (click)="print()"
-                    [disabled]="!report || loading">
-
-
-                    <span class="glyphicon glyphicon-print"></span>
-                    Print Report
-
-
-                </button>
-
-
-            </div>
-
-
+      <div class="row">
+        <div class="col-md-8 col-sm-12">
+          <div class="form-group">
+            <label>Lab No</label>
+            <ng-select
+              [items]="labNumbers"
+              bindLabel="displayLabel"
+              bindValue="labNo"
+              [(ngModel)]="labNo"
+              placeholder="Select lab number"
+              [clearable]="true"
+              [searchable]="true"
+              [loading]="labNumbersLoading"
+              (keyup.enter)="search()">
+            </ng-select>
+          </div>
         </div>
+      </div>
+
+      <p class="text-danger" *ngIf="filterError">{{ filterError }}</p>
+
+      <div class="filter-actions">
+        <button type="button" class="btn btn-default btn-sm" (click)="loadLabNumbers()" [disabled]="labNumbersLoading" title="Refresh list">
+          <span class="glyphicon glyphicon-refresh" [class.glyphicon-spin]="labNumbersLoading"></span>
+        </button>
+        <button type="button" class="btn btn-primary btn-sm" (click)="search()" [disabled]="loading || !labNo">
+          <span class="glyphicon glyphicon-search"></span> Search
+        </button>
+        <button type="button" class="btn btn-default btn-sm" (click)="clear()" [disabled]="loading">Reset</button>
+        <button type="button" class="btn btn-success btn-sm" (click)="print()" [disabled]="!report || loading">
+          <span class="glyphicon glyphicon-print"></span> Print Report
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="workflow-loading no-print" *ngIf="loading">
+    <span class="glyphicon glyphicon-refresh glyphicon-spin"></span>
+    Loading report...
+  </div>
+
+  <!-- Diagnostic Report -->
+  <div id="diagnostic-test-report-print" class="diagnostic-report" *ngIf="report && !loading">
+
+    <!-- Blank 5 cm header band (pre-printed letterhead) -->
+    <header class="report-print-header" aria-hidden="true">
+      <span class="letterhead-screen-hint">Header (5 cm) — blank for letterhead</span>
+    </header>
+
+    <div class="report-print-body">
+
+      <!-- Patient Information Panel -->
+      <section class="report-patient-panel" *ngIf="report.header">
+        <table class="patient-info-table">
+          <tbody>
+            <tr>
+              <td class="pi-label">Patient Name</td>
+              <td class="pi-value pi-strong">{{ report.header.patientName || '—' }}</td>
+              <td class="pi-label">Collected</td>
+              <td class="pi-value">{{ report.header.collectionDate | date:'dd/MM/yyyy HH:mm' }}</td>
+            </tr>
+            <tr>
+              <td class="pi-label">Age / Gender</td>
+              <td class="pi-value">{{ report.header.age }} / {{ report.header.gender || '—' }}</td>
+              <td class="pi-label">Received</td>
+              <td class="pi-value">{{ report.header.receivedDate ? (report.header.receivedDate | date:'dd/MM/yyyy HH:mm') : '—' }}</td>
+            </tr>
+            <tr>
+              <td class="pi-label">UHID / MR No</td>
+              <td class="pi-value">{{ report.header.mrNo || report.header.patientId || '—' }}</td>
+              <td class="pi-label">Reported</td>
+              <td class="pi-value">{{ report.header.reportDate | date:'dd/MM/yyyy HH:mm' }}</td>
+            </tr>
+            <tr>
+              <td class="pi-label">Visit ID</td>
+              <td class="pi-value">{{ report.header.visitId || '—' }}</td>
+              <td class="pi-label">Status</td>
+              <td class="pi-value">{{ report.header.status || 'Final' }}</td>
+            </tr>
+            <tr>
+              <td class="pi-label">Referring Doctor</td>
+              <td class="pi-value">{{ report.header.referralDoctor || '—' }}</td>
+              <td class="pi-label">Centre</td>
+              <td class="pi-value">{{ report.header.centreName || '—' }}</td>
+            </tr>
+            <tr *ngIf="report.header.labNo || report.header.invoiceNo">
+              <td class="pi-label">Lab No</td>
+              <td class="pi-value">{{ report.header.labNo || '—' }}</td>
+              <td class="pi-label">Invoice No</td>
+              <td class="pi-value">{{ report.header.invoiceNo || '—' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- Department-wise tests (invoice booking order) — primary print layout -->
+      <ng-container *ngIf="report.departmentGroups?.length; else legacyLayout">
+        <section class="report-department-group" *ngFor="let dept of report.departmentGroups">
+          <div class="report-department-header">
+            DEPARTMENT OF {{ dept.departmentName | uppercase }}
+          </div>
+          <ng-container *ngFor="let section of dept.sections">
+            <ng-container *ngTemplateOutlet="testSection; context: { section: section }"></ng-container>
+          </ng-container>
+        </section>
+      </ng-container>
+
+      <ng-template #legacyLayout>
+        <section class="report-profile-group" *ngFor="let group of report.profileGroups">
+          <div class="report-profile-header"><strong>{{ group.profileName }}</strong></div>
+          <ng-container *ngFor="let section of group.sections">
+            <ng-container *ngTemplateOutlet="testSection; context: { section: section }"></ng-container>
+          </ng-container>
+        </section>
+        <ng-container *ngFor="let section of report.sections">
+          <ng-container *ngTemplateOutlet="testSection; context: { section: section }"></ng-container>
+        </ng-container>
+      </ng-template>
+
+      <!-- Test Section Template -->
+      <ng-template #testSection let-section="section">
+        <section class="report-test-block">
+          <div class="test-block-header">
+            <strong>{{ section.testName }}</strong>
+          </div>
+
+          <table class="table report-results-table">
+            <thead>
+              <tr>
+                <th class="col-param">Test Name / Parameter</th>
+                <th class="col-result text-center">Result</th>
+                <th class="col-unit text-center">Unit</th>
+                <th class="col-ref text-center">Bio. Ref. Interval</th>
+              </tr>
+            </thead>
+            <tbody>
+              <ng-container *ngFor="let p of section.parameters; let i = index">
+                <tr class="param-section-row" *ngIf="p.sectionName && (i === 0 || section.parameters[i - 1].sectionName !== p.sectionName)">
+                  <td colspan="4" class="param-section-heading">{{ p.sectionName | uppercase }}</td>
+                </tr>
+                <tr [class.abnormal-row]="p.isAbnormal">
+                  <td class="col-param">{{ p.parameterName }}</td>
+                  <td class="col-result text-center result-value" [class.abnormal-value]="p.isAbnormal">
+                    {{ p.resultValue }}<span *ngIf="p.flag" class="result-flag"> {{ p.flag }}</span>
+                  </td>
+                  <td class="col-unit text-center">{{ p.unit || '' }}</td>
+                  <td class="col-ref text-center">{{ p.referenceRange || '' }}</td>
+                </tr>
+              </ng-container>
+            </tbody>
+          </table>
+
+          <div class="test-comment-block" *ngIf="section.comment">
+            <div class="test-comment-label">Comment / Note:</div>
+            <div class="test-comment-text">{{ section.comment }}</div>
+          </div>
+        </section>
+      </ng-template>
+
+      <!-- Doctor approval comment (from doctor authorization notes) -->
+      <section class="report-doctor-approval-comment"
+               *ngIf="report.header?.doctorApprovalComment">
+        <div class="test-comment-label">Doctor Approval Comment:</div>
+        <div class="test-comment-text">{{ report.header.doctorApprovalComment }}</div>
+      </section>
 
     </div>
 
-    <!-- Loading -->
-
-    <div class="workflow-loading no-print"
-         *ngIf="loading">
-
-
-        <span class="glyphicon glyphicon-refresh glyphicon-spin"></span>
-
-        Loading report...
-
-
+    <!-- Approving doctor: signature / name / designation — 1 cm above blank footer -->
+    <div class="report-doctor-signature-zone"
+         *ngIf="report.header?.approvedBy || report.header?.approvedBySignatureImage || report.header?.approvedByName || report.header?.approvedByDesignation">
+      <img *ngIf="report.header?.approvedBySignatureImage"
+           [src]="report.header.approvedBySignatureImage"
+           class="report-signature-img"
+           alt="Approving doctor signature">
+      <span class="report-footer-doctor-name"
+            *ngIf="report.header?.approvedByName || report.header?.approvedBy">
+        {{ report.header.approvedByName || report.header.approvedBy }}
+      </span>
+      <span class="report-footer-doctor-qualification" *ngIf="report.header?.approvedByQualification">
+        {{ report.header.approvedByQualification }}
+      </span>
+      <span class="report-footer-doctor-designation" *ngIf="report.header?.approvedByDesignation">
+        {{ report.header.approvedByDesignation }}
+      </span>
+      <span class="report-footer-sign-line"
+            *ngIf="!report.header?.approvedBySignatureImage && (report.header?.approvedBy || report.header?.approvedByName)">
+        _________________________
+      </span>
     </div>
 
-
-
-
-
-
-    <!-- Diagnostic Report -->
-
-    <div id="diagnostic-test-report-print"
-         class="diagnostic-report"
-         *ngIf="report && !loading">
-
-
-
-
-
-        <!-- Fixed Print Header -->
-
-        <header class="report-print-header">
-
-
-            <div class="report-letterhead-zone"
-                 aria-hidden="true">
-
-
-                <span class="letterhead-screen-hint">
-                    Pre-printed letterhead
-                </span>
-
-
-            </div>
-
-
-
-            <div class="report-print-title-bar">
-
-                Laboratory Diagnostic Report
-
-            </div>
-
-
-        </header>
-
-
-
-
-
-
-
-        <div class="report-print-body">
-
-
-
-
-
-            <!-- Patient Information -->
-
-            <section class="report-meta"
-                     *ngIf="report.header">
-
-
-                <table class="report-meta-table">
-
-                    <tbody>
-
-
-                        <tr>
-
-                            <td class="meta-label">
-                                Lab No
-                            </td>
-
-                            <td class="meta-value">
-                                {{ report.header.labNo || '—' }}
-                            </td>
-
-
-                            <td class="meta-label">
-                                Invoice No
-                            </td>
-
-                            <td class="meta-value">
-                                {{ report.header.invoiceNo || '—' }}
-                            </td>
-
-
-                        </tr>
-
-
-
-
-                        <tr>
-
-
-                            <td class="meta-label">
-                                Patient
-                            </td>
-
-
-                            <td class="meta-value"
-                                colspan="3">
-
-
-                                {{ report.header.patientName || '—' }}
-
-
-                                <span *ngIf="report.header.patientId">
-
-                                    ({{ report.header.patientId }})
-
-                                </span>
-
-
-                            </td>
-
-
-                        </tr>
-
-
-
-
-
-                        <tr>
-
-
-                            <td class="meta-label">
-                                MR No
-                            </td>
-
-
-                            <td class="meta-value">
-
-                                {{ report.header.mrNo || '—' }}
-
-                            </td>
-
-
-
-                            <td class="meta-label">
-                                Visit ID
-                            </td>
-
-
-                            <td class="meta-value">
-
-                                {{ report.header.visitId || '—' }}
-
-                            </td>
-
-
-                        </tr>
-
-
-
-
-
-                        <tr>
-
-
-                            <td class="meta-label">
-                                Age / Gender
-                            </td>
-
-
-                            <td class="meta-value">
-
-                                {{ report.header.age }}
-                                /
-                                {{ report.header.gender || '—' }}
-
-                            </td>
-
-
-
-                            <td class="meta-label">
-                                Referral Doctor
-                            </td>
-
-
-                            <td class="meta-value">
-
-                                {{ report.header.referralDoctor || '—' }}
-
-                            </td>
-
-
-                        </tr>
-
-
-
-
-
-                        <tr *ngIf="report.header.corporate">
-
-
-                            <td class="meta-label">
-                                Corporate
-                            </td>
-
-
-                            <td class="meta-value"
-                                colspan="3">
-
-                                {{ report.header.corporate }}
-
-                            </td>
-
-
-                        </tr>
-
-
-
-
-
-                        <tr>
-
-
-                            <td class="meta-label">
-                                Collection Date
-                            </td>
-
-
-                            <td class="meta-value">
-
-                                {{ report.header.collectionDate | date:'dd/MM/yyyy' }}
-
-                            </td>
-
-
-
-                            <td class="meta-label">
-                                Report Date
-                            </td>
-
-
-                            <td class="meta-value">
-
-                                {{ report.header.reportDate | date:'dd/MM/yyyy' }}
-
-                            </td>
-
-
-                        </tr>
-
-
-
-                    </tbody>
-
-
-                </table>
-
-
-            </section>
-                        <!-- Profile Group Tests -->
-
-            <section class="report-profile-group"
-                     *ngFor="let group of report.profileGroups">
-
-
-                <div class="report-profile-header">
-
-                    <strong>
-                        {{ group.profileName }}
-                    </strong>
-
-                </div>
-
-
-
-                <ng-container *ngFor="let section of group.sections">
-
-                    <ng-container
-                        *ngTemplateOutlet="testSection; context: { section: section }">
-
-                    </ng-container>
-
-                </ng-container>
-
-
-            </section>
-
-
-
-
-
-
-            <!-- Individual Tests -->
-
-            <ng-container *ngFor="let section of report.sections">
-
-
-                <ng-container
-                    *ngTemplateOutlet="testSection; context: { section: section }">
-
-                </ng-container>
-
-
-            </ng-container>
-
-
-
-
-
-
-
-            <!-- Test Section Template -->
-
-            <ng-template #testSection
-                         let-section="section">
-
-
-                <section class="report-test-block">
-
-
-                    <div class="test-block-header">
-
-
-                        <strong>
-                            {{ section.testName }}
-                        </strong>
-
-
-
-                        <span class="test-meta"
-                              *ngIf="section.testCode">
-
-                            ({{ section.testCode }})
-
-                        </span>
-
-
-
-                        <span class="test-meta"
-                              *ngIf="section.specimen">
-
-                            — {{ section.specimen }}
-
-                        </span>
-
-
-
-
-                        <span class="test-meta"
-                              *ngIf="section.sampleNo">
-
-                            — Sample: {{ section.sampleNo }}
-
-                        </span>
-
-
-
-                    </div>
-
-
-
-
-
-                    <table class="table table-bordered table-condensed report-results-table">
-
-
-                        <thead>
-
-                            <tr>
-
-                                <th>
-                                    Parameter
-                                </th>
-
-
-                                <th class="text-right">
-
-                                    Result
-
-                                </th>
-
-
-                                <th>
-
-                                    Unit
-
-                                </th>
-
-
-                                <th>
-
-                                    Reference Range
-
-                                </th>
-
-
-                                <th class="text-center">
-
-                                    Flag
-
-                                </th>
-
-
-                            </tr>
-
-
-                        </thead>
-
-
-
-
-
-                        <tbody>
-
-
-                            <tr
-                                *ngFor="let p of section.parameters"
-                                [class.abnormal-row]="p.isAbnormal">
-
-
-                                <td>
-
-                                    {{ p.parameterName }}
-
-                                </td>
-
-
-
-
-                                <td class="text-right result-value"
-                                    [class.abnormal-value]="p.isAbnormal">
-
-
-                                    {{ p.resultValue }}
-
-
-                                </td>
-
-
-
-
-                                <td>
-
-                                    {{ p.unit || '—' }}
-
-                                </td>
-
-
-
-
-                                <td>
-
-                                    {{ p.referenceRange || '—' }}
-
-                                </td>
-
-
-
-
-                                <td class="text-center flag-cell">
-
-
-                                    {{ p.flag || '' }}
-
-
-                                </td>
-
-
-
-                            </tr>
-
-
-
-                        </tbody>
-
-
-
-                    </table>
-
-
-
-                </section>
-
-
-
-            </ng-template>
-
-
-
-
-
-        </div>
-
-
-
-
-
-
-
-
-        <!-- Fixed Footer -->
-
-        <div class="report-print-footer-zone">
-
-
-
-            <!-- Approval Signature -->
-
-
-            <div class="report-footer-signature"
-
-                 *ngIf="
-                 report.header?.approvedBy ||
-                 report.header?.approvedBySignatureImage ||
-                 report.header?.approvedByDesignation
-                 ">
-
-
-
-
-                <img
-                    *ngIf="report.header?.approvedBySignatureImage"
-                    [src]="report.header.approvedBySignatureImage"
-                    class="report-signature-img"
-                    alt="Doctor signature">
-
-
-
-
-
-                <span class="report-footer-doctor-name"
-
-                      *ngIf="
-                      report.header?.approvedByName ||
-                      report.header?.approvedBy
-                      ">
-
-
-                    {{ report.header.approvedByName || report.header.approvedBy }}
-
-
-                </span>
-
-
-
-
-
-
-                <span class="report-footer-doctor-designation"
-
-                      *ngIf="report.header?.approvedByDesignation">
-
-
-                    {{ report.header.approvedByDesignation }}
-
-
-                </span>
-
-
-
-
-
-
-                <span class="report-footer-sign-line"
-
-                      *ngIf="
-                      !report.header?.approvedBySignatureImage &&
-                      (
-                      report.header?.approvedBy ||
-                      report.header?.approvedByName
-                      )
-                      ">
-
-
-                    _________________________
-
-
-                </span>
-
-
-
-
-            </div>
-
-
-
-
-
-
-            <!-- Disclaimer Footer -->
-
-
-            <div class="report-footer-legal">
-
-
-                <div class="report-footer-row report-footer-main">
-
-
-
-                    <span class="report-footer-disclaimer">
-
-
-                        Computer-generated report.
-                        Results relate only to the specimen received.
-                        Abnormal flags: H = High, L = Low.
-
-
-
-                    </span>
-
-
-
-
-                    <span class="report-footer-pagenum"
-                          aria-label="Page number">
-
-                    </span>
-
-
-
-
-                </div>
-
-
-
-            </div>
-
-
-
-        </div>
-
-
-
-
+    <!-- Blank 5 cm footer band -->
+    <div class="report-print-footer-zone" aria-hidden="true">
+      <span class="letterhead-screen-hint">Footer (5 cm) — blank</span>
     </div>
+  </div>
 
-
-
-
-
-
-
-
-    <!-- Empty State -->
-
-
-    <div class="workflow-empty no-print"
-
-         *ngIf="
-         searched &&
-         !report &&
-         !loading &&
-         !filterError
-         ">
-
-
-        <span class="glyphicon glyphicon-info-sign"></span>
-
-
-        <p>
-            No report data to display.
-        </p>
-
-
-    </div>
-
-
-
-
-
+  <div class="workflow-empty no-print" *ngIf="searched && !report && !loading && !filterError">
+    <span class="glyphicon glyphicon-info-sign"></span>
+    <p>No report data to display.</p>
+  </div>
 </div>
