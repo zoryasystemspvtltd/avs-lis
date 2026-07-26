@@ -1,4 +1,5 @@
-﻿using LIS.DtoModel.Interfaces;
+﻿using Lis.Api.Providers;
+using LIS.DtoModel.Interfaces;
 using LIS.DtoModel.Models;
 using LIS.Logger;
 using System;
@@ -22,8 +23,8 @@ namespace Lis.Api.Controllers.Api
             this.logger = logger;
         }
 
-        [AllowAnonymous]
         [HttpGet]
+        [QAuthorize(ModuleName = "Samples", AlternateModuleName = "Reports,DoctorsApprovals", ModulePermissionTypes = ModulePermissionType.CanView)]
         public IEnumerable<NameValue> Get(int id)
         {
             try

@@ -96,6 +96,7 @@
     <Compile Include="Interfaces\ITestRateMasterManager.cs" />
     <Compile Include="Interfaces\ISaleInvoiceManager.cs" />
     <Compile Include="Interfaces\IReportManager.cs" />
+    <Compile Include="Interfaces\IDashboardManager.cs" />
     <Compile Include="Interfaces\ISampleCollectionManager.cs" />
     <Compile Include="Interfaces\ISampleReceivingManager.cs" />
     <Compile Include="Interfaces\IRadiologyReportManager.cs" />
@@ -135,6 +136,7 @@
     <Compile Include="Models\ExternalApi\TestDetail.cs" />
     <Compile Include="Models\ExternalApi\TestResult.cs" />
     <Compile Include="Interfaces\IModuleIdentity.cs" />
+    <Compile Include="Models\DashboardModels.cs" />
     <Compile Include="Models\ItemList.cs" />
     <Compile Include="Models\ListOptions.cs" />
     <Compile Include="Models\NameValue.cs" />

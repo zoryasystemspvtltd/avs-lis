@@ -1,0 +1,40 @@
+<div class="content avilis-dashboard">
+  <div class="avilis-dashboard-welcome" *ngIf="user">
+    <h2>Welcome{{ displayName ? ', ' + displayName : '' }}</h2>
+    <p>{{ roleSummary }} &middot; {{ today | date:'EEEE, dd MMM yyyy' }} &middot; Zorya Laboratory Management System</p>
+  </div>
+
+  <div *ngIf="passwordChangeRequired" class="alert alert-warning">
+    You are using the default password for this account. Please change your password to keep your account secure.
+    <br> By changing your password, you help make sure that only you can use your account.
+    <br>
+    Change your password by clicking
+    <a [routerLink]="['/change-password']" title="Change Password">here</a>
+  </div>
+
+  <div class="alert alert-info" *ngIf="user && widgets.length === 0">
+    No dashboard widgets have been enabled for your account yet. Please contact your administrator.
+  </div>
+
+  <div class="row">
+    <div *ngFor="let widget of widgets; trackBy: trackByKey" [ngClass]="widget.colClass">
+      <ng-container [ngSwitch]="widget.kind">
+
+        <app-dashboard-kpi-widget *ngSwitchCase="'kpi'" [widget]="widget"></app-dashboard-kpi-widget>
+
+        <app-dashboard-alerts-widget *ngSwitchCase="'alerts'" [widget]="widget"></app-dashboard-alerts-widget>
+
+        <app-dashboard-queue-widget *ngSwitchCase="'queue'" [widget]="widget"></app-dashboard-queue-widget>
+
+        <ng-container *ngSwitchCase="'chart'" [ngSwitch]="widget.chartType">
+          <app-raw-sample-chart *ngSwitchCase="0"></app-raw-sample-chart>
+          <app-processed-sample-chart *ngSwitchCase="1"></app-processed-sample-chart>
+          <app-doctor-sample-chart *ngSwitchCase="2"></app-doctor-sample-chart>
+        </ng-container>
+
+        <app-his-sample *ngSwitchCase="'recent'"></app-his-sample>
+
+      </ng-container>
+    </div>
+  </div>
+</div>

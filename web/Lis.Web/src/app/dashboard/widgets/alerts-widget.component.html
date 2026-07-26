@@ -1,0 +1,31 @@
+<div class="zl-widget">
+  <div class="zl-widget-head">
+    <div class="zl-widget-title">{{ widget.title }}</div>
+    <div class="zl-widget-actions">
+      <button type="button" class="zl-widget-refresh" title="Refresh" (click)="refresh()">&#8635;</button>
+    </div>
+  </div>
+
+  <div class="zl-widget-body">
+    <div *ngIf="loading" class="zl-widget-state">Loading…</div>
+
+    <div *ngIf="!loading && loadError" class="zl-widget-state zl-widget-state-error">
+      {{ loadError }}
+      <button type="button" class="btn btn-xs btn-default" (click)="refresh()">Retry</button>
+    </div>
+
+    <div *ngIf="!loading && !loadError && alerts.length === 0" class="zl-widget-state">
+      No operational alerts.
+    </div>
+
+    <div *ngIf="!loading && !loadError && alerts.length > 0" class="zl-alert-list">
+      <div [ngClass]="severityClass(alert)" *ngFor="let alert of alerts; trackBy: trackByKey">
+        <span class="zl-alert-count">{{ alert.count }}</span>
+        <span class="zl-alert-text">
+          <strong>{{ alert.title }}</strong>
+          <span class="zl-alert-detail">{{ alert.detail }}</span>
+        </span>
+      </div>
+    </div>
+  </div>
+</div>

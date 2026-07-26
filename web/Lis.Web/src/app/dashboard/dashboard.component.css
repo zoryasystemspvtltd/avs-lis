@@ -1,0 +1,15 @@
+/* Dashboard framework layout. Widget chrome lives in widgets/widget.css. */
+
+:host {
+  display: block;
+}
+
+.avilis-dashboard .row {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.avilis-dashboard .row > [class*="col-"] {
+  display: flex;
+  flex-direction: column;
+}

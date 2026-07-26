@@ -1,0 +1,35 @@
+<div class="zl-widget">
+  <div class="zl-widget-head">
+    <div class="zl-widget-title">
+      {{ widget.title }}
+      <small *ngIf="widget.subtitle">{{ widget.subtitle }}</small>
+    </div>
+    <div class="zl-widget-actions">
+      <a *ngIf="widget.linkRoute" [routerLink]="[widget.linkRoute]">{{ widget.linkLabel }}</a>
+      <button type="button" class="zl-widget-refresh" title="Refresh" (click)="refresh()">&#8635;</button>
+    </div>
+  </div>
+
+  <div class="zl-widget-body">
+    <div *ngIf="loading" class="zl-widget-state">Loading…</div>
+
+    <div *ngIf="!loading && loadError" class="zl-widget-state zl-widget-state-error">
+      {{ loadError }}
+      <button type="button" class="btn btn-xs btn-default" (click)="refresh()">Retry</button>
+    </div>
+
+    <div *ngIf="!loading && !loadError && metrics.length === 0" class="zl-widget-state">
+      No data available.
+    </div>
+
+    <div *ngIf="!loading && !loadError && metrics.length > 0" class="zl-kpi-grid">
+      <div class="zl-kpi" *ngFor="let metric of metrics; trackBy: trackByKey">
+        <div class="zl-kpi-value">
+          <span *ngIf="isCurrency(metric)">{{ metric.value | number:'1.2-2' }}</span>
+          <span *ngIf="!isCurrency(metric)">{{ metric.value | number:'1.0-0' }}</span>
+        </div>
+        <div class="zl-kpi-label">{{ metric.label }}</div>
+      </div>
+    </div>
+  </div>
+</div>

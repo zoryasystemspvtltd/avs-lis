@@ -1,0 +1,187 @@
+/* Shared chrome for every dashboard widget. Referenced by each widget component so
+   the framework keeps a single visual language across widget types. */
+
+.zl-widget {
+  background: var(--zorya-surface, #fff);
+  border: 1px solid var(--zorya-border-light, #f3ecd4);
+  border-radius: var(--zorya-radius, 6px);
+  box-shadow: var(--zorya-shadow-sm, 0 1px 2px rgba(18, 93, 116, 0.06));
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  height: calc(100% - 10px);
+}
+
+.zl-widget-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--zorya-border-light, #f3ecd4);
+  background: var(--zorya-primary-soft, #e8f2f5);
+  border-radius: var(--zorya-radius, 6px) var(--zorya-radius, 6px) 0 0;
+}
+
+.zl-widget-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--zorya-primary, #125d74);
+}
+
+.zl-widget-title small {
+  display: inline-block;
+  margin-left: 6px;
+  font-weight: 400;
+  font-size: 11px;
+  color: var(--zorya-text-muted, #5c6b73);
+}
+
+.zl-widget-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+}
+
+.zl-widget-actions a {
+  font-size: 11px;
+  color: var(--zorya-primary, #125d74);
+  text-decoration: underline;
+}
+
+.zl-widget-refresh {
+  border: none;
+  background: transparent;
+  color: var(--zorya-primary, #125d74);
+  font-size: 14px;
+  line-height: 1;
+  padding: 2px 4px;
+  cursor: pointer;
+}
+
+.zl-widget-refresh:hover {
+  color: var(--zorya-primary-dark, #0e4a5c);
+}
+
+.zl-widget-body {
+  padding: 10px 12px;
+  flex: 1 1 auto;
+}
+
+.zl-widget-state {
+  font-size: 12px;
+  color: var(--zorya-text-muted, #5c6b73);
+  padding: 10px 0;
+}
+
+.zl-widget-state-error {
+  color: #a94442;
+}
+
+.zl-widget-state-error .btn {
+  margin-left: 8px;
+}
+
+/* KPI values */
+.zl-kpi-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.zl-kpi {
+  flex: 1 1 90px;
+  min-width: 90px;
+  padding: 8px 10px;
+  border-radius: var(--zorya-radius-sm, 4px);
+  background: var(--zorya-bg, #eef2f4);
+  border-left: 3px solid var(--zorya-accent, #e9b513);
+}
+
+.zl-kpi-value {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--zorya-primary, #125d74);
+}
+
+.zl-kpi-label {
+  margin-top: 2px;
+  font-size: 11px;
+  color: var(--zorya-text-muted, #5c6b73);
+}
+
+/* Alerts */
+.zl-alert-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.zl-alert {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 10px;
+  border-radius: var(--zorya-radius-sm, 4px);
+  border-left: 3px solid var(--zorya-text-muted, #5c6b73);
+  background: var(--zorya-bg, #eef2f4);
+}
+
+.zl-alert-critical {
+  border-left-color: #a94442;
+  background: #fdf3f3;
+}
+
+.zl-alert-warning {
+  border-left-color: var(--zorya-accent, #e9b513);
+  background: var(--zorya-accent-soft, #faf6e8);
+}
+
+.zl-alert-info {
+  border-left-color: var(--zorya-primary-light, #1a7a96);
+  background: var(--zorya-primary-soft, #e8f2f5);
+}
+
+.zl-alert-count {
+  font-size: 16px;
+  font-weight: 600;
+  min-width: 34px;
+  text-align: center;
+  color: var(--zorya-primary, #125d74);
+}
+
+.zl-alert-text strong {
+  display: block;
+  font-size: 12px;
+  color: var(--zorya-text, #2a3439);
+}
+
+.zl-alert-detail {
+  font-size: 11px;
+  color: var(--zorya-text-muted, #5c6b73);
+}
+
+/* Queue tables */
+.zl-widget-table {
+  margin-bottom: 0;
+  font-size: 12px;
+}
+
+.zl-widget-table > thead > tr > th {
+  border-bottom: 1px solid var(--zorya-border-light, #f3ecd4);
+  color: var(--zorya-text-muted, #5c6b73);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.zl-widget-table > tbody > tr > td {
+  vertical-align: middle;
+}
+
+@media (max-width: 767px) {
+  .zl-kpi {
+    flex: 1 1 100%;
+  }
+}

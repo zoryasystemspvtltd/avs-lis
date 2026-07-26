@@ -1,0 +1,43 @@
+<div class="zl-widget">
+  <div class="zl-widget-head">
+    <div class="zl-widget-title">
+      {{ widget.title }}
+      <small *ngIf="!loading && !loadError">{{ totalRecord }} pending</small>
+    </div>
+    <div class="zl-widget-actions">
+      <a *ngIf="widget.linkRoute" [routerLink]="[widget.linkRoute]">{{ widget.linkLabel }}</a>
+      <button type="button" class="zl-widget-refresh" title="Refresh" (click)="refresh()">&#8635;</button>
+    </div>
+  </div>
+
+  <div class="zl-widget-body">
+    <div *ngIf="loading" class="zl-widget-state">Loading…</div>
+
+    <div *ngIf="!loading && loadError" class="zl-widget-state zl-widget-state-error">
+      {{ loadError }}
+      <button type="button" class="btn btn-xs btn-default" (click)="refresh()">Retry</button>
+    </div>
+
+    <div *ngIf="!loading && !loadError && rows.length === 0" class="zl-widget-state">
+      Nothing pending.
+    </div>
+
+    <div class="table-responsive" *ngIf="!loading && !loadError && rows.length > 0">
+      <table class="table table-condensed zl-widget-table">
+        <thead>
+          <tr>
+            <th *ngFor="let column of columns">{{ column.label }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of rows">
+            <td *ngFor="let column of columns">
+              <span *ngIf="column.isDate">{{ row[column.field] | date:'dd MMM yyyy HH:mm' }}</span>
+              <span *ngIf="!column.isDate">{{ cellValue(row, column) }}</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

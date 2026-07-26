@@ -87,6 +87,7 @@
     <Compile Include="LookupMasterManagers.cs" />
     <Compile Include="TestProfileMasterManager.cs" />
     <Compile Include="SetupDomainManagers.cs" />
+    <Compile Include="DashboardManager.cs" />
     <Compile Include="ReportManager.cs" />
     <Compile Include="SampleWorkflowInvoiceEligibility.cs" />
     <Compile Include="SampleCollectionManager.cs" />

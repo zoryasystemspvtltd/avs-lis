@@ -202,6 +202,7 @@
     <Compile Include="App_Start\SimpleInjectorConfig.cs" />
     <Compile Include="Controllers\Api\BarCodeController.cs" />
     <Compile Include="Controllers\Api\DailyStatusController.cs" />
+    <Compile Include="Controllers\Api\DashboardController.cs" />
     <Compile Include="Controllers\Api\DepartmentController.cs" />
     <Compile Include="Controllers\Api\HeartbeatController.cs" />
     <Compile Include="Controllers\Api\LisTestController.cs" />

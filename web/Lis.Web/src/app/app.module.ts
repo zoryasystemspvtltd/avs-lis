@@ -15,6 +15,7 @@ import {NgbModule} from '@ng-bootstrap/ng-bootstrap';
 import { AppComponent } from './app.component';
 import { HeaderComponent, NavMenuComponent, FooterComponent, CompanyInfoComponent, AlertComponent, YouFrameComponent, NgbdAlertCloseable, LeftNavMenuComponent, AvailableAppComponent, TinyMceEditorComponent, CreateModuleComponent, ListModuleComponent, NgbdModalComponent, EditModuleComponent, ViewModuleComponent, LoaderComponent, FileuploadComponent, MediaListViewComponent, ChieldListComponent, MediaFileListComponent } from './_components';
 import { HomeComponent } from './home/home.component';
+import { DashboardComponent, DashboardKpiWidgetComponent, DashboardAlertsWidgetComponent, DashboardQueueWidgetComponent } from './dashboard';
 import { LoginComponent, ChangePasswordComponent, ForgotPasswordComponent, RegisterComponent } from './authentication';
 import { AboutComponent, ContactComponent, TremsComponent } from './annonimious';
 import { LogListComponent } from './activitylog/log-list/log-list.component';
@@ -65,6 +66,10 @@ export const options: Partial<IConfig> | (() => Partial<IConfig>) = null;
     NavMenuComponent,
     FooterComponent,
     HomeComponent,
+    DashboardComponent,
+    DashboardKpiWidgetComponent,
+    DashboardAlertsWidgetComponent,
+    DashboardQueueWidgetComponent,
     LoginComponent,
     CompanyInfoComponent,
     AboutComponent,
