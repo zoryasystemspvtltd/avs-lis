@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Printing;
 using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -196,24 +197,19 @@ namespace BarcodePrint
             }
         }
 
-        private void PrintBarCode(string prnfilename)
+        private void PrintBarCode(string fileName,string prnFile)
         {
             try
             {
-                Logger.LogInstance.LogInfo(prnfilename);
-                string printerName = ConfigurationManager.AppSettings["PrinterName"];
-                string args = $"{prnfilename} {printerName}";
-                string commandPath = string.Format(@"{0}\lisprint.bat", Application.StartupPath);
+                Logger.LogInstance.LogInfo(prnFile);
+                string printerName = ConfigurationManager.AppSettings["PrinterName"];              
 
-                ProcessStartInfo startinfo = new ProcessStartInfo(commandPath, args);
-                startinfo.FileName = commandPath;
-                startinfo.CreateNoWindow = true;
-                startinfo.UseShellExecute = false;
-                startinfo.Arguments = $"{prnfilename} {printerName}";
-                startinfo.WorkingDirectory = Application.StartupPath + @"\Data";
-                Logger.LogInstance.LogInfo(startinfo.WorkingDirectory);
-                Process.Start(startinfo).WaitForExit();
+                bool result = RawPrinterHelper.SendFileToPrinter(printerName, fileName, prnFile);
 
+                if (result)
+                    Console.WriteLine("Print successful.");
+                else
+                    Console.WriteLine("Print failed.");
             }
             catch (Exception ex)
             {
@@ -259,7 +255,7 @@ namespace BarcodePrint
                     w1.Close();
                     fs.Close();
 
-                    PrintBarCode(filename);
+                    PrintBarCode(filename,fn);
                 }
 
             }
