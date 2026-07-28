@@ -79,14 +79,14 @@ namespace LIS.Com.Businesslogic
             string DSRMessage, QRYMessage;
             var response = new OrderHL7Response();
 
-            IEnumerable<TestRequestDetail> testlist = await LisContext.LisDOM.GetTestRequestDetails(sampleNo);
+            IEnumerable<LISDto> testlist = await LisContext.LisDOM.GetTestRequestDetails(sampleNo);
             if (testlist != null && testlist.Count() > 0)
             {
                 var firstTest = testlist.First();
                 var specimen = firstTest.SpecimenName.ToLower();
-                var name = firstTest.Patient?.Name;
+                var name = firstTest.PatientName;
                 string gender = "";
-                switch (firstTest.Patient.Gender.ToUpperInvariant())
+                switch (firstTest.Gender.ToUpperInvariant())
                 {
                     case "M":
                     case "MALE":
@@ -100,7 +100,7 @@ namespace LIS.Com.Businesslogic
                         gender = "O";
                         break;
                 }
-                var dob = firstTest.Patient.DateOfBirth.ToString("yyyyMMddhhmmss");
+                var dob = firstTest.DOB.ToString("yyyyMMddhhmmss");
 
                 if (name.Length > 40)
                 {
@@ -138,7 +138,7 @@ namespace LIS.Com.Businesslogic
                     int j = 29 + i;
                     var test = testlist.ElementAt(i);
                     var testname = test.LISTestCode + "^^^";
-                    var ackSent = await LisContext.LisDOM.AcknowledgeSample(test.Id);
+                    var ackSent = await LisContext.LisDOM.AcknowledgeSample(test.TestRequestId);
                     message_DSP += $"DSP|{j}||{testname}|||{(char)13}";
                 }
                 message_qak = $"QAK|SR|OK|{(char)13}";

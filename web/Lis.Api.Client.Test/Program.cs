@@ -31,7 +31,7 @@ namespace Lis.Api.Client.Test
                 Console.WriteLine(JsonConvert.SerializeObject(samples));
                 foreach (var sample in samples)
                 {
-                    var isAck = await LisContext.LisDOM.AcknowledgeSample(sample.Id);
+                    var isAck = await LisContext.LisDOM.AcknowledgeSample(sample.TestRequestId);
                     Console.WriteLine(JsonConvert.SerializeObject(isAck));
                 }
 

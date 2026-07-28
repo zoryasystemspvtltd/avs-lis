@@ -127,7 +127,7 @@ namespace LIS.Com.Businesslogic
             return isPanel;
         }
 
-        public async Task<IEnumerable<TestRequestDetail>> GetTestRequestDetails(string sampleNo)
+        public async Task<IEnumerable<LISDto>> GetTestRequestDetails(string sampleNo)
         {
             try
             {
@@ -137,10 +137,10 @@ namespace LIS.Com.Businesslogic
                 var response = await api.Get($"{apiName}", null, null);
                 var jsonModel = JsonConvert.SerializeObject(response.Result);
                 Logger.Logger.LogInstance.LogDebug("LISContext GetTestRequestDetails get data: '{0}'", jsonModel);
-                IEnumerable<TestRequestDetail> items = null;
+                IEnumerable<LISDto> items = null;
                 if (jsonModel.Length > 0)
                 {
-                    items = JsonConvert.DeserializeObject<IEnumerable<TestRequestDetail>>(jsonModel);
+                    items = JsonConvert.DeserializeObject<IEnumerable<LISDto>>(jsonModel);
                 }
                 Logger.Logger.LogInstance.LogDebug("LISContext GetTestRequestDetails method completed.");
                 return items;
@@ -153,6 +153,31 @@ namespace LIS.Com.Businesslogic
             }
         }
 
+        public async Task<IEnumerable<LISDto>> GetTestRequestDetails(string sampleNo,string analyserModel)
+        {
+            try
+            {
+                Logger.Logger.LogInstance.LogDebug("LISContext GetTestRequestDetails method started.");
+                Logger.Logger.LogInstance.LogDebug("LISContext GetTestRequestDetails method started for SampleNo: '{0}'", sampleNo);
+                string apiName = $"lis/{sampleNo}?analyserModel={analyserModel}";
+                var response = await api.Get($"{apiName}", null, null);
+                var jsonModel = JsonConvert.SerializeObject(response.Result);
+                Logger.Logger.LogInstance.LogDebug("LISContext GetTestRequestDetails get data: '{0}'", jsonModel);
+                IEnumerable<LISDto> items = null;
+                if (jsonModel.Length > 0)
+                {
+                    items = JsonConvert.DeserializeObject<IEnumerable<LISDto>>(jsonModel);
+                }
+                Logger.Logger.LogInstance.LogDebug("LISContext GetTestRequestDetails method completed.");
+                return items;
+
+            }
+            catch (Exception ex)
+            {
+                Logger.Logger.LogInstance.LogError(ex.Message);
+                throw;
+            }
+        }
         public async Task SaveTestResult(Result result)
         {
             try

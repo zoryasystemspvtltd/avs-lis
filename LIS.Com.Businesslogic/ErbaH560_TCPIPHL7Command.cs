@@ -141,16 +141,16 @@ namespace LIS.Com.Businesslogic
             string DSRMessage = string.Empty;
             var response = new OrderHL7Response();
 
-            IEnumerable<TestRequestDetail> testlist = await LisContext.LisDOM.GetTestRequestDetails(sampleNo);
+            IEnumerable<LISDto> testlist = await LisContext.LisDOM.GetTestRequestDetails(sampleNo, "ErbaH560");
             if (testlist != null && testlist.Count() > 0)
             {
                 string testname = "";
                 string patientClass = "MedicalInsurance";
                 var firstTest = testlist.First();
                 string patientLocation = "Pathology";
-                string patientId = firstTest.Patient.Id + "^^^^MR";
+                string patientId = firstTest.PatientId + "^^^^MR";
                 string gender = "";
-                switch (firstTest.Patient.Gender)
+                switch (firstTest.Gender)
                 {
                     case "M":
                     case "MALE":
@@ -162,8 +162,8 @@ namespace LIS.Com.Businesslogic
                         break;
                 }
 
-                string DOB = firstTest.Patient.DateOfBirth.ToString("yyyyMMddhhmmss");
-                var name = firstTest.Patient?.Name;
+                string DOB = firstTest.DOB.ToString("yyyyMMddhhmmss");
+                var name = firstTest.PatientName;
                 if (name.Length > 48)
                 {
                     name = name.Substring(0, 48);
@@ -173,8 +173,8 @@ namespace LIS.Com.Businesslogic
                 for (int i = 0; i < testlist.Count(); i++)
                 {
                     var test = testlist.ElementAt(i);
-                    await LisContext.LisDOM.AcknowledgeSample(test.Id);
-                    testname = test.LISTestCode;
+                    await LisContext.LisDOM.AcknowledgeSample(test.TestRequestId);
+                    testname = test.GroupName;
                 }
 
                 string message_PID = $"PID|1||{patientId}||^{name}||{DOB}|{gender}{(char)13}";

@@ -62,76 +62,109 @@ namespace LIS.BusinessLogic
 
             return resultId;
         }
+        public string GetParameter(string lisTestCode)
+        {
+            var param = parameterMapRepo.Get(p => p.LISParamCode.Equals(lisTestCode, StringComparison.OrdinalIgnoreCase))
+                   .FirstOrDefault();
 
+            return param.HISParamCode;
+        }
         private long SaveTestResult(Result result)
         {
-            long resultId = 0;
-            var equpment = equpmentRepo.Get(e => e.AccessKey.Equals(this.identity.AccessKey)).FirstOrDefault();
-            var testRequestDetailManager = new TestRequestDetailsManager(logger, identity, this.genericUnitOfWork, this.file);
-
-            var testRequestList = testRequestDetailManager.GetRequestDetails(result.TestResult.SampleNo, result.TestResult.LISTestCode);
-            if (testRequestList.Count == 0)
+            try
             {
-                //Insert calculated/mapped parameter
-                var existResultId = GetParameterDetails(result.TestResult.SampleNo, result.TestResult.LISTestCode);
-                if (existResultId > 0)
-                {
-                    foreach (TestResultDetails resultDetail in result.ResultDetails)
-                    {
-                        resultDetail.CreatedBy = "LIS";
-                        resultDetail.TestResultId = existResultId;
-                        resultDetailsRepo.Add(resultDetail);
-                    }
-                    return existResultId;
-                }
-                else
-                {
-                    // TODO Add Test 
-                    logger.LogDebug($"Requested Test not exists {result?.TestResult?.SampleNo}");
-                    resultId = 0;
-                    return resultId;
-                }
-            }
 
-            foreach (var testRequest in testRequestList)
-            {
-                var existResult = testResultRepo.Get(r => r.TestRequestId.Equals(testRequest.Id) && r.LISTestCode.Equals(result.TestResult.LISTestCode)).FirstOrDefault();
+                if (result?.TestResult == null)
+                    return 0;
 
-                if (existResult == null)
+                long resultId = 0;
+
+                var testResultInfo = result.TestResult;
+
+                var equipment = equpmentRepo.Get(e => e.AccessKey.Equals(identity.AccessKey)).FirstOrDefault();
+
+                if (equipment == null)
+                    return 0;
+
+                var testRequestDetailManager =
+                    new TestRequestDetailsManager(logger, identity, genericUnitOfWork, file);
+
+                var testRequests = testRequestDetailManager.GetRequestDetails(testResultInfo.SampleNo, equipment.Id);
+
+                if (!testRequests.Any())
+                    return 0;
+
+                // Load existing TestResult IDs once (avoids N+1 query)
+                var requestIds = testRequests.Select(x => x.Id).ToList();
+
+                var existingResultIds = testResultRepo
+                    .Get(x => requestIds.Contains(x.TestRequestId))
+                    .Select(x => x.TestRequestId)
+                    .ToHashSet();
+
+                // Load all parameter mappings once
+                var lisParamCodes = result.ResultDetails
+                    .Select(x => x.LISParamCode)
+                    .Distinct()
+                    .ToList();
+
+                var parameterMap = testMappingRepo
+                    .Get(x => lisParamCodes.Contains(x.LISTestCode))
+                    .ToDictionary(x => x.LISTestCode, x => x.HISParamCode);
+
+                foreach (var request in testRequests)
                 {
+                    if (existingResultIds.Contains(request.Id))
+                        continue;
+
                     var testResult = new TestResult
                     {
-                        PatientId = testRequest.PatientId,
-                        HISTestCode = testRequest.HISTestCode,
-                        SampleCollectionDate = testRequest.SampleCollectionDate,
-                        SampleReceivedDate = testRequest.SampleReceivedDate,
-                        SpecimenCode = testRequest.SpecimenCode,
-                        SpecimenName = testRequest.SpecimenName,
-                        TestRequestId = testRequest.Id,
-                        EquipmentId = equpment.Id,
-                        ResultDate = result.TestResult.ResultDate,
-                        SampleNo = result.TestResult.SampleNo,
-                        LISTestCode = result.TestResult.LISTestCode,
+                        PatientId = request.PatientId,
+                        HISTestCode = request.HISTestCode,
+                        SampleCollectionDate = request.SampleCollectionDate,
+                        SampleReceivedDate = request.SampleReceivedDate,
+                        SpecimenCode = request.SpecimenCode,
+                        SpecimenName = request.SpecimenName,
+                        TestRequestId = request.Id,
+                        EquipmentId = equipment.Id,
+                        ResultDate = testResultInfo.ResultDate,
+                        SampleNo = testResultInfo.SampleNo,
+                        LISTestCode = testResultInfo.LISTestCode,
                         CreatedBy = "LIS"
                     };
 
                     resultId = testResultRepo.Add(testResult);
 
-                    foreach (TestResultDetails resultDetail in result.ResultDetails)
+                    var details = result.ResultDetails
+                            .Select(detail => new TestResultDetails
+                            {
+                                TestResultId = resultId,
+                                CreatedBy = "LIS",
+                                LISParamCode = detail.LISParamCode,
+                                ParamValue = detail.ParamValue,
+                                ParamUnit = detail.ParamUnit,
+                                HISParamCode = parameterMap.TryGetValue(detail.LISParamCode, out var code)
+                                                ? code
+                                                : null
+                            }).Where(detail => !string.IsNullOrEmpty(detail.HISParamCode))
+                            .ToList();
+
+                    foreach (var detail in details)
                     {
-                        resultDetail.CreatedBy = "LIS";
-                        resultDetail.TestResultId = resultId;
-                        resultDetailsRepo.Add(resultDetail);
+                        resultDetailsRepo.Add(detail);
                     }
 
-                    testRequestDetailManager.UpdateStatus(testRequest.Id, ReportStatusType.ReportGenerated);
+                    testRequestDetailManager.UpdateStatus(request.Id, ReportStatusType.ReportGenerated);
                 }
-                else
-                {
-                    resultId = 0;
-                }
+
+                return resultId;
+
             }
-            return resultId;
+            catch (Exception ex)
+            {
+                logger.LogException(ex);
+                throw;
+            }
         }
 
         private long SaveControlResult(Result result)

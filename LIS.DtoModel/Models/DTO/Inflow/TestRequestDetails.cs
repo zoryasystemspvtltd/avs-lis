@@ -84,4 +84,18 @@ namespace LIS.DtoModel.Models
         public string Department { get; set; }
         public long PatientId { get; set; }
     }
+
+    public class LISDto
+    {
+        public long TestRequestId { get; set; }
+        public long PatientId { get; set; }
+        public string SampleNo { get; set; }
+        public DateTime SampleCollectionDate { get; set; }
+        public string LISTestCode { get; set; }
+        public string SpecimenName { get; set; }
+        public string PatientName { get; set; }
+        public DateTime DOB { get; set; }
+        public string Gender { get; set; }
+        public string GroupName { get; set; }
+    }
 }

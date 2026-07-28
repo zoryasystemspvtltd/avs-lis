@@ -117,7 +117,7 @@ namespace Lis.Api.Controllers.Api
 
         [AllowAnonymous]
         [HttpGet]
-        public IEnumerable<TestRequestDetail> Get(string Id)
+        public IEnumerable<LISDto> Get(string Id)
         {
             try
             {
@@ -138,17 +138,17 @@ namespace Lis.Api.Controllers.Api
 
         [AllowAnonymous]
         [HttpGet]
-        public bool? Get(string SampleNo, string LisHostCode)
+        public IEnumerable<LISDto> Get(string Id, string analyserModel)
         {
             try
             {
-                logger.LogInfo($"Get Sample Request: {SampleNo}");
+                logger.LogInfo($"Get Sample Request: {Id}");
 
-                var isPanel = testRequestManager.IsPanelTest(SampleNo, LisHostCode);
+                var testRequestDetails = testRequestManager.GetDetailsBySampleNoWithAnlyser(Id, analyserModel);
 
-                var responseStrign = JsonConvert.SerializeObject(isPanel);
-                logger.LogInfo($"Get Sample Response: {responseStrign }");
-                return isPanel;
+                var responseStrign = JsonConvert.SerializeObject(testRequestDetails);
+                logger.LogInfo($"Get Sample Response: {responseStrign}");
+                return testRequestDetails;
             }
             catch (Exception e)
             {
@@ -156,5 +156,25 @@ namespace Lis.Api.Controllers.Api
                 return null;
             }
         }
+        //[AllowAnonymous]
+        //[HttpGet]
+        //public bool? Get(string SampleNo, string LisHostCode)
+        //{
+        //    try
+        //    {
+        //        logger.LogInfo($"Get Sample Request: {SampleNo}");
+
+        //        var isPanel = testRequestManager.IsPanelTest(SampleNo, LisHostCode);
+
+        //        var responseStrign = JsonConvert.SerializeObject(isPanel);
+        //        logger.LogInfo($"Get Sample Response: {responseStrign }");
+        //        return isPanel;
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        logger.LogException(e);
+        //        return null;
+        //    }
+        //}
     }
 }

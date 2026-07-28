@@ -91,7 +91,7 @@ namespace LIS.Com.Businesslogic
                 string headerSegment = $"1H|{specialchar}|||ZoryaLIS|||||||E-1394-97|{datetime}{(char)13}";
                 string orderSegment = $"3O|1|{sampleId}||";
                 var trailerSegment = "";
-                IEnumerable<TestRequestDetail> testlist = await LisContext.LisDOM.GetTestRequestDetails(sampleId);
+                IEnumerable<LISDto> testlist = await LisContext.LisDOM.GetTestRequestDetails(sampleId);
 
                 if (testlist.Count() > 0)
                 {
@@ -109,11 +109,11 @@ namespace LIS.Com.Businesslogic
                     var firstTest = testlist.First();
 
                     specimen = firstTest.SpecimenName.ToUpper();
-                    patientId = firstTest.Patient?.Id.ToString();
+                    patientId = firstTest.PatientId.ToString();
                     collectiondate = firstTest.SampleCollectionDate.ToString("yyyyMMddhhmmss");
-                    dob = firstTest.Patient.DateOfBirth.ToString("yyyyMMddhhmmss");
-                    sex = firstTest.Patient.Gender;
-                    var fullName = firstTest.Patient?.Name;
+                    dob = firstTest.DOB.ToString("yyyyMMddhhmmss");
+                    sex = firstTest.Gender;
+                    var fullName = firstTest.PatientName;
                     (firstName, lastName, middleName) = GetName(fullName);
                     if (firstName.Length > 20)
                     {
@@ -123,7 +123,7 @@ namespace LIS.Com.Businesslogic
                     for (int i = 0; i < testlist.Count();)
                     {
                         var test = testlist.ElementAt(i);
-                        var ackSent = await LisContext.LisDOM.AcknowledgeSample(test.Id);
+                        var ackSent = await LisContext.LisDOM.AcknowledgeSample(test.TestRequestId);
                         testname += "^^^" + test.LISTestCode;
                         i++;
                         if (testlist.Count() == i)

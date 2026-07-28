@@ -9,13 +9,14 @@ namespace LIS.DtoModel.Interfaces
         long Add(TestRequestDetail testRequestDetail);
         void Update(TestRequestDetail testRequestDetail);
         IEnumerable<TestRequestDetail> Get(long Id);
-        IEnumerable<TestRequestDetail> GetBySampleNo(string SampleNo);
+        IEnumerable<LISDto> GetBySampleNo(string SampleNo);
+        IEnumerable<LISDto> GetDetailsBySampleNoWithAnlyser(string sampleNo, string analyserModel);
         IEnumerable<TestRequestDetail> GetAllNewSamples(ReportStatusType status);
         IEnumerable<BarCodeDto> GetBarCodeSamples(ReportStatusType status);
         IEnumerable<TestRequestDetail> GetByHisRequestNo(string RequestNo, ReportStatusType status);
         IEnumerable<BarCodeDto> GetBarCodeSamplesByRequestNo(string RequestNo, ReportStatusType status);
         bool IsPanelTest(string SampleNo, string LisHostCode);
-        List<TestRequestDetail> GetRequestDetails(string SampleNo, string lisTestCode);
+        List<TestRequestDetail> GetRequestDetails(string SampleNo, int? EquipmentId);
         void Delete(TestRequestDetail testRequestDetail);
 
         void TechnicianReview(long Id, ReportStatusType reportStatusType, string note, long recentTestRequestId);

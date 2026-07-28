@@ -622,11 +622,6 @@ namespace LIS.Businesslogic
                 return null;
             }
 
-            //var testMap = mappingRepo.Get(p => p.HISParamCode != null
-            //    && parameterMapRepo.Get(param => param.HISTestCode.Equals(testResult.HISTestCode, StringComparison.OrdinalIgnoreCase)
-            //        && param.HISParamCode.Equals(p.HISParamCode, StringComparison.OrdinalIgnoreCase)).Any()
-            //    && p.EquipmentId == testResult.EquipmentId).FirstOrDefault();
-
             var departmentname = testRepo.Get(t => t.HISTestCode.Equals(testResult.HISTestCode, StringComparison.OrdinalIgnoreCase))
                 .Join(departmentRepo.Get(d => d.Code != null),
                 test => test.DepartmentCode,
@@ -670,54 +665,155 @@ namespace LIS.Businesslogic
             return results;
         }
 
-        public IEnumerable<TestRequestDetail> GetBySampleNo(string SampleNo)
+        public IEnumerable<LISDto> GetBySampleNo(string sampleNo)
         {
-            var requestDetails = new List<TestRequestDetail>();
+            try
+            {
+                var requestDetails = new List<LISDto>();
 
-            var testRequestDetails = testRequestDetailsRepo
-                                        .Get(p => p.SampleNo.Equals(SampleNo
-                                                        , StringComparison.OrdinalIgnoreCase));
+                var testRequestDetails = testRequestDetailsRepo
+                                            .Get(p => p.SampleNo.Equals(sampleNo
+                                                            , StringComparison.OrdinalIgnoreCase))
+                                            .ToList();
 
-            var mappingInfo = mappingRepo.Get(p => p.IsActive == true
-                                                && p.Equipment.AccessKey.Equals(identity.AccessKey
-                                                                    , StringComparison.OrdinalIgnoreCase));
-            var patients = patientRepo.Get(p => p.IsActive == true);
+                var mappingInfo = mappingRepo.Get(p => p.IsActive == true
+                                                        && p.Equipment.AccessKey.Equals(identity.AccessKey
+                                                                    , StringComparison.OrdinalIgnoreCase))
+                                            .ToList();
 
-            requestDetails = (from m in mappingInfo
-                              join param in parameterMapRepo.Get() on m.HISParamCode equals param.HISParamCode
-                              join p in testRequestDetails on param.HISTestCode equals p.HISTestCode
-                              join tq in patients on p.PatientId equals tq.Id
-                              select new
-                              {
-                                  p.Id,
-                                  p.PatientId,
-                                  p.SpecimenName,
-                                  m.LISTestCode,
-                                  p.HISTestCode,
-                                  p.SampleCollectionDate,
-                                  p.SampleReceivedDate,
-                                  p.SampleNo,
-                                  m.EquipmentId,
-                                  p.CreatedBy,
-                                  p.CreatedOn,
-                                  tq
-                              }).AsEnumerable().Select(u => new TestRequestDetail
-                              {
-                                  Id = u.Id,
-                                  PatientId = u.PatientId,
-                                  HISTestCode = u.HISTestCode,
-                                  SampleCollectionDate = u.SampleCollectionDate,
-                                  SampleReceivedDate = u.SampleReceivedDate,
-                                  SampleNo = u.SampleNo,
-                                  LISTestCode = u.LISTestCode,
-                                  SpecimenName = u.SpecimenName,
-                                  CreatedBy = u.CreatedBy,
-                                  CreatedOn = u.CreatedOn,
-                                  Patient = u.tq
-                              }).ToList();
+                var patients = patientRepo.Get(p => p.IsActive == true)
+                                            .ToList();
 
-            return requestDetails;
+                var testtest = (from pm in testParameterMappingRepo.Get(p => p.IsActive)
+                                join test in testRepo.Get(t => t.IsActive)
+                                    on pm.HisTestId equals test.Id
+                                select new
+                                {
+                                    test.HISTestCode,
+                                    pm.HisParameterId
+                                }).ToList();
+
+                var testParam = (from ts in testtest
+                                 join pm in parameterMapRepo.Get()
+                                     on ts.HisParameterId equals pm.Id
+                                 select new
+                                 {
+                                     ts.HISTestCode,
+                                     pm.HISParamCode
+                                 }).ToList();
+
+                requestDetails = (from m in mappingInfo
+                                  join param in testParam on m.HISParamCode equals param.HISParamCode
+                                  join p in testRequestDetails on param.HISTestCode equals p.HISTestCode
+                                  join tq in patients on p.PatientId equals tq.Id
+                                  select new
+                                  {
+                                      p.Id,
+                                      p.PatientId,
+                                      p.SpecimenName,
+                                      m.LISTestCode,
+                                      p.SampleNo,
+                                      p.SampleCollectionDate,
+                                      m.GroupName,
+                                      tq
+                                  }).AsEnumerable().Select(u => new LISDto
+                                  {
+                                      TestRequestId = u.Id,
+                                      PatientId = u.PatientId,
+                                      SampleNo = u.SampleNo,
+                                      SampleCollectionDate = u.SampleCollectionDate,
+                                      LISTestCode = u.LISTestCode,
+                                      SpecimenName = u.SpecimenName,
+                                      PatientName = u.tq.Name,
+                                      DOB = u.tq.DateOfBirth,
+                                      Gender = u.tq.Gender,
+                                      GroupName = u.GroupName
+                                  }).Distinct().ToList();
+
+                return requestDetails;
+            }
+            catch (Exception ex)
+            {
+                logger.LogError($"Error occurred while fetching test request details for SampleNo: {sampleNo}");
+                logger.LogException(ex.Message, ex);
+                throw;
+            }
         }
+
+        public IEnumerable<LISDto> GetDetailsBySampleNoWithAnlyser(string sampleNo, string analyserModel)
+        {
+            try
+            {
+                var requestDetails = new List<LISDto>();
+
+                var testRequestDetails = testRequestDetailsRepo
+                                            .Get(p => p.SampleNo.Equals(sampleNo
+                                                            , StringComparison.OrdinalIgnoreCase))
+                                            .ToList();
+
+                var mappingInfo = mappingRepo.Get(p => p.IsActive == true
+                                                        && p.Equipment.AccessKey.Equals(identity.AccessKey
+                                                                    , StringComparison.OrdinalIgnoreCase))
+                                            .ToList();
+
+                var patients = patientRepo.Get(p => p.IsActive == true)
+                                            .ToList();
+
+                var testtest = (from pm in testParameterMappingRepo.Get(p => p.IsActive)
+                                join test in testRepo.Get(t => t.IsActive)
+                                    on pm.HisTestId equals test.Id
+                                select new
+                                {
+                                    test.HISTestCode,
+                                    pm.HisParameterId
+                                }).ToList();
+
+                var testParam = (from ts in testtest
+                                 join pm in parameterMapRepo.Get()
+                                     on ts.HisParameterId equals pm.Id
+                                 select new
+                                 {
+                                     ts.HISTestCode,
+                                     pm.HISParamCode
+                                 }).ToList();
+
+                requestDetails = (from m in mappingInfo
+                                  join param in testParam on m.HISParamCode equals param.HISParamCode
+                                  join p in testRequestDetails on param.HISTestCode equals p.HISTestCode
+                                  join tq in patients on p.PatientId equals tq.Id
+                                  select new
+                                  {
+                                      p.Id,
+                                      p.PatientId,
+                                      p.SpecimenName,                                      
+                                      p.SampleNo,
+                                      p.SampleCollectionDate,
+                                      m.GroupName,
+                                      tq
+                                  }).AsEnumerable().Select(u => new LISDto
+                                  {
+                                      TestRequestId = u.Id,
+                                      PatientId = u.PatientId,
+                                      SampleNo = u.SampleNo,
+                                      SampleCollectionDate = u.SampleCollectionDate,
+                                      LISTestCode = "",
+                                      SpecimenName = u.SpecimenName,
+                                      PatientName = u.tq.Name,
+                                      DOB = u.tq.DateOfBirth,
+                                      Gender = u.tq.Gender,
+                                      GroupName = u.GroupName
+                                  }).GroupBy(x => x.GroupName).Select(g => g.First()).ToList();
+
+                return requestDetails;
+            }
+            catch (Exception ex)
+            {
+                logger.LogError($"Error occurred while fetching test request details for SampleNo: {sampleNo}");
+                logger.LogException(ex.Message, ex);
+                throw;
+            }
+        }
+
         public IEnumerable<BarCodeDto> GetBarCodeSamples(ReportStatusType status)
         {
             var requestDetails = new List<BarCodeDto>();
@@ -896,28 +992,20 @@ namespace LIS.Businesslogic
             else
                 return false;
         }
-        public List<TestRequestDetail> GetRequestDetails(string SampleNo, string lisTestCode)
+        public List<TestRequestDetail> GetRequestDetails(string sampleNo, int? equipmentId)
         {
-            var requestDetails = new List<TestRequestDetail>();
+            var testCodes =
+                from m in mappingRepo.Get(x => x.IsActive && x.EquipmentId == equipmentId)
+                join p in parameterMapRepo.Get(x => x.HISTestCode != null)
+                    on m.HISParamCode equals p.HISParamCode
+                select p.HISTestCode;
 
-            var testMappings = mappingRepo.Get(p => p.IsActive == true && p.LISTestCode.Equals(lisTestCode, StringComparison.OrdinalIgnoreCase))
-                                        .Join(equipmentRepo.Get(e => e.AccessKey.Equals(identity.AccessKey, StringComparison.OrdinalIgnoreCase)),
-                                        map => map.EquipmentId,
-                                        eqp => eqp.Id,
-                                        (map, eqp) => map.HISParamCode)
-                                        .Distinct()
-                                        .ToList();
-
-            var testCodes = parameterMapRepo.Get(p => p.HISTestCode != null && testMappings.Contains(p.HISParamCode))
-                .Select(p => p.HISTestCode)
-                .Distinct()
+            return testRequestDetailsRepo.Get(x =>
+                    x.SampleNo.ToLower() == sampleNo.ToLower() &&
+                    (x.ReportStatus == ReportStatusType.SentToEquipment ||
+                     x.ReportStatus == ReportStatusType.ReportGenerated) &&
+                    testCodes.Contains(x.HISTestCode))
                 .ToList();
-
-            var testRequestDetails = testRequestDetailsRepo.Get(p => p.SampleNo.Equals(SampleNo, StringComparison.OrdinalIgnoreCase)
-                                        && (p.ReportStatus == ReportStatusType.SentToEquipment || p.ReportStatus == ReportStatusType.ReportGenerated)
-                                        && testCodes.Contains(p.HISTestCode)).ToList();
-
-            return testRequestDetails;
         }
 
         public void Update(TestRequestDetail testRequestDetail)
