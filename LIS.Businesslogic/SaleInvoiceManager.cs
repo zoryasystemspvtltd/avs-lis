@@ -965,7 +965,7 @@ namespace LIS.BusinessLogic
                 ? line.SampleNo
                 : (!string.IsNullOrWhiteSpace(sharedSample)
                     ? sharedSample
-                    : $"{reqNo}-{specimenCode}");
+                    : Helper.Helper.BuildSampleNo(reqNo, specimenCode));
 
             request = new TestRequestDetail
             {

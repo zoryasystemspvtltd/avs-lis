@@ -156,7 +156,13 @@ namespace LIS.Masters.Tests.Workflows
             Assert.AreEqual(2, requests.Count);
             Assert.IsFalse(string.IsNullOrWhiteSpace(requests[0].SampleNo));
             Assert.AreEqual(requests[0].SampleNo, requests[1].SampleNo);
-            Assert.AreEqual($"{invoiceNo}-{specimen.Code}", requests[0].SampleNo);
+            Assert.AreEqual(invoiceNo, requests[0].HISRequestNo);
+            Assert.AreEqual(invoiceNo, requests[0].HISRequestId);
+            Assert.AreEqual(
+                LIS.BusinessLogic.Helper.Helper.BuildSampleNo(invoiceNo, specimen.Code),
+                requests[0].SampleNo);
+            Assert.IsFalse(requests[0].SampleNo.Contains("INV"), "SampleNo must not contain INV");
+            Assert.IsFalse(requests[0].SampleNo.Contains("-"), "SampleNo must not contain hyphens");
 
             Services.TestRate.Delete(new TestRateMaster { Id = rateId1 });
             Services.TestRate.Delete(new TestRateMaster { Id = rateId2 });

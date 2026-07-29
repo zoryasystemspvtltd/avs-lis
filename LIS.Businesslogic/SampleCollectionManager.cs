@@ -177,7 +177,7 @@ namespace LIS.Businesslogic
 
             var barcode = !string.IsNullOrWhiteSpace(shared)
                 ? shared
-                : $"{orderNo}-{specimenCode}";
+                : LIS.BusinessLogic.Helper.Helper.BuildSampleNo(orderNo, specimenCode);
 
             ValidateBarcodeUnique(barcode, request.Id, request);
             request.SampleNo = barcode;

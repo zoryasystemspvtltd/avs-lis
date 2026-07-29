@@ -145,6 +145,38 @@ namespace LIS.BusinessLogic.Helper
 
         }
 
+        /// <summary>
+        /// Builds SampleNo from HISRequestNo + specimen code.
+        /// Example: INV-20260729-0001 + SERUM → 202607290001SERUM
+        /// Does not change HISRequestNo / HISRequestId; formatting only.
+        /// </summary>
+        public static string BuildSampleNo(string hisRequestNo, string specimenCode)
+        {
+            var baseNo = NormalizeSampleNoBase(hisRequestNo);
+            var specimen = (specimenCode ?? string.Empty).Trim();
+            return baseNo + specimen;
+        }
+
+        /// <summary>
+        /// Strips leading INV prefix and all hyphens from HISRequestNo for SampleNo use.
+        /// INV-20260729-0001 → 202607290001
+        /// </summary>
+        public static string NormalizeSampleNoBase(string hisRequestNo)
+        {
+            if (string.IsNullOrWhiteSpace(hisRequestNo))
+            {
+                return string.Empty;
+            }
+
+            var value = hisRequestNo.Trim();
+            if (value.StartsWith("INV", StringComparison.OrdinalIgnoreCase))
+            {
+                value = value.Substring(3);
+            }
+
+            return value.Replace("-", string.Empty);
+        }
+
         public static string GetGroupTag(string froupName)
         {
             var groupTag = string.Empty;
