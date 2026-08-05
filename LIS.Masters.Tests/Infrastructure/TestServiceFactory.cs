@@ -1,4 +1,5 @@
 using LIS.BusinessLogic;
+using LIS.BusinessLogic.Notifications;
 using LIS.Businesslogic;
 using LIS.DataAccess;
 using LIS.DataAccess.Repo;
@@ -46,6 +47,8 @@ namespace LIS.Masters.Tests.Infrastructure
         public SampleCollectionManager SampleCollection { get; }
         public SampleReceivingManager SampleReceiving { get; }
         public RadiologyReportManager RadiologyReport { get; }
+        public INotificationManager NotificationManager { get; }
+        public INotificationService NotificationService { get; }
 
         private TestServiceFactory(ApplicationDBContext db)
         {
@@ -76,7 +79,21 @@ namespace LIS.Masters.Tests.Infrastructure
             TestMapping = new TestMappingCrudManager(Logger, Identity, Uow);
             Equipment = new EquipmentManager(Logger, Identity, Uow);
             Report = new ReportManager(Logger, Identity, Uow);
-            TestRequest = new TestRequestDetailsManager(Logger, Identity, Uow, new TestFileHandler());
+            var notificationConfigurationManager = new NotificationConfigurationManager(Logger, Identity, Uow);
+            var notificationEventManager = new NotificationEventManager();
+            var notificationTemplateManager = new NotificationTemplateManager(Logger, Identity, Uow);
+            var httpTransport = new NotificationHttpTransport(Logger);
+            var notificationProviderFactory = new NotificationProviderFactory(Logger, httpTransport);
+            NotificationManager = new NotificationManager(
+                Logger,
+                Identity,
+                Uow,
+                notificationConfigurationManager,
+                notificationEventManager,
+                notificationTemplateManager,
+                notificationProviderFactory);
+            NotificationService = new NotificationService(NotificationManager);
+            TestRequest = new TestRequestDetailsManager(Logger, Identity, Uow, new TestFileHandler(), NotificationManager);
             SampleCollection = new SampleCollectionManager(Logger, Identity, Uow, TestRequest);
             SampleReceiving = new SampleReceivingManager(Logger, Identity, Uow, TestRequest);
             RadiologyReport = new RadiologyReportManager(Logger, Identity, Uow);

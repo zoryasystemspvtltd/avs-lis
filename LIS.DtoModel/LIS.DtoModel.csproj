@@ -70,6 +70,7 @@
     <Compile Include="Interfaces\ISpecimenManager.cs" />
     <Compile Include="Interfaces\ITestMappingMasterManager.cs" />
     <Compile Include="Interfaces\ITestParameterManager.cs" />
+    <Compile Include="Interfaces\INotificationFramework.cs" />
     <Compile Include="Interfaces\ITestRequestDetailsManager.cs" />
     <Compile Include="Interfaces\IValidationError.cs" />
     <Compile Include="Models\ApiError.cs" />
@@ -149,6 +150,13 @@
     <Compile Include="Models\ReviewTest.cs" />
     <Compile Include="Models\BarcodeElements.cs" />
     <Compile Include="Models\SampleItem.cs" />
+    <Compile Include="Models\Notification\NotificationAudit.cs" />
+    <Compile Include="Models\Notification\NotificationConfiguration.cs" />
+    <Compile Include="Models\Notification\NotificationDtos.cs" />
+    <Compile Include="Models\Notification\NotificationEnums.cs" />
+    <Compile Include="Models\Notification\NotificationHttpModels.cs" />
+    <Compile Include="Models\Notification\NotificationTemplate.cs" />
+    <Compile Include="Models\Notification\SecureLinkToken.cs" />
     <Compile Include="Models\DTOEnums.cs" />
     <Compile Include="Models\TestNameItem.cs" />
     <Compile Include="Models\Token.cs" />

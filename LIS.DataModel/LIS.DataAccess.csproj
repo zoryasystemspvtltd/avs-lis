@@ -130,6 +130,8 @@
     <Compile Include="Migrations\202607190625000_MethodNameLength300.Designer.cs">
       <DependentUpon>202607190625000_MethodNameLength300.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202608051600000_NotificationFrameworkPhase2.cs" />
+    <Compile Include="Migrations\202608051400000_NotificationFramework.cs" />
     <Compile Include="Migrations\202607190636000_TestParameterMappingSequence.cs" />
     <Compile Include="Migrations\202607190636000_TestParameterMappingSequence.Designer.cs">
       <DependentUpon>202607190636000_TestParameterMappingSequence.cs</DependentUpon>

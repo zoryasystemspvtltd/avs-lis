@@ -16,6 +16,7 @@ import { AppComponent } from './app.component';
 import { HeaderComponent, NavMenuComponent, FooterComponent, CompanyInfoComponent, AlertComponent, YouFrameComponent, NgbdAlertCloseable, LeftNavMenuComponent, AvailableAppComponent, TinyMceEditorComponent, CreateModuleComponent, ListModuleComponent, NgbdModalComponent, EditModuleComponent, ViewModuleComponent, LoaderComponent, FileuploadComponent, MediaListViewComponent, ChieldListComponent, MediaFileListComponent } from './_components';
 import { HomeComponent } from './home/home.component';
 import { DashboardComponent, DashboardKpiWidgetComponent, DashboardAlertsWidgetComponent, DashboardQueueWidgetComponent } from './dashboard';
+import { NotificationConfigurationComponent } from './setup/notification-configuration/notification-configuration.component';
 import { LoginComponent, ChangePasswordComponent, ForgotPasswordComponent, RegisterComponent } from './authentication';
 import { AboutComponent, ContactComponent, TremsComponent } from './annonimious';
 import { LogListComponent } from './activitylog/log-list/log-list.component';
@@ -70,6 +71,7 @@ export const options: Partial<IConfig> | (() => Partial<IConfig>) = null;
     DashboardKpiWidgetComponent,
     DashboardAlertsWidgetComponent,
     DashboardQueueWidgetComponent,
+    NotificationConfigurationComponent,
     LoginComponent,
     CompanyInfoComponent,
     AboutComponent,

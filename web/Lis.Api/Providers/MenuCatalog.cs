@@ -40,6 +40,7 @@ namespace Lis.Api.Providers
             M("MASTER_METHOD", "Masters", "Masters", "Method", "/methods", 30),
             M("SETUP_EQUIPMENT", "Equipments", "Masters", "Equipment", "/equipments", 40),
             M("SETUP_EQUIPMENT_HEARTBEAT", "Equipments", "Masters", "Equipment Heartbeat", "/equipment-heartbeat", 50),
+            M("SETUP_NOTIFICATION_CONFIGURATION", "NotificationConfiguration", "Masters", "Notification Configuration", "/notification-configuration", 55),
 
             // Master data
             M("MASTER_TESTMASTER", "HisTest", "Masters", "Test Master", "/test-master", 60),
@@ -99,6 +100,7 @@ namespace Lis.Api.Providers
             { "setup.method", "MASTER_METHOD" },
             { "setup.equipment", "SETUP_EQUIPMENT" },
             { "setup.equipmentHeartbeat", "SETUP_EQUIPMENT_HEARTBEAT" },
+            { "setup.notificationConfiguration", "SETUP_NOTIFICATION_CONFIGURATION" },
             { "masters.testMaster", "MASTER_TESTMASTER" },
             { "masters.testProfile", "MASTER_TESTPROFILE" },
             { "masters.specimen", "MASTER_SPECIMEN" },

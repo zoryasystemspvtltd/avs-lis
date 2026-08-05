@@ -1,4 +1,5 @@
 ﻿using LIS.DtoModel.Models;
+using LIS.DtoModel.Models.Notification;
 using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration.Conventions;
 
@@ -70,6 +71,11 @@ namespace LIS.DataAccess
         public virtual DbSet<SampleRejectionReasonMaster> SampleRejectionReasonMaster { get; set; }
         public virtual DbSet<RadiologyRequestDetail> RadiologyRequestDetail { get; set; }
         public virtual DbSet<RadiologyResultDetail> RadiologyResultDetail { get; set; }
+
+        public virtual DbSet<NotificationConfiguration> NotificationConfiguration { get; set; }
+        public virtual DbSet<NotificationTemplate> NotificationTemplate { get; set; }
+        public virtual DbSet<NotificationAudit> NotificationAudit { get; set; }
+        public virtual DbSet<SecureLinkToken> SecureLinkToken { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {

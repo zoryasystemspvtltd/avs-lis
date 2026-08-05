@@ -203,6 +203,8 @@
     <Compile Include="Controllers\Api\BarCodeController.cs" />
     <Compile Include="Controllers\Api\DailyStatusController.cs" />
     <Compile Include="Controllers\Api\DashboardController.cs" />
+    <Compile Include="Controllers\Api\ReportDownloadController.cs" />
+    <Compile Include="Controllers\Api\NotificationConfigurationController.cs" />
     <Compile Include="Controllers\Api\DepartmentController.cs" />
     <Compile Include="Controllers\Api\HeartbeatController.cs" />
     <Compile Include="Controllers\Api\LisTestController.cs" />

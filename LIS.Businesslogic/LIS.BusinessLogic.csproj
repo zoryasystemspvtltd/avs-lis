@@ -85,6 +85,17 @@
     <Compile Include="SaleInvoiceManager.cs" />
     <Compile Include="PatientVisitManager.cs" />
     <Compile Include="LookupMasterManagers.cs" />
+    <Compile Include="Notifications\NotificationConfigurationManager.cs" />
+    <Compile Include="Notifications\NotificationBackgroundDispatcher.cs" />
+    <Compile Include="Notifications\NotificationHttpTransport.cs" />
+    <Compile Include="Notifications\NotificationProcessor.cs" />
+    <Compile Include="Notifications\NotificationSecureDownloadManager.cs" />
+    <Compile Include="Notifications\NotificationEventManager.cs" />
+    <Compile Include="Notifications\NotificationManager.cs" />
+    <Compile Include="Notifications\NotificationProviders.cs" />
+    <Compile Include="Notifications\NotificationService.cs" />
+    <Compile Include="Notifications\NotificationSettings.cs" />
+    <Compile Include="Notifications\NotificationTemplateManager.cs" />
     <Compile Include="TestProfileMasterManager.cs" />
     <Compile Include="SetupDomainManagers.cs" />
     <Compile Include="DashboardManager.cs" />

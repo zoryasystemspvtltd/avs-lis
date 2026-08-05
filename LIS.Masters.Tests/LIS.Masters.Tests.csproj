@@ -78,6 +78,11 @@
     <Compile Include="Infrastructure\TestFileHandler.cs" />
     <Compile Include="Workflows\RadiologyReportManagerTests.cs" />
     <Compile Include="Workflows\PatientInvoiceSampleWorkflowTests.cs" />
+    <Compile Include="Notifications\MockNotificationHttpTransport.cs" />
+    <Compile Include="Notifications\NotificationTestConfigHelper.cs" />
+    <Compile Include="Notifications\NotificationWebConfigUsageTests.cs" />
+    <Compile Include="Notifications\NotificationPhase2Tests.cs" />
+    <Compile Include="Notifications\NotificationFrameworkTests.cs" />
     <Compile Include="Workflows\SampleNoFormatTests.cs" />
     <Compile Include="Workflows\RecentSampleListingTests.cs" />
     <Compile Include="Workflows\SampleCollectionInvoiceStatusTests.cs" />

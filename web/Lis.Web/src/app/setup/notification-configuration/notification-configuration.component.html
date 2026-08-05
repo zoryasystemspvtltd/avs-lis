@@ -1,0 +1,142 @@
+<div class="container-fluid">
+  <div class="page-header">
+    <h2>Notification Configuration</h2>
+  </div>
+
+  <div class="panel panel-default" *ngIf="!loading">
+    <div class="panel-heading"><strong>Settings</strong></div>
+    <div class="panel-body">
+      <form [formGroup]="form" (ngSubmit)="save()">
+        <div class="form-group">
+          <label>
+            <input type="checkbox" formControlName="isEnabled" /> Enable Notification
+          </label>
+        </div>
+
+        <div class="form-group">
+          <label>
+            <input type="checkbox" formControlName="smsEnabled" /> SMS Enabled
+          </label>
+          <label style="margin-left: 20px;">
+            <input type="checkbox" formControlName="whatsAppEnabled" /> WhatsApp Enabled
+          </label>
+        </div>
+
+        <div class="form-group">
+          <label>Notification Channel</label>
+          <div *ngFor="let option of channelModes">
+            <label class="radio-inline">
+              <input type="radio" formControlName="channelMode" [value]="option.value" /> {{ option.label }}
+            </label>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-sm-4">
+            <div class="form-group">
+              <label>Retry Count</label>
+              <input type="number" class="form-control" formControlName="retryCount" min="0" max="10" />
+            </div>
+          </div>
+          <div class="col-sm-4">
+            <div class="form-group">
+              <label>Retry Interval (seconds)</label>
+              <input type="number" class="form-control" formControlName="retryIntervalSeconds" min="1" max="300" />
+            </div>
+          </div>
+          <div class="col-sm-4">
+            <div class="form-group">
+              <label>Default Channel</label>
+              <select class="form-control" formControlName="defaultChannel">
+                <option *ngFor="let option of defaultChannels" [value]="option.value">{{ option.label }}</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary" [disabled]="saving">
+          {{ saving ? 'Saving...' : 'Save Configuration' }}
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div class="panel panel-default" *ngIf="templates.length">
+    <div class="panel-heading"><strong>Default Templates</strong></div>
+    <div class="panel-body">
+      <div class="table-responsive">
+        <table class="table table-striped table-condensed">
+          <thead>
+            <tr>
+              <th>Event</th>
+              <th>Channel</th>
+              <th>Name</th>
+              <th>Body Preview</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let template of templates">
+              <td>{{ template.eventCode }}</td>
+              <td>{{ template.channel === 2 ? 'WhatsApp' : 'SMS' }}</td>
+              <td>{{ template.name }}</td>
+              <td><pre class="template-preview">{{ template.body }}</pre></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <strong>Notification Audit</strong>
+      <button type="button" class="btn btn-default btn-xs pull-right" (click)="loadAudit()" [disabled]="auditLoading">Refresh</button>
+    </div>
+    <div class="panel-body">
+      <p *ngIf="auditLoading">Loading audit history...</p>
+      <div class="table-responsive" *ngIf="!auditLoading">
+        <table class="table table-striped table-condensed">
+          <thead>
+            <tr>
+              <th>Created</th>
+              <th>Invoice</th>
+              <th>Patient</th>
+              <th>Event</th>
+              <th>Channel</th>
+              <th>Status</th>
+              <th>Retries</th>
+              <th>Provider Response</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of auditRows">
+              <td>{{ row.createdOn | date:'dd/MM/yyyy HH:mm' }}</td>
+              <td>{{ row.invoiceNo }}</td>
+              <td>{{ row.patientName }}</td>
+              <td>{{ row.eventCode }}</td>
+              <td>{{ row.channel }}</td>
+              <td>{{ row.status }}</td>
+              <td>{{ row.retryCount }}</td>
+              <td>{{ row.providerResponse || row.errorMessage }}</td>
+            </tr>
+            <tr *ngIf="!auditRows.length">
+              <td colspan="8" class="text-muted">No notification audit records yet.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .template-preview {
+    white-space: pre-wrap;
+    max-height: 120px;
+    overflow: auto;
+    margin: 0;
+    background: transparent;
+    border: 0;
+    font-size: 12px;
+  }
+</style>

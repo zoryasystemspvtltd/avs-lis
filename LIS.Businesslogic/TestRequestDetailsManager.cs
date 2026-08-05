@@ -3,6 +3,7 @@ using LIS.DataAccess.Repo;
 using LIS.DtoModel;
 using LIS.DtoModel.Interfaces;
 using LIS.DtoModel.Models;
+using LIS.DtoModel.Models.Notification;
 using LIS.Logger;
 using System;
 using System.Collections.Generic;
@@ -29,15 +30,17 @@ namespace LIS.Businesslogic
         private ModuleRepo<Departments> departmentRepo;
         private ModuleRepo<HISParameterRangMaster> parameteRangeRepo;
         private IExternalApiManager externalApiManager;
+        private INotificationManager notificationManager;
         private IFileHandler file;
         private IModuleIdentity identity;
         private GenericUnitOfWork genericUnitOfWork;
-        public TestRequestDetailsManager(ILogger Logger, IModuleIdentity identity, GenericUnitOfWork genericUnitOfWork, IFileHandler file)
+        public TestRequestDetailsManager(ILogger Logger, IModuleIdentity identity, GenericUnitOfWork genericUnitOfWork, IFileHandler file, INotificationManager notificationManager = null)
         {
             this.identity = identity;
             logger = Logger;
             this.genericUnitOfWork = genericUnitOfWork;
             this.file = file;
+            this.notificationManager = notificationManager;
             testRequestDetailsRepo = new ModuleRepo<TestRequestDetail>(logger, this.identity, this.genericUnitOfWork);
             mappingRepo = new ModuleRepo<TestMappingMaster>(logger, this.identity, this.genericUnitOfWork);
             equipmentRepo = new ModuleRepo<EquipmentMaster>(logger, this.identity, this.genericUnitOfWork);
@@ -67,6 +70,11 @@ namespace LIS.Businesslogic
         public void DoctorReview(long Id, ReportStatusType reportStatusType, string note, long recentTestRequestId)
         {
             var requestDetail = ReviewProcess(Id, reportStatusType, note, recentTestRequestId, isDoctorReview: true);
+
+            if (requestDetail != null && requestDetail.ReportStatus == ReportStatusType.DoctorApproved)
+            {
+                TryCreateReportReleasedNotification(requestDetail);
+            }
 
             /* //Submit Test Result to HIS is changed through SQL job
             if (requestDetail.ReportStatus == ReportStatusType.DoctorApproved)
@@ -1237,6 +1245,28 @@ namespace LIS.Businesslogic
         {
             var count = testRequestDetailsRepo.Get().Count() + 1;
             return $"REQ{count:D4}";
+        }
+
+        private void TryCreateReportReleasedNotification(TestRequestDetail requestDetail)
+        {
+            if (notificationManager == null || requestDetail == null)
+            {
+                return;
+            }
+
+            try
+            {
+                notificationManager.RaiseNotificationEvent(new ReportReleasedNotificationContext
+                {
+                    InvoiceNo = requestDetail.HISRequestNo,
+                    PatientId = requestDetail.PatientId,
+                    TestRequestId = requestDetail.Id
+                });
+            }
+            catch (Exception ex)
+            {
+                logger.LogException(ex);
+            }
         }
 
     }

@@ -43,7 +43,7 @@ export class LeftNavMenuComponent implements OnInit {
       '/lab-result-entry', '/edit-test-results', '/technicianapprovals', '/doctorapprovals', '/approvedsamples',
       '/rejectedsamples', '/quality-controls'
     ]);
-    this.expandSetup = this.matchesAny(path, ['/departments', '/units', '/methods', '/equipments', '/equipment-heartbeat']);
+    this.expandSetup = this.matchesAny(path, ['/departments', '/units', '/methods', '/equipments', '/equipment-heartbeat', '/notification-configuration']);
     this.expandMaster = this.matchesAny(path, [
       '/test-profiles', '/test-master', '/specimens', '/test-rates', '/referral-doctors', '/corporates',
       '/his-parameters', '/test-parameters', '/test-mappings', '/his-parameter-ranges'
@@ -160,7 +160,8 @@ export class LeftNavMenuComponent implements OnInit {
       || this.hasMenu('Masters', 'setup.unit')
       || this.hasMenu('Masters', 'setup.method')
       || this.hasMenu('Equipments', 'setup.equipment')
-      || this.hasMenu('Equipments', 'setup.equipmentHeartbeat');
+      || this.hasMenu('Equipments', 'setup.equipmentHeartbeat')
+      || this.hasMenu('NotificationConfiguration', 'setup.notificationConfiguration');
   }
 
   hasMasterAccess(): boolean {
