@@ -29,9 +29,8 @@ namespace Lis.Api.Controllers.Api
         }
 
         [HttpGet]
-        [AllowAnonymous]
-        //[QAuthorize(ModuleName = "SampleCollection", AlternateModuleName = "SampleReceiving,Reports,Samples",
-        //    ModulePermissionTypes = ModulePermissionType.CanView)]
+        [QAuthorize(ModuleName = "SampleCollection", AlternateModuleName = "SampleReceiving,Reports,Samples",
+            ModulePermissionTypes = ModulePermissionType.CanView)]
         public IEnumerable<BarCodeDto> Get()
         {
             try
@@ -50,9 +49,8 @@ namespace Lis.Api.Controllers.Api
         }
 
         [HttpGet]
-        [AllowAnonymous]
-        //[QAuthorize(ModuleName = "SampleCollection", AlternateModuleName = "SampleReceiving,Reports,Samples",
-        //    ModulePermissionTypes = ModulePermissionType.CanView)]
+        [QAuthorize(ModuleName = "SampleCollection", AlternateModuleName = "SampleReceiving,Reports,Samples",
+            ModulePermissionTypes = ModulePermissionType.CanView)]
         public IEnumerable<BarCodeDto> Get(string Id)
         {
             try

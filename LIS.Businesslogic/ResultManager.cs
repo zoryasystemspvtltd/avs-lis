@@ -1,4 +1,5 @@
 ﻿using LIS.Businesslogic;
+using LIS.BusinessLogic.Helper;
 using LIS.DataAccess.Repo;
 using LIS.DtoModel;
 using LIS.DtoModel.Interfaces;
@@ -175,7 +176,7 @@ namespace LIS.BusinessLogic
             var control = new ControlResult()
             {
                 SampleNo = result.TestResult.SampleNo,
-                ResultDate = DateTime.Now,
+                ResultDate = OperationalDateTime.GetFacilityNow(),
                 EquipmentId = equpment.Id
             };
 

@@ -3,6 +3,7 @@ using LIS.DtoModel;
 using LIS.DtoModel.Interfaces;
 using LIS.DtoModel.Models;
 using LIS.Logger;
+using LIS.BusinessLogic.Helper;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -326,6 +327,15 @@ namespace LIS.BusinessLogic
             SaleInvoiceNotesMeta.EncodeFromInvoice(header);
 
             var now = DateTime.Now;
+            if (header.InvoiceDate == default(DateTime))
+            {
+                header.InvoiceDate = OperationalDateTime.GetFacilityNow();
+            }
+            else
+            {
+                header.InvoiceDate = OperationalDateTime.ToFacilityWallClock(header.InvoiceDate);
+            }
+
             if (header.Id <= 0)
             {
                 header.Id = 0;
@@ -345,10 +355,6 @@ namespace LIS.BusinessLogic
                 header.ModifiedOn = now;
                 header.ModifiedBy = identity?.ActivityMember;
                 header.IsActive = true;
-                if (header.InvoiceDate == default(DateTime))
-                {
-                    header.InvoiceDate = now;
-                }
 
                 var id = invoiceRepo.Add(header);
                 header.Id = id;
@@ -599,7 +605,7 @@ namespace LIS.BusinessLogic
 
         public string GenerateInvoiceNo()
         {
-            var prefix = $"INV-{DateTime.Now:yyyyMMdd}-";
+            var prefix = $"INV-{OperationalDateTime.GetFacilityNow():yyyyMMdd}-";
             var last = invoiceRepo.Get()
                 .Where(i => i.InvoiceNo != null && i.InvoiceNo.StartsWith(prefix))
                 .OrderByDescending(i => i.InvoiceNo)
@@ -646,7 +652,9 @@ namespace LIS.BusinessLogic
                 }
                 else if (line.Rate <= 0 && line.TestId > 0)
                 {
-                    var invoiceDate = header.InvoiceDate == default(DateTime) ? DateTime.Today : header.InvoiceDate;
+                    var invoiceDate = header.InvoiceDate == default(DateTime)
+                        ? OperationalDateTime.GetFacilityNow().Date
+                        : header.InvoiceDate;
                     var rate = rateManager.GetEffectiveRateForInvoice(
                         line.TestId,
                         invoiceDate,
@@ -976,8 +984,8 @@ namespace LIS.BusinessLogic
                 HISRequestNo = reqNo,
                 HISRequestId = reqNo,
                 SampleNo = sampleNo,
-                SampleCollectionDate = now,
-                SampleReceivedDate = now,
+                SampleCollectionDate = OperationalDateTime.GetFacilityNow(),
+                SampleReceivedDate = OperationalDateTime.GetFacilityNow(),
                 SpecimenCode = test.HISSpecimenCode,
                 SpecimenName = test.HISSpecimenName,
                 ReportStatus = ReportStatusType.New,

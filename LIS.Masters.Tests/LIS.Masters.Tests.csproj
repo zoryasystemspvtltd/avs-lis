@@ -86,6 +86,8 @@
     <Compile Include="Workflows\SampleNoFormatTests.cs" />
     <Compile Include="Workflows\RecentSampleListingTests.cs" />
     <Compile Include="Workflows\SampleCollectionInvoiceStatusTests.cs" />
+    <Compile Include="Workflows\SampleCollectionDateTimeRulesTests.cs" />
+    <Compile Include="Workflows\OperationalDateTimeStandardizationTests.cs" />
     <Compile Include="Workflows\TestResultEditManagerTests.cs" />
     <Compile Include="Masters\PatientMasterManagerTests.cs" />
     <Compile Include="Masters\PatientVisitManagerTests.cs" />

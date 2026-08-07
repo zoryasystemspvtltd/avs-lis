@@ -3,6 +3,7 @@ using LIS.DtoModel;
 using LIS.DtoModel.Interfaces;
 using LIS.DtoModel.Models;
 using LIS.Logger;
+using LIS.BusinessLogic.Helper;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -100,12 +101,13 @@ namespace LIS.BusinessLogic
             }
 
             var now = DateTime.Now;
+            var facilityNow = OperationalDateTime.GetFacilityNow();
             var member = identity?.ActivityMember ?? "system";
             var visit = new PatientVisit
             {
                 PatientId = patientId,
                 VisitId = normalizedVisitId,
-                VisitDateTime = now,
+                VisitDateTime = facilityNow,
                 SaleInvoiceId = saleInvoiceId,
                 VisitStatus = (int)status,
                 CreatedBy = member,
@@ -148,12 +150,13 @@ namespace LIS.BusinessLogic
                     }
 
                     var now = DateTime.Now;
+                    var facilityNow = OperationalDateTime.GetFacilityNow();
                     var member = identity?.ActivityMember ?? "system";
                     var visit = new PatientVisit
                     {
                         PatientId = patientId,
                         VisitId = visitId,
-                        VisitDateTime = now,
+                        VisitDateTime = facilityNow,
                         VisitStatus = (int)VisitStatusType.New,
                         CreatedBy = member,
                         CreatedOn = now,

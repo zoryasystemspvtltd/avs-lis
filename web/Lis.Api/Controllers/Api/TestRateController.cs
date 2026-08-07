@@ -13,6 +13,7 @@ using System.Web.Http;
 
 namespace Lis.Api.Controllers.Api
 {
+    [Authorize]
     [RoutePrefix("api/TestRate")]
     public class TestRateController : ApiController
     {

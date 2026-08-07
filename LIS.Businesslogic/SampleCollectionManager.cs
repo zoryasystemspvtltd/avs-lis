@@ -1,3 +1,4 @@
+using LIS.BusinessLogic.Helper;
 using LIS.DataAccess.Repo;
 using LIS.DtoModel;
 using LIS.DtoModel.Interfaces;
@@ -100,10 +101,13 @@ namespace LIS.Businesslogic
                 throw new InvalidOperationException("Duplicate collection is not allowed for this order.");
             }
 
-            if (action.CollectionDateTime > DateTime.Now.AddMinutes(1))
-            {
-                throw new ArgumentException("Collection time cannot be in the future.");
-            }
+            var invoice = ResolveInvoiceForRequest(request);
+            var collectionWallClock = OperationalDateTime.ToFacilityWallClock(action.CollectionDateTime);
+            SampleCollectionDateRules.Validate(
+                collectionWallClock,
+                invoice?.InvoiceDate,
+                OperationalDateTime.GetFacilityNow(),
+                OperationalDateTime.GetAllowedClockDriftMinutes());
 
             var barcode = string.IsNullOrWhiteSpace(action.BarcodeNumber)
                 ? EnsureBarcodeInternal(request)
@@ -112,7 +116,7 @@ namespace LIS.Businesslogic
             ValidateBarcodeUnique(barcode, request.Id, request);
 
             request.SampleNo = barcode;
-            request.SampleCollectionDate = action.CollectionDateTime;
+            request.SampleCollectionDate = collectionWallClock;
             request.CollectedBy = identity?.ActivityMember ?? "system";
             request.CollectedRemarks = action.Remarks?.Trim();
             requestRepo.Update(request);
@@ -231,6 +235,33 @@ namespace LIS.Businesslogic
             }
 
             return request;
+        }
+
+        private SaleInvoice ResolveInvoiceForRequest(TestRequestDetail request)
+        {
+            if (request == null)
+            {
+                return null;
+            }
+
+            var detail = invoiceDetailRepo.Get(d => d.RequestDetailId == request.Id)
+                .OrderByDescending(d => d.Id)
+                .FirstOrDefault();
+            if (detail != null)
+            {
+                return invoiceRepo.Get(detail.SaleInvoiceId);
+            }
+
+            if (!string.IsNullOrWhiteSpace(request.HISRequestNo))
+            {
+                return invoiceRepo.Get(i =>
+                        i.IsActive &&
+                        i.InvoiceNo.Equals(request.HISRequestNo, StringComparison.OrdinalIgnoreCase))
+                    .OrderByDescending(i => i.Id)
+                    .FirstOrDefault();
+            }
+
+            return null;
         }
 
         private string ResolveRejectionReason(SampleRejectionAction action)

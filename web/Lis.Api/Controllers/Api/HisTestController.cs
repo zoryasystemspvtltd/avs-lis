@@ -1,3 +1,4 @@
+using Lis.Api.Providers;
 using LIS.DtoModel;
 using LIS.DtoModel.Interfaces;
 using LIS.DtoModel.Models;
@@ -58,6 +59,7 @@ namespace Lis.Api.Controllers.Api
             }
         }
 
+        [Authorize]
         [HttpGet]
         [Route("NextTestCode")]
         public IHttpActionResult GetNextTestCode()
@@ -78,7 +80,7 @@ namespace Lis.Api.Controllers.Api
         /// </summary>
         /// <param name="specimen"> Test object of type LIS.DtoModel</param>
         /// <returns>HttpResponseMessage</returns>
-        [AllowAnonymous]
+        [QAuthorize(ModuleName = "Masters", MenuKey = "MASTER_TESTMASTER", ModulePermissionTypes = ModulePermissionType.CanAdd)]
         [HttpPost]
         [Route("")]
         public HttpResponseMessage Post(HisTestMaster test)
@@ -114,7 +116,7 @@ namespace Lis.Api.Controllers.Api
             }
         }
 
-        [AllowAnonymous]
+        [QAuthorize(ModuleName = "Masters", MenuKey = "MASTER_TESTMASTER", ModulePermissionTypes = ModulePermissionType.CanEdit)]
         [HttpPost]
         [Route("Put")]
         public HttpResponseMessage Put(HisTestMaster test)
@@ -150,7 +152,7 @@ namespace Lis.Api.Controllers.Api
             }
         }
 
-        [AllowAnonymous]
+        [QAuthorize(ModuleName = "Masters", MenuKey = "MASTER_TESTMASTER", ModulePermissionTypes = ModulePermissionType.CanDelete)]
         [HttpPost]
         [ActionName("Delete")]
         [Route("Delete")]
@@ -187,7 +189,7 @@ namespace Lis.Api.Controllers.Api
             }
         }
 
-        [AllowAnonymous]
+        [Authorize]
         [HttpGet]
         [Route("")]
         public ItemList<HisTestMaster> Get()
@@ -210,7 +212,7 @@ namespace Lis.Api.Controllers.Api
         /// </summary>
         /// <param name="Id">HIS Test Code</param>
         /// <returns></returns>
-        [AllowAnonymous]
+        [Authorize]
         [HttpGet]
         [Route("{id}")]
         public HisTestMaster Get(string Id)

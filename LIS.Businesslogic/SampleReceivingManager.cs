@@ -1,3 +1,4 @@
+using LIS.BusinessLogic.Helper;
 using LIS.DataAccess.Repo;
 using LIS.DtoModel;
 using LIS.DtoModel.Interfaces;
@@ -125,12 +126,14 @@ namespace LIS.Businesslogic
                 throw new InvalidOperationException("Duplicate receiving is not allowed for this sample.");
             }
 
-            if (action.ReceivedDateTime < request.SampleCollectionDate)
-            {
-                throw new ArgumentException("Receiving time cannot be before collection time.");
-            }
+            var receivedWallClock = OperationalDateTime.ToFacilityWallClock(action.ReceivedDateTime);
+            SampleReceivingDateRules.Validate(
+                receivedWallClock,
+                request.SampleCollectionDate,
+                OperationalDateTime.GetFacilityNow(),
+                OperationalDateTime.GetAllowedClockDriftMinutes());
 
-            request.SampleReceivedDate = action.ReceivedDateTime;
+            request.SampleReceivedDate = receivedWallClock;
             request.ReceivedBy = identity?.ActivityMember ?? "system";
             request.ReceivedRemarks = action.Remarks?.Trim();
             requestRepo.Update(request);

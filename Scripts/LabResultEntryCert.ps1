@@ -87,7 +87,8 @@ Cert "PUT save updates parameter value" {
     if (-not $detailId) { $detailId = $script:certParam.DetailId }
     $oldVal = $script:certParam.resultValue
     if (-not $oldVal) { $oldVal = $script:certParam.ResultValue }
-    $newVal = if ($oldVal -match '^\d+$') { ([int]$oldVal + 1).ToString() } else { "9.99" }
+    # Use decimal (not int) — some result values are large digit strings that overflow Int32.
+    $newVal = if ($oldVal -match '^\d+(\.\d+)?$') { ([decimal]$oldVal + 1).ToString() } else { "9.99" }
 
     $testResultId = $script:certTest.testResultId
     if (-not $testResultId) { $testResultId = $script:certTest.TestResultId }

@@ -42,8 +42,11 @@ function Expect-Error([scriptblock]$block, [string]$needle) {
 }
 
 function Get-Items($r) {
-  if ($r.Items) { return @($r.Items) }
-  if ($r.items) { return @($r.items) }
+  # Unary comma prevents PowerShell from unwrapping a single-element array
+  # (which would make .Count $null and fail Count -ge 0 assertions).
+  if ($null -eq $r) { return @() }
+  if ($r.Items) { return , @($r.Items) }
+  if ($r.items) { return , @($r.items) }
   return @()
 }
 

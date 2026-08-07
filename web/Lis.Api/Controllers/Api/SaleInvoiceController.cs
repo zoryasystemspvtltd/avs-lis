@@ -58,6 +58,7 @@ namespace Lis.Api.Controllers.Api
 
         [HttpGet]
         [Route("")]
+        [QAuthorize(ModuleName = "SaleInvoices", ModulePermissionTypes = ModulePermissionType.CanView)]
         public ItemList<SaleInvoice> Get()
         {
             try
@@ -74,6 +75,7 @@ namespace Lis.Api.Controllers.Api
 
         [HttpGet]
         [Route("BillableItems")]
+        [QAuthorize(ModuleName = "SaleInvoices", ModulePermissionTypes = ModulePermissionType.CanView)]
         public ItemList<BillableItemLookup> GetBillableItems(DateTime? invoiceDate = null)
         {
             try
@@ -90,6 +92,7 @@ namespace Lis.Api.Controllers.Api
 
         [HttpGet]
         [Route("{id:long}")]
+        [QAuthorize(ModuleName = "SaleInvoices", ModulePermissionTypes = ModulePermissionType.CanView)]
         public SaleInvoiceDto Get(long id)
         {
             try
@@ -106,6 +109,7 @@ namespace Lis.Api.Controllers.Api
         [HttpGet]
         [Route("NextInvoiceNo")]
         [ActionName("NextInvoiceNo")]
+        [QAuthorize(ModuleName = "SaleInvoices", ModulePermissionTypes = ModulePermissionType.CanView)]
         public string GetNextInvoiceNo()
         {
             try

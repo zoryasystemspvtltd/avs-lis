@@ -3,6 +3,7 @@ using LIS.DtoModel;
 using LIS.DtoModel.Interfaces;
 using LIS.DtoModel.Models;
 using LIS.Logger;
+using LIS.BusinessLogic.Helper;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -171,7 +172,7 @@ namespace LIS.BusinessLogic
 
             if (string.IsNullOrWhiteSpace(request.AccessionNo))
             {
-                request.AccessionNo = $"RAD-{DateTime.Now:yyyyMMdd}-{request.PatientId}";
+                request.AccessionNo = $"RAD-{OperationalDateTime.GetFacilityNow():yyyyMMdd}-{request.PatientId}";
             }
 
             return requestRepo.Add(request);
@@ -279,9 +280,10 @@ namespace LIS.BusinessLogic
             }
 
             var now = DateTime.Now;
+            var facilityNow = OperationalDateTime.GetFacilityNow();
             var user = identity?.ActivityMember ?? "system";
             result.AuthorizedBy = user;
-            result.AuthorizedOn = now;
+            result.AuthorizedOn = facilityNow;
             result.DigitalSignature = request.DigitalSignature.Trim();
             result.ModifiedOn = now;
             result.ModifiedBy = user;

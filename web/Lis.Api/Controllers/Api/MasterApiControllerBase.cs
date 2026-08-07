@@ -13,6 +13,10 @@ using System.Web.Http;
 
 namespace Lis.Api.Controllers.Api
 {
+    /// <summary>
+    /// Master CRUD base. Reads require authentication; mutations use QAuthorize on actions.
+    /// </summary>
+    [Authorize]
     public abstract class MasterApiControllerBase<T> : ApiController where T : class
     {
         protected IMasterCrudManager<T> Manager;

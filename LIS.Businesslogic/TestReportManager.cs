@@ -3,6 +3,7 @@ using LIS.DtoModel;
 using LIS.DtoModel.Interfaces;
 using LIS.DtoModel.Models;
 using LIS.Logger;
+using LIS.BusinessLogic.Helper;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -445,7 +446,7 @@ namespace LIS.BusinessLogic
                 Corporate = corporateName,
                 CollectionDate = firstRequest?.SampleCollectionDate,
                 ReceivedDate = receivedDate,
-                ReportDate = latestResult?.AuthorizationDate ?? latestResult?.ResultDate ?? DateTime.Now,
+                ReportDate = latestResult?.AuthorizationDate ?? latestResult?.ResultDate ?? OperationalDateTime.GetFacilityNow(),
                 Status = "Final",
                 ApprovedBy = latestResult?.AuthorizedBy
             };

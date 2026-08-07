@@ -4,6 +4,7 @@ using LIS.DtoModel.Interfaces;
 using LIS.DtoModel.Models;
 using LIS.DtoModel.Models.TestResultEdit;
 using LIS.Logger;
+using LIS.BusinessLogic.Helper;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -377,7 +378,7 @@ namespace LIS.BusinessLogic
             var existingDetails = detailRepo.Get(d => d.TestResultId == result.Id).ToList();
             var detailsById = existingDetails.ToDictionary(d => d.Id, d => d);
             var auditLog = new StringBuilder();
-            var now = DateTime.Now;
+            var now = OperationalDateTime.GetFacilityNow();
             var editor = identity?.ActivityMember ?? "system";
             var changed = false;
 
@@ -578,7 +579,8 @@ namespace LIS.BusinessLogic
 
             var testCode = testRequest.HISTestCode;
             var lisTestCode = ResolveListTestCode(testCode);
-            var now = DateTime.Now;
+            var facilityNow = OperationalDateTime.GetFacilityNow();
+            var auditNow = DateTime.Now;
             var editor = identity?.ActivityMember ?? "system";
 
             long resultId;
@@ -606,9 +608,9 @@ namespace LIS.BusinessLogic
                     SampleReceivedDate = testRequest.SampleReceivedDate,
                     TestRequestId = testRequest.Id,
                     EquipmentId = equipment?.Id,
-                    ResultDate = now,
+                    ResultDate = facilityNow,
                     CreatedBy = editor,
-                    CreatedOn = now
+                    CreatedOn = auditNow
                 };
                 resultId = resultRepo.Add(testResult);
             }
@@ -630,7 +632,7 @@ namespace LIS.BusinessLogic
                     ParamUnit = paramMaster?.HISParamUnit,
                     TestResultId = resultId,
                     CreatedBy = editor,
-                    CreatedOn = now
+                    CreatedOn = auditNow
                 });
             }
 

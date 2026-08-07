@@ -13,6 +13,7 @@ using System.Web.Http;
 
 namespace Lis.Api.Controllers.Api
 {
+    [Authorize]
     [RoutePrefix("api/Specimens")]
     public class SpecimensController : ApiController
     {
@@ -196,7 +197,6 @@ namespace Lis.Api.Controllers.Api
             }
         }
 
-        [AllowAnonymous]
         [HttpGet]
         [Route("GetById/{id:int}")]
         public HISSpecimenMaster GetById(int Id)
@@ -221,7 +221,6 @@ namespace Lis.Api.Controllers.Api
             }
         }
 
-        [AllowAnonymous]
         [HttpGet]
         [ActionName("GetByString")]
         public HISSpecimenMaster Get(string Code)

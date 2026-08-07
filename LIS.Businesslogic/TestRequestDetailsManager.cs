@@ -1,4 +1,5 @@
 using LIS.BusinessLogic;
+using LIS.BusinessLogic.Helper;
 using LIS.DataAccess.Repo;
 using LIS.DtoModel;
 using LIS.DtoModel.Interfaces;
@@ -150,7 +151,7 @@ namespace LIS.Businesslogic
         {
             if (testResultList != null)
             {
-                var reviewDate = DateTime.Now;
+                var reviewDate = OperationalDateTime.GetFacilityNow();
                 foreach (var testResult in testResultList)
                 {
                     if (reportStatusType == ReportStatusType.TechnicianApproved
@@ -158,14 +159,14 @@ namespace LIS.Businesslogic
                     {
                         testResult.ReviewedBy = identity.ActivityMember;
                         testResult.ReviewDate = reviewDate;
-                        testResult.TechnicianNote = $"{testResult.TechnicianNote}[{DateTime.Now.ToString("dd/MM/yyyy hh:mm:ss")}] {this.identity.ActivityMember} : {note}<br>";
+                        testResult.TechnicianNote = $"{testResult.TechnicianNote}[{reviewDate.ToString("dd/MM/yyyy hh:mm:ss")}] {this.identity.ActivityMember} : {note}<br>";
                     }
                     else if (reportStatusType == ReportStatusType.DoctorApproved
                         || reportStatusType == ReportStatusType.DoctorRejected)
                     {
                         testResult.AuthorizedBy = identity.ActivityMember;
                         testResult.AuthorizationDate = reviewDate;
-                        var doctorEntry = $"[{DateTime.Now:dd/MM/yyyy HH:mm:ss}] {identity.ActivityMember} : {note}<br>";
+                        var doctorEntry = $"[{reviewDate:dd/MM/yyyy HH:mm:ss}] {identity.ActivityMember} : {note}<br>";
                         testResult.DoctorNote = (testResult.DoctorNote ?? string.Empty) + doctorEntry;
                     }
                     resultRepo.Update(testResult);

@@ -24,7 +24,7 @@ namespace Lis.Api.Controllers.Api
             logger = Logger;
         }
 
-        [AllowAnonymous]
+        [Authorize]
         [HttpGet]
         public IEnumerable<HisTestMaster> Get()
         {
@@ -40,7 +40,7 @@ namespace Lis.Api.Controllers.Api
             }
         }
 
-        [AllowAnonymous]
+        [Authorize]
         [HttpGet]
         public IEnumerable<HISParameterRangMaster> Get(int Id)
         {

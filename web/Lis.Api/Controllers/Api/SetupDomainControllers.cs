@@ -505,7 +505,7 @@ namespace Lis.Api.Controllers.Api
         }
 
         [HttpGet]
-        [AllowAnonymous]
+        [Authorize]
         [Route("")]
         public IEnumerable<EquipmentMaster> Get()
         {

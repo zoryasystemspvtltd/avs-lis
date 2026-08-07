@@ -142,7 +142,13 @@ foreach ($f in $ForbiddenTech) {
 }
 
 # Workflow: collection queue (QA pending sample)
+# Reset to pending so prior cert runs do not leave CollectedBy set (duplicate collection = 400).
+# Lookup by SampleNo only — HISRequestNo can match sibling QA rows.
 try {
+    $pendId = SqlScalar "SELECT CAST(Id AS varchar(20)) FROM TestRequestDetails WHERE SampleNo = N'QA-CERT-SMP-PEND'"
+    if ([string]::IsNullOrWhiteSpace($pendId)) { throw "QA-CERT-SMP-PEND not found - run seed (-EnsureQaSeed)" }
+    sqlcmd -S ".\SQLEXPRESS" -d ZoryaLMS -Q "UPDATE TestRequestDetails SET CollectedBy=NULL, ReceivedBy=NULL, CollectedRemarks=NULL, ReceivedRemarks=NULL, ReportStatus=0 WHERE Id=$pendId" -b | Out-Null
+
     $opt = '{"RecordPerPage":50,"CurrentPage":1,"OrderNumber":"QA-CERT-INV-PEND"}'
     $q = Invoke-RestMethod -Uri "$BaseApi/api/SampleCollection/PendingQueue" -Headers (Hdr $techToken $opt)
     $found = @(Get-Items $q | Where-Object {
@@ -157,8 +163,9 @@ try {
 
 # Collect pending sample
 try {
-    $pendId = SqlScalar "SELECT CAST(Id AS varchar(20)) FROM TestRequestDetails WHERE SampleNo = N'QA-CERT-SMP-PEND' OR HISRequestNo = N'QA-CERT-INV-PEND'"
+    $pendId = SqlScalar "SELECT CAST(Id AS varchar(20)) FROM TestRequestDetails WHERE SampleNo = N'QA-CERT-SMP-PEND'"
     if ([string]::IsNullOrWhiteSpace($pendId)) { throw "QA-CERT-SMP-PEND not found" }
+    sqlcmd -S ".\SQLEXPRESS" -d ZoryaLMS -Q "UPDATE TestRequestDetails SET CollectedBy=NULL, ReceivedBy=NULL, CollectedRemarks=NULL, ReceivedRemarks=NULL, ReportStatus=0 WHERE Id=$pendId" -b | Out-Null
     $barcode = (Invoke-RestMethod -Uri "$BaseApi/api/SampleCollection/EnsureBarcode/$pendId" -Headers (Hdr $techToken)).barcode
     $body = @{
         testRequestId = [long]$pendId
@@ -178,7 +185,7 @@ try {
 try {
     $recvOpt = '{"RecordPerPage":25,"CurrentPage":1}'
     $rq = Invoke-RestMethod -Uri "$BaseApi/api/SampleReceiving/Queue" -Headers (Hdr $techToken $recvOpt)
-    $collId = SqlScalar "SELECT CAST(Id AS varchar(20)) FROM TestRequestDetails WHERE SampleNo = N'QA-CERT-SMP-COLL' OR HISRequestNo = N'QA-CERT-INV-COLL'"
+    $collId = SqlScalar "SELECT CAST(Id AS varchar(20)) FROM TestRequestDetails WHERE SampleNo = N'QA-CERT-SMP-COLL'"
     if ([string]::IsNullOrWhiteSpace($collId)) { throw "QA-CERT-SMP-COLL not found" }
     sqlcmd -S ".\SQLEXPRESS" -d ZoryaLMS -Q "UPDATE TestRequestDetails SET CollectedBy=N'$TechUser', ReceivedBy=NULL, ReceivedRemarks=NULL, ReportStatus=0 WHERE Id=$collId" -b | Out-Null
     $recvBody = @{
@@ -196,7 +203,7 @@ try {
 
 # Reject at receiving -> returns to collection
 try {
-    $rejId = SqlScalar "SELECT CAST(Id AS varchar(20)) FROM TestRequestDetails WHERE SampleNo = N'QA-CERT-SMP-RECV' OR HISRequestNo = N'QA-CERT-INV-RECV'"
+    $rejId = SqlScalar "SELECT CAST(Id AS varchar(20)) FROM TestRequestDetails WHERE SampleNo = N'QA-CERT-SMP-RECV'"
     if ([string]::IsNullOrWhiteSpace($rejId)) { throw "QA-CERT-SMP-RECV not found - run seed" }
     # Reset to collected-only for reject test
     sqlcmd -S ".\SQLEXPRESS" -d ZoryaLMS -Q "UPDATE TestRequestDetails SET CollectedBy=N'$TechUser', ReceivedBy=NULL, ReceivedRemarks=NULL, ReportStatus=0 WHERE Id=$rejId" -b | Out-Null

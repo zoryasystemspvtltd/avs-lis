@@ -124,6 +124,17 @@ export class SampleReceivingComponent implements OnInit {
   }
 
   submitReceive(): void {
+    if (!this.receiveDateTime) {
+      this.alertService.error('Receiving date and time are mandatory.');
+      return;
+    }
+
+    const receivedDateTime = this.toFacilityWallClockPayload(this.receiveDateTime);
+    if (!receivedDateTime) {
+      this.alertService.error('Receiving date and time are mandatory.');
+      return;
+    }
+
     const targets = this.bulkReceiveMode ? this.selectedRows : (this.selectedRow ? [this.selectedRow] : []);
     if (!targets.length) {
       this.alertService.error('No sample selected.');
@@ -132,7 +143,7 @@ export class SampleReceivingComponent implements OnInit {
 
     const requests = targets.map(row => this.workflowService.receiveSample({
       testRequestId: row.id,
-      receivedDateTime: this.receiveDateTime,
+      receivedDateTime,
       remarks: this.receiveRemarks,
       barcodeNumber: row.sampleNo
     }));
@@ -147,6 +158,24 @@ export class SampleReceivingComponent implements OnInit {
       },
       err => this.alertService.error(extractApiError(err))
     );
+  }
+
+  /**
+   * datetime-local values are facility wall-clock strings (no Z / offset).
+   * Normalize to yyyy-MM-ddTHH:mm:ss without timezone so ASP.NET binds Kind=Unspecified.
+   */
+  private toFacilityWallClockPayload(value: string): string {
+    if (!value) {
+      return '';
+    }
+    const trimmed = value.trim();
+    if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(trimmed)) {
+      return `${trimmed}:00`;
+    }
+    if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(trimmed)) {
+      return trimmed.substring(0, 19);
+    }
+    return trimmed;
   }
 
   openReject(row: any): void {

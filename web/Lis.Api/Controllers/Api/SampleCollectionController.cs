@@ -50,10 +50,20 @@ namespace Lis.Api.Controllers.Api
             {
                 return manager.GetPendingQueue(SearchOptions);
             }
+            catch (ArgumentException ex)
+            {
+                logger.LogError(ex.Message);
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ex.Message));
+            }
+            catch (InvalidOperationException ex)
+            {
+                logger.LogError(ex.Message);
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ex.Message));
+            }
             catch (Exception ex)
             {
                 logger.LogException(ex);
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ex.Message));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message));
             }
         }
 
@@ -66,10 +76,20 @@ namespace Lis.Api.Controllers.Api
             {
                 return manager.GetByBarcode(barcode);
             }
+            catch (ArgumentException ex)
+            {
+                logger.LogError(ex.Message);
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ex.Message));
+            }
+            catch (InvalidOperationException ex)
+            {
+                logger.LogError(ex.Message);
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ex.Message));
+            }
             catch (Exception ex)
             {
                 logger.LogException(ex);
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ex.Message));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message));
             }
         }
 
@@ -83,10 +103,20 @@ namespace Lis.Api.Controllers.Api
                 manager.CollectSample(action);
                 return Ok(new { message = "Sample collected successfully." });
             }
+            catch (ArgumentException ex)
+            {
+                logger.LogError(ex.Message);
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ex.Message));
+            }
+            catch (InvalidOperationException ex)
+            {
+                logger.LogError(ex.Message);
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ex.Message));
+            }
             catch (Exception ex)
             {
                 logger.LogException(ex);
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ex.Message));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message));
             }
         }
 
@@ -101,10 +131,20 @@ namespace Lis.Api.Controllers.Api
                 manager.RejectCollection(action);
                 return Ok(new { message = "Sample rejected successfully." });
             }
+            catch (ArgumentException ex)
+            {
+                logger.LogError(ex.Message);
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ex.Message));
+            }
+            catch (InvalidOperationException ex)
+            {
+                logger.LogError(ex.Message);
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ex.Message));
+            }
             catch (Exception ex)
             {
                 logger.LogException(ex);
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ex.Message));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message));
             }
         }
 
@@ -118,10 +158,20 @@ namespace Lis.Api.Controllers.Api
                 manager.TriggerRecollection(id);
                 return Ok(new { message = "Recollection initiated successfully." });
             }
+            catch (ArgumentException ex)
+            {
+                logger.LogError(ex.Message);
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ex.Message));
+            }
+            catch (InvalidOperationException ex)
+            {
+                logger.LogError(ex.Message);
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ex.Message));
+            }
             catch (Exception ex)
             {
                 logger.LogException(ex);
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ex.Message));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message));
             }
         }
 
@@ -134,10 +184,20 @@ namespace Lis.Api.Controllers.Api
             {
                 return Ok(new { barcode = manager.EnsureBarcode(id) });
             }
+            catch (ArgumentException ex)
+            {
+                logger.LogError(ex.Message);
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ex.Message));
+            }
+            catch (InvalidOperationException ex)
+            {
+                logger.LogError(ex.Message);
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ex.Message));
+            }
             catch (Exception ex)
             {
                 logger.LogException(ex);
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ex.Message));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message));
             }
         }
     }

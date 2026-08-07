@@ -52,7 +52,7 @@ namespace Lis.Api.Controllers.Api
             }
         }
 
-        [AllowAnonymous]
+        [Authorize]
         [HttpGet]
         [Route("")]
         public ItemList<dynamic> GetList()
@@ -67,7 +67,7 @@ namespace Lis.Api.Controllers.Api
             }
         }
 
-        [AllowAnonymous]
+        [Authorize]
         [HttpGet]
         [Route("{id}")]
         public dynamic GetById(string id)
@@ -75,7 +75,7 @@ namespace Lis.Api.Controllers.Api
             return manager.Get(id);
         }
 
-        [AllowAnonymous]
+        [Authorize]
         [HttpGet]
         [Route("Monthwise")]
         public List<ControlResultDetails> GetMonthwise(string paramCode)

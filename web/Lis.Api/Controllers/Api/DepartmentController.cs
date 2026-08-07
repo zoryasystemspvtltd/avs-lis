@@ -13,6 +13,7 @@ using System.Web.Http;
 
 namespace Lis.Api.Controllers.Api
 {
+    [Authorize]
     [RoutePrefix("api/Department")]
     public class DepartmentController : ApiController
     {
