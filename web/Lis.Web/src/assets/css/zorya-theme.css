@@ -773,9 +773,9 @@ a:focus {
 .container-main.qcontent app-master-form,
 .container-main.qcontent app-test-profile-form {
   display: block;
-  max-width: var(--zorya-form-max);
+  max-width: 100%;
   margin: 0 auto;
-  width: 100%;
+  width: auto;
   float: none;
 }
 
@@ -861,7 +861,8 @@ a:focus {
 }
 
 .sale-invoice-page.avilis-form-page {
-  max-width: 960px;
+  max-width: calc(100% - 40px);
+  width: auto;
 }
 
 /* ng-select */
