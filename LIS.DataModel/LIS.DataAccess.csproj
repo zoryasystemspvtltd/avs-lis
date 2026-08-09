@@ -136,6 +136,10 @@
     <Compile Include="Migrations\202607190636000_TestParameterMappingSequence.Designer.cs">
       <DependentUpon>202607190636000_TestParameterMappingSequence.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202608090931082_notification.cs" />
+    <Compile Include="Migrations\202608090931082_notification.Designer.cs">
+      <DependentUpon>202608090931082_notification.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repo\IGenericRepository.cs" />
@@ -217,6 +221,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202607190636000_TestParameterMappingSequence.resx">
       <DependentUpon>202607190636000_TestParameterMappingSequence.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202608090931082_notification.resx">
+      <DependentUpon>202608090931082_notification.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
