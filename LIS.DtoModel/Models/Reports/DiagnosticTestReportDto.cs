@@ -47,7 +47,11 @@ namespace LIS.DtoModel.Models
         public string ApprovedByQualification { get; set; }
         public string ApprovedByDesignation { get; set; }
         public string ApprovedBySignatureImage { get; set; }
-        /// <summary>Doctor approval note(s) entered during doctor authorization.</summary>
+        /// <summary>
+        /// Deprecated for print: doctor notes are now emitted per test section
+        /// (<see cref="DiagnosticTestReportSection.DoctorApprovalComment"/>).
+        /// Kept for API backward compatibility; always null on new reports.
+        /// </summary>
         public string DoctorApprovalComment { get; set; }
 
         // Laboratory branding / footer (from configurable app settings + client application)
@@ -72,6 +76,8 @@ namespace LIS.DtoModel.Models
         public string Department { get; set; }
         /// <summary>Aggregated Comment/Note from Parameter Master (HTML/text).</summary>
         public string Comment { get; set; }
+        /// <summary>Doctor authorization note for this test/specimen only (when present).</summary>
+        public string DoctorApprovalComment { get; set; }
         public List<DiagnosticTestReportParameter> Parameters { get; set; }
     }
 

@@ -3,8 +3,7 @@
   --diag-brand: #1a7f8c;
   --diag-header-total: 5cm;
   --diag-footer-height: 5cm;
-  --diag-doctor-gap: 1cm;
-  --diag-doctor-block-height: 28mm;
+  --diag-doctor-gap: 8mm;
   --diag-side-margin: 12mm;
   --diag-border: #333;
 }
@@ -48,7 +47,7 @@
 
 /* Patient info panel */
 .test-report-page .report-patient-panel {
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
 
 .test-report-page .patient-info-table {
@@ -56,12 +55,15 @@
   border-collapse: collapse;
   border: 1.5px solid var(--diag-border);
   font-size: 11px;
+  table-layout: fixed;
 }
 
 .test-report-page .patient-info-table td {
   border: 1px solid #bbb;
-  padding: 4px 8px;
+  padding: 5px 8px;
   vertical-align: middle;
+  line-height: 1.35;
+  height: 26px;
 }
 
 .test-report-page .pi-label {
@@ -69,10 +71,13 @@
   font-weight: 700;
   background: #f3f7f8;
   color: #222;
+  white-space: nowrap;
 }
 
 .test-report-page .pi-value {
   width: 34%;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .test-report-page .pi-strong {
@@ -81,12 +86,12 @@
 }
 
 .test-report-page .report-department-header {
-  margin: 16px 0 8px;
-  padding: 6px 8px;
+  margin: 14px 0 6px;
+  padding: 7px 8px;
   text-align: center;
   font-size: 13px;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: #111;
   border-top: 2px solid var(--diag-brand);
@@ -95,7 +100,7 @@
 }
 
 .test-report-page .report-profile-header {
-  margin: 14px 0 6px;
+  margin: 12px 0 6px;
   padding: 6px 8px;
   text-align: center;
   font-size: 13px;
@@ -109,26 +114,27 @@
 .test-report-page .test-block-header {
   background: transparent;
   border: none;
-  border-bottom: 1px solid #999;
-  padding: 8px 0 3px;
-  margin: 12px 0 4px;
+  border-bottom: 1.5px solid #555;
+  padding: 10px 0 4px;
+  margin: 10px 0 6px;
   font-size: 13px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.03em;
   color: #111;
 }
 
 .test-report-page .report-test-block {
   page-break-inside: avoid;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .test-report-page .report-results-table {
   width: 100%;
   border-collapse: collapse;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
   font-size: 11px;
+  table-layout: fixed;
 }
 
 .test-report-page .report-results-table th {
@@ -139,18 +145,21 @@
   padding: 5px 6px;
   font-size: 10px;
   text-transform: uppercase;
+  line-height: 1.3;
 }
 
 .test-report-page .report-results-table td {
   border: 1px solid #999;
   padding: 4px 6px;
   vertical-align: middle;
+  line-height: 1.35;
+  height: 24px;
 }
 
-.test-report-page .col-param { width: 42%; text-align: left; }
-.test-report-page .col-result { width: 18%; }
-.test-report-page .col-unit { width: 15%; }
-.test-report-page .col-ref { width: 25%; }
+.test-report-page .col-param { width: 40%; text-align: left; }
+.test-report-page .col-result { width: 16%; }
+.test-report-page .col-unit { width: 14%; }
+.test-report-page .col-ref { width: 30%; word-wrap: break-word; }
 
 .test-report-page .param-section-heading {
   font-weight: 700;
@@ -192,27 +201,25 @@
   color: #222;
 }
 
-.test-report-page .report-doctor-approval-comment {
-  margin: 16px 0 12px;
-  padding: 8px 0;
-  border-top: 1px solid #999;
-  font-size: 11px;
+.test-report-page .doctor-approval-comment {
   page-break-inside: avoid;
 }
 
-/* Doctor signature — screen preview */
+/* Doctor signature — screen preview (in-flow, right-aligned; image above name) */
 .test-report-page .report-doctor-signature-zone {
-  text-align: left;
-  margin: 24px 0 16px;
-  max-width: 55%;
-  padding: 8px 0;
+  text-align: right;
+  margin: 18px 0 8px;
+  margin-left: auto;
+  max-width: 48%;
+  padding: 6px 0;
+  page-break-inside: avoid;
 }
 
 .test-report-page .report-signature-img {
-  max-height: 48px;
+  max-height: 52px;
   max-width: 180px;
   display: block;
-  margin: 0 0 4px;
+  margin: 0 0 4px auto;
 }
 
 .test-report-page .report-footer-doctor-name {
@@ -220,22 +227,23 @@
   font-weight: 700;
   font-size: 12px;
   text-transform: uppercase;
-  margin-top: 4px;
+  margin-top: 2px;
 }
 
 .test-report-page .report-footer-doctor-qualification,
 .test-report-page .report-footer-doctor-designation {
   display: block;
   white-space: pre-wrap;
-  margin-top: 2px;
-  line-height: 1.35;
+  margin-top: 1px;
+  line-height: 1.3;
   font-size: 10px;
   text-transform: uppercase;
 }
 
 .test-report-page .report-footer-sign-line {
   display: block;
-  margin-top: 8px;
+  margin: 8px 0 0 auto;
+  text-align: right;
 }
 
 /* ===== Print / iframe document ===== */
@@ -246,30 +254,24 @@ body.test-report-print-mode .diagnostic-report {
   color: #111;
 }
 
+/*
+  Print letterhead bands come from @page margins only.
+  Fixed 5cm header/footer must NOT also be painted — Chromium places them in the
+  content box and doubles the blank space (layout looks totally wrong).
+*/
 .diagnostic-report-print-doc .report-print-header,
-body.test-report-print-mode .report-print-header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: var(--diag-header-total);
-  z-index: 1000;
-  background: #fff;
-  border: none;
-  margin: 0;
-  padding: 0;
-}
-
+.diagnostic-report-print-doc .report-print-footer-zone,
 .diagnostic-report-print-doc .letterhead-screen-hint,
+body.test-report-print-mode .report-print-header,
+body.test-report-print-mode .report-print-footer-zone,
 body.test-report-print-mode .letterhead-screen-hint {
-  display: none;
+  display: none !important;
 }
 
 .diagnostic-report-print-doc .report-print-body,
 body.test-report-print-mode .report-print-body {
-  padding: calc(var(--diag-header-total) + 2mm) var(--diag-side-margin)
-    calc(var(--diag-footer-height) + var(--diag-doctor-gap) + var(--diag-doctor-block-height) + 2mm)
-    var(--diag-side-margin);
+  padding: 0;
+  margin: 0;
 }
 
 .diagnostic-report-print-doc .patient-info-table,
@@ -277,13 +279,17 @@ body.test-report-print-mode .patient-info-table {
   width: 100%;
   border-collapse: collapse;
   border: 1.2pt solid #333;
-  margin-bottom: 3mm;
+  margin-bottom: 2.5mm;
+  table-layout: fixed;
+  page-break-inside: avoid;
+  break-inside: avoid;
 }
 
 .diagnostic-report-print-doc .patient-info-table td,
 body.test-report-print-mode .patient-info-table td {
   border: 0.6pt solid #999;
-  padding: 1.2mm 2mm;
+  padding: 1.4mm 2mm;
+  line-height: 1.3;
 }
 
 .diagnostic-report-print-doc .pi-label,
@@ -292,16 +298,17 @@ body.test-report-print-mode .pi-label {
   background: #f3f7f8;
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
+  white-space: nowrap;
 }
 
 .diagnostic-report-print-doc .report-department-header,
 body.test-report-print-mode .report-department-header {
-  margin: 4mm 0 2mm;
-  padding: 1.5mm 2mm;
+  margin: 3.5mm 0 1.5mm;
+  padding: 1.8mm 2mm;
   text-align: center;
   font-size: 11pt;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   border-top: 1.5pt solid #1a7f8c;
   border-bottom: 1.5pt solid #1a7f8c;
@@ -309,26 +316,42 @@ body.test-report-print-mode .report-department-header {
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
   page-break-after: avoid;
+  break-after: avoid-page;
+  page-break-inside: avoid;
 }
 
 .diagnostic-report-print-doc .test-block-header,
 body.test-report-print-mode .test-block-header {
   background: transparent;
   border: none;
-  border-bottom: 0.8pt solid #666;
-  padding: 2mm 0 1mm;
-  margin: 3mm 0 1mm;
+  border-bottom: 1pt solid #555;
+  padding: 2.2mm 0 1mm;
+  margin: 2.5mm 0 1.2mm;
   font-size: 11pt;
   font-weight: 700;
   text-transform: uppercase;
   page-break-after: avoid;
+  break-after: avoid-page;
+  page-break-inside: avoid;
 }
 
 .diagnostic-report-print-doc .report-results-table,
 body.test-report-print-mode .report-results-table {
   width: 100%;
   border-collapse: collapse;
-  margin-bottom: 2mm;
+  margin-bottom: 1.5mm;
+  table-layout: fixed;
+}
+
+.diagnostic-report-print-doc .report-results-table thead,
+body.test-report-print-mode .report-results-table thead {
+  display: table-header-group;
+}
+
+.diagnostic-report-print-doc .report-results-table tr,
+body.test-report-print-mode .report-results-table tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
 }
 
 .diagnostic-report-print-doc .report-results-table th,
@@ -347,7 +370,8 @@ body.test-report-print-mode .report-results-table th {
 .diagnostic-report-print-doc .report-results-table td,
 body.test-report-print-mode .report-results-table td {
   border: 0.6pt solid #888;
-  padding: 1mm 1.5mm;
+  padding: 1.1mm 1.5mm;
+  line-height: 1.3;
 }
 
 .diagnostic-report-print-doc .param-section-heading,
@@ -361,7 +385,15 @@ body.test-report-print-mode .param-section-heading {
 
 .diagnostic-report-print-doc .report-test-block,
 body.test-report-print-mode .report-test-block {
-  page-break-inside: avoid;
+  /* Tall tests may span pages; headers/rows still avoid mid-row splits */
+  page-break-inside: auto;
+  break-inside: auto;
+}
+
+.diagnostic-report-print-doc .report-department-group,
+body.test-report-print-mode .report-department-group {
+  page-break-inside: auto;
+  break-inside: auto;
 }
 
 .diagnostic-report-print-doc .test-comment-block,
@@ -375,34 +407,27 @@ body.test-report-print-mode .test-comment-label {
   font-weight: 700;
 }
 
-.diagnostic-report-print-doc .report-doctor-approval-comment,
-body.test-report-print-mode .report-doctor-approval-comment {
-  margin: 4mm 0 3mm;
-  padding-top: 2mm;
-  border-top: 0.8pt solid #666;
-  font-size: 9pt;
+.diagnostic-report-print-doc .doctor-approval-comment,
+body.test-report-print-mode .doctor-approval-comment {
   page-break-inside: avoid;
 }
 
-/* Doctor block: bottom edge sits 1 cm above the blank 5 cm footer */
+/* Doctor block: in-flow on last content page (not fixed — fixed+large padding caused blank last page) */
 .diagnostic-report-print-doc .report-doctor-signature-zone,
 body.test-report-print-mode .report-doctor-signature-zone {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: calc(var(--diag-footer-height) + var(--diag-doctor-gap));
-  height: var(--diag-doctor-block-height);
-  z-index: 1001;
-  box-sizing: border-box;
-  padding: 0 var(--diag-side-margin);
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: flex-end;
-  text-align: left;
+  position: static;
+  display: block;
+  width: 48%;
+  max-width: 90mm;
+  margin: var(--diag-doctor-gap) 0 2mm auto;
+  padding: 0;
+  text-align: right;
   background: transparent;
   font-size: 8pt;
   line-height: 1.25;
+  page-break-inside: avoid;
+  break-inside: avoid;
+  page-break-before: auto;
 }
 
 .diagnostic-report-print-doc .report-signature-img,
@@ -410,7 +435,7 @@ body.test-report-print-mode .report-signature-img {
   max-height: 14mm;
   max-width: 50mm;
   display: block;
-  margin: 0 0 1mm;
+  margin: 0 0 1mm auto;
 }
 
 .diagnostic-report-print-doc .report-footer-doctor-name,
@@ -431,21 +456,6 @@ body.test-report-print-mode .report-footer-doctor-designation {
   font-size: 7.5pt;
 }
 
-/* Blank footer band */
-.diagnostic-report-print-doc .report-print-footer-zone,
-body.test-report-print-mode .report-print-footer-zone {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: var(--diag-footer-height);
-  z-index: 1000;
-  background: #fff;
-  border: none;
-  margin: 0;
-  padding: 0;
-}
-
 .diagnostic-report-print-doc .abnormal-value,
 body.test-report-print-mode .abnormal-value {
   font-weight: 700;
@@ -454,7 +464,11 @@ body.test-report-print-mode .abnormal-value {
 @media print {
   @page {
     size: A4 portrait;
-    margin: 0;
+    /* Every-page letterhead clearance (replaces fixed header/footer overlays). */
+    margin-top: 5cm;
+    margin-bottom: 5cm;
+    margin-left: 12mm;
+    margin-right: 12mm;
   }
 
   body.test-report-print-mode app-header,

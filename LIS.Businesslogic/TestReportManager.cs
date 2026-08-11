@@ -6,7 +6,6 @@ using LIS.Logger;
 using LIS.BusinessLogic.Helper;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 
 namespace LIS.BusinessLogic
@@ -112,7 +111,8 @@ namespace LIS.BusinessLogic
                 throw new TestReportValidationException("Test results are not available for printing.");
             }
 
-            header.DoctorApprovalComment = BuildDoctorApprovalComment(requests);
+            // Doctor notes are attached per test section (specimen/request), not aggregated on the header.
+            header.DoctorApprovalComment = null;
 
             var grouped = BuildProfileGroupedSections(invoice, requests, sectionByRequestId);
             var departmentGroups = BuildDepartmentGroups(invoice, requests, sectionByRequestId);
@@ -484,6 +484,7 @@ namespace LIS.BusinessLogic
             var parameters = values.Select(v => MapParameter(v, request.HISTestCode, patient)).Where(p => p != null).ToList();
             ApplyParameterSectionNames(parameters);
             var comment = BuildTestComment(request.HISTestCode, parameters);
+            var doctorNote = StripHtmlToPlain(review.Test?.DoctorNote);
 
             return new DiagnosticTestReportSection
             {
@@ -493,6 +494,7 @@ namespace LIS.BusinessLogic
                 SampleNo = request.SampleNo,
                 Department = department,
                 Comment = comment,
+                DoctorApprovalComment = string.IsNullOrWhiteSpace(doctorNote) ? null : doctorNote.Trim(),
                 Parameters = parameters
             };
         }
@@ -639,44 +641,6 @@ namespace LIS.BusinessLogic
                 ?? candidates.FirstOrDefault();
         }
 
-        /// <summary>
-        /// Collects distinct doctor approval notes from authorized TestResult rows for this invoice.
-        /// </summary>
-        private string BuildDoctorApprovalComment(List<TestRequestDetail> requests)
-        {
-            if (requests == null || !requests.Any())
-            {
-                return null;
-            }
-
-            var notes = new List<string>();
-            foreach (var request in requests.OrderBy(r => r.Id))
-            {
-                var result = resultRepo.Get(r => r.TestRequestId == request.Id)
-                    .OrderByDescending(r => r.Id)
-                    .FirstOrDefault();
-
-                if (result == null || string.IsNullOrWhiteSpace(result.DoctorNote))
-                {
-                    continue;
-                }
-
-                var text = StripHtmlToPlain(result.DoctorNote);
-                if (string.IsNullOrWhiteSpace(text))
-                {
-                    continue;
-                }
-
-                text = text.Trim();
-                if (!notes.Any(n => n.Equals(text, StringComparison.OrdinalIgnoreCase)))
-                {
-                    notes.Add(text);
-                }
-            }
-
-            return notes.Any() ? string.Join(Environment.NewLine + Environment.NewLine, notes) : null;
-        }
-
         private static string StripHtmlToPlain(string html)
         {
             if (string.IsNullOrWhiteSpace(html))
@@ -767,107 +731,32 @@ namespace LIS.BusinessLogic
                 value.HISParamCode ?? row.ParameterCode,
                 value.LISParamCode);
 
-            ApplyReferenceRange(row, paramMaster, patient, value);
+            ApplyReferenceRange(row, paramMaster, patient);
 
             return row;
         }
 
-        private void ApplyReferenceRange(DiagnosticTestReportParameter row, HISParameterMaster paramMaster, PatientDetail patient, TestValues source)
+        private void ApplyReferenceRange(DiagnosticTestReportParameter row, HISParameterMaster paramMaster, PatientDetail patient)
         {
-            HISParameterRangMaster matchedRange = null;
+            // Use shared evaluator (treats Gender "Both" as applicable to all patients).
+            // Do NOT fall back to TestValues.HISRangeValues — those are verbose catalog lines
+            // like "Both 18.00 - 100.00 Year : ( 35.00 - 45.00 )" and must not print.
+            var ranges = paramMaster == null
+                ? Enumerable.Empty<HISParameterRangMaster>()
+                : rangeRepo.Get(r => r.HisParameterId == paramMaster.Id).ToList();
 
-            if (paramMaster != null)
-            {
-                var ranges = rangeRepo.Get(r => r.HisParameterId == paramMaster.Id).ToList();
-                matchedRange = ranges
-                    .Where(r => MatchesPatientRange(r, patient))
-                    .OrderByDescending(r => r.MinValue > 0 || r.MaxValue > 0)
-                    .ThenBy(r => r.Id)
-                    .FirstOrDefault();
-            }
+            TestResultRangeEvaluator.Apply(
+                row.ResultValue,
+                paramMaster,
+                patient,
+                ranges,
+                out var referenceRange,
+                out var flag,
+                out var isAbnormal);
 
-            if (matchedRange == null && source.HISRangeValues != null && source.HISRangeValues.Length > 0)
-            {
-                row.ReferenceRange = string.Join("; ", source.HISRangeValues.Where(v => !string.IsNullOrWhiteSpace(v)));
-            }
-            else if (matchedRange != null)
-            {
-                // Prefer Parameter Range Master "Range Value"; fall back to numeric min/max.
-                if (!string.IsNullOrWhiteSpace(matchedRange.HISRangeValue))
-                {
-                    row.ReferenceRange = matchedRange.HISRangeValue.Trim();
-                }
-                else if (matchedRange.MinValue > 0 || matchedRange.MaxValue > 0)
-                {
-                    row.ReferenceRange = $"{FormatDecimal(matchedRange.MinValue)} - {FormatDecimal(matchedRange.MaxValue)}";
-                }
-            }
-
-            if (matchedRange != null && TryParseResult(row.ResultValue, out var numeric))
-            {
-                if (matchedRange.MinValue > 0 && numeric < matchedRange.MinValue)
-                {
-                    row.Flag = "L";
-                    row.IsAbnormal = true;
-                }
-                else if (matchedRange.MaxValue > 0 && numeric > matchedRange.MaxValue)
-                {
-                    row.Flag = "H";
-                    row.IsAbnormal = true;
-                }
-            }
-        }
-
-        private static bool MatchesPatientRange(HISParameterRangMaster range, PatientDetail patient)
-        {
-            if (range == null || patient == null)
-            {
-                return true;
-            }
-
-            if (!string.IsNullOrWhiteSpace(range.Gender) &&
-                !string.IsNullOrWhiteSpace(patient.Gender) &&
-                !GenderMatches(range.Gender, patient.Gender))
-            {
-                return false;
-            }
-
-            if (range.AgeFrom > 0 || range.AgeTo > 0)
-            {
-                var age = patient.Age;
-                if (age < range.AgeFrom || (range.AgeTo > 0 && age > range.AgeTo))
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        private static bool GenderMatches(string rangeGender, string patientGender)
-        {
-            var rg = rangeGender.Trim().ToUpperInvariant();
-            var pg = patientGender.Trim().ToUpperInvariant();
-            if (rg.StartsWith("M") && pg.StartsWith("M")) return true;
-            if (rg.StartsWith("F") && pg.StartsWith("F")) return true;
-            return rg == pg;
-        }
-
-        private static bool TryParseResult(string value, out decimal numeric)
-        {
-            numeric = 0;
-            if (string.IsNullOrWhiteSpace(value))
-            {
-                return false;
-            }
-
-            var cleaned = value.Trim().Replace(",", "");
-            return decimal.TryParse(cleaned, NumberStyles.Any, CultureInfo.InvariantCulture, out numeric);
-        }
-
-        private static string FormatDecimal(decimal value)
-        {
-            return value % 1 == 0 ? value.ToString("0", CultureInfo.InvariantCulture) : value.ToString("0.##", CultureInfo.InvariantCulture);
+            row.ReferenceRange = referenceRange;
+            row.Flag = flag;
+            row.IsAbnormal = isAbnormal;
         }
 
         public IEnumerable<TestReportLabNoOption> GetPrintableLabNumbers()

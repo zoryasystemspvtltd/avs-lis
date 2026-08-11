@@ -57,9 +57,7 @@
   <div id="diagnostic-test-report-print" class="diagnostic-report" *ngIf="report && !loading">
 
     <!-- Blank 5 cm header band (pre-printed letterhead) -->
-    <header class="report-print-header" aria-hidden="true">
-      <span class="letterhead-screen-hint">Header (5 cm) — blank for letterhead</span>
-    </header>
+    <header class="report-print-header" aria-hidden="true"></header>
 
     <div class="report-print-body">
 
@@ -168,45 +166,41 @@
             <div class="test-comment-label">Comment / Note:</div>
             <div class="test-comment-text">{{ section.comment }}</div>
           </div>
+
+          <div class="test-comment-block doctor-approval-comment" *ngIf="section.doctorApprovalComment">
+            <div class="test-comment-label">Doctor Approval Comment:</div>
+            <div class="test-comment-text">{{ section.doctorApprovalComment }}</div>
+          </div>
         </section>
       </ng-template>
 
-      <!-- Doctor approval comment (from doctor authorization notes) -->
-      <section class="report-doctor-approval-comment"
-               *ngIf="report.header?.doctorApprovalComment">
-        <div class="test-comment-label">Doctor Approval Comment:</div>
-        <div class="test-comment-text">{{ report.header.doctorApprovalComment }}</div>
-      </section>
+      <!-- Signature in document flow (last page only) — avoids blank trailing page from fixed+padding -->
+      <div class="report-doctor-signature-zone"
+           *ngIf="report.header?.approvedBy || report.header?.approvedBySignatureImage || report.header?.approvedByName || report.header?.approvedByDesignation">
+        <img *ngIf="report.header?.approvedBySignatureImage"
+             [src]="report.header.approvedBySignatureImage"
+             class="report-signature-img"
+             alt="Approving doctor signature">
+        <span class="report-footer-doctor-name"
+              *ngIf="report.header?.approvedByName || report.header?.approvedBy">
+          {{ report.header.approvedByName || report.header.approvedBy }}
+        </span>
+        <span class="report-footer-doctor-qualification" *ngIf="report.header?.approvedByQualification">
+          {{ report.header.approvedByQualification }}
+        </span>
+        <span class="report-footer-doctor-designation" *ngIf="report.header?.approvedByDesignation">
+          {{ report.header.approvedByDesignation }}
+        </span>
+        <span class="report-footer-sign-line"
+              *ngIf="!report.header?.approvedBySignatureImage && (report.header?.approvedBy || report.header?.approvedByName)">
+          _________________________
+        </span>
+      </div>
 
-    </div>
-
-    <!-- Approving doctor: signature / name / designation — 1 cm above blank footer -->
-    <div class="report-doctor-signature-zone"
-         *ngIf="report.header?.approvedBy || report.header?.approvedBySignatureImage || report.header?.approvedByName || report.header?.approvedByDesignation">
-      <img *ngIf="report.header?.approvedBySignatureImage"
-           [src]="report.header.approvedBySignatureImage"
-           class="report-signature-img"
-           alt="Approving doctor signature">
-      <span class="report-footer-doctor-name"
-            *ngIf="report.header?.approvedByName || report.header?.approvedBy">
-        {{ report.header.approvedByName || report.header.approvedBy }}
-      </span>
-      <span class="report-footer-doctor-qualification" *ngIf="report.header?.approvedByQualification">
-        {{ report.header.approvedByQualification }}
-      </span>
-      <span class="report-footer-doctor-designation" *ngIf="report.header?.approvedByDesignation">
-        {{ report.header.approvedByDesignation }}
-      </span>
-      <span class="report-footer-sign-line"
-            *ngIf="!report.header?.approvedBySignatureImage && (report.header?.approvedBy || report.header?.approvedByName)">
-        _________________________
-      </span>
     </div>
 
     <!-- Blank 5 cm footer band -->
-    <div class="report-print-footer-zone" aria-hidden="true">
-      <span class="letterhead-screen-hint">Footer (5 cm) — blank</span>
-    </div>
+    <div class="report-print-footer-zone" aria-hidden="true"></div>
   </div>
 
   <div class="workflow-empty no-print" *ngIf="searched && !report && !loading && !filterError">

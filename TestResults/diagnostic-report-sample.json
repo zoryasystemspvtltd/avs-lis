@@ -1,0 +1,84 @@
+﻿{
+    "header":  {
+                   "labNo":  "INV-20260719-0002",
+                   "invoiceNo":  "INV-20260719-0002",
+                   "patientName":  "Priya Sharma",
+                   "patientId":  "LRE-PAT-002",
+                   "mrNo":  null,
+                   "visitId":  "VIS00047",
+                   "age":  32.00,
+                   "gender":  "Female",
+                   "referralDoctor":  "Dr. Priya Nair",
+                   "corporate":  null,
+                   "collectionDate":  "2026-07-19T14:00:00",
+                   "receivedDate":  "2026-07-19T14:00:00",
+                   "reportDate":  "2026-07-19T14:02:11.81",
+                   "status":  "Final",
+                   "approvedBy":  "admin@zorya.co.in",
+                   "approvedByName":  "Administrator LIS",
+                   "approvedByQualification":  null,
+                   "approvedByDesignation":  null,
+                   "approvedBySignatureImage":  null,
+                   "doctorApprovalComment":  "[19-07-2026 14:02:11] admin@zorya.co.in : Doctor Approved",
+                   "labName":  "Zorya Laboratory",
+                   "tagline":  "Accurate Diagnostics. Trusted Care.",
+                   "centreName":  "Zorya Diagnostic Centre",
+                   "logoUrl":  "assets/images/logo.png",
+                   "licenseName":  "Zorya Laboratory",
+                   "address":  null,
+                   "email":  null,
+                   "contactNumbers":  null,
+                   "pharmacyContact":  null,
+                   "appointmentContact":  null
+               },
+    "profileGroups":  null,
+    "departmentGroups":  [
+                             {
+                                 "departmentName":  "Serology",
+                                 "sections":  [
+                                                  {
+                                                      "testCode":  "T2214478",
+                                                      "testName":  "HIV Rapid, SERUM",
+                                                      "specimen":  "Serum",
+                                                      "sampleNo":  "INV-20260719-0002-SER",
+                                                      "department":  "Serology",
+                                                      "comment":  "Interpretation: This is a screening assay which detects the first serological marker of Hepatitis B as early as 4-16 weeks after It persists during acute illness and usually disappears 12-20 weeks after onset of Persistence of HBsAg for more than 6 months indicates development of carrier state or chronic liver disease A negative test result does not exclude with certainty a possible exposure to or an infection with the hepatitis B It is recommended that a positive result of HBsAg must be be confirmed using a different enzyme immunoassay kit or by using a confirmatory assay based on neutralisation with human anti hepatitis B surface antibody and/or HBV PCR Based upon clinical history it may become necessary to test for presence of other markers of hepatitis B virus COMPANY NAME : DIAGNOSTIC ENTERPRISE, EXP DATE:05/2028",
+                                                      "parameters":  [
+                                                                         {
+                                                                             "parameterCode":  "HIV Rapid",
+                                                                             "parameterName":  "HIV Rapid",
+                                                                             "resultValue":  "Non-Reactive",
+                                                                             "unit":  "",
+                                                                             "referenceRange":  "",
+                                                                             "flag":  "",
+                                                                             "isAbnormal":  false,
+                                                                             "sectionName":  null
+                                                                         }
+                                                                     ]
+                                                  }
+                                              ]
+                             }
+                         ],
+    "sections":  [
+                     {
+                         "testCode":  "T2214478",
+                         "testName":  "HIV Rapid, SERUM",
+                         "specimen":  "Serum",
+                         "sampleNo":  "INV-20260719-0002-SER",
+                         "department":  "Serology",
+                         "comment":  "Interpretation: This is a screening assay which detects the first serological marker of Hepatitis B as early as 4-16 weeks after It persists during acute illness and usually disappears 12-20 weeks after onset of Persistence of HBsAg for more than 6 months indicates development of carrier state or chronic liver disease A negative test result does not exclude with certainty a possible exposure to or an infection with the hepatitis B It is recommended that a positive result of HBsAg must be be confirmed using a different enzyme immunoassay kit or by using a confirmatory assay based on neutralisation with human anti hepatitis B surface antibody and/or HBV PCR Based upon clinical history it may become necessary to test for presence of other markers of hepatitis B virus COMPANY NAME : DIAGNOSTIC ENTERPRISE, EXP DATE:05/2028",
+                         "parameters":  [
+                                            {
+                                                "parameterCode":  "HIV Rapid",
+                                                "parameterName":  "HIV Rapid",
+                                                "resultValue":  "Non-Reactive",
+                                                "unit":  "",
+                                                "referenceRange":  "",
+                                                "flag":  "",
+                                                "isAbnormal":  false,
+                                                "sectionName":  null
+                                            }
+                                        ]
+                     }
+                 ]
+}

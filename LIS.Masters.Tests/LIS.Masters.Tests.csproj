@@ -66,6 +66,7 @@
     <Compile Include="Masters\SpecimenManagerTests.cs" />
     <Compile Include="Lookups\ActiveLookupFilterTests.cs" />
     <Compile Include="Transactions\SaleInvoiceManagerTests.cs" />
+    <Compile Include="Transactions\SaleInvoiceMultiDepartmentPaidTests.cs" />
     <Compile Include="Transactions\TestProfileMasterManagerTests.cs" />
     <Compile Include="Transactions\TestProfileHierarchyTests.cs" />
     <Compile Include="Transactions\TestRateMasterManagerTests.cs" />
@@ -97,6 +98,7 @@
     <Compile Include="Database\RelationIntegrityTests.cs" />
     <Compile Include="Validation\NegativeValidationTests.cs" />
     <Compile Include="Reports\SaleInvoiceRegisterReportTests.cs" />
+    <Compile Include="Reports\TestResultRangeEvaluatorTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
