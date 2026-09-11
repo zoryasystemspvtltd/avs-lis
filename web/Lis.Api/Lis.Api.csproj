@@ -255,6 +255,10 @@
     <Compile Include="Migrations\202607111930000_AddRoleMenuPermission.Designer.cs">
       <DependentUpon>202607111930000_AddRoleMenuPermission.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202609120131000_ReportLayoutConfigurationRbac.cs" />
+    <Compile Include="Migrations\202609120131000_ReportLayoutConfigurationRbac.Designer.cs">
+      <DependentUpon>202609120131000_ReportLayoutConfigurationRbac.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\ClientApplication.cs" />
     <Compile Include="Models\ModuleIdentity.cs" />
@@ -341,6 +345,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202607111930000_AddRoleMenuPermission.resx">
       <DependentUpon>202607111930000_AddRoleMenuPermission.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202609120131000_ReportLayoutConfigurationRbac.resx">
+      <DependentUpon>202609120131000_ReportLayoutConfigurationRbac.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

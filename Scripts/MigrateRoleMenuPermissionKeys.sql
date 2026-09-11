@@ -28,6 +28,8 @@ END
         (N'setup.method', N'MASTER_METHOD'),
         (N'setup.equipment', N'SETUP_EQUIPMENT'),
         (N'setup.equipmentHeartbeat', N'SETUP_EQUIPMENT_HEARTBEAT'),
+        (N'setup.notificationConfiguration', N'SETUP_NOTIFICATION_CONFIGURATION'),
+        (N'setup.reportLayoutConfiguration', N'SETUP_REPORT_LAYOUT_CONFIGURATION'),
         (N'masters.testMaster', N'MASTER_TESTMASTER'),
         (N'masters.testProfile', N'MASTER_TESTPROFILE'),
         (N'masters.specimen', N'MASTER_SPECIMEN'),

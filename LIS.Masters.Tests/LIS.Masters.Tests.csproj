@@ -101,6 +101,7 @@
     <Compile Include="Reports\TestResultRangeEvaluatorTests.cs" />
     <Compile Include="Reports\ReportLayoutConfigurationManagerTests.cs" />
     <Compile Include="Reports\DiagnosticReportPrintSelectionTests.cs" />
+    <Compile Include="Security\ReportLayoutConfigurationRbacTests.cs" />
     <Compile Include="Users\UserSignatureValidationTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

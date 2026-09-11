@@ -1,5 +1,8 @@
 -- Additive Report Layout Configuration (Phase 1: one active layout per ReportType).
--- Does NOT modify clinical/report content tables.
+-- Prefer EF migration for teammates after pull:
+--   Update-Database -ProjectName LIS.DataAccess -StartUpProjectName Lis.Api -ConfigurationTypeName LIS.DataAccess.Migrations.Configuration
+-- Migration Id: 202609120130000_ReportLayoutConfiguration
+-- This script remains an ops/emergency idempotent helper.
 USE ZoryaLMS;
 GO
 
@@ -75,6 +78,8 @@ END
 GO
 
 -- Module + Administrator permissions only (print layout is enriched on report APIs).
+-- Full Can* bits for Administrator (matches NotificationConfiguration pattern).
+-- For RoleMenuPermission overlay, also run: add-report-layout-configuration-rbac.sql
 DECLARE @AppId INT = (SELECT TOP 1 Id FROM ClientApplication WHERE AccessKey = N'DXI800');
 IF @AppId IS NULL
     SET @AppId = (SELECT TOP 1 Id FROM ClientApplication ORDER BY Id);
@@ -93,13 +98,22 @@ DECLARE @AdminRole NVARCHAR(128) = (
     SELECT TOP 1 Id FROM AspNetRoles WHERE Name = N'Administrator');
 
 IF @ModuleId IS NOT NULL AND @AdminRole IS NOT NULL
-   AND NOT EXISTS (
+BEGIN
+    IF NOT EXISTS (
         SELECT 1 FROM RoleModuleMappings
         WHERE ModuleId = @ModuleId AND RoleId = @AdminRole AND ApplicationId = @AppId)
-BEGIN
-    INSERT INTO RoleModuleMappings
-        (CanAdd, CanEdit, CanAuthorize, CanDelete, CanView, CanReject, ModuleId, RoleId, ApplicationId)
-    VALUES (1, 1, 0, 0, 1, 0, @ModuleId, @AdminRole, @AppId);
+    BEGIN
+        INSERT INTO RoleModuleMappings
+            (CanAdd, CanEdit, CanAuthorize, CanDelete, CanView, CanReject, ModuleId, RoleId, ApplicationId)
+        VALUES (1, 1, 1, 1, 1, 1, @ModuleId, @AdminRole, @AppId);
+    END
+    ELSE
+    BEGIN
+        UPDATE RoleModuleMappings
+        SET CanAdd = 1, CanEdit = 1, CanAuthorize = 1, CanDelete = 1, CanView = 1, CanReject = 1
+        WHERE ModuleId = @ModuleId AND RoleId = @AdminRole AND ApplicationId = @AppId
+          AND (CanAdd = 0 OR CanEdit = 0 OR CanAuthorize = 0 OR CanDelete = 0 OR CanView = 0 OR CanReject = 0);
+    END
 END
 
 PRINT 'ReportLayoutConfiguration ready.';

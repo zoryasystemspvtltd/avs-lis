@@ -41,5 +41,21 @@ assert('No module: denied', !hasMenuAccess([], overlay, 'Masters', 'setup.depart
 const reportsOverlay = [{ menuKey: 'reports.diagnosticReport', moduleName: 'Reports', access: 63 }];
 assert('Other-module overlay: Masters still fallback', hasMenuAccess(fullMasters, reportsOverlay, 'Masters', 'setup.unit'));
 
+// Report Layout Configuration module (Administrator-only by seed)
+const layoutModules = [{ name: 'ReportLayoutConfiguration', access: 63 }];
+const layoutMenu = [{
+  menuKey: 'SETUP_REPORT_LAYOUT_CONFIGURATION',
+  moduleName: 'ReportLayoutConfiguration',
+  access: 63
+}];
+assert('ReportLayout: admin module+menu allowed',
+  hasMenuAccess(layoutModules, layoutMenu, 'ReportLayoutConfiguration', 'SETUP_REPORT_LAYOUT_CONFIGURATION'));
+assert('ReportLayout: unauthorized role denied (no module)',
+  !hasMenuAccess([], layoutMenu, 'ReportLayoutConfiguration', 'SETUP_REPORT_LAYOUT_CONFIGURATION'));
+assert('ReportLayout: module without matching menu overlay denied',
+  !hasMenuAccess(layoutModules, layoutMenu, 'ReportLayoutConfiguration', 'SETUP_NOTIFICATION_CONFIGURATION'));
+assert('ReportLayout: module-only fallback when no overlay rows',
+  hasMenuAccess(layoutModules, [], 'ReportLayoutConfiguration', 'SETUP_REPORT_LAYOUT_CONFIGURATION'));
+
 console.log(`\nResult: ${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
