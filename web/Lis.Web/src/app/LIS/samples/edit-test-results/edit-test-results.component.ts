@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TestResultEditService } from '../../../_services/test-result-edit.service';
 import { AlertService } from '../../../_services/alert.service';
@@ -6,6 +6,9 @@ import { extractApiError } from '../../../_helpers/api-error';
 
 /** ReportStatusType.ReportGenerated — ready for technician approval. */
 const REPORT_GENERATED = 2;
+
+/** CSS class marking parameter result inputs for Enter-key navigation. */
+export const RESULT_PARAM_INPUT_CLASS = 'result-param-input';
 
 @Component({
   selector: 'app-edit-test-results',
@@ -37,7 +40,8 @@ export class EditTestResultsComponent implements OnInit {
     private testResultEditService: TestResultEditService,
     private alertService: AlertService,
     private route: ActivatedRoute,
-    private router: Router) { }
+    private router: Router,
+    private host: ElementRef) { }
 
   ngOnInit(): void {
     this.isTestResultEditMode = (this.router.url || '').toLowerCase().indexOf('/edit-test-results') >= 0;
@@ -234,6 +238,62 @@ export class EditTestResultsComponent implements OnInit {
 
   onValueChange(param: any) {
     this.recalcFlag(param);
+  }
+
+  /**
+   * ENTER on a parameter result field → focus next editable parameter input.
+   * Does not intercept Tab. Does not save/submit. Skips readonly/disabled/hidden.
+   */
+  onParameterEnterKey(event: Event): void {
+    const ke = event as KeyboardEvent;
+    if (ke && typeof ke.preventDefault === 'function') {
+      ke.preventDefault();
+    }
+    const current = event && (event.target as HTMLInputElement);
+    if (!current) {
+      return;
+    }
+    EditTestResultsComponent.focusNextEditableParameterInput(
+      current,
+      this.host && this.host.nativeElement);
+  }
+
+  /**
+   * Pure focus helper (testable). Returns true when focus moved to a next field.
+   */
+  static focusNextEditableParameterInput(
+    current: HTMLInputElement,
+    root: ParentNode | null | undefined): boolean {
+    if (!current || !root || typeof (root as any).querySelectorAll !== 'function') {
+      return false;
+    }
+    const inputs = Array.from(
+      (root as Element).querySelectorAll(`input.${RESULT_PARAM_INPUT_CLASS}`)
+    ) as HTMLInputElement[];
+    const eligible = inputs.filter(el => EditTestResultsComponent.isEditableParameterInput(el));
+    const idx = eligible.indexOf(current);
+    if (idx < 0 || idx >= eligible.length - 1) {
+      return false;
+    }
+    const next = eligible[idx + 1];
+    if (typeof next.focus === 'function') {
+      next.focus();
+    }
+    return true;
+  }
+
+  static isEditableParameterInput(el: HTMLInputElement): boolean {
+    if (!el || el.disabled || el.readOnly) {
+      return false;
+    }
+    // Hidden / not laid out (display:none, detached, etc.)
+    if (el.offsetParent === null) {
+      const style = typeof getComputedStyle === 'function' ? getComputedStyle(el) : null;
+      if (!style || style.position !== 'fixed') {
+        return false;
+      }
+    }
+    return true;
   }
 
   save() {

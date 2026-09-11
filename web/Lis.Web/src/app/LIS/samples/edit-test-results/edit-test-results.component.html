@@ -144,8 +144,9 @@
                 <td>{{ p.parameterCode }}</td>
                 <td>{{ p.parameterName }}</td>
                 <td>
-                  <input type="text" class="form-control input-sm" [(ngModel)]="p.resultValue"
-                    [readonly]="!p.isEditable" (ngModelChange)="onValueChange(p)" />
+                  <input type="text" class="form-control input-sm result-param-input" [(ngModel)]="p.resultValue"
+                    [readonly]="!p.isEditable" (ngModelChange)="onValueChange(p)"
+                    (keydown.enter)="onParameterEnterKey($event)" />
                 </td>
                 <td>{{ p.unit }}</td>
                 <td>{{ p.referenceRange }}</td>
