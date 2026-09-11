@@ -44,6 +44,7 @@ export const ROUTE_PERMISSION_RULES: RoutePermissionRule[] = [
   { pattern: /^\/equipments(?:\/|$)/, modules: ['Equipments'], menuKey: 'SETUP_EQUIPMENT' },
   { pattern: /^\/equipment-heartbeat(?:\/|$)/, modules: ['Equipments'], menuKey: 'SETUP_EQUIPMENT_HEARTBEAT' },
   { pattern: /^\/notification-configuration(?:\/|$)/, modules: ['NotificationConfiguration'], menuKey: 'SETUP_NOTIFICATION_CONFIGURATION' },
+  { pattern: /^\/report-layout-configuration(?:\/|$)/, modules: ['ReportLayoutConfiguration'], menuKey: 'SETUP_REPORT_LAYOUT_CONFIGURATION' },
   { pattern: /^\/test-master(?:\/|$)/, modules: ['HisTest'], menuKey: 'MASTER_TESTMASTER' },
   { pattern: /^\/test-rates(?:\/|$)/, modules: ['TestRates'], menuKey: 'MASTER_TESTRATE' },
   { pattern: /^\/reports\/radiology\/pending(?:\/|$)/, modules: ['RadiologyReports', 'Reports'], menuKey: 'REPORT_RADIOLOGY_PENDING' },

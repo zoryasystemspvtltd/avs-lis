@@ -33,6 +33,33 @@
 
       <p class="text-danger" *ngIf="filterError">{{ filterError }}</p>
 
+      <div class="row" *ngIf="report && printableTests.length">
+        <div class="col-md-8 col-sm-12">
+          <div class="form-group" style="margin-bottom: 8px;">
+            <label>Print</label>
+            <div>
+              <label class="radio-inline" style="margin-right: 16px;">
+                <input type="radio" name="printMode" value="all"
+                       [(ngModel)]="printMode" (ngModelChange)="onPrintModeChange()" /> All Reports
+              </label>
+              <label class="radio-inline">
+                <input type="radio" name="printMode" value="specific"
+                       [(ngModel)]="printMode" (ngModelChange)="onPrintModeChange()" /> Specific Report
+              </label>
+            </div>
+          </div>
+          <div class="form-group" *ngIf="printMode === 'specific'">
+            <label>Select Report</label>
+            <select class="form-control"
+                    [(ngModel)]="selectedTestRequestDetailId"
+                    (ngModelChange)="onSelectedTestChange()"
+                    style="max-width: 420px;">
+              <option *ngFor="let t of printableTests" [ngValue]="t.testRequestDetailId">{{ t.label }}</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
       <div class="filter-actions">
         <button type="button" class="btn btn-default btn-sm" (click)="loadLabNumbers()" [disabled]="labNumbersLoading" title="Refresh list">
           <span class="glyphicon glyphicon-refresh" [class.glyphicon-spin]="labNumbersLoading"></span>
@@ -41,8 +68,10 @@
           <span class="glyphicon glyphicon-search"></span> Search
         </button>
         <button type="button" class="btn btn-default btn-sm" (click)="clear()" [disabled]="loading">Reset</button>
-        <button type="button" class="btn btn-success btn-sm" (click)="print()" [disabled]="!report || loading">
-          <span class="glyphicon glyphicon-print"></span> Print Report
+        <button type="button" class="btn btn-success btn-sm" (click)="print()"
+                [disabled]="!report || loading || (printMode === 'specific' && !selectedTestRequestDetailId)">
+          <span class="glyphicon glyphicon-print"></span>
+          {{ printMode === 'specific' ? 'Print Selected Report' : 'Print All Reports' }}
         </button>
       </div>
     </div>
@@ -174,7 +203,26 @@
         </section>
       </ng-template>
 
-      <!-- Signature in document flow (last page only) — avoids blank trailing page from fixed+padding -->
+      <!-- Signatures in document flow (last page only). Technician above Doctor to avoid overlap. -->
+      <div class="report-technician-signature-zone"
+           *ngIf="report.header?.reviewedBy || report.header?.reviewedBySignatureImage || report.header?.reviewedByName">
+        <img *ngIf="report.header?.reviewedBySignatureImage"
+             [src]="report.header.reviewedBySignatureImage"
+             class="report-technician-signature-img"
+             alt="Reviewing technician signature">
+        <span class="report-footer-technician-name"
+              *ngIf="report.header?.reviewedByName || report.header?.reviewedBy">
+          {{ report.header.reviewedByName || report.header.reviewedBy }}
+        </span>
+        <span class="report-footer-technician-qualification" *ngIf="report.header?.reviewedByQualification">
+          {{ report.header.reviewedByQualification }}
+        </span>
+        <span class="report-footer-sign-line"
+              *ngIf="!report.header?.reviewedBySignatureImage && (report.header?.reviewedBy || report.header?.reviewedByName)">
+          _________________________
+        </span>
+      </div>
+
       <div class="report-doctor-signature-zone"
            *ngIf="report.header?.approvedBy || report.header?.approvedBySignatureImage || report.header?.approvedByName || report.header?.approvedByDesignation">
         <img *ngIf="report.header?.approvedBySignatureImage"

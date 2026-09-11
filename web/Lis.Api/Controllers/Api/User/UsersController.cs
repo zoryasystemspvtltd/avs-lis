@@ -23,6 +23,7 @@ namespace QuestionsForU.Authentication.Controllers
     public class UsersController : ApiController
     {
         private const string DoctorRoleName = "Doctor";
+        private const string TechnicianRoleName = "Technician";
         private Lis.Api.Models.IdentityDbContext dbContext;
 
         private ApplicationUserManager userManager;
@@ -542,12 +543,14 @@ namespace QuestionsForU.Authentication.Controllers
                 return NotFound();
             }
 
-            if (!userManager.IsInRole(user.Id, DoctorRoleName))
+            // One signature path per user (DoctorSignaturePath). Allowed for Doctor and/or Technician.
+            if (!userManager.IsInRole(user.Id, DoctorRoleName)
+                && !userManager.IsInRole(user.Id, TechnicianRoleName))
             {
                 return Content(HttpStatusCode.PreconditionFailed, new
                 {
                     Status = false,
-                    Message = "Doctor signature can only be uploaded for Doctor users."
+                    Message = "Signature can only be uploaded for Doctor or Technician users."
                 });
             }
 
@@ -627,7 +630,26 @@ namespace QuestionsForU.Authentication.Controllers
 
         private bool IsDoctorRoleSelected(User value)
         {
-            if (value?.roles == null)
+            return IsRoleSelected(value, DoctorRoleName);
+        }
+
+        private bool IsTechnicianRoleSelected(User value)
+        {
+            return IsRoleSelected(value, TechnicianRoleName);
+        }
+
+        /// <summary>
+        /// Signature upload/retention applies when the user has Doctor and/or Technician.
+        /// Storage remains the single AspNetUsers.DoctorSignaturePath (one signature per user).
+        /// </summary>
+        private bool IsSignatureRoleSelected(User value)
+        {
+            return IsDoctorRoleSelected(value) || IsTechnicianRoleSelected(value);
+        }
+
+        private bool IsRoleSelected(User value, string roleName)
+        {
+            if (value?.roles == null || string.IsNullOrWhiteSpace(roleName))
             {
                 return false;
             }
@@ -636,13 +658,13 @@ namespace QuestionsForU.Authentication.Controllers
             {
                 var roleEntity = dbContext.Roles.FirstOrDefault(p => p.Id == role.Id);
                 if (roleEntity != null
-                    && roleEntity.Name.Equals(DoctorRoleName, StringComparison.OrdinalIgnoreCase))
+                    && roleEntity.Name.Equals(roleName, StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }
 
                 if (!string.IsNullOrWhiteSpace(role.Name)
-                    && role.Name.Equals(DoctorRoleName, StringComparison.OrdinalIgnoreCase))
+                    && role.Name.Equals(roleName, StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }
@@ -682,12 +704,18 @@ namespace QuestionsForU.Authentication.Controllers
                 user.DoctorDesignation = value.doctor_designation == null
                     ? null
                     : value.doctor_designation.Trim();
-                return;
+            }
+            else
+            {
+                user.DoctorDesignation = null;
             }
 
-            DoctorSignatureStorage.DeletePhysicalFile(user.DoctorSignaturePath);
-            user.DoctorDesignation = null;
-            user.DoctorSignaturePath = null;
+            // Keep existing signature when Doctor and/or Technician remains selected.
+            if (!IsSignatureRoleSelected(value))
+            {
+                DoctorSignatureStorage.DeletePhysicalFile(user.DoctorSignaturePath);
+                user.DoctorSignaturePath = null;
+            }
         }
 
         private string GetRandomText(string text)

@@ -5,7 +5,7 @@ namespace LIS.DtoModel.Interfaces
 {
     public interface ITestReportManager
     {
-        DiagnosticTestReportDto GetDiagnosticTestReport(string labNo, string invoiceNo);
+        DiagnosticTestReportDto GetDiagnosticTestReport(string labNo, string invoiceNo, long? testRequestDetailId = null);
         IEnumerable<TestReportLabNoOption> GetPrintableLabNumbers();
     }
 }

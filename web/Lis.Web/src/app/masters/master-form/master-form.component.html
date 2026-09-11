@@ -330,10 +330,22 @@
       <div class="row">
         <div class="col-sm-2 col-md-2 col-lg-2 form-grid-stye"><label>Parameter<span class="error">*</span></label></div>
         <div class="col-sm-4 col-md-4 col-lg-4 form-grid-stye">
-          <select class="form-control" formControlName="hisParameterId" [disabled]="!lookupsLoaded">
-            <option [ngValue]="null">-- Select Parameter --</option>
-            <option *ngFor="let p of hisParameters" [ngValue]="p.id">{{p.hisParamCode}} - {{p.hisParamDescription}}</option>
-          </select>
+          <ng-select
+            [items]="hisParameters"
+            bindLabel="displayLabel"
+            bindValue="id"
+            formControlName="hisParameterId"
+            placeholder="Type to search parameters..."
+            [searchable]="true"
+            [clearable]="true"
+            [loading]="!lookupsLoaded"
+            [minTermLength]="0"
+            typeToSearchText="Type parameter code or name to search..."
+            appendTo="body"
+            notFoundText="No matching parameters"
+            class="test-rate-test-select">
+          </ng-select>
+          <span *ngIf="submitted && !form.get('hisParameterId')?.value" class="error">Parameter is required.</span>
         </div>
       </div>
       <br />

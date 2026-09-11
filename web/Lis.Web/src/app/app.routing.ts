@@ -32,6 +32,7 @@ import { RadiologyReportEntryComponent } from './LIS/radiology/radiology-report-
 import { RadiologyDoctorApprovalComponent } from './LIS/radiology/radiology-doctor-approval/radiology-doctor-approval.component';
 import { RadiologyApprovedReportsComponent } from './LIS/radiology/radiology-approved-reports/radiology-approved-reports.component';
 import { NotificationConfigurationComponent } from './setup/notification-configuration/notification-configuration.component';
+import { ReportLayoutConfigurationComponent } from './setup/report-layout-configuration/report-layout-configuration.component';
 
 const LOOKUP_FIELDS = {
   codeName: [
@@ -185,6 +186,7 @@ const appRoutes: Routes = [
     { path: 'equipments', component: ListEquipmentComponent, canActivate: ROUTE_GUARDS },
     { path: 'equipment-heartbeat', component: ListEquipmentHeartbeatComponent, canActivate: ROUTE_GUARDS },
     { path: 'notification-configuration', component: NotificationConfigurationComponent, canActivate: ROUTE_GUARDS },
+    { path: 'report-layout-configuration', component: ReportLayoutConfigurationComponent, canActivate: ROUTE_GUARDS },
     { path: 'parameters/:id', component: DetailsParameterComponent, canActivate: ROUTE_GUARDS },
 
     { path: 'client-application/create', component: ApplicationCreateComponent, canActivate: ROUTE_GUARDS },

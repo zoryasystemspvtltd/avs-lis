@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using LIS.DtoModel.Models.Reports;
 
 namespace LIS.DtoModel.Models
 {
@@ -11,6 +12,8 @@ namespace LIS.DtoModel.Models
         public List<DiagnosticTestReportDepartmentGroup> DepartmentGroups { get; set; }
         /// <summary>Standalone sections (backward compatible flat list).</summary>
         public List<DiagnosticTestReportSection> Sections { get; set; }
+        /// <summary>Optional physical print layout (stationery clearance / signature). Null = client defaults.</summary>
+        public ReportLayoutConfigurationDto Layout { get; set; }
     }
 
     public class DiagnosticTestReportDepartmentGroup
@@ -47,6 +50,12 @@ namespace LIS.DtoModel.Models
         public string ApprovedByQualification { get; set; }
         public string ApprovedByDesignation { get; set; }
         public string ApprovedBySignatureImage { get; set; }
+        /// <summary>Technician who approved the result (<c>TestResult.ReviewedBy</c> username).</summary>
+        public string ReviewedBy { get; set; }
+        public string ReviewedByName { get; set; }
+        public string ReviewedByQualification { get; set; }
+        /// <summary>Inline data-URI from the same user signature store used for Doctor/Technician upload.</summary>
+        public string ReviewedBySignatureImage { get; set; }
         /// <summary>
         /// Deprecated for print: doctor notes are now emitted per test section
         /// (<see cref="DiagnosticTestReportSection.DoctorApprovalComment"/>).
@@ -74,6 +83,8 @@ namespace LIS.DtoModel.Models
         public string Specimen { get; set; }
         public string SampleNo { get; set; }
         public string Department { get; set; }
+        /// <summary>Authoritative per-test identity for print selection (<c>TestRequestDetail.Id</c>).</summary>
+        public long TestRequestDetailId { get; set; }
         /// <summary>Aggregated Comment/Note from Parameter Master (HTML/text).</summary>
         public string Comment { get; set; }
         /// <summary>Doctor authorization note for this test/specimen only (when present).</summary>

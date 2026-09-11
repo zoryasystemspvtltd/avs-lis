@@ -149,8 +149,12 @@
 
                         </div>
 
+                    </div>
+
+                    <div class="row form-row" *ngIf="isSignatureRoleSelected()">
+
                         <div class="col-md-2">
-                            <label>Doctor Signature <span class="required">*</span></label>
+                            <label>Signature <span class="required">*</span></label>
                         </div>
 
                         <div class="col-md-4">
@@ -171,7 +175,7 @@
                             <div *ngIf="signaturePreviewUrl"
                                 class="doctor-signature-preview">
 
-                                <img [src]="signaturePreviewUrl">
+                                <img [src]="signaturePreviewUrl" alt="Signature preview">
 
                             </div>
 

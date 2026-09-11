@@ -9,6 +9,11 @@ export interface LabNoOption {
   displayLabel: string;
 }
 
+export interface PrintableTestOption {
+  testRequestDetailId: number;
+  label: string;
+}
+
 @Component({
   selector: 'app-test-report',
   templateUrl: './test-report.component.html',
@@ -25,6 +30,12 @@ export class TestReportComponent implements OnInit, OnDestroy {
   searched = false;
   report: any = null;
   isPrintView = false;
+
+  /** Print All (default) or Specific Report — selection only; eligibility unchanged. */
+  printMode: 'all' | 'specific' = 'all';
+  printableTests: PrintableTestOption[] = [];
+  selectedTestRequestDetailId: number | null = null;
+  private fullReport: any = null;
 
   constructor(
     private reportService: ReportService,
@@ -57,6 +68,10 @@ export class TestReportComponent implements OnInit, OnDestroy {
     this.labNo = '';
     this.filterError = '';
     this.report = null;
+    this.fullReport = null;
+    this.printableTests = [];
+    this.selectedTestRequestDetailId = null;
+    this.printMode = 'all';
     this.searched = false;
     this.isPrintView = false;
     document.body.classList.remove('test-report-print-mode');
@@ -78,11 +93,17 @@ export class TestReportComponent implements OnInit, OnDestroy {
 
     this.loading = true;
     this.report = null;
+    this.fullReport = null;
+    this.printableTests = [];
+    this.selectedTestRequestDetailId = null;
+    this.printMode = 'all';
     this.searched = false;
 
     this.reportService.getTestReport(this.labNo.trim()).subscribe(
       r => {
-        this.report = this.normalizeReport(r);
+        this.fullReport = this.normalizeReport(r);
+        this.report = this.fullReport;
+        this.printableTests = this.buildPrintableTests(this.fullReport);
         this.searched = true;
         this.loading = false;
         const hasDept = this.report?.departmentGroups?.length;
@@ -95,6 +116,48 @@ export class TestReportComponent implements OnInit, OnDestroy {
         this.loading = false;
         this.searched = true;
         this.report = null;
+        this.fullReport = null;
+        this.printableTests = [];
+        this.filterError = this.readError(err);
+        this.alertService.error(this.filterError);
+      }
+    );
+  }
+
+  onPrintModeChange() {
+    if (this.printMode === 'all') {
+      this.selectedTestRequestDetailId = null;
+      if (this.fullReport) {
+        this.report = this.fullReport;
+      }
+      return;
+    }
+
+    if (this.printableTests.length && !this.selectedTestRequestDetailId) {
+      this.selectedTestRequestDetailId = this.printableTests[0].testRequestDetailId;
+    }
+    this.loadScopedReport();
+  }
+
+  onSelectedTestChange() {
+    if (this.printMode === 'specific') {
+      this.loadScopedReport();
+    }
+  }
+
+  private loadScopedReport() {
+    if (!this.labNo?.trim() || !this.selectedTestRequestDetailId) {
+      return;
+    }
+
+    this.loading = true;
+    this.reportService.getTestReport(this.labNo.trim(), this.selectedTestRequestDetailId).subscribe(
+      r => {
+        this.report = this.normalizeReport(r);
+        this.loading = false;
+      },
+      err => {
+        this.loading = false;
         this.filterError = this.readError(err);
         this.alertService.error(this.filterError);
       }
@@ -106,6 +169,18 @@ export class TestReportComponent implements OnInit, OnDestroy {
       return;
     }
 
+    if (this.printMode === 'specific') {
+      if (!this.selectedTestRequestDetailId) {
+        this.filterError = 'Select a report to print.';
+        this.alertService.error(this.filterError);
+        return;
+      }
+    }
+
+    this.executePrint();
+  }
+
+  private executePrint() {
     const source = document.getElementById('diagnostic-test-report-print');
     if (!source) {
       return;
@@ -163,25 +238,41 @@ export class TestReportComponent implements OnInit, OnDestroy {
   }
 
   private getDiagnosticPrintStyles(): string {
+    const layout = this.resolvePrintLayout('Diagnostic');
+    const header = this.mm(layout.headerHeightMm);
+    const footer = this.mm(layout.footerHeightMm);
+    const left = this.mm(layout.leftMarginMm);
+    const right = this.mm(layout.rightMarginMm);
+    const sigW = this.mm(layout.doctorSignatureWidthMm);
+    const sigH = this.mm(layout.doctorSignatureHeightMm);
+    const sigAlign = this.signatureAlignCss(layout.doctorSignatureHorizontal);
+    const sigDisplay = layout.doctorSignatureEnabled ? 'block' : 'none';
+    const sigImgMargin = layout.doctorSignatureHorizontal === 'Left'
+      ? '0 auto 1mm 0'
+      : (layout.doctorSignatureHorizontal === 'Center' ? '0 auto 1mm auto' : '0 0 1mm auto');
+    const techW = this.mm(layout.technicianSignatureWidthMm);
+    const techH = this.mm(layout.technicianSignatureHeightMm);
+    const techAlign = this.signatureAlignCss(layout.technicianSignatureHorizontal);
+    const techDisplay = layout.technicianSignatureEnabled ? 'block' : 'none';
+    const techImgMargin = layout.technicianSignatureHorizontal === 'Left'
+      ? '0 auto 1mm 0'
+      : (layout.technicianSignatureHorizontal === 'Center' ? '0 auto 1mm auto' : '0 0 1mm auto');
+
     return `
       :root {
-        --diag-header-total: 5cm;
-        --diag-footer-height: 5cm;
+        --diag-header-total: ${header};
+        --diag-footer-height: ${footer};
         --diag-doctor-gap: 8mm;
-        --diag-side-margin: 12mm;
+        --diag-technician-gap: 8mm;
+        --diag-side-margin: ${left};
       }
-      /*
-        Letterhead clearance on EVERY page via @page margins only.
-        Do NOT also use position:fixed 5cm header/footer — Chromium paints those
-        into the content box and doubles the blank bands (layout looks totally wrong).
-        Body padding alone does not repeat across pages (clips at page boundaries).
-      */
+      /* Layout values from Report Layout Configuration (fallback = production defaults). */
       @page {
         size: A4 portrait;
-        margin-top: 5cm;
-        margin-bottom: 5cm;
-        margin-left: 12mm;
-        margin-right: 12mm;
+        margin-top: ${header};
+        margin-bottom: ${footer};
+        margin-left: ${left};
+        margin-right: ${right};
       }
       html, body.diagnostic-report-print-doc {
         margin: 0; padding: 0;
@@ -243,19 +334,84 @@ export class TestReportComponent implements OnInit, OnDestroy {
       .doctor-approval-comment { page-break-inside: avoid; break-inside: avoid; }
       .abnormal-value { font-weight: 700; }
       .result-flag { font-weight: 700; }
-      .report-doctor-signature-zone {
-        position: static; display: block; width: 48%; max-width: 90mm;
-        margin: var(--diag-doctor-gap) 0 2mm auto; padding: 0;
-        text-align: right; font-size: 8pt; line-height: 1.25;
+      .report-technician-signature-zone {
+        position: static; display: ${techDisplay}; width: 48%; max-width: 90mm;
+        margin: var(--diag-technician-gap) 0 2mm; padding: 0;
+        font-size: 8pt; line-height: 1.25;
         page-break-inside: avoid; break-inside: avoid;
+        ${techAlign}
       }
-      .report-signature-img { max-height: 14mm; max-width: 50mm; display: block; margin: 0 0 1mm auto; }
+      .report-technician-signature-img { max-height: ${techH}; max-width: ${techW}; display: block; margin: ${techImgMargin}; }
+      .report-footer-technician-name { display: block; font-weight: 700; text-transform: uppercase; font-size: 9pt; }
+      .report-footer-technician-qualification {
+        display: block; white-space: pre-wrap; text-transform: uppercase; font-size: 7.5pt;
+      }
+      .report-doctor-signature-zone {
+        position: static; display: ${sigDisplay}; width: 48%; max-width: 90mm;
+        margin: var(--diag-doctor-gap) 0 2mm; padding: 0;
+        font-size: 8pt; line-height: 1.25;
+        page-break-inside: avoid; break-inside: avoid;
+        ${sigAlign}
+      }
+      .report-signature-img { max-height: ${sigH}; max-width: ${sigW}; display: block; margin: ${sigImgMargin}; }
       .report-footer-doctor-name { display: block; font-weight: 700; text-transform: uppercase; font-size: 9pt; }
       .report-footer-doctor-qualification,
       .report-footer-doctor-designation {
         display: block; white-space: pre-wrap; text-transform: uppercase; font-size: 7.5pt;
       }
     `;
+  }
+
+  private resolvePrintLayout(reportType: 'Diagnostic' | 'Radiology') {
+    const raw = this.report?.layout || this.report?.Layout || null;
+    const defaults = reportType === 'Radiology'
+      ? { headerHeightMm: 40, footerHeightMm: 50, leftMarginMm: 10, rightMarginMm: 10,
+          doctorSignatureEnabled: true, doctorSignatureHorizontal: 'Left',
+          doctorSignatureWidthMm: 50, doctorSignatureHeightMm: 14,
+          technicianSignatureEnabled: false, technicianSignatureHorizontal: 'Left',
+          technicianSignatureWidthMm: 50, technicianSignatureHeightMm: 14 }
+      : { headerHeightMm: 50, footerHeightMm: 50, leftMarginMm: 12, rightMarginMm: 12,
+          doctorSignatureEnabled: true, doctorSignatureHorizontal: 'Right',
+          doctorSignatureWidthMm: 50, doctorSignatureHeightMm: 14,
+          technicianSignatureEnabled: false, technicianSignatureHorizontal: 'Left',
+          technicianSignatureWidthMm: 50, technicianSignatureHeightMm: 14 };
+    if (!raw) {
+      return defaults;
+    }
+    return {
+      headerHeightMm: this.num(raw.headerHeightMm ?? raw.HeaderHeightMm, defaults.headerHeightMm),
+      footerHeightMm: this.num(raw.footerHeightMm ?? raw.FooterHeightMm, defaults.footerHeightMm),
+      leftMarginMm: this.num(raw.leftMarginMm ?? raw.LeftMarginMm, defaults.leftMarginMm),
+      rightMarginMm: this.num(raw.rightMarginMm ?? raw.RightMarginMm, defaults.rightMarginMm),
+      doctorSignatureEnabled: (raw.doctorSignatureEnabled ?? raw.DoctorSignatureEnabled) !== false,
+      doctorSignatureHorizontal: (raw.doctorSignatureHorizontal || raw.DoctorSignatureHorizontal || defaults.doctorSignatureHorizontal),
+      doctorSignatureWidthMm: this.num(raw.doctorSignatureWidthMm ?? raw.DoctorSignatureWidthMm, defaults.doctorSignatureWidthMm),
+      doctorSignatureHeightMm: this.num(raw.doctorSignatureHeightMm ?? raw.DoctorSignatureHeightMm, defaults.doctorSignatureHeightMm),
+      technicianSignatureEnabled: !!(raw.technicianSignatureEnabled ?? raw.TechnicianSignatureEnabled),
+      technicianSignatureHorizontal: (raw.technicianSignatureHorizontal || raw.TechnicianSignatureHorizontal || defaults.technicianSignatureHorizontal),
+      technicianSignatureWidthMm: this.num(raw.technicianSignatureWidthMm ?? raw.TechnicianSignatureWidthMm, defaults.technicianSignatureWidthMm),
+      technicianSignatureHeightMm: this.num(raw.technicianSignatureHeightMm ?? raw.TechnicianSignatureHeightMm, defaults.technicianSignatureHeightMm)
+    };
+  }
+
+  private num(value: any, fallback: number): number {
+    const n = Number(value);
+    return isFinite(n) ? n : fallback;
+  }
+
+  private mm(value: number): string {
+    return `${value}mm`;
+  }
+
+  private signatureAlignCss(horizontal: string): string {
+    const h = (horizontal || 'Right').toLowerCase();
+    if (h === 'left') {
+      return 'margin-left: 0; margin-right: auto; text-align: left;';
+    }
+    if (h === 'center' || h === 'centre') {
+      return 'margin-left: auto; margin-right: auto; text-align: center;';
+    }
+    return 'margin-left: auto; margin-right: 0; text-align: right;';
   }
 
   private normalizeLabOption(x: any): LabNoOption {
@@ -275,6 +431,7 @@ export class TestReportComponent implements OnInit, OnDestroy {
     }
     const header = r.header || r.Header || {};
     const mapSection = (s: any) => ({
+      testRequestDetailId: s.testRequestDetailId ?? s.TestRequestDetailId ?? 0,
       testCode: s.testCode ?? s.TestCode,
       testName: s.testName ?? s.TestName,
       specimen: s.specimen ?? s.Specimen,
@@ -332,6 +489,10 @@ export class TestReportComponent implements OnInit, OnDestroy {
         approvedByQualification: header.approvedByQualification ?? header.ApprovedByQualification,
         approvedByDesignation: header.approvedByDesignation ?? header.ApprovedByDesignation,
         approvedBySignatureImage: header.approvedBySignatureImage ?? header.ApprovedBySignatureImage,
+        reviewedBy: header.reviewedBy ?? header.ReviewedBy,
+        reviewedByName: header.reviewedByName ?? header.ReviewedByName,
+        reviewedByQualification: header.reviewedByQualification ?? header.ReviewedByQualification,
+        reviewedBySignatureImage: header.reviewedBySignatureImage ?? header.ReviewedBySignatureImage,
         doctorApprovalComment: header.doctorApprovalComment ?? header.DoctorApprovalComment,
         labName: header.labName ?? header.LabName,
         tagline: header.tagline ?? header.Tagline,
@@ -346,8 +507,38 @@ export class TestReportComponent implements OnInit, OnDestroy {
       },
       profileGroups,
       departmentGroups,
-      sections
+      sections,
+      layout: r.layout || r.Layout || null
     };
+  }
+
+  private buildPrintableTests(report: any): PrintableTestOption[] {
+    if (!report) {
+      return [];
+    }
+    const sections: any[] = [];
+    (report.departmentGroups || []).forEach((g: any) => {
+      (g.sections || []).forEach((s: any) => sections.push(s));
+    });
+    if (!sections.length) {
+      (report.profileGroups || []).forEach((g: any) => {
+        (g.sections || []).forEach((s: any) => sections.push(s));
+      });
+      (report.sections || []).forEach((s: any) => sections.push(s));
+    }
+
+    const options: PrintableTestOption[] = [];
+    const seen = new Set<number>();
+    sections.forEach(s => {
+      const id = Number(s.testRequestDetailId || 0);
+      if (!id || seen.has(id)) {
+        return;
+      }
+      seen.add(id);
+      const label = (s.testName || s.testCode || `Test ${id}`).toString().trim();
+      options.push({ testRequestDetailId: id, label });
+    });
+    return options;
   }
 
   private readError(err: any, fallback = 'Unable to load test report.'): string {

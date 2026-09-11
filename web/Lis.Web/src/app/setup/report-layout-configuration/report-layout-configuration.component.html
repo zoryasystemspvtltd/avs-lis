@@ -1,0 +1,187 @@
+<div class="container-fluid">
+  <div class="page-header">
+    <h2>Report Layout Configuration</h2>
+    <p class="text-muted">
+      Configure physical print clearance for pre-printed stationery and doctor signature placement.
+      Does not change report content, approval rules, or stationery graphics.
+    </p>
+  </div>
+
+  <div class="panel panel-default" *ngIf="!loading">
+    <div class="panel-heading"><strong>Layout Settings</strong></div>
+    <div class="panel-body">
+      <form [formGroup]="form" (ngSubmit)="save()">
+        <div class="form-group">
+          <label>Report Type</label>
+          <select class="form-control" formControlName="reportType" (change)="onReportTypeChange()" style="max-width: 320px;">
+            <option *ngFor="let t of reportTypes" [value]="t.value">{{ t.label }}</option>
+          </select>
+        </div>
+
+        <h4>Page</h4>
+        <div class="row">
+          <div class="col-sm-3">
+            <div class="form-group">
+              <label>Page Size</label>
+              <input type="text" class="form-control" formControlName="pageSize" />
+            </div>
+          </div>
+          <div class="col-sm-3">
+            <div class="form-group">
+              <label>Orientation</label>
+              <input type="text" class="form-control" formControlName="orientation" />
+            </div>
+          </div>
+        </div>
+
+        <h4>Pre-Printed Stationery</h4>
+        <div class="row">
+          <div class="col-sm-3">
+            <div class="form-group">
+              <label>Header Clearance (mm)</label>
+              <input type="number" class="form-control" formControlName="headerHeightMm" min="0" max="120" step="1" />
+            </div>
+          </div>
+          <div class="col-sm-3">
+            <div class="form-group">
+              <label>Footer Clearance (mm)</label>
+              <input type="number" class="form-control" formControlName="footerHeightMm" min="0" max="120" step="1" />
+            </div>
+          </div>
+          <div class="col-sm-3">
+            <div class="form-group">
+              <label>Left Margin (mm)</label>
+              <input type="number" class="form-control" formControlName="leftMarginMm" min="0" max="50" step="1" />
+            </div>
+          </div>
+          <div class="col-sm-3">
+            <div class="form-group">
+              <label>Right Margin (mm)</label>
+              <input type="number" class="form-control" formControlName="rightMarginMm" min="0" max="50" step="1" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Existing backend fields: Show / Position / Width / Height (mm). Vertical is fixed Bottom. -->
+        <div class="panel panel-info" style="margin-top: 16px;">
+          <div class="panel-heading">
+            <strong>Doctor Signature Configuration</strong>
+          </div>
+          <div class="panel-body">
+            <p class="text-muted" style="margin-top: 0;">
+              Controls print visibility, horizontal position, and size only.
+              Does not change doctor identity, designation, or signature image source.
+            </p>
+
+            <div class="form-group">
+              <label>
+                <input type="checkbox" formControlName="doctorSignatureEnabled" /> Show Doctor Signature
+              </label>
+            </div>
+
+            <div class="row">
+              <div class="col-sm-3">
+                <div class="form-group">
+                  <label>Position</label>
+                  <select class="form-control" formControlName="doctorSignatureHorizontal">
+                    <option *ngFor="let o of horizontalOptions" [value]="o.value">{{ o.label }}</option>
+                  </select>
+                </div>
+              </div>
+              <div class="col-sm-3">
+                <div class="form-group">
+                  <label>Width (mm)</label>
+                  <input type="number" class="form-control" formControlName="doctorSignatureWidthMm" min="5" max="80" step="1" />
+                </div>
+              </div>
+              <div class="col-sm-3">
+                <div class="form-group">
+                  <label>Height (mm)</label>
+                  <input type="number" class="form-control" formControlName="doctorSignatureHeightMm" min="5" max="80" step="1" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel panel-info" style="margin-top: 16px;">
+          <div class="panel-heading">
+            <strong>Technician Signature Configuration</strong>
+          </div>
+          <div class="panel-body">
+            <p class="text-muted" style="margin-top: 0;">
+              Controls print visibility, horizontal position, and size only.
+              Uses the Technician signature captured in User Create/Edit.
+              Diagnostic reports resolve the technician from Technician Approval (<em>ReviewedBy</em>).
+            </p>
+            <p class="text-muted" *ngIf="isRadiologyReportType">
+              Radiology workflow does not currently record a technician approver identity.
+              Layout settings can be saved, but Radiology print will not render a technician signature until that identity exists.
+            </p>
+
+            <div class="form-group">
+              <label>
+                <input type="checkbox" formControlName="technicianSignatureEnabled" /> Show Technician Signature
+              </label>
+            </div>
+
+            <div class="row">
+              <div class="col-sm-3">
+                <div class="form-group">
+                  <label>Position</label>
+                  <select class="form-control" formControlName="technicianSignatureHorizontal">
+                    <option *ngFor="let o of horizontalOptions" [value]="o.value">{{ o.label }}</option>
+                  </select>
+                </div>
+              </div>
+              <div class="col-sm-3">
+                <div class="form-group">
+                  <label>Width (mm)</label>
+                  <input type="number" class="form-control" formControlName="technicianSignatureWidthMm" min="5" max="80" step="1" />
+                </div>
+              </div>
+              <div class="col-sm-3">
+                <div class="form-group">
+                  <label>Height (mm)</label>
+                  <input type="number" class="form-control" formControlName="technicianSignatureHeightMm" min="5" max="80" step="1" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel panel-default" style="max-width: 420px;">
+          <div class="panel-heading"><strong>Layout Preview (zones)</strong></div>
+          <div class="panel-body" style="padding: 8px;">
+            <div style="border: 1px solid #999; width: 100%; font-size: 11px;">
+              <div style="background:#eef; text-align:center; padding:6px;">HEADER CLEARANCE</div>
+              <div style="min-height: 90px; padding: 8px;">
+                REPORT CONTENT
+                <div *ngIf="form.get('technicianSignatureEnabled')?.value"
+                     style="margin-top: 20px;"
+                     [style.text-align]="previewTechnicianAlign">
+                  [Technician Signature]
+                </div>
+                <div *ngIf="form.get('doctorSignatureEnabled')?.value"
+                     style="margin-top: 12px;"
+                     [style.text-align]="previewSignatureAlign">
+                  [Doctor Signature]
+                </div>
+              </div>
+              <div style="background:#efe; text-align:center; padding:6px;">FOOTER CLEARANCE</div>
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary" [disabled]="saving || form.invalid">
+          {{ saving ? 'Saving...' : 'Save' }}
+        </button>
+        <button type="button" class="btn btn-default" style="margin-left: 8px;" (click)="resetToDefault()" [disabled]="saving">
+          Reset to Default
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="text-muted">Loading...</div>
+</div>

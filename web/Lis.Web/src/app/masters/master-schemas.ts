@@ -121,7 +121,7 @@ export const MASTER_LIST_SCHEMAS: { [key: string]: any } = {
     url: 'his-parameter-ranges', heading: 'Parameter Range Master', module: 'HisParameterRangeMaster', hideAction: true,
     elements: [
       { heading: 'Range Code', fieldName: 'hisRangeCode', sortable: true, width: '15%', type: 'link' },
-      { heading: 'Parameter', fieldName: 'hisParamCode', sortable: false, width: '15%', type: 'label' },
+      { heading: 'Parameter', fieldName: 'hisParamDescription', sortable: false, width: '15%', type: 'label' },
       { heading: 'Range Value', fieldName: 'hisRangeValue', sortable: true, width: '20%', type: 'label' },
       { heading: 'Gender', fieldName: 'gender', sortable: false, width: '10%', type: 'label' },
       { heading: 'Min', fieldName: 'minValue', sortable: false, width: '10%', type: 'label' },

@@ -99,6 +99,9 @@
     <Compile Include="Validation\NegativeValidationTests.cs" />
     <Compile Include="Reports\SaleInvoiceRegisterReportTests.cs" />
     <Compile Include="Reports\TestResultRangeEvaluatorTests.cs" />
+    <Compile Include="Reports\ReportLayoutConfigurationManagerTests.cs" />
+    <Compile Include="Reports\DiagnosticReportPrintSelectionTests.cs" />
+    <Compile Include="Users\UserSignatureValidationTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -121,6 +124,10 @@
     <ProjectReference Include="..\LIS.Logger\LIS.Logger.csproj">
       <Project>{FB7BE443-BA1C-44CB-BD5C-8A8FEF3B61FE}</Project>
       <Name>LIS.Logger</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\web\Lis.Api\Lis.Api.csproj">
+      <Project>{28709E82-B034-4C9A-9662-936378F3E83C}</Project>
+      <Name>Lis.Api</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

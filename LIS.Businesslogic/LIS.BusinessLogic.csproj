@@ -108,6 +108,7 @@
     <Compile Include="SampleReceivingManager.cs" />
     <Compile Include="RadiologyReportManager.cs" />
     <Compile Include="TestReportManager.cs" />
+    <Compile Include="ReportLayoutConfigurationManager.cs" />
     <Compile Include="TestReportValidationException.cs" />
     <Compile Include="TestResultRangeEvaluator.cs" />
     <Compile Include="TestResultEditManager.cs" />

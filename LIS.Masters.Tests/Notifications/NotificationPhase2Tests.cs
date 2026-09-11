@@ -176,7 +176,7 @@ namespace LIS.Masters.Tests.Notifications
 
         private sealed class TestReportManagerStub : ITestReportManager
         {
-            public DiagnosticTestReportDto GetDiagnosticTestReport(string labNo, string invoiceNo)
+            public DiagnosticTestReportDto GetDiagnosticTestReport(string labNo, string invoiceNo, long? testRequestDetailId = null)
             {
                 return new DiagnosticTestReportDto();
             }

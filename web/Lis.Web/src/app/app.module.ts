@@ -17,6 +17,7 @@ import { HeaderComponent, NavMenuComponent, FooterComponent, CompanyInfoComponen
 import { HomeComponent } from './home/home.component';
 import { DashboardComponent, DashboardKpiWidgetComponent, DashboardAlertsWidgetComponent, DashboardQueueWidgetComponent } from './dashboard';
 import { NotificationConfigurationComponent } from './setup/notification-configuration/notification-configuration.component';
+import { ReportLayoutConfigurationComponent } from './setup/report-layout-configuration/report-layout-configuration.component';
 import { LoginComponent, ChangePasswordComponent, ForgotPasswordComponent, RegisterComponent } from './authentication';
 import { AboutComponent, ContactComponent, TremsComponent } from './annonimious';
 import { LogListComponent } from './activitylog/log-list/log-list.component';
@@ -72,6 +73,7 @@ export const options: Partial<IConfig> | (() => Partial<IConfig>) = null;
     DashboardAlertsWidgetComponent,
     DashboardQueueWidgetComponent,
     NotificationConfigurationComponent,
+    ReportLayoutConfigurationComponent,
     LoginComponent,
     CompanyInfoComponent,
     AboutComponent,

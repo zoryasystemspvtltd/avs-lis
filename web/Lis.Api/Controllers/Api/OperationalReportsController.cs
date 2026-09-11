@@ -4,6 +4,7 @@ using LIS.BusinessLogic;
 using LIS.DtoModel;
 using LIS.DtoModel.Interfaces;
 using LIS.DtoModel.Models;
+using LIS.DtoModel.Models.Reports;
 using LIS.Logger;
 using Microsoft.AspNet.Identity;
 using Newtonsoft.Json;
@@ -23,6 +24,7 @@ namespace Lis.Api.Controllers.Api
         private readonly IReportManager reportManager;
         private readonly ITestReportManager testReportManager;
         private readonly IRadiologyReportManager radiologyReportManager;
+        private readonly IReportLayoutConfigurationManager reportLayoutManager;
         private readonly ApplicationUserManager userManager;
         private readonly ILogger logger;
 
@@ -30,12 +32,14 @@ namespace Lis.Api.Controllers.Api
             IReportManager reportManager,
             ITestReportManager testReportManager,
             IRadiologyReportManager radiologyReportManager,
+            IReportLayoutConfigurationManager reportLayoutManager,
             ApplicationUserManager userManager,
             ILogger logger)
         {
             this.reportManager = reportManager;
             this.testReportManager = testReportManager;
             this.radiologyReportManager = radiologyReportManager;
+            this.reportLayoutManager = reportLayoutManager;
             this.userManager = userManager;
             this.logger = logger;
         }
@@ -141,13 +145,15 @@ namespace Lis.Api.Controllers.Api
         [HttpGet]
         [Route("TestReport")]
         [QAuthorize(ModuleName = "Reports", ModulePermissionTypes = ModulePermissionType.CanView)]
-        public IHttpActionResult GetTestReport(string labNo = null, string invoiceNo = null)
+        public IHttpActionResult GetTestReport(string labNo = null, string invoiceNo = null, long? testRequestDetailId = null)
         {
             try
             {
-                var report = testReportManager.GetDiagnosticTestReport(labNo, invoiceNo);
+                var report = testReportManager.GetDiagnosticTestReport(labNo, invoiceNo, testRequestDetailId);
                 EnrichLabApprover(report);
+                EnrichLabTechnician(report);
                 EnrichReportBranding(report);
+                EnrichReportLayout(report);
                 return Ok(report);
             }
             catch (TestReportValidationException ex)
@@ -187,6 +193,7 @@ namespace Lis.Api.Controllers.Api
             {
                 var report = radiologyReportManager.GetRadiologyReportForPrint(radiologyRequestId);
                 EnrichRadiologyApprover(report);
+                EnrichRadiologyLayout(report);
                 return Ok(report);
             }
             catch (TestReportValidationException ex)
@@ -282,6 +289,37 @@ namespace Lis.Api.Controllers.Api
         }
 
         /// <summary>
+        /// Resolves the reviewing technician (<see cref="DiagnosticTestReportHeader.ReviewedBy"/>)
+        /// from Technician Approval and fills display name + signature from the same user signature store.
+        /// Missing signature must never block printing.
+        /// </summary>
+        private void EnrichLabTechnician(DiagnosticTestReportDto report)
+        {
+            var header = report?.Header;
+            if (header == null || string.IsNullOrWhiteSpace(header.ReviewedBy))
+            {
+                return;
+            }
+
+            try
+            {
+                var user = ResolveUserByName(header.ReviewedBy);
+                if (user == null)
+                {
+                    return;
+                }
+
+                header.ReviewedByName = BuildDisplayName(user, header.ReviewedBy);
+                header.ReviewedByQualification = user.Qualification;
+                header.ReviewedBySignatureImage = DoctorSignatureStorage.GetSignatureDataUri(user.DoctorSignaturePath);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError("Technician signature enrich failed: " + ex.Message);
+            }
+        }
+
+        /// <summary>
         /// Fills laboratory branding / footer fields from Web.config appSettings (Report:* keys)
         /// and ClientApplication name as fallback. No hard-coded lab identity.
         /// </summary>
@@ -344,6 +382,46 @@ namespace Lis.Api.Controllers.Api
         {
             var value = ConfigurationManager.AppSettings[key];
             return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+        }
+
+        /// <summary>
+        /// Attaches physical print layout for stationery clearance / signature placement.
+        /// Failures are swallowed so report printing never blocks on configuration.
+        /// </summary>
+        private void EnrichReportLayout(DiagnosticTestReportDto report)
+        {
+            if (report == null || reportLayoutManager == null)
+            {
+                return;
+            }
+
+            try
+            {
+                report.Layout = reportLayoutManager.GetByReportType(ReportLayoutReportTypes.Diagnostic);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError("Report layout enrich failed (Diagnostic): " + ex.Message);
+                report.Layout = null;
+            }
+        }
+
+        private void EnrichRadiologyLayout(DiagnosticRadiologyReportDto report)
+        {
+            if (report == null || reportLayoutManager == null)
+            {
+                return;
+            }
+
+            try
+            {
+                report.Layout = reportLayoutManager.GetByReportType(ReportLayoutReportTypes.Radiology);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError("Report layout enrich failed (Radiology): " + ex.Message);
+                report.Layout = null;
+            }
         }
 
         private void EnrichRadiologyApprover(DiagnosticRadiologyReportDto report)

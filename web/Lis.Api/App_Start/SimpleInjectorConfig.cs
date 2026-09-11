@@ -121,6 +121,7 @@ namespace Lis.Api
             container.Register<ISampleReceivingManager, SampleReceivingManager>(Lifestyle.Scoped);
             container.Register<IRadiologyReportManager, RadiologyReportManager>(Lifestyle.Scoped);
             container.Register<ITestResultEditManager, TestResultEditManager>(Lifestyle.Scoped);
+            container.Register<IReportLayoutConfigurationManager, ReportLayoutConfigurationManager>(Lifestyle.Scoped);
             container.Register<INotificationConfigurationManager, NotificationConfigurationManager>(Lifestyle.Scoped);
             container.Register<INotificationTemplateManager, NotificationTemplateManager>(Lifestyle.Scoped);
             container.Register<INotificationEventManager, NotificationEventManager>(Lifestyle.Scoped);

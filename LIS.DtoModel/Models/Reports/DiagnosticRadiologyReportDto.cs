@@ -1,4 +1,5 @@
 using System;
+using LIS.DtoModel.Models.Reports;
 
 namespace LIS.DtoModel.Models
 {
@@ -9,6 +10,8 @@ namespace LIS.DtoModel.Models
         public string Findings { get; set; }
         public string Impression { get; set; }
         public string Recommendation { get; set; }
+        /// <summary>Optional physical print layout (stationery clearance / signature). Null = client defaults.</summary>
+        public ReportLayoutConfigurationDto Layout { get; set; }
     }
 
     public class DiagnosticRadiologyReportHeader

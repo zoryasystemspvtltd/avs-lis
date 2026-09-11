@@ -167,7 +167,8 @@ export class RadiologyReportPrintComponent implements OnInit, OnDestroy {
       clinicalHistory: r?.clinicalHistory ?? r?.ClinicalHistory,
       findings: r?.findings ?? r?.Findings,
       impression: r?.impression ?? r?.Impression,
-      recommendation: r?.recommendation ?? r?.Recommendation
+      recommendation: r?.recommendation ?? r?.Recommendation,
+      layout: r?.layout || r?.Layout || null
     };
   }
 
@@ -180,15 +181,33 @@ export class RadiologyReportPrintComponent implements OnInit, OnDestroy {
   }
 
   private getPrintStyles(): string {
+    const layout = this.resolvePrintLayout();
+    const header = this.mm(layout.headerHeightMm);
+    const footerGap = this.mm(layout.footerHeightMm);
+    const left = this.mm(layout.leftMarginMm);
+    const right = this.mm(layout.rightMarginMm);
+    const side = left; // radiology uses one side var historically; apply left for padding
+    const sigW = this.mm(layout.doctorSignatureWidthMm);
+    const sigH = this.mm(layout.doctorSignatureHeightMm);
+    const sigSpace = this.mm(Math.max(28, layout.doctorSignatureHeightMm + 14));
+    const sigDisplay = layout.doctorSignatureEnabled ? 'block' : 'none';
+    const sigAlignSelf = layout.doctorSignatureHorizontal === 'Right'
+      ? 'flex-end'
+      : (layout.doctorSignatureHorizontal === 'Center' ? 'center' : 'flex-start');
+    const sigTextAlign = layout.doctorSignatureHorizontal === 'Right'
+      ? 'right'
+      : (layout.doctorSignatureHorizontal === 'Center' ? 'center' : 'left');
+
     return `
       :root {
         --rad-title-bar-height: 8mm;
-        --rad-header-total: 4cm;
-        --rad-letterhead-height: calc(4cm - var(--rad-title-bar-height));
-        --rad-footer-gap: 5cm;
-        --rad-footer-signature-space: 28mm;
+        --rad-header-total: ${header};
+        --rad-letterhead-height: calc(${header} - var(--rad-title-bar-height));
+        --rad-footer-gap: ${footerGap};
+        --rad-footer-signature-space: ${sigSpace};
         --rad-footer-height: calc(var(--rad-footer-gap) + var(--rad-footer-signature-space));
-        --rad-side-margin: 10mm;
+        --rad-side-margin: ${side};
+        --rad-side-margin-right: ${right};
       }
       @page { size: A4 portrait; margin: 0; }
       body.radiology-report-print-doc {
@@ -242,8 +261,9 @@ export class RadiologyReportPrintComponent implements OnInit, OnDestroy {
         border: none;
       }
       .report-footer-signature {
-        align-self: flex-start;
-        text-align: left;
+        display: ${sigDisplay};
+        align-self: ${sigAlignSelf};
+        text-align: ${sigTextAlign};
         max-width: 55%;
         margin-bottom: 0;
         font-size: 8pt;
@@ -275,9 +295,9 @@ export class RadiologyReportPrintComponent implements OnInit, OnDestroy {
         white-space: nowrap;
         font-weight: 600;
       }
-      .report-signature-img { max-height: 14mm; max-width: 50mm; display: block; margin-bottom: 1mm; }
+      .report-signature-img { max-height: ${sigH}; max-width: ${sigW}; display: block; margin-bottom: 1mm; }
       .report-print-body {
-        padding: calc(var(--rad-header-total) + 2mm) var(--rad-side-margin)
+        padding: calc(var(--rad-header-total) + 2mm) var(--rad-side-margin-right)
           calc(var(--rad-footer-height) + 2mm) var(--rad-side-margin);
       }
       .report-meta-table td { border: 1px solid #ccc; padding: 3px 6px; }
@@ -286,5 +306,35 @@ export class RadiologyReportPrintComponent implements OnInit, OnDestroy {
       .narrative-block h4 { margin: 0 0 6px; color: #125d74; font-size: 10pt; }
       .narrative-body { white-space: pre-wrap; line-height: 1.5; }
     `;
+  }
+
+  private resolvePrintLayout() {
+    const raw = this.report?.layout || this.report?.Layout || null;
+    const defaults = {
+      headerHeightMm: 40, footerHeightMm: 50, leftMarginMm: 10, rightMarginMm: 10,
+      doctorSignatureEnabled: true, doctorSignatureHorizontal: 'Left',
+      doctorSignatureWidthMm: 50, doctorSignatureHeightMm: 14
+    };
+    if (!raw) {
+      return defaults;
+    }
+    const num = (v: any, fb: number) => {
+      const n = Number(v);
+      return isFinite(n) ? n : fb;
+    };
+    return {
+      headerHeightMm: num(raw.headerHeightMm ?? raw.HeaderHeightMm, defaults.headerHeightMm),
+      footerHeightMm: num(raw.footerHeightMm ?? raw.FooterHeightMm, defaults.footerHeightMm),
+      leftMarginMm: num(raw.leftMarginMm ?? raw.LeftMarginMm, defaults.leftMarginMm),
+      rightMarginMm: num(raw.rightMarginMm ?? raw.RightMarginMm, defaults.rightMarginMm),
+      doctorSignatureEnabled: (raw.doctorSignatureEnabled ?? raw.DoctorSignatureEnabled) !== false,
+      doctorSignatureHorizontal: raw.doctorSignatureHorizontal || raw.DoctorSignatureHorizontal || defaults.doctorSignatureHorizontal,
+      doctorSignatureWidthMm: num(raw.doctorSignatureWidthMm ?? raw.DoctorSignatureWidthMm, defaults.doctorSignatureWidthMm),
+      doctorSignatureHeightMm: num(raw.doctorSignatureHeightMm ?? raw.DoctorSignatureHeightMm, defaults.doctorSignatureHeightMm)
+    };
+  }
+
+  private mm(value: number): string {
+    return `${value}mm`;
   }
 }

@@ -110,6 +110,81 @@ namespace LIS.Masters.Tests.Masters
         }
 
         [TestMethod]
+        public void HisParameterRange_Listing_Search_By_Code_And_Name_And_Enriches_Description()
+        {
+            var testId = EnsureTestId();
+            var test = Services.HisTest.GetTestById(testId);
+            var paramCode = UniqueCode("PRSC");
+            var paramName = "Listing Name " + UniqueCode("PRSN");
+
+            var paramId = (int)Services.HisParameter.Add(new HISParameterMaster
+            {
+                HisTestId = testId,
+                HISTestCode = test.HISTestCode,
+                HISParamCode = paramCode,
+                HISParamDescription = paramName
+            });
+
+            var rangeId = (int)Services.HisParameterRange.Add(new HISParameterRangMaster
+            {
+                HisParameterId = paramId,
+                HISRangeValue = "Normal",
+                Gender = "Both",
+                AgeFrom = 0,
+                AgeTo = 99,
+                AgeType = "Year",
+                MinValue = 1,
+                MaxValue = 10
+            });
+
+            try
+            {
+                var byExactCode = Services.HisParameterRange.Get(
+                    ListOptionsFactory.Create("HISRangeCode", 1, 50, paramCode));
+                Assert.IsTrue(byExactCode.Items.Any(r => r.Id == rangeId), "Exact parameter code search should return the range.");
+                Assert.AreEqual(paramName, byExactCode.Items.First(r => r.Id == rangeId).HisParamDescription,
+                    "Listing must enrich Parameter Name (HisParamDescription).");
+                Assert.AreEqual(paramCode, byExactCode.Items.First(r => r.Id == rangeId).HisParamCode);
+
+                var partialCode = paramCode.Substring(0, Math.Min(4, paramCode.Length));
+                var byPartialCode = Services.HisParameterRange.Get(
+                    ListOptionsFactory.Create("HISRangeCode", 1, 50, partialCode));
+                Assert.IsTrue(byPartialCode.Items.Any(r => r.Id == rangeId), "Partial parameter code search should match.");
+
+                var byName = Services.HisParameterRange.Get(
+                    ListOptionsFactory.Create("HISRangeCode", 1, 50, paramName));
+                Assert.IsTrue(byName.Items.Any(r => r.Id == rangeId), "Parameter name search should return the range.");
+
+                var byPartialName = Services.HisParameterRange.Get(
+                    ListOptionsFactory.Create("HISRangeCode", 1, 50, "Listing Name"));
+                Assert.IsTrue(byPartialName.Items.Any(r => r.Id == rangeId), "Partial parameter name search should match.");
+
+                var byCase = Services.HisParameterRange.Get(
+                    ListOptionsFactory.Create("HISRangeCode", 1, 50, paramCode.ToLowerInvariant()));
+                Assert.IsTrue(byCase.Items.Any(r => r.Id == rangeId), "Parameter code search should be case-insensitive.");
+
+                var noHit = Services.HisParameterRange.Get(
+                    ListOptionsFactory.Create("HISRangeCode", 1, 50, "ZZZ-NO-MATCH-" + Guid.NewGuid().ToString("N")));
+                Assert.IsFalse(noHit.Items.Any(r => r.Id == rangeId));
+                Assert.AreEqual(0, noHit.TotalRecord);
+
+                var cleared = Services.HisParameterRange.Get(
+                    ListOptionsFactory.Create("HISRangeCode", 1, 50, string.Empty));
+                Assert.IsTrue(cleared.Items.Any(r => r.Id == rangeId), "Empty search should return listing rows.");
+
+                var page1 = Services.HisParameterRange.Get(
+                    ListOptionsFactory.Create("HISRangeCode", 1, 1, paramCode));
+                Assert.AreEqual(1, page1.Items.Count());
+                Assert.IsTrue(page1.TotalRecord >= 1);
+            }
+            finally
+            {
+                Services.HisParameterRange.Delete(new HISParameterRangMaster { Id = rangeId });
+                Services.HisParameter.Delete(new HISParameterMaster { Id = paramId });
+            }
+        }
+
+        [TestMethod]
         public void HisParameterRange_Edit_Through_Interface_Preserves_Code_And_Updates()
         {
             var testId = EnsureTestId();

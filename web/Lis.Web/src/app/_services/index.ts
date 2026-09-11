@@ -13,3 +13,4 @@ export * from './master.service';
 export * from './report.service';
 export * from './test-result-edit.service';
 export * from './notification-configuration.service';
+export * from './report-layout-configuration.service';

@@ -1,5 +1,6 @@
 ﻿using LIS.DtoModel.Models;
 using LIS.DtoModel.Models.Notification;
+using LIS.DtoModel.Models.Reports;
 using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration.Conventions;
 
@@ -76,6 +77,7 @@ namespace LIS.DataAccess
         public virtual DbSet<NotificationTemplate> NotificationTemplate { get; set; }
         public virtual DbSet<NotificationAudit> NotificationAudit { get; set; }
         public virtual DbSet<SecureLinkToken> SecureLinkToken { get; set; }
+        public virtual DbSet<ReportLayoutConfiguration> ReportLayoutConfiguration { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {

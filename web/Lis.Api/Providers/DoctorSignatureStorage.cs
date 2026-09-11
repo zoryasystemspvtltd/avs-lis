@@ -32,33 +32,47 @@ namespace Lis.Api.Providers
 
         public static bool TryValidate(HttpPostedFile file, out string error)
         {
-            error = null;
-
             if (file == null || file.ContentLength == 0)
             {
-                error = "Doctor signature file is required.";
+                error = "Signature file is required.";
                 return false;
             }
 
-            if (file.ContentLength > MaxFileSizeBytes)
+            return TryValidateMetadata(file.FileName, file.ContentLength, file.ContentType, out error);
+        }
+
+        /// <summary>
+        /// Shared PNG/JPG + 2 MB rules for Doctor/Technician signature uploads (no HostingEnvironment dependency).
+        /// </summary>
+        public static bool TryValidateMetadata(string fileName, long contentLength, string contentType, out string error)
+        {
+            error = null;
+
+            if (contentLength <= 0)
             {
-                error = "Doctor signature must not exceed 2 MB.";
+                error = "Signature file is required.";
                 return false;
             }
 
-            var extension = Path.GetExtension(file.FileName);
+            if (contentLength > MaxFileSizeBytes)
+            {
+                error = "Signature must not exceed 2 MB.";
+                return false;
+            }
+
+            var extension = Path.GetExtension(fileName ?? string.Empty);
             if (string.IsNullOrWhiteSpace(extension)
                 || !AllowedExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
             {
-                error = "Doctor signature must be a PNG or JPG image.";
+                error = "Signature must be a PNG or JPG image.";
                 return false;
             }
 
-            var mimeType = (file.ContentType ?? string.Empty).Trim();
+            var mimeType = (contentType ?? string.Empty).Trim();
             if (!string.IsNullOrWhiteSpace(mimeType)
                 && !AllowedMimeTypes.Contains(mimeType, StringComparer.OrdinalIgnoreCase))
             {
-                error = "Doctor signature has an unsupported file type.";
+                error = "Signature has an unsupported file type.";
                 return false;
             }
 

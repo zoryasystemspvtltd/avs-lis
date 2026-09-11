@@ -57,7 +57,7 @@ namespace LIS.BusinessLogic
             testRequestManager = testRequestDetailsManager;
         }
 
-        public DiagnosticTestReportDto GetDiagnosticTestReport(string labNo, string invoiceNo)
+        public DiagnosticTestReportDto GetDiagnosticTestReport(string labNo, string invoiceNo, long? testRequestDetailId = null)
         {
             if (string.IsNullOrWhiteSpace(labNo) && string.IsNullOrWhiteSpace(invoiceNo))
             {
@@ -92,7 +92,21 @@ namespace LIS.BusinessLogic
                 throw new TestReportValidationException("No test bookings found for this invoice.");
             }
 
+            // Existing eligibility: all requests on the order must still qualify.
             ValidateWorkflow(requests);
+
+            // Optional print-scope filter — ownership validated against this invoice's requests only.
+            if (testRequestDetailId.HasValue)
+            {
+                var selectedId = testRequestDetailId.Value;
+                if (!requests.Any(r => r.Id == selectedId))
+                {
+                    throw new TestReportValidationException(
+                        "Selected test does not belong to this Lab No / invoice. Report cannot be printed.");
+                }
+
+                requests = requests.Where(r => r.Id == selectedId).ToList();
+            }
 
             var header = BuildHeader(invoice, patient, requests);
             var sectionByRequestId = new Dictionary<long, DiagnosticTestReportSection>();
@@ -422,6 +436,12 @@ namespace LIS.BusinessLogic
                 .OrderByDescending(r => r.AuthorizationDate ?? r.ResultDate)
                 .FirstOrDefault();
 
+            var latestTechReview = requests
+                .Select(r => resultRepo.Get(res => res.TestRequestId == r.Id).FirstOrDefault())
+                .Where(r => r != null && !string.IsNullOrWhiteSpace(r.ReviewedBy))
+                .OrderByDescending(r => r.ReviewDate ?? r.ResultDate)
+                .FirstOrDefault();
+
             DateTime? receivedDate = null;
             var receivedCandidates = requests
                 .Where(r => r.SampleReceivedDate > DateTime.MinValue)
@@ -448,7 +468,8 @@ namespace LIS.BusinessLogic
                 ReceivedDate = receivedDate,
                 ReportDate = latestResult?.AuthorizationDate ?? latestResult?.ResultDate ?? OperationalDateTime.GetFacilityNow(),
                 Status = "Final",
-                ApprovedBy = latestResult?.AuthorizedBy
+                ApprovedBy = latestResult?.AuthorizedBy,
+                ReviewedBy = latestTechReview?.ReviewedBy
             };
         }
 
@@ -488,6 +509,7 @@ namespace LIS.BusinessLogic
 
             return new DiagnosticTestReportSection
             {
+                TestRequestDetailId = request.Id,
                 TestCode = request.HISTestCode,
                 TestName = FormatTestHeading(review.Test.TestName ?? request.HISTestName, review.Test.SpecimenName ?? request.SpecimenName),
                 Specimen = review.Test.SpecimenName ?? request.SpecimenName,

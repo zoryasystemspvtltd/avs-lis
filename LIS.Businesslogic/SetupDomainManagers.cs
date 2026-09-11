@@ -377,9 +377,12 @@ namespace LIS.BusinessLogic
             if (!string.IsNullOrWhiteSpace(option.SearchText))
             {
                 var search = option.SearchText.Trim();
+                // Match listing-visible identity fields: range code, parameter code, parameter name.
                 ranges = ranges.Where(r =>
                         (!string.IsNullOrWhiteSpace(r.HISRangeCode) &&
                             r.HISRangeCode.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                        (!string.IsNullOrWhiteSpace(r.HisParamCode) &&
+                            r.HisParamCode.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0) ||
                         (!string.IsNullOrWhiteSpace(r.HisParamDescription) &&
                             r.HisParamDescription.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0))
                     .ToList();

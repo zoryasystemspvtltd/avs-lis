@@ -71,6 +71,15 @@ export class UsersEditComponent implements OnInit, OnDestroy {
     return this.item?.roles?.some(role => role.isInRole && role.name === 'Doctor');
   }
 
+  isTechnicianRoleSelected(): boolean {
+    return this.item?.roles?.some(role => role.isInRole && role.name === 'Technician');
+  }
+
+  /** Signature section: Doctor and/or Technician (one shared user signature). */
+  isSignatureRoleSelected(): boolean {
+    return this.isDoctorRoleSelected() || this.isTechnicianRoleSelected();
+  }
+
   updateDoctorValidators() {
     if (!this.editUserForm) {
       return;
@@ -82,9 +91,12 @@ export class UsersEditComponent implements OnInit, OnDestroy {
     } else {
       designation.clearValidators();
       designation.setValue('');
-      this.clearSignatureSelection();
     }
     designation.updateValueAndValidity();
+
+    if (!this.isSignatureRoleSelected()) {
+      this.clearSignatureSelection();
+    }
   }
 
   loadExistingSignaturePreview() {
@@ -110,13 +122,13 @@ export class UsersEditComponent implements OnInit, OnDestroy {
 
     const extension = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
     if (!this.allowedSignatureExtensions.includes(extension)) {
-      this.signatureError = 'Doctor signature must be a PNG or JPG image.';
+      this.signatureError = 'Signature must be a PNG or JPG image.';
       input.value = '';
       return;
     }
 
     if (file.size > this.maxSignatureSizeBytes) {
-      this.signatureError = 'Doctor signature must not exceed 2 MB.';
+      this.signatureError = 'Signature must not exceed 2 MB.';
       input.value = '';
       return;
     }
@@ -151,8 +163,8 @@ export class UsersEditComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (this.isDoctorRoleSelected() && !this.signatureFile && !this.item.doctor_signature_path) {
-      this.signatureError = 'Doctor signature is required for Doctor users.';
+    if (this.isSignatureRoleSelected() && !this.signatureFile && !this.item.doctor_signature_path) {
+      this.signatureError = 'Signature is required for Doctor or Technician users.';
       return;
     }
 
@@ -167,14 +179,14 @@ export class UsersEditComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.userService.editUser(item)
     .subscribe(data => { 
-        if (this.isDoctorRoleSelected() && this.signatureFile) {
+        if (this.isSignatureRoleSelected() && this.signatureFile) {
           this.userService.uploadDoctorSignature(this.id, this.signatureFile)
             .subscribe(() => {
               this.loading = false;
               this.router.navigate(['/users']);
             }, (error) => {
               this.loading = false;
-              this.message = error?.message || 'User saved but doctor signature upload failed.';
+              this.message = error?.message || 'User saved but signature upload failed.';
               this.alertService.error(this.message);
             });
           return;

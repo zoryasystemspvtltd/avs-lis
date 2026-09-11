@@ -35,8 +35,12 @@ export class ReportService {
     return this.http.get<any[]>(`${this.baseUrl}/api/Reports/TestReportLabNumbers`);
   }
 
-  getTestReport(labNo: string): Observable<any> {
-    return this.http.get<any>(`${this.baseUrl}/api/Reports/TestReport?labNo=${encodeURIComponent(labNo)}`);
+  getTestReport(labNo: string, testRequestDetailId?: number | null): Observable<any> {
+    let url = `${this.baseUrl}/api/Reports/TestReport?labNo=${encodeURIComponent(labNo)}`;
+    if (testRequestDetailId != null && testRequestDetailId > 0) {
+      url += `&testRequestDetailId=${encodeURIComponent(String(testRequestDetailId))}`;
+    }
+    return this.http.get<any>(url);
   }
 
   getRadiologyPrintAccessions(): Observable<any[]> {
