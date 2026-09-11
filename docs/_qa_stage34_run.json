@@ -1,0 +1,146 @@
+﻿[
+    {
+        "Area":  "NOTIF",
+        "Test":  "Admin GET NotificationConfiguration",
+        "Status":  "PASS",
+        "Detail":  "IsEnabled=True Sms=True"
+    },
+    {
+        "Area":  "NOTIF",
+        "Test":  "Mock providers active",
+        "Status":  "PASS",
+        "Detail":  "UseMockProviders=true"
+    },
+    {
+        "Area":  "NOTIF",
+        "Test":  "IsEnabled ops observation",
+        "Status":  "PASS",
+        "Detail":  "enabled locally; mock=true prevents real SMS/WA"
+    },
+    {
+        "Area":  "REPORT",
+        "Test":  "Doctor-approved sample selected",
+        "Status":  "PASS",
+        "Detail":  "invoice=INV-20260823-0002 sampleNo=202608230002SER requestId=1891 test=LFT"
+    },
+    {
+        "Area":  "REPORT",
+        "Test":  "Print All TestReport API",
+        "Status":  "PASS",
+        "Detail":  "contentGroups=4 invoice=INV-20260823-0002"
+    },
+    {
+        "Area":  "REPORT",
+        "Test":  "Layout enriched on report",
+        "Status":  "PASS",
+        "Detail":  "headerMm=50.00 doctorSig=True techSig=True"
+    },
+    {
+        "Area":  "RANGE",
+        "Test":  "No verbose Both/Year fallback",
+        "Status":  "PASS",
+        "Detail":  "pattern not found"
+    },
+    {
+        "Area":  "REPORT",
+        "Test":  "Print Specific single detail",
+        "Status":  "PASS",
+        "Detail":  "all=4 specific=2"
+    },
+    {
+        "Area":  "REPORT",
+        "Test":  "Print ownership mismatch rejected",
+        "Status":  "PASS",
+        "Detail":  "rejected status=400 badId=1886"
+    },
+    {
+        "Area":  "SIG",
+        "Test":  "Doctor users with signature path",
+        "Status":  "PASS",
+        "Detail":  "count=2"
+    },
+    {
+        "Area":  "SIG",
+        "Test":  "Technician users with signature path",
+        "Status":  "BLOCKED",
+        "Detail":  "count=0"
+    },
+    {
+        "Area":  "LAYOUT",
+        "Test":  "Admin save Diagnostic layout",
+        "Status":  "PASS",
+        "Detail":  "header=50.00 techEnabled=true"
+    },
+    {
+        "Area":  "LAYOUT",
+        "Test":  "Tech denied layout save",
+        "Status":  "PASS",
+        "Detail":  "denied"
+    },
+    {
+        "Area":  "WF",
+        "Test":  "SampleCollection PendingQueue",
+        "Status":  "PASS",
+        "Detail":  "rows=25"
+    },
+    {
+        "Area":  "WF",
+        "Test":  "SampleReceiving Queue",
+        "Status":  "PASS",
+        "Detail":  "rows=25"
+    },
+    {
+        "Area":  "WF",
+        "Test":  "Collect QA-CERT-SMP-PEND",
+        "Status":  "PASS",
+        "Detail":  "CollectedBy set barcode=QA-CERT-SMP-PEND"
+    },
+    {
+        "Area":  "WF",
+        "Test":  "Receive QA-CERT-SMP-COLL",
+        "Status":  "PASS",
+        "Detail":  "ReceivedBy set"
+    },
+    {
+        "Area":  "OPDT",
+        "Test":  "Future collection rejected",
+        "Status":  "PASS",
+        "Detail":  "rejected as expected"
+    },
+    {
+        "Area":  "NOTIF",
+        "Test":  "Notification tables present",
+        "Status":  "PASS",
+        "Detail":  "tables=NotificationAudit,NotificationConfiguration,NotificationTemplate"
+    },
+    {
+        "Area":  "NOTIF",
+        "Test":  "Table rowcount NotificationAudit",
+        "Status":  "PASS",
+        "Detail":  "count=14"
+    },
+    {
+        "Area":  "NOTIF",
+        "Test":  "Paid/partial live notify E2E",
+        "Status":  "BLOCKED",
+        "Detail":  "Doctor-approve trigger not executed this pass (mock providers confirmed; avoid uncontrolled approve)"
+    },
+    {
+        "Area":  "NOTIF",
+        "Test":  "Secure download token table",
+        "Status":  "SKIPPED",
+        "Detail":  "no dedicated token table name matched; invalid-token API covered elsewhere"
+    },
+    {
+        "Area":  "ENTER",
+        "Test":  "Automated Enter-key suite",
+        "Status":  "PASS",
+        "Detail":  "Karma 11/11 same-day evidence"
+    },
+    {
+        "Area":  "ENTER",
+        "Test":  "Browser Tab/Shift+Tab live UAT",
+        "Status":  "BLOCKED",
+        "Detail":  "No browser automation driver configured"
+    }
+]

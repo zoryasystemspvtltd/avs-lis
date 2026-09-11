@@ -1,0 +1,284 @@
+﻿[
+    {
+        "Area":  "ENV",
+        "Test":  "Portal HTTP",
+        "Status":  "PASS",
+        "Detail":  "status=200"
+    },
+    {
+        "Area":  "ENV",
+        "Test":  "API HTTP",
+        "Status":  "PASS",
+        "Detail":  "status=200"
+    },
+    {
+        "Area":  "ENV",
+        "Test":  "DB connectivity",
+        "Status":  "PASS",
+        "Detail":  "NotificationConfiguration rows=1"
+    },
+    {
+        "Area":  "ENV",
+        "Test":  "UseMockProviders",
+        "Status":  "PASS",
+        "Detail":  "value=true"
+    },
+    {
+        "Area":  "ENV",
+        "Test":  "FacilityTimeZone",
+        "Status":  "PASS",
+        "Detail":  "value=India Standard Time"
+    },
+    {
+        "Area":  "ENV",
+        "Test":  "Notification IsEnabled",
+        "Status":  "PASS",
+        "Detail":  "IsEnabled=1 (ops observation if 1; mock providers required)"
+    },
+    {
+        "Area":  "TOOL",
+        "Test":  "MSBuild",
+        "Status":  "BLOCKED",
+        "Detail":  "VS2022 Community MSBuild present=False"
+    },
+    {
+        "Area":  "TOOL",
+        "Test":  "VSTest",
+        "Status":  "BLOCKED",
+        "Detail":  "vstest.console present=False"
+    },
+    {
+        "Area":  "TOOL",
+        "Test":  "Masters.Tests DLL",
+        "Status":  "PASS",
+        "Detail":  "prebuilt Release DLL"
+    },
+    {
+        "Area":  "TOOL",
+        "Test":  "sqlcmd ODBC",
+        "Status":  "BLOCKED",
+        "Detail":  "sqlcmd DSN/driver fails; harness uses ADO.NET SqlClient instead"
+    },
+    {
+        "Area":  "AUTH",
+        "Test":  "Admin token",
+        "Status":  "PASS",
+        "Detail":  "len=1152"
+    },
+    {
+        "Area":  "AUTH",
+        "Test":  "Technician token",
+        "Status":  "PASS",
+        "Detail":  "len=939"
+    },
+    {
+        "Area":  "AUTH",
+        "Test":  "Doctor token",
+        "Status":  "PASS",
+        "Detail":  "len=854"
+    },
+    {
+        "Area":  "AUTH",
+        "Test":  "Receptionist token",
+        "Status":  "SKIPPED",
+        "Detail":  "qa-cert-reception user not available: The remote server returned an error: (400) Bad Request."
+    },
+    {
+        "Area":  "SEC",
+        "Test":  "Anonymous SaleInvoice",
+        "Status":  "PASS",
+        "Detail":  "401/403"
+    },
+    {
+        "Area":  "SEC",
+        "Test":  "Anonymous BarCode",
+        "Status":  "PASS",
+        "Detail":  "401/403"
+    },
+    {
+        "Area":  "SEC",
+        "Test":  "Anonymous HisTest",
+        "Status":  "PASS",
+        "Detail":  "401/403"
+    },
+    {
+        "Area":  "SEC",
+        "Test":  "Anonymous Department",
+        "Status":  "PASS",
+        "Detail":  "401/403"
+    },
+    {
+        "Area":  "SEC",
+        "Test":  "Anonymous TestRate",
+        "Status":  "PASS",
+        "Detail":  "401/403"
+    },
+    {
+        "Area":  "SEC",
+        "Test":  "Anonymous Quality",
+        "Status":  "PASS",
+        "Detail":  "401/403"
+    },
+    {
+        "Area":  "SEC",
+        "Test":  "Anonymous ReportLayout",
+        "Status":  "PASS",
+        "Detail":  "401/403"
+    },
+    {
+        "Area":  "SEC",
+        "Test":  "Anonymous NotificationConfig",
+        "Status":  "PASS",
+        "Detail":  "401/403"
+    },
+    {
+        "Area":  "SEC",
+        "Test":  "Anonymous DashboardReg",
+        "Status":  "PASS",
+        "Detail":  "401/403"
+    },
+    {
+        "Area":  "SEC",
+        "Test":  "Secure download invalid",
+        "Status":  "PASS",
+        "Detail":  "HTTP 400 opaque rejection"
+    },
+    {
+        "Area":  "RBAC",
+        "Test":  "Admin GET Diagnostic layout",
+        "Status":  "PASS",
+        "Detail":  "header=50.00 footer=50.00 doc=True tech=True"
+    },
+    {
+        "Area":  "RBAC",
+        "Test":  "Admin GET Radiology layout",
+        "Status":  "PASS",
+        "Detail":  "header=40.00"
+    },
+    {
+        "Area":  "RBAC",
+        "Test":  "Admin has ReportLayoutConfiguration module",
+        "Status":  "PASS",
+        "Detail":  "has=True"
+    },
+    {
+        "Area":  "RBAC",
+        "Test":  "Technician denied Report Layout API",
+        "Status":  "PASS",
+        "Detail":  "401/403"
+    },
+    {
+        "Area":  "RBAC",
+        "Test":  "Doctor denied Report Layout API",
+        "Status":  "PASS",
+        "Detail":  "401/403"
+    },
+    {
+        "Area":  "RBAC",
+        "Test":  "DB Admin RLC mapping",
+        "Status":  "PASS",
+        "Detail":  "count=1"
+    },
+    {
+        "Area":  "RBAC",
+        "Test":  "DB non-Admin RLC mappings",
+        "Status":  "PASS",
+        "Detail":  "count=0"
+    },
+    {
+        "Area":  "RBAC",
+        "Test":  "DB RLC menu permission",
+        "Status":  "PASS",
+        "Detail":  "count=1"
+    },
+    {
+        "Area":  "SAMPLENO",
+        "Test":  "Specimen pair",
+        "Status":  "PASS",
+        "Detail":  "A=SER/1 B=EDT/2"
+    },
+    {
+        "Area":  "SAMPLENO",
+        "Test":  "Create multi-specimen invoice",
+        "Status":  "PASS",
+        "Detail":  "id=1959 no=INV-20260912-0007"
+    },
+    {
+        "Area":  "SAMPLENO",
+        "Test":  "TestRequestDetails rows",
+        "Status":  "PASS",
+        "Detail":  "count=2"
+    },
+    {
+        "Area":  "SAMPLENO",
+        "Test":  "Persisted SampleNo",
+        "Status":  "PASS",
+        "Detail":  "test=GLU specimen=SER sampleNo=202609120007SER requestNo=INV-20260912-0007"
+    },
+    {
+        "Area":  "SAMPLENO",
+        "Test":  "Persisted SampleNo",
+        "Status":  "PASS",
+        "Detail":  "test=HBA1C specimen=EDT sampleNo=202609120007EDT requestNo=INV-20260912-0007"
+    },
+    {
+        "Area":  "SAMPLENO",
+        "Test":  "No INV/hyphen in SampleNo",
+        "Status":  "PASS",
+        "Detail":  "checked=2"
+    },
+    {
+        "Area":  "SAMPLENO",
+        "Test":  "Different specimens different SampleNo",
+        "Status":  "PASS",
+        "Detail":  "map=SER=202609120007SER; EDT=202609120007EDT"
+    },
+    {
+        "Area":  "SAMPLENO",
+        "Test":  "Same specimen reuses SampleNo",
+        "Status":  "PASS",
+        "Detail":  "count=2 unique=1 sample=202609120008SER"
+    },
+    {
+        "Area":  "SAMPLENO",
+        "Test":  "Cancel multi-specimen invoice",
+        "Status":  "PASS",
+        "Detail":  "id=1959"
+    },
+    {
+        "Area":  "RESULT",
+        "Test":  "TestResultEdit search",
+        "Status":  "PASS",
+        "Detail":  "rows=1"
+    },
+    {
+        "Area":  "RBAC",
+        "Test":  "Tech has SampleCollection",
+        "Status":  "PASS",
+        "Detail":  "mods=Reports,Samples,SampleCollection,SampleReceiving"
+    },
+    {
+        "Area":  "RBAC",
+        "Test":  "Tech lacks ReportLayoutConfiguration",
+        "Status":  "PASS",
+        "Detail":  "present=False"
+    },
+    {
+        "Area":  "RBAC",
+        "Test":  "Doctor has DoctorsApprovals",
+        "Status":  "PASS",
+        "Detail":  "mods=Reports,DoctorsApprovals,RadiologyReports,RadiologyDoctorApprovals"
+    },
+    {
+        "Area":  "RBAC",
+        "Test":  "Doctor lacks ReportLayoutConfiguration",
+        "Status":  "PASS",
+        "Detail":  "present=False"
+    },
+    {
+        "Area":  "DASH",
+        "Test":  "Admin Dashboard Registration",
+        "Status":  "PASS",
+        "Detail":  "metrics=2"
+    }
+]
