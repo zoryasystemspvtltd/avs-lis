@@ -53,7 +53,7 @@ namespace LIS.BusinessLogic
         {
             var result = resultManager.Get(testRequestDetail.Id, testRequestDetail.SampleNo);
 
-            if (result == null)
+            if (result?.TestResult == null)
             {
                 return null;
             }
@@ -83,23 +83,46 @@ namespace LIS.BusinessLogic
             };
 
             var lstResultDetails = new List<TestResultDetailsDto>();
+            if (result.ResultDetails == null)
+            {
+                return new ResultDto
+                {
+                    TestResult = testResult,
+                    TestResultDetails = lstResultDetails
+                };
+            }
+
             foreach (var resultDetail in result.ResultDetails)
             {
+                if (resultDetail == null ||
+                    string.IsNullOrWhiteSpace(resultDetail.LISParamCode) ||
+                    string.IsNullOrWhiteSpace(result.TestResult.HISTestCode))
+                {
+                    continue;
+                }
+
                 var hisParam = paramRepoHis.Get(p =>
-                        p.LISParamCode != null
-                        && resultDetail.LISParamCode != null
+                        !string.IsNullOrWhiteSpace(p.LISParamCode)
                         && p.LISParamCode.Equals(resultDetail.LISParamCode, StringComparison.OrdinalIgnoreCase)
-                        && p.HISTestCode != null
-                        && result.TestResult.HISTestCode != null
+                        && !string.IsNullOrWhiteSpace(p.HISTestCode)
                         && p.HISTestCode.Equals(result.TestResult.HISTestCode, StringComparison.OrdinalIgnoreCase))
                     .FirstOrDefault();
+
+                if (hisParam == null || string.IsNullOrWhiteSpace(hisParam.HISParamCode))
+                {
+                    logger.LogDebug(
+                        "HIS parameter mapping not found for LISParamCode '{0}' / HISTestCode '{1}'. Detail omitted.",
+                        resultDetail.LISParamCode,
+                        result.TestResult.HISTestCode);
+                    continue;
+                }
 
                 var testResultDetail = new TestResultDetailsDto
                 {
                     CreatedBy = resultDetail.CreatedBy,
                     CreatedOn = resultDetail.CreatedOn,
                     Id = resultDetail.Id,
-                    LISParamCode = hisParam?.HISParamCode,
+                    LISParamCode = hisParam.HISParamCode,
                     LISParamUnit = resultDetail.ParamUnit,
                     LISParamValue = resultDetail.ParamValue,
                     TestResultId = result.TestResult.Id
