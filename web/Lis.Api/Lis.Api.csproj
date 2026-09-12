@@ -227,6 +227,7 @@
     <Compile Include="Controllers\Api\ReportController.cs" />
     <Compile Include="Controllers\Api\OperationalReportsController.cs" />
     <Compile Include="Controllers\Api\ReportLayoutConfigurationController.cs" />
+    <Compile Include="Controllers\Api\ReportTemplateConfigurationController.cs" />
     <Compile Include="Controllers\Api\SampleCollectionController.cs" />
     <Compile Include="Controllers\Api\SampleReceivingController.cs" />
     <Compile Include="Controllers\Api\RadiologyReportController.cs" />
@@ -259,6 +260,11 @@
     <Compile Include="Migrations\202609120131000_ReportLayoutConfigurationRbac.Designer.cs">
       <DependentUpon>202609120131000_ReportLayoutConfigurationRbac.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202609121601000_ReportTemplateConfigurationRbac.cs" />
+    <Compile Include="Migrations\202609121601000_ReportTemplateConfigurationRbac.Designer.cs">
+      <DependentUpon>202609121601000_ReportTemplateConfigurationRbac.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202609121800000_ReportTemplateDesignerPhase3.cs" />
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\ClientApplication.cs" />
     <Compile Include="Models\ModuleIdentity.cs" />

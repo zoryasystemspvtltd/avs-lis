@@ -1,0 +1,148 @@
+<div class="container-fluid">
+  <div class="panel panel-default">
+    <div class="panel-body">
+      <h3 class="panel-title">{{ pageTitle }}</h3>
+      <p class="text-muted">
+        Design how approved report data is presented. Does not change payment, approval, eligibility, or clinical values.
+        Production printing remains on the existing report format unless a later rollout enables the new renderer.
+      </p>
+
+      <div class="form-inline" style="margin-bottom:12px;">
+        <label style="margin-right:8px;">Report Type</label>
+        <select class="form-control input-sm" [(ngModel)]="reportType" (ngModelChange)="onReportTypeChange()">
+          <option value="Diagnostic">Diagnostic</option>
+          <option value="Radiology">Radiology</option>
+        </select>
+
+        <label style="margin-left:16px;margin-right:8px;">Template Mode</label>
+        <label class="radio-inline">
+          <input type="radio" name="mode" value="SystemDefault"
+                 [checked]="mode==='SystemDefault'" (change)="setMode('SystemDefault')" /> System Default
+        </label>
+        <label class="radio-inline">
+          <input type="radio" name="mode" value="Custom"
+                 [checked]="mode==='Custom'" (change)="setMode('Custom')" /> Custom
+        </label>
+
+        <button type="button" class="btn btn-default btn-sm" style="margin-left:12px;" (click)="reload()" [disabled]="loading">Refresh</button>
+      </div>
+
+      <p class="text-success" *ngIf="message">{{ message }}</p>
+      <div class="workflow-loading" *ngIf="loading"><span class="glyphicon glyphicon-refresh glyphicon-spin"></span> Loading...</div>
+
+      <!-- System Default -->
+      <div class="well" *ngIf="workspace">
+        <h4>System Default <span class="label label-default">Locked</span></h4>
+        <p>Factory report format for {{ reportType }}. View and preview only. Cannot be edited.</p>
+        <p><strong>{{ val(workspace.systemDefault || workspace.SystemDefault, 'name', 'Name') || 'Built-in ' + reportType }}</strong></p>
+        <button type="button" class="btn btn-info btn-sm" (click)="previewSystemDefault()" [disabled]="loading">Preview</button>
+        <button type="button" class="btn btn-primary btn-sm" style="margin-left:8px;" (click)="openCreate()" [disabled]="loading">
+          Create Custom from System Default
+        </button>
+      </div>
+
+      <!-- Custom lists -->
+      <div *ngIf="mode==='Custom' && workspace">
+        <h4>Custom Generic
+          <span class="label label-success" *ngIf="workspace.activeGeneric || workspace.ActiveGeneric">Active</span>
+        </h4>
+        <button type="button" class="btn btn-primary btn-xs" (click)="openCreate(); createCategory='CustomGeneric'">Create Generic</button>
+        <table class="table table-bordered table-condensed" style="margin-top:8px;"
+               *ngIf="(workspace.customGenerics || workspace.CustomGenerics)?.length">
+          <thead>
+            <tr><th>Name</th><th>Activated</th><th></th></tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let t of (workspace.customGenerics || workspace.CustomGenerics)">
+              <td>{{ val(t,'name','Name') }}</td>
+              <td>{{ val(t,'isActivated','IsActivated') ? 'Yes' : 'No' }}</td>
+              <td>
+                <button class="btn btn-link btn-xs" (click)="design(t)">Design</button>
+                <button class="btn btn-link btn-xs" *ngIf="val(t,'canActivate','CanActivate')" (click)="activate(t)">Activate</button>
+                <button class="btn btn-link btn-xs" *ngIf="val(t,'canDeactivate','CanDeactivate')" (click)="deactivate(t)">Deactivate</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h4 style="margin-top:20px;">Test / Profile Specific</h4>
+        <button type="button" class="btn btn-primary btn-xs"
+                (click)="openCreate(); createCategory='Specific'">Create Specific</button>
+        <table class="table table-bordered table-condensed" style="margin-top:8px;"
+               *ngIf="(workspace.specificTemplates || workspace.SpecificTemplates)?.length">
+          <thead>
+            <tr><th>Name</th><th>Target</th><th>Activated</th><th></th></tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let t of (workspace.specificTemplates || workspace.SpecificTemplates)">
+              <td>{{ val(t,'name','Name') }}</td>
+              <td>{{ val(t,'targetLabel','TargetLabel') || '—' }}</td>
+              <td>{{ val(t,'isActivated','IsActivated') ? 'Yes' : 'No' }}</td>
+              <td>
+                <button class="btn btn-link btn-xs" (click)="design(t)">Design</button>
+                <button class="btn btn-link btn-xs" *ngIf="val(t,'canActivate','CanActivate')" (click)="activate(t)">Activate</button>
+                <button class="btn btn-link btn-xs" *ngIf="val(t,'canDeactivate','CanDeactivate')" (click)="deactivate(t)">Deactivate</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="alert alert-info" *ngIf="mode==='SystemDefault'">
+        System Default mode is active. All reports use the factory format. Custom templates remain saved.
+      </div>
+
+      <!-- Create modal-ish panel -->
+      <div class="panel panel-primary" *ngIf="showCreate" style="margin-top:16px;">
+        <div class="panel-heading">Create Template</div>
+        <div class="panel-body">
+          <div class="form-group">
+            <label>Template Name</label>
+            <input class="form-control" [(ngModel)]="createName" />
+          </div>
+          <div class="form-group">
+            <label>Create From</label>
+            <select class="form-control" [(ngModel)]="createFrom">
+              <option value="SystemDefault">System Default</option>
+              <option value="Blank">Blank</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Template Type</label>
+            <select class="form-control" [(ngModel)]="createCategory">
+              <option value="CustomGeneric">Custom Generic</option>
+              <option value="Specific">Test/Profile Specific</option>
+            </select>
+          </div>
+          <div class="form-group" *ngIf="createCategory==='Specific'">
+            <label>Target</label>
+            <select class="form-control" [(ngModel)]="targetType" style="margin-bottom:6px;">
+              <option value="Test">Test</option>
+              <option value="Profile">Profile</option>
+            </select>
+            <select class="form-control" [(ngModel)]="targetId">
+              <option [ngValue]="null">Select...</option>
+              <option *ngFor="let x of targets" [ngValue]="x.id || x.Id"
+                      [hidden]="(x.targetType || x.TargetType) !== targetType">
+                {{ x.label || x.Label }}
+              </option>
+            </select>
+          </div>
+          <button class="btn btn-primary" (click)="createTemplate()" [disabled]="loading || !createName">Create</button>
+          <button class="btn btn-default" style="margin-left:8px;" (click)="showCreate=false">Cancel</button>
+        </div>
+      </div>
+
+      <hr />
+      <h4>Sample Preview</h4>
+      <app-report-template-viewer
+        *ngIf="preview"
+        [html]="preview.html || preview.Html"
+        [css]="preview.css || preview.Css"
+        [message]="preview.message || preview.Message"
+        [pageSize]="preview.pageSize || preview.PageSize || 'A4'"
+        [orientation]="preview.orientation || preview.Orientation || 'Portrait'">
+      </app-report-template-viewer>
+    </div>
+  </div>
+</div>

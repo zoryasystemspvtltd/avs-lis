@@ -144,6 +144,11 @@
     <Compile Include="Migrations\202609120130000_ReportLayoutConfiguration.Designer.cs">
       <DependentUpon>202609120130000_ReportLayoutConfiguration.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202609121600000_ReportTemplateEngine.cs" />
+    <Compile Include="Migrations\202609121600000_ReportTemplateEngine.Designer.cs">
+      <DependentUpon>202609121600000_ReportTemplateEngine.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202609121800000_ReportTemplateDesignerPhase3.cs" />
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repo\IGenericRepository.cs" />

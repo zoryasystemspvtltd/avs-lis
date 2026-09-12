@@ -109,7 +109,15 @@
     <Compile Include="Models\Reports\DiagnosticRadiologyReportDto.cs" />
     <Compile Include="Models\Reports\ReportLayoutConfiguration.cs" />
     <Compile Include="Models\Reports\ReportLayoutConfigurationDto.cs" />
+    <Compile Include="Models\Reports\ReportTemplate.cs" />
+    <Compile Include="Models\Reports\ReportTemplateVersion.cs" />
+    <Compile Include="Models\Reports\ReportTemplateAssignment.cs" />
+    <Compile Include="Models\Reports\ReportTemplateDtos.cs" />
+    <Compile Include="Models\Reports\ReportTemplateEnginePhase2.cs" />
+    <Compile Include="Models\Reports\ReportTemplateModeSetting.cs" />
+    <Compile Include="Models\Reports\ReportTemplateDesignerDtos.cs" />
     <Compile Include="Interfaces\IReportLayoutConfigurationManager.cs" />
+    <Compile Include="Interfaces\IReportTemplateManager.cs" />
     <Compile Include="Interfaces\ITestReportManager.cs" />
     <Compile Include="Interfaces\ITestResultEditManager.cs" />
     <Compile Include="Models\TestResultEdit\TestResultEditDtos.cs" />

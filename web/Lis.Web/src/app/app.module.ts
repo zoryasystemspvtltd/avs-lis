@@ -18,6 +18,10 @@ import { HomeComponent } from './home/home.component';
 import { DashboardComponent, DashboardKpiWidgetComponent, DashboardAlertsWidgetComponent, DashboardQueueWidgetComponent } from './dashboard';
 import { NotificationConfigurationComponent } from './setup/notification-configuration/notification-configuration.component';
 import { ReportLayoutConfigurationComponent } from './setup/report-layout-configuration/report-layout-configuration.component';
+import { ReportTemplateConfigurationComponent } from './setup/report-template-configuration/report-template-configuration.component';
+import { ReportTemplateViewerComponent } from './setup/report-template-configuration/report-template-viewer.component';
+import { ReportTemplateDesignerComponent } from './setup/report-template-configuration/report-template-designer.component';
+import { DragDropModule } from '@angular/cdk/drag-drop';
 import { LoginComponent, ChangePasswordComponent, ForgotPasswordComponent, RegisterComponent } from './authentication';
 import { AboutComponent, ContactComponent, TremsComponent } from './annonimious';
 import { LogListComponent } from './activitylog/log-list/log-list.component';
@@ -74,6 +78,9 @@ export const options: Partial<IConfig> | (() => Partial<IConfig>) = null;
     DashboardQueueWidgetComponent,
     NotificationConfigurationComponent,
     ReportLayoutConfigurationComponent,
+    ReportTemplateConfigurationComponent,
+    ReportTemplateViewerComponent,
+    ReportTemplateDesignerComponent,
     LoginComponent,
     CompanyInfoComponent,
     AboutComponent,
@@ -187,6 +194,7 @@ export const options: Partial<IConfig> | (() => Partial<IConfig>) = null;
     NgSelectModule,
     EditorModule,
     NgbModule,
+    DragDropModule,
     NgMultiSelectDropDownModule.forRoot(),
     NgxBarcodeModule
     //NgxPrintModule

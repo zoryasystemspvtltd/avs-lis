@@ -101,7 +101,11 @@
     <Compile Include="Reports\TestResultRangeEvaluatorTests.cs" />
     <Compile Include="Reports\ReportLayoutConfigurationManagerTests.cs" />
     <Compile Include="Reports\DiagnosticReportPrintSelectionTests.cs" />
+    <Compile Include="Reports\ReportTemplateEnginePhase1Tests.cs" />
+    <Compile Include="Reports\ReportTemplateEnginePhase2Tests.cs" />
+    <Compile Include="Reports\ReportTemplateEnginePhase3Tests.cs" />
     <Compile Include="Security\ReportLayoutConfigurationRbacTests.cs" />
+    <Compile Include="Security\ReportTemplateConfigurationRbacTests.cs" />
     <Compile Include="Users\UserSignatureValidationTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

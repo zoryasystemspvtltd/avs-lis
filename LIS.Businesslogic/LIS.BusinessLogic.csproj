@@ -109,6 +109,15 @@
     <Compile Include="RadiologyReportManager.cs" />
     <Compile Include="TestReportManager.cs" />
     <Compile Include="ReportLayoutConfigurationManager.cs" />
+    <Compile Include="ReportTemplateManager.cs" />
+    <Compile Include="ReportTemplateManager.Designer.cs" />
+    <Compile Include="Reports\ReportTemplateDefinitionValidator.cs" />
+    <Compile Include="Reports\ReportComponentRegistry.cs" />
+    <Compile Include="Reports\ReportTemplateSampleDataFactory.cs" />
+    <Compile Include="Reports\ReportTemplateCompatibilityDefinitions.cs" />
+    <Compile Include="Reports\ReportTemplateBindingContext.cs" />
+    <Compile Include="Reports\DeclarativeReportRenderer.cs" />
+    <Compile Include="Reports\ReportDesignFieldCatalog.cs" />
     <Compile Include="TestReportValidationException.cs" />
     <Compile Include="TestResultRangeEvaluator.cs" />
     <Compile Include="TestResultEditManager.cs" />

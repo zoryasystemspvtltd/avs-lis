@@ -78,6 +78,10 @@ namespace LIS.DataAccess
         public virtual DbSet<NotificationAudit> NotificationAudit { get; set; }
         public virtual DbSet<SecureLinkToken> SecureLinkToken { get; set; }
         public virtual DbSet<ReportLayoutConfiguration> ReportLayoutConfiguration { get; set; }
+        public virtual DbSet<ReportTemplate> ReportTemplate { get; set; }
+        public virtual DbSet<ReportTemplateVersion> ReportTemplateVersion { get; set; }
+        public virtual DbSet<ReportTemplateAssignment> ReportTemplateAssignment { get; set; }
+        public virtual DbSet<ReportTemplateModeSetting> ReportTemplateModeSetting { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {

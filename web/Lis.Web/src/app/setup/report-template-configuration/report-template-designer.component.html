@@ -1,0 +1,212 @@
+<div class="container-fluid">
+  <div class="toolbar">
+    <button type="button" class="btn btn-default btn-sm" (click)="back()">Back</button>
+    <strong style="margin-left:10px;">{{ templateName }}</strong>
+    <span class="text-muted" style="margin-left:8px;">{{ reportType }}</span>
+    <span class="pull-right">
+      <button type="button" class="btn btn-primary btn-sm" (click)="save()" [disabled]="loading">Save</button>
+      <button type="button" class="btn btn-info btn-sm" (click)="previewSample()" [disabled]="loading">Preview</button>
+      <button type="button" class="btn btn-warning btn-sm" (click)="validate()" [disabled]="loading">Validate</button>
+      <button type="button" class="btn btn-success btn-sm" (click)="activate()" [disabled]="loading">Activate</button>
+    </span>
+  </div>
+  <p class="text-success" *ngIf="message">{{ message }}</p>
+  <div class="alert alert-danger" *ngIf="validation && !(validation.isValid || validation.IsValid)">
+    <div *ngFor="let e of (validation.errors || validation.Errors)">{{ e }}</div>
+  </div>
+
+  <div class="designer-shell">
+    <!-- Palette -->
+    <div class="designer-palette"
+         cdkDropList
+         #paletteList="cdkDropList"
+         [cdkDropListData]="components"
+         [cdkDropListConnectedTo]="[canvasList]"
+         [cdkDropListSortingDisabled]="true">
+      <h5>Components</h5>
+      <div class="palette-item" *ngFor="let c of components" cdkDrag [cdkDragData]="c">
+        {{ c.displayName || c.DisplayName || c.type || c.Type }}
+      </div>
+    </div>
+
+    <!-- Canvas -->
+    <div class="designer-canvas-wrap">
+      <div class="a4-page">
+        <div class="clearance-band clearance-header" [style.height.mm]="headerMm">
+          Reserved header clearance (pre-printed stationery) — locked
+        </div>
+        <div class="canvas-body"
+             cdkDropList
+             #canvasList="cdkDropList"
+             [cdkDropListData]="canvasItems"
+             [cdkDropListConnectedTo]="[paletteList]"
+             (cdkDropListDropped)="dropPaletteToCanvas($event)">
+          <div class="text-muted" *ngIf="!canvasItems.length">Drop components here (report body only).</div>
+          <div class="canvas-item"
+               *ngFor="let item of canvasItems"
+               cdkDrag
+               [class.selected]="selected===item"
+               (click)="select(item)">
+            <strong>{{ item.type }}</strong>
+            <span *ngIf="item.label"> — {{ item.label }}</span>
+            <span class="text-muted" *ngIf="item.binding"> ({{ item.binding }})</span>
+          </div>
+        </div>
+        <div class="clearance-band clearance-footer" [style.height.mm]="footerMm">
+          Reserved footer clearance — locked
+        </div>
+      </div>
+    </div>
+
+    <!-- Properties -->
+    <div class="designer-props">
+      <h5>Properties</h5>
+      <div *ngIf="!selected" class="text-muted">Select a component on the canvas.</div>
+      <div *ngIf="selected">
+        <div class="form-group">
+          <label>Type</label>
+          <input class="form-control input-sm" [value]="selected.type" readonly />
+        </div>
+        <div class="form-group">
+          <label>Label</label>
+          <input class="form-control input-sm" [(ngModel)]="selected.label" />
+        </div>
+        <div class="form-group" *ngIf="showFieldBinding(selected)">
+          <label>Field</label>
+          <select class="form-control input-sm" [(ngModel)]="selected.binding">
+            <option value="">(none)</option>
+            <option *ngFor="let f of fields" [value]="f.path || f.Path">{{ f.label || f.Label }}</option>
+          </select>
+        </div>
+        <div class="form-group" *ngIf="selected.type==='SIGNATURE'">
+          <label>Signature</label>
+          <select class="form-control input-sm" [(ngModel)]="selected.source">
+            <option value="Doctor">Doctor / Authorizer</option>
+            <option value="Technician" *ngIf="reportType==='Diagnostic'">Technician</option>
+          </select>
+        </div>
+        <div class="form-group" *ngIf="showCollectionSource(selected)">
+          <label>Repeating collection</label>
+          <select class="form-control input-sm" [(ngModel)]="selected.collectionSource">
+            <option *ngFor="let s of collectionSources" [value]="s.value">{{ s.label }}</option>
+          </select>
+        </div>
+
+        <div class="props-section" *ngIf="showTypography(selected) || showWidth(selected) || showHeight(selected) || showBorder(selected)">
+          <h6>Presentation</h6>
+          <div class="form-group" *ngIf="showWidth(selected)">
+            <label>Width</label>
+            <input class="form-control input-sm" [(ngModel)]="selected.style.width" placeholder="e.g. 100% or 80mm" />
+          </div>
+          <div class="form-group" *ngIf="showHeight(selected)">
+            <label>Height</label>
+            <input class="form-control input-sm" [(ngModel)]="selected.style.height" placeholder="e.g. 20mm" />
+          </div>
+          <div class="form-group" *ngIf="showTypography(selected)">
+            <label>Font</label>
+            <select class="form-control input-sm" [(ngModel)]="selected.style.fontFamily">
+              <option *ngFor="let f of fontFamilies" [value]="f">{{ f }}</option>
+            </select>
+          </div>
+          <div class="form-group" *ngIf="showTypography(selected)">
+            <label>Font size</label>
+            <select class="form-control input-sm" [(ngModel)]="selected.style.fontSize">
+              <option *ngFor="let s of fontSizes" [value]="s">{{ s }}</option>
+            </select>
+          </div>
+          <div class="form-group" *ngIf="showTypography(selected)">
+            <label>Alignment</label>
+            <select class="form-control input-sm" [(ngModel)]="selected.style.textAlign">
+              <option *ngFor="let a of alignments" [value]="a">{{ a }}</option>
+            </select>
+          </div>
+          <div class="checkbox" *ngIf="showTypography(selected)">
+            <label>
+              <input type="checkbox"
+                     [ngModel]="selected.style.fontWeight==='bold'"
+                     (ngModelChange)="selected.style.fontWeight = $event ? 'bold' : 'normal'" />
+              Bold
+            </label>
+          </div>
+          <div class="checkbox" *ngIf="showTypography(selected)">
+            <label>
+              <input type="checkbox"
+                     [ngModel]="selected.style.fontStyle==='italic'"
+                     (ngModelChange)="selected.style.fontStyle = $event ? 'italic' : 'normal'" />
+              Italic
+            </label>
+          </div>
+          <div class="form-group" *ngIf="showTypography(selected)">
+            <label>Spacing (top)</label>
+            <input class="form-control input-sm" [(ngModel)]="selected.style.marginTop" placeholder="e.g. 4mm" />
+          </div>
+          <div class="form-group" *ngIf="showTypography(selected)">
+            <label>Spacing (bottom)</label>
+            <input class="form-control input-sm" [(ngModel)]="selected.style.marginBottom" placeholder="e.g. 4mm" />
+          </div>
+          <div class="form-group" *ngIf="showBorder(selected)">
+            <label>Border</label>
+            <select class="form-control input-sm" [(ngModel)]="selected.style.border">
+              <option value="none">None</option>
+              <option value="1px solid #000">Thin black</option>
+              <option value="1px solid #999">Thin gray</option>
+              <option value="2px solid #000">Medium black</option>
+            </select>
+          </div>
+          <div class="form-group" *ngIf="selected.type==='PARAMETER_TABLE'">
+            <label>Text wrap</label>
+            <select class="form-control input-sm" [(ngModel)]="selected.style.whiteSpace">
+              <option value="normal">Wrap</option>
+              <option value="nowrap">No wrap</option>
+              <option value="pre-wrap">Preserve + wrap</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="props-section" *ngIf="showConditions(selected)">
+          <h6>Visibility</h6>
+          <div class="form-group">
+            <select class="form-control input-sm"
+                    [ngModel]="selected.visibilityMode || 'always'"
+                    (ngModelChange)="onVisibilityModeChange($event)">
+              <option value="always">Always visible</option>
+              <option value="hidden">Hidden</option>
+              <option value="conditional">Conditional</option>
+            </select>
+          </div>
+          <div *ngIf="selected.visibilityMode==='conditional'">
+            <div class="form-group">
+              <label>Condition</label>
+              <select class="form-control input-sm" [(ngModel)]="selected.visibleWhen.op" (ngModelChange)="onConditionOpChange()">
+                <option *ngFor="let op of conditionOps" [value]="op.value">{{ op.label }}</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Field</label>
+              <select class="form-control input-sm" [(ngModel)]="selected.visibleWhen.binding">
+                <option value="">(select field)</option>
+                <option *ngFor="let f of conditionFields" [value]="f.path || f.Path">{{ f.label || f.Label }}</option>
+              </select>
+            </div>
+            <div class="form-group" *ngIf="selected.visibleWhen?.op==='Equals' || selected.visibleWhen?.op==='NotEquals'">
+              <label>Value</label>
+              <input class="form-control input-sm" [(ngModel)]="selected.visibleWhen.value" />
+            </div>
+          </div>
+        </div>
+
+        <button type="button" class="btn btn-danger btn-xs" (click)="removeSelected()">Remove</button>
+      </div>
+    </div>
+  </div>
+
+  <hr />
+  <app-report-template-viewer
+    *ngIf="preview"
+    [html]="preview.html || preview.Html"
+    [css]="preview.css || preview.Css"
+    [message]="preview.message || preview.Message"
+    [pageSize]="'A4'"
+    [orientation]="'Portrait'">
+  </app-report-template-viewer>
+</div>

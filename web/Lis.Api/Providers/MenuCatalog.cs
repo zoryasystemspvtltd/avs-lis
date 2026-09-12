@@ -42,6 +42,7 @@ namespace Lis.Api.Providers
             M("SETUP_EQUIPMENT_HEARTBEAT", "Equipments", "Masters", "Equipment Heartbeat", "/equipment-heartbeat", 50),
             M("SETUP_NOTIFICATION_CONFIGURATION", "NotificationConfiguration", "Masters", "Notification Configuration", "/notification-configuration", 55),
             M("SETUP_REPORT_LAYOUT_CONFIGURATION", "ReportLayoutConfiguration", "Masters", "Report Layout Configuration", "/report-layout-configuration", 56),
+            M("SETUP_REPORT_TEMPLATE_CONFIGURATION", "ReportTemplateConfiguration", "Masters", "Report Template Configuration", "/report-template-configuration", 57),
 
             // Master data
             M("MASTER_TESTMASTER", "HisTest", "Masters", "Test Master", "/test-master", 60),
@@ -103,6 +104,7 @@ namespace Lis.Api.Providers
             { "setup.equipmentHeartbeat", "SETUP_EQUIPMENT_HEARTBEAT" },
             { "setup.notificationConfiguration", "SETUP_NOTIFICATION_CONFIGURATION" },
             { "setup.reportLayoutConfiguration", "SETUP_REPORT_LAYOUT_CONFIGURATION" },
+            { "setup.reportTemplateConfiguration", "SETUP_REPORT_TEMPLATE_CONFIGURATION" },
             { "masters.testMaster", "MASTER_TESTMASTER" },
             { "masters.testProfile", "MASTER_TESTPROFILE" },
             { "masters.specimen", "MASTER_SPECIMEN" },

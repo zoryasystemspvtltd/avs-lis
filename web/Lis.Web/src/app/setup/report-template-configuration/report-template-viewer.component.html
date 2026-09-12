@@ -1,0 +1,16 @@
+<div class="rte-viewer" *ngIf="html || message">
+  <div class="rte-viewer-toolbar no-print">
+    <span class="text-muted" *ngIf="message">{{ message }}</span>
+    <span class="pull-right">
+      <button type="button" class="btn btn-default btn-xs" (click)="zoomOut()">-</button>
+      <span style="margin:0 6px;">{{ (zoom * 100) | number:'1.0-0' }}%</span>
+      <button type="button" class="btn btn-default btn-xs" (click)="zoomIn()">+</button>
+      <span class="text-muted" style="margin-left:10px;">{{ pageSize }} {{ orientation }}</span>
+    </span>
+  </div>
+  <div class="rte-viewer-page"
+       [style.transform]="'scale(' + zoom + ')'"
+       [style.transformOrigin]="'top center'"
+       [innerHTML]="safeContent">
+  </div>
+</div>
