@@ -112,4 +112,25 @@ namespace LIS.DtoModel.Models
         public string PatientName { get; set; }
         public string DisplayLabel { get; set; }
     }
+
+    /// <summary>
+    /// Print eligibility for an order: Print All requires every test printable;
+    /// individual options expose which tests may print independently (payment already validated).
+    /// </summary>
+    public class TestReportPrintOptionsDto
+    {
+        public string LabNo { get; set; }
+        public string InvoiceNo { get; set; }
+        public bool CanPrintAll { get; set; }
+        public List<TestReportPrintableTestOption> Tests { get; set; }
+    }
+
+    public class TestReportPrintableTestOption
+    {
+        public long TestRequestDetailId { get; set; }
+        public string TestCode { get; set; }
+        public string TestName { get; set; }
+        public string Label { get; set; }
+        public bool IsPrintable { get; set; }
+    }
 }

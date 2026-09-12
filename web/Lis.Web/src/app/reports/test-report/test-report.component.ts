@@ -31,10 +31,11 @@ export class TestReportComponent implements OnInit, OnDestroy {
   report: any = null;
   isPrintView = false;
 
-  /** Print All (default) or Specific Report — selection only; eligibility unchanged. */
+  /** Print All (default when eligible) or Specific Report. */
   printMode: 'all' | 'specific' = 'all';
   printableTests: PrintableTestOption[] = [];
   selectedTestRequestDetailId: number | null = null;
+  canPrintAll = false;
   private fullReport: any = null;
 
   constructor(
@@ -72,6 +73,7 @@ export class TestReportComponent implements OnInit, OnDestroy {
     this.printableTests = [];
     this.selectedTestRequestDetailId = null;
     this.printMode = 'all';
+    this.canPrintAll = false;
     this.searched = false;
     this.isPrintView = false;
     document.body.classList.remove('test-report-print-mode');
@@ -97,20 +99,35 @@ export class TestReportComponent implements OnInit, OnDestroy {
     this.printableTests = [];
     this.selectedTestRequestDetailId = null;
     this.printMode = 'all';
+    this.canPrintAll = false;
     this.searched = false;
+    this.filterError = '';
 
-    this.reportService.getTestReport(this.labNo.trim()).subscribe(
-      r => {
-        this.fullReport = this.normalizeReport(r);
-        this.report = this.fullReport;
-        this.printableTests = this.buildPrintableTests(this.fullReport);
+    const lab = this.labNo.trim();
+    this.reportService.getTestReportPrintOptions(lab).subscribe(
+      options => {
+        const normalized = this.normalizePrintOptions(options);
+        this.canPrintAll = !!normalized.canPrintAll;
+        this.printableTests = (normalized.tests || []).filter(t => t.isPrintable);
         this.searched = true;
-        this.loading = false;
-        const hasDept = this.report?.departmentGroups?.length;
-        const hasSections = this.report?.sections?.length || this.report?.profileGroups?.length;
-        if (!hasDept && !hasSections) {
-          this.filterError = 'No report data returned.';
+
+        if (!this.printableTests.length) {
+          this.loading = false;
+          this.filterError = 'No approved test reports are ready for printing on this order.';
+          this.alertService.error(this.filterError);
+          return;
         }
+
+        if (this.canPrintAll) {
+          this.printMode = 'all';
+          this.selectedTestRequestDetailId = null;
+          this.loadFullReport(lab);
+          return;
+        }
+
+        this.printMode = 'specific';
+        this.selectedTestRequestDetailId = this.printableTests[0].testRequestDetailId;
+        this.loadScopedReport();
       },
       err => {
         this.loading = false;
@@ -118,6 +135,7 @@ export class TestReportComponent implements OnInit, OnDestroy {
         this.report = null;
         this.fullReport = null;
         this.printableTests = [];
+        this.canPrintAll = false;
         this.filterError = this.readError(err);
         this.alertService.error(this.filterError);
       }
@@ -126,10 +144,16 @@ export class TestReportComponent implements OnInit, OnDestroy {
 
   onPrintModeChange() {
     if (this.printMode === 'all') {
+      if (!this.canPrintAll) {
+        this.printMode = 'specific';
+        return;
+      }
       this.selectedTestRequestDetailId = null;
       if (this.fullReport) {
         this.report = this.fullReport;
+        return;
       }
+      this.loadFullReport(this.labNo.trim());
       return;
     }
 
@@ -164,8 +188,61 @@ export class TestReportComponent implements OnInit, OnDestroy {
     );
   }
 
+  private loadFullReport(lab: string) {
+    this.loading = true;
+    this.reportService.getTestReport(lab).subscribe(
+      r => {
+        this.fullReport = this.normalizeReport(r);
+        this.report = this.fullReport;
+        // Prefer server print options; fall back to sections if options empty.
+        if (!this.printableTests.length) {
+          this.printableTests = this.buildPrintableTests(this.fullReport);
+        }
+        this.loading = false;
+        const hasDept = this.report?.departmentGroups?.length;
+        const hasSections = this.report?.sections?.length || this.report?.profileGroups?.length;
+        if (!hasDept && !hasSections) {
+          this.filterError = 'No report data returned.';
+        }
+      },
+      err => {
+        this.loading = false;
+        this.report = null;
+        this.fullReport = null;
+        this.filterError = this.readError(err);
+        this.alertService.error(this.filterError);
+      }
+    );
+  }
+
+  private normalizePrintOptions(raw: any): {
+    canPrintAll: boolean;
+    tests: Array<{ testRequestDetailId: number; label: string; isPrintable: boolean }>;
+  } {
+    if (!raw) {
+      return { canPrintAll: false, tests: [] };
+    }
+    const testsRaw = raw.tests || raw.Tests || [];
+    const tests = (testsRaw as any[]).map(t => ({
+      testRequestDetailId: Number(t.testRequestDetailId ?? t.TestRequestDetailId ?? 0),
+      label: String(t.label ?? t.Label ?? t.testName ?? t.TestName ?? t.testCode ?? t.TestCode ?? 'Test').trim(),
+      isPrintable: !!(t.isPrintable ?? t.IsPrintable)
+    })).filter(t => t.testRequestDetailId > 0);
+
+    return {
+      canPrintAll: !!(raw.canPrintAll ?? raw.CanPrintAll),
+      tests
+    };
+  }
+
   print() {
     if (!this.report) {
+      return;
+    }
+
+    if (this.printMode === 'all' && !this.canPrintAll) {
+      this.filterError = 'All test reports are not yet approved.';
+      this.alertService.error(this.filterError);
       return;
     }
 

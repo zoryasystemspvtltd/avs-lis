@@ -92,10 +92,9 @@ namespace LIS.BusinessLogic
                 throw new TestReportValidationException("No test bookings found for this invoice.");
             }
 
-            // Existing eligibility: all requests on the order must still qualify.
-            ValidateWorkflow(requests);
-
-            // Optional print-scope filter — ownership validated against this invoice's requests only.
+            // Print Specific: only the selected test must be ready + approved (siblings may be pending).
+            // Print All: every applicable test on the order must still qualify.
+            // Payment gate above applies to both paths and must never be bypassed.
             if (testRequestDetailId.HasValue)
             {
                 var selectedId = testRequestDetailId.Value;
@@ -106,6 +105,11 @@ namespace LIS.BusinessLogic
                 }
 
                 requests = requests.Where(r => r.Id == selectedId).ToList();
+                ValidateWorkflow(requests);
+            }
+            else
+            {
+                ValidateWorkflow(requests);
             }
 
             var header = BuildHeader(invoice, patient, requests);
@@ -779,6 +783,83 @@ namespace LIS.BusinessLogic
             row.ReferenceRange = referenceRange;
             row.Flag = flag;
             row.IsAbnormal = isAbnormal;
+        }
+
+        public TestReportPrintOptionsDto GetPrintableTestOptions(string labNo, string invoiceNo)
+        {
+            if (string.IsNullOrWhiteSpace(labNo) && string.IsNullOrWhiteSpace(invoiceNo))
+            {
+                throw new TestReportValidationException("Lab No or Sale Invoice No is required.");
+            }
+
+            var invoice = ResolveInvoice(labNo, invoiceNo);
+            if (invoice == null)
+            {
+                throw new TestReportValidationException("Invalid Lab No or Invoice No. No matching invoice was found.");
+            }
+
+            if (invoice.InvoiceStatus == (int)InvoiceStatusType.Cancelled)
+            {
+                throw new TestReportValidationException("Invoice is cancelled. Test report cannot be printed.");
+            }
+
+            if (invoice.PaymentStatus != (int)PaymentStatusType.Paid)
+            {
+                throw new TestReportValidationException("Payment pending. Test report can only be printed after full payment is completed.");
+            }
+
+            var requests = ResolveTestRequests(invoice);
+            if (!requests.Any())
+            {
+                throw new TestReportValidationException("No test bookings found for this invoice.");
+            }
+
+            var tests = requests
+                .OrderBy(r => r.Id)
+                .Select(r =>
+                {
+                    var printable = IsRequestPrintable(r);
+                    var name = r.HISTestName ?? r.HISTestCode ?? ("Test " + r.Id);
+                    var specimen = string.IsNullOrWhiteSpace(r.SpecimenName) ? null : r.SpecimenName.Trim();
+                    var label = string.IsNullOrWhiteSpace(specimen)
+                        ? name
+                        : (name.IndexOf(specimen, StringComparison.OrdinalIgnoreCase) >= 0
+                            ? name
+                            : name + ", " + specimen.ToUpperInvariant());
+                    return new TestReportPrintableTestOption
+                    {
+                        TestRequestDetailId = r.Id,
+                        TestCode = r.HISTestCode,
+                        TestName = r.HISTestName,
+                        Label = label,
+                        IsPrintable = printable
+                    };
+                })
+                .ToList();
+
+            return new TestReportPrintOptionsDto
+            {
+                LabNo = string.IsNullOrWhiteSpace(labNo) ? invoice.InvoiceNo : labNo.Trim(),
+                InvoiceNo = invoice.InvoiceNo,
+                CanPrintAll = tests.Count > 0 && tests.All(t => t.IsPrintable),
+                Tests = tests
+            };
+        }
+
+        private bool IsRequestPrintable(TestRequestDetail request)
+        {
+            if (request == null || request.ReportStatus != ReportStatusType.DoctorApproved)
+            {
+                return false;
+            }
+
+            var result = resultRepo.Get().FirstOrDefault(r => r.TestRequestId == request.Id);
+            if (result == null)
+            {
+                return false;
+            }
+
+            return resultDetailsRepo.Get().Any(d => d.TestResultId == result.Id);
         }
 
         public IEnumerable<TestReportLabNoOption> GetPrintableLabNumbers()

@@ -9,7 +9,7 @@
           <span class="glyphicon glyphicon-print"></span>
           {{ pageTitle }}
         </h3>
-        <p class="text-muted">Final diagnostic report — paid invoices with approved results only</p>
+        <p class="text-muted">Paid invoices only. Print All requires every test approved; individual approved tests may print earlier.</p>
       </div>
 
       <div class="row">
@@ -33,20 +33,26 @@
 
       <p class="text-danger" *ngIf="filterError">{{ filterError }}</p>
 
-      <div class="row" *ngIf="report && printableTests.length">
+      <div class="row" *ngIf="searched && printableTests.length">
         <div class="col-md-8 col-sm-12">
           <div class="form-group" style="margin-bottom: 8px;">
             <label>Print</label>
             <div>
-              <label class="radio-inline" style="margin-right: 16px;">
+              <label class="radio-inline" style="margin-right: 16px;"
+                     [class.text-muted]="!canPrintAll"
+                     [title]="canPrintAll ? '' : 'All tests must be result-entered and Doctor-approved before Print All.'">
                 <input type="radio" name="printMode" value="all"
-                       [(ngModel)]="printMode" (ngModelChange)="onPrintModeChange()" /> All Reports
+                       [(ngModel)]="printMode" (ngModelChange)="onPrintModeChange()"
+                       [disabled]="!canPrintAll" /> All Reports
               </label>
               <label class="radio-inline">
                 <input type="radio" name="printMode" value="specific"
                        [(ngModel)]="printMode" (ngModelChange)="onPrintModeChange()" /> Specific Report
               </label>
             </div>
+            <p class="text-muted" *ngIf="!canPrintAll" style="margin: 6px 0 0;">
+              Print All is unavailable until every test on this order is approved. Ready tests can still be printed individually.
+            </p>
           </div>
           <div class="form-group" *ngIf="printMode === 'specific'">
             <label>Select Report</label>
@@ -69,7 +75,7 @@
         </button>
         <button type="button" class="btn btn-default btn-sm" (click)="clear()" [disabled]="loading">Reset</button>
         <button type="button" class="btn btn-success btn-sm" (click)="print()"
-                [disabled]="!report || loading || (printMode === 'specific' && !selectedTestRequestDetailId)">
+                [disabled]="!report || loading || (printMode === 'specific' && !selectedTestRequestDetailId) || (printMode === 'all' && !canPrintAll)">
           <span class="glyphicon glyphicon-print"></span>
           {{ printMode === 'specific' ? 'Print Selected Report' : 'Print All Reports' }}
         </button>

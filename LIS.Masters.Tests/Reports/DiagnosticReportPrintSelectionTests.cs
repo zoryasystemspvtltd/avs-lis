@@ -1,4 +1,5 @@
 using LIS.BusinessLogic;
+using LIS.DtoModel;
 using LIS.DtoModel.Models;
 using LIS.Masters.Tests.Infrastructure;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -125,6 +126,176 @@ namespace LIS.Masters.Tests.Reports
             Assert.AreEqual(CountSections(a), CountSections(b));
         }
 
+        [TestMethod]
+        public void PrintSpecific_Allows_Approved_Test_When_Sibling_Pending()
+        {
+            var manager = CreateManager();
+            if (!TryFindMultiSectionLab(manager, out var labNo, out var readyId, out var siblingId))
+            {
+                Assert.Inconclusive("Need a paid multi-test fully-approved order to simulate partial completion.");
+            }
+
+            var sibling = Services.Db.TestRequestDetails.First(r => r.Id == siblingId);
+            var originalStatus = sibling.ReportStatus;
+            try
+            {
+                sibling.ReportStatus = ReportStatusType.New;
+                Services.Db.SaveChanges();
+
+                try
+                {
+                    manager.GetDiagnosticTestReport(labNo, null, null);
+                    Assert.Fail("Print All must remain blocked while a sibling is pending.");
+                }
+                catch (TestReportValidationException ex)
+                {
+                    StringAssert.Contains(ex.Message, "not approved");
+                }
+
+                var specific = manager.GetDiagnosticTestReport(labNo, null, readyId);
+                var sections = EnumerateSections(specific).ToList();
+                Assert.AreEqual(1, sections.Count);
+                Assert.AreEqual(readyId, sections[0].TestRequestDetailId);
+
+                var options = manager.GetPrintableTestOptions(labNo, null);
+                Assert.IsFalse(options.CanPrintAll, "CanPrintAll must be false for partial order.");
+                Assert.IsTrue(options.Tests.Any(t => t.TestRequestDetailId == readyId && t.IsPrintable));
+                Assert.IsTrue(options.Tests.Any(t => t.TestRequestDetailId == siblingId && !t.IsPrintable));
+            }
+            finally
+            {
+                var restore = Services.Db.TestRequestDetails.First(r => r.Id == siblingId);
+                restore.ReportStatus = originalStatus;
+                Services.Db.SaveChanges();
+            }
+        }
+
+        [TestMethod]
+        public void PrintSpecific_And_PrintAll_Blocked_When_Invoice_Unpaid()
+        {
+            var manager = CreateManager();
+            var labs = manager.GetPrintableLabNumbers()?.ToList();
+            if (labs == null || !labs.Any())
+            {
+                Assert.Inconclusive("No printable lab numbers available.");
+            }
+
+            var labNo = labs[0].LabNo;
+            var all = manager.GetDiagnosticTestReport(labNo, null, null);
+            var sectionId = EnumerateSections(all).Select(s => s.TestRequestDetailId).FirstOrDefault();
+            if (sectionId <= 0)
+            {
+                Assert.Inconclusive("No section id on printable lab.");
+            }
+
+            var invoice = Services.Db.SaleInvoices.FirstOrDefault(i => i.InvoiceNo == all.Header.InvoiceNo);
+            if (invoice == null)
+            {
+                Assert.Inconclusive("Invoice row not found for printable lab.");
+            }
+
+            var originalPayment = invoice.PaymentStatus;
+            try
+            {
+                invoice.PaymentStatus = (int)PaymentStatusType.Unpaid;
+                Services.Db.SaveChanges();
+
+                AssertPaymentBlocked(() => manager.GetDiagnosticTestReport(labNo, null, null));
+                AssertPaymentBlocked(() => manager.GetDiagnosticTestReport(labNo, null, sectionId));
+                AssertPaymentBlocked(() => manager.GetPrintableTestOptions(labNo, null));
+            }
+            finally
+            {
+                var restore = Services.Db.SaleInvoices.First(i => i.Id == invoice.Id);
+                restore.PaymentStatus = originalPayment;
+                Services.Db.SaveChanges();
+            }
+        }
+
+        [TestMethod]
+        public void PrintOptions_CanPrintAll_True_When_Every_Test_Ready()
+        {
+            var manager = CreateManager();
+            var labs = manager.GetPrintableLabNumbers()?.ToList();
+            if (labs == null || !labs.Any())
+            {
+                Assert.Inconclusive("No printable lab numbers available.");
+            }
+
+            var labNo = labs[0].LabNo;
+            DiagnosticTestReportDto all;
+            try
+            {
+                all = manager.GetDiagnosticTestReport(labNo, null, null);
+            }
+            catch (TestReportValidationException)
+            {
+                Assert.Inconclusive("First printable lab is not fully ready for Print All.");
+                return;
+            }
+
+            var options = manager.GetPrintableTestOptions(labNo, null);
+            Assert.IsTrue(options.CanPrintAll);
+            Assert.IsTrue(options.Tests.Count >= 1);
+            Assert.IsTrue(options.Tests.All(t => t.IsPrintable));
+            Assert.AreEqual(all.Header.InvoiceNo, options.InvoiceNo);
+        }
+
+        private static void AssertPaymentBlocked(Action action)
+        {
+            try
+            {
+                action();
+                Assert.Fail("Expected payment pending validation.");
+            }
+            catch (TestReportValidationException ex)
+            {
+                StringAssert.Contains(ex.Message, "Payment pending");
+            }
+        }
+
+        private bool TryFindMultiSectionLab(TestReportManager manager, out string labNo, out long readyId, out long siblingId)
+        {
+            labNo = null;
+            readyId = 0;
+            siblingId = 0;
+            var labs = manager.GetPrintableLabNumbers()?.ToList();
+            if (labs == null)
+            {
+                return false;
+            }
+
+            foreach (var lab in labs.Take(25))
+            {
+                DiagnosticTestReportDto all;
+                try
+                {
+                    all = manager.GetDiagnosticTestReport(lab.LabNo, null, null);
+                }
+                catch (TestReportValidationException)
+                {
+                    continue;
+                }
+
+                var ids = EnumerateSections(all)
+                    .Select(s => s.TestRequestDetailId)
+                    .Where(id => id > 0)
+                    .Distinct()
+                    .ToList();
+                if (ids.Count < 2)
+                {
+                    continue;
+                }
+
+                labNo = lab.LabNo;
+                readyId = ids[0];
+                siblingId = ids[1];
+                return true;
+            }
+
+            return false;
+        }
+
         private static int CountSections(DiagnosticTestReportDto report)
         {
             return EnumerateSections(report)
@@ -136,7 +307,6 @@ namespace LIS.Masters.Tests.Reports
 
         private static System.Collections.Generic.IEnumerable<DiagnosticTestReportSection> EnumerateSections(DiagnosticTestReportDto report)
         {
-            // Prefer department grouping (primary print layout); fall back to profile/flat.
             if (report?.DepartmentGroups != null && report.DepartmentGroups.Any(g => g?.Sections != null && g.Sections.Any()))
             {
                 foreach (var g in report.DepartmentGroups)

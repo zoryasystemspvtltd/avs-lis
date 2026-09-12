@@ -181,6 +181,15 @@ namespace LIS.Masters.Tests.Notifications
                 return new DiagnosticTestReportDto();
             }
 
+            public TestReportPrintOptionsDto GetPrintableTestOptions(string labNo, string invoiceNo)
+            {
+                return new TestReportPrintOptionsDto
+                {
+                    CanPrintAll = false,
+                    Tests = new System.Collections.Generic.List<TestReportPrintableTestOption>()
+                };
+            }
+
             public System.Collections.Generic.IEnumerable<TestReportLabNoOption> GetPrintableLabNumbers()
             {
                 return new TestReportLabNoOption[0];

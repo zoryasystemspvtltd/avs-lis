@@ -143,6 +143,27 @@ namespace Lis.Api.Controllers.Api
         }
 
         [HttpGet]
+        [Route("TestReportPrintOptions")]
+        [QAuthorize(ModuleName = "Reports", ModulePermissionTypes = ModulePermissionType.CanView)]
+        public IHttpActionResult GetTestReportPrintOptions(string labNo = null, string invoiceNo = null)
+        {
+            try
+            {
+                return Ok(testReportManager.GetPrintableTestOptions(labNo, invoiceNo));
+            }
+            catch (TestReportValidationException ex)
+            {
+                logger.LogError(ex.Message);
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ex.Message));
+            }
+            catch (Exception ex)
+            {
+                logger.LogException(ex);
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "Unable to load print options."));
+            }
+        }
+
+        [HttpGet]
         [Route("TestReport")]
         [QAuthorize(ModuleName = "Reports", ModulePermissionTypes = ModulePermissionType.CanView)]
         public IHttpActionResult GetTestReport(string labNo = null, string invoiceNo = null, long? testRequestDetailId = null)
