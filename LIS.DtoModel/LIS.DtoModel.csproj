@@ -114,6 +114,7 @@
     <Compile Include="Models\Reports\ReportTemplateAssignment.cs" />
     <Compile Include="Models\Reports\ReportTemplateDtos.cs" />
     <Compile Include="Models\Reports\ReportTemplateEnginePhase2.cs" />
+    <Compile Include="Models\Reports\ReportProductionPresentation.cs" />
     <Compile Include="Models\Reports\ReportTemplateModeSetting.cs" />
     <Compile Include="Models\Reports\ReportTemplateDesignerDtos.cs" />
     <Compile Include="Interfaces\IReportLayoutConfigurationManager.cs" />

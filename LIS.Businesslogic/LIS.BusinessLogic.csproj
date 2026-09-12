@@ -117,6 +117,7 @@
     <Compile Include="Reports\ReportTemplateCompatibilityDefinitions.cs" />
     <Compile Include="Reports\ReportTemplateBindingContext.cs" />
     <Compile Include="Reports\DeclarativeReportRenderer.cs" />
+    <Compile Include="Reports\ReportProductionPresentationAdapter.cs" />
     <Compile Include="Reports\ReportDesignFieldCatalog.cs" />
     <Compile Include="TestReportValidationException.cs" />
     <Compile Include="TestResultRangeEvaluator.cs" />

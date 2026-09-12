@@ -205,6 +205,10 @@
          class="diagnostic-report"
          *ngIf="report && !loading">
 
+        <div *ngIf="useDeclarativePresentation" class="rte-production-root" [innerHTML]="declarativeSafeHtml"></div>
+
+        <ng-container *ngIf="!useDeclarativePresentation">
+
 
 
 
@@ -787,6 +791,8 @@
 
 
 
+
+        </ng-container>
 
     </div>
 

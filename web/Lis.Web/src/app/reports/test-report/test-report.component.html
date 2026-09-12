@@ -91,6 +91,10 @@
   <!-- Diagnostic Report -->
   <div id="diagnostic-test-report-print" class="diagnostic-report" *ngIf="report && !loading">
 
+    <div *ngIf="useDeclarativePresentation" class="rte-production-root" [innerHTML]="declarativeSafeHtml"></div>
+
+    <ng-container *ngIf="!useDeclarativePresentation">
+
     <!-- Blank 5 cm header band (pre-printed letterhead) -->
     <header class="report-print-header" aria-hidden="true"></header>
 
@@ -255,6 +259,8 @@
 
     <!-- Blank 5 cm footer band -->
     <div class="report-print-footer-zone" aria-hidden="true"></div>
+
+    </ng-container>
   </div>
 
   <div class="workflow-empty no-print" *ngIf="searched && !report && !loading && !filterError">

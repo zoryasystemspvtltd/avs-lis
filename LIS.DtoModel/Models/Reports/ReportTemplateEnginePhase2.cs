@@ -2,13 +2,7 @@ using System.Collections.Generic;
 
 namespace LIS.DtoModel.Models.Reports
 {
-    /// <summary>
-    /// Phase 2 safety switch. Production print must never read this as true unless a later phase explicitly flips it.
-    /// </summary>
-    public static class ReportTemplateEngineFeatureFlags
-    {
-        public const bool UseDeclarativeRendererForProductionPrint = false;
-    }
+    // ReportTemplateEngineFeatureFlags lives in ReportProductionPresentation.cs (Phase 4 fail-closed reader).
 
     public static class ReportTemplateComponentTypes
     {

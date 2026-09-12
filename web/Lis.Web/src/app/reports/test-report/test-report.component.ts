@@ -1,4 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ReportService } from '../../_services/report.service';
 import { AlertService } from '../../_services/alert.service';
 
@@ -38,9 +39,14 @@ export class TestReportComponent implements OnInit, OnDestroy {
   canPrintAll = false;
   private fullReport: any = null;
 
+  /** Phase 4: whole-report declarative HTML when server PresentationMode=Declarative. */
+  useDeclarativePresentation = false;
+  declarativeSafeHtml: SafeHtml = null;
+
   constructor(
     private reportService: ReportService,
-    private alertService: AlertService
+    private alertService: AlertService,
+    private sanitizer: DomSanitizer
   ) { }
 
   ngOnInit() {
@@ -76,6 +82,8 @@ export class TestReportComponent implements OnInit, OnDestroy {
     this.canPrintAll = false;
     this.searched = false;
     this.isPrintView = false;
+    this.useDeclarativePresentation = false;
+    this.declarativeSafeHtml = null;
     document.body.classList.remove('test-report-print-mode');
   }
 
@@ -150,7 +158,7 @@ export class TestReportComponent implements OnInit, OnDestroy {
       }
       this.selectedTestRequestDetailId = null;
       if (this.fullReport) {
-        this.report = this.fullReport;
+        this.setReport(this.fullReport);
         return;
       }
       this.loadFullReport(this.labNo.trim());
@@ -177,7 +185,7 @@ export class TestReportComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.reportService.getTestReport(this.labNo.trim(), this.selectedTestRequestDetailId).subscribe(
       r => {
-        this.report = this.normalizeReport(r);
+        this.setReport(this.normalizeReport(r));
         this.loading = false;
       },
       err => {
@@ -193,7 +201,7 @@ export class TestReportComponent implements OnInit, OnDestroy {
     this.reportService.getTestReport(lab).subscribe(
       r => {
         this.fullReport = this.normalizeReport(r);
-        this.report = this.fullReport;
+        this.setReport(this.fullReport);
         // Prefer server print options; fall back to sections if options empty.
         if (!this.printableTests.length) {
           this.printableTests = this.buildPrintableTests(this.fullReport);
@@ -279,7 +287,9 @@ export class TestReportComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const styles = `<style>${this.getDiagnosticPrintStyles()}</style>`;
+    const styles = this.useDeclarativePresentation
+      ? '<style>html,body{margin:0;padding:0;background:#fff;}</style>'
+      : `<style>${this.getDiagnosticPrintStyles()}</style>`;
 
     doc.open();
     doc.write(`<!DOCTYPE html><html><head><title></title>${styles}</head><body class="diagnostic-report-print-doc">${source.innerHTML}</body></html>`);
@@ -585,8 +595,29 @@ export class TestReportComponent implements OnInit, OnDestroy {
       profileGroups,
       departmentGroups,
       sections,
-      layout: r.layout || r.Layout || null
+      layout: r.layout || r.Layout || null,
+      presentation: r.presentation || r.Presentation || null
     };
+  }
+
+  private setReport(report: any) {
+    this.report = report;
+    this.applyPresentation(report);
+  }
+
+  private applyPresentation(report: any) {
+    const p = report?.presentation || report?.Presentation;
+    const mode = (p?.presentationMode || p?.PresentationMode || '').toString();
+    const html = p?.html || p?.Html;
+    const css = p?.css || p?.Css;
+    if (mode.toLowerCase() === 'declarative' && html) {
+      this.useDeclarativePresentation = true;
+      const styleBlock = css ? `<style type="text/css">${css}</style>` : '';
+      this.declarativeSafeHtml = this.sanitizer.bypassSecurityTrustHtml(styleBlock + html);
+    } else {
+      this.useDeclarativePresentation = false;
+      this.declarativeSafeHtml = null;
+    }
   }
 
   private buildPrintableTests(report: any): PrintableTestOption[] {

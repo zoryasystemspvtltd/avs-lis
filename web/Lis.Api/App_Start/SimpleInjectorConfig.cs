@@ -35,6 +35,8 @@ namespace Lis.Api
     {
         public static Container Initialize(IAppBuilder app)
         {
+            ConfigureProductionDeclarativePrintFlag();
+
             var container = GetInitializeContainer(app);
 
             container.Verify();
@@ -43,6 +45,19 @@ namespace Lis.Api
                 new SimpleInjectorWebApiDependencyResolver(container);
 
             return container;
+        }
+
+        /// <summary>
+        /// Fail-closed reader for Phase 4 production declarative print. Default OFF.
+        /// Gate 6 (explicit approval) is required before setting the appSettings key to true.
+        /// </summary>
+        private static void ConfigureProductionDeclarativePrintFlag()
+        {
+            ReportTemplateEngineFeatureFlags.ConfigureReader(() =>
+            {
+                var raw = ConfigurationManager.AppSettings[ReportTemplateEngineFeatureFlags.AppSettingKey];
+                return ReportTemplateEngineFeatureFlags.ParseAppSettingValue(raw);
+            });
         }
 
         public static Container GetInitializeContainer(
@@ -128,6 +143,7 @@ namespace Lis.Api
             container.Register<IReportTemplateResolver, ReportTemplateManager>(Lifestyle.Scoped);
             container.Register<IReportViewer, ReportTemplateManager>(Lifestyle.Scoped);
             container.Register<IReportRenderer, DeclarativeReportRenderer>(Lifestyle.Singleton);
+            container.Register<IReportProductionPresentationAdapter, ReportProductionPresentationAdapter>(Lifestyle.Scoped);
             container.Register<INotificationConfigurationManager, NotificationConfigurationManager>(Lifestyle.Scoped);
             container.Register<INotificationTemplateManager, NotificationTemplateManager>(Lifestyle.Scoped);
             container.Register<INotificationEventManager, NotificationEventManager>(Lifestyle.Scoped);

@@ -13,7 +13,7 @@ namespace LIS.Masters.Tests.Reports
     {
         private ReportTemplateManager CreateManager()
         {
-            return new ReportTemplateManager(Services.Logger, Services.Identity, Services.Uow);
+            return new ReportTemplateManager(Services.Logger, Services.Identity, Services.Uow, new DeclarativeReportRenderer());
         }
 
         [TestMethod]

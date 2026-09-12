@@ -25,6 +25,7 @@ namespace Lis.Api.Controllers.Api
         private readonly ITestReportManager testReportManager;
         private readonly IRadiologyReportManager radiologyReportManager;
         private readonly IReportLayoutConfigurationManager reportLayoutManager;
+        private readonly IReportProductionPresentationAdapter presentationAdapter;
         private readonly ApplicationUserManager userManager;
         private readonly ILogger logger;
 
@@ -33,6 +34,7 @@ namespace Lis.Api.Controllers.Api
             ITestReportManager testReportManager,
             IRadiologyReportManager radiologyReportManager,
             IReportLayoutConfigurationManager reportLayoutManager,
+            IReportProductionPresentationAdapter presentationAdapter,
             ApplicationUserManager userManager,
             ILogger logger)
         {
@@ -40,6 +42,7 @@ namespace Lis.Api.Controllers.Api
             this.testReportManager = testReportManager;
             this.radiologyReportManager = radiologyReportManager;
             this.reportLayoutManager = reportLayoutManager;
+            this.presentationAdapter = presentationAdapter;
             this.userManager = userManager;
             this.logger = logger;
         }
@@ -175,6 +178,7 @@ namespace Lis.Api.Controllers.Api
                 EnrichLabTechnician(report);
                 EnrichReportBranding(report);
                 EnrichReportLayout(report);
+                ApplyDiagnosticPresentation(report, testRequestDetailId);
                 return Ok(report);
             }
             catch (TestReportValidationException ex)
@@ -215,6 +219,7 @@ namespace Lis.Api.Controllers.Api
                 var report = radiologyReportManager.GetRadiologyReportForPrint(radiologyRequestId);
                 EnrichRadiologyApprover(report);
                 EnrichRadiologyLayout(report);
+                ApplyRadiologyPresentation(report, radiologyRequestId);
                 return Ok(report);
             }
             catch (TestReportValidationException ex)
@@ -505,6 +510,67 @@ namespace Lis.Api.Controllers.Api
             options.CreatedByUserName = !string.IsNullOrWhiteSpace(user.UserName)
                 ? user.UserName.Trim()
                 : user.Email?.Trim();
+        }
+
+        /// <summary>
+        /// Phase 4 presentation switch (post-enrichment). Failures stay on Existing Angular — never throws to client.
+        /// </summary>
+        private void ApplyDiagnosticPresentation(DiagnosticTestReportDto report, long? testRequestDetailId)
+        {
+            if (report == null || presentationAdapter == null)
+            {
+                return;
+            }
+
+            try
+            {
+                report.Presentation = presentationAdapter.Apply(new ReportProductionPresentationContext
+                {
+                    ReportType = ReportTemplateTypes.Diagnostic,
+                    ReportData = report,
+                    TestRequestDetailId = testRequestDetailId,
+                    InvoiceNo = report.Header?.InvoiceNo
+                });
+            }
+            catch (Exception ex)
+            {
+                logger.LogError("RTE_PRESENTATION_FALLBACK Diagnostic controller catch ExceptionType={0}", ex.GetType().Name);
+                report.Presentation = new ReportProductionPresentationDto
+                {
+                    PresentationMode = ReportProductionPresentationModes.Existing,
+                    FallbackReason = ReportProductionFallbackReasons.RenderException,
+                    PresentationTraceId = Guid.NewGuid().ToString("N")
+                };
+            }
+        }
+
+        private void ApplyRadiologyPresentation(DiagnosticRadiologyReportDto report, long radiologyRequestId)
+        {
+            if (report == null || presentationAdapter == null)
+            {
+                return;
+            }
+
+            try
+            {
+                report.Presentation = presentationAdapter.Apply(new ReportProductionPresentationContext
+                {
+                    ReportType = ReportTemplateTypes.Radiology,
+                    ReportData = report,
+                    InvoiceNo = report.Header?.InvoiceNo,
+                    RadiologyRequestId = radiologyRequestId
+                });
+            }
+            catch (Exception ex)
+            {
+                logger.LogError("RTE_PRESENTATION_FALLBACK Radiology controller catch ExceptionType={0}", ex.GetType().Name);
+                report.Presentation = new ReportProductionPresentationDto
+                {
+                    PresentationMode = ReportProductionPresentationModes.Existing,
+                    FallbackReason = ReportProductionFallbackReasons.RenderException,
+                    PresentationTraceId = Guid.NewGuid().ToString("N")
+                };
+            }
         }
 
         private ItemList<T> RunReport<T>(Func<ReportFilterOptions, ItemList<T>> action) where T : class

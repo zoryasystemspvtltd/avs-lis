@@ -21,11 +21,10 @@ namespace LIS.BusinessLogic
         private readonly GenericUnitOfWork unitOfWork;
         private readonly ILogger logger;
 
-        public ReportTemplateManager(ILogger logger, IModuleIdentity identity, GenericUnitOfWork unitOfWork)
-            : this(logger, identity, unitOfWork, new DeclarativeReportRenderer())
-        {
-        }
-
+        /// <summary>
+        /// Single public constructor required by SimpleInjector (one-constructor rule).
+        /// Tests and DI must supply <see cref="IReportRenderer"/> explicitly.
+        /// </summary>
         public ReportTemplateManager(ILogger logger, IModuleIdentity identity, GenericUnitOfWork unitOfWork, IReportRenderer renderer)
         {
             this.logger = logger;
@@ -596,12 +595,7 @@ namespace LIS.BusinessLogic
 
         public ReportRenderResultDto PreviewSample(string reportType)
         {
-            // Safety: production print flag must remain false in Phase 2.
-            if (ReportTemplateEngineFeatureFlags.UseDeclarativeRendererForProductionPrint)
-            {
-                throw new InvalidOperationException("Production declarative print flag must remain false in Phase 2.");
-            }
-
+            // Admin preview remains available regardless of production print flag (Phase 4).
             var type = NormalizeReportType(reportType);
             var definition = ReportTemplateCompatibilityDefinitions.BuildForReportType(type);
             return renderer.Render(new ReportRenderRequestDto
@@ -615,11 +609,7 @@ namespace LIS.BusinessLogic
 
         public ReportRenderResultDto PreviewVersion(int versionId)
         {
-            if (ReportTemplateEngineFeatureFlags.UseDeclarativeRendererForProductionPrint)
-            {
-                throw new InvalidOperationException("Production declarative print flag must remain false in Phase 2.");
-            }
-
+            // Admin preview remains available regardless of production print flag (Phase 4).
             var version = versionRepo.Get(versionId);
             if (version == null)
             {
@@ -671,11 +661,7 @@ namespace LIS.BusinessLogic
 
         public ReportRenderResultDto PreviewDefinition(string reportType, string definitionJson)
         {
-            if (ReportTemplateEngineFeatureFlags.UseDeclarativeRendererForProductionPrint)
-            {
-                throw new InvalidOperationException("Production declarative print flag must remain false in Phase 2.");
-            }
-
+            // Admin preview remains available regardless of production print flag (Phase 4).
             var type = NormalizeReportType(reportType);
             return renderer.Render(new ReportRenderRequestDto
             {

@@ -1,4 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { ReportService } from '../../_services/report.service';
 import { AlertService } from '../../_services/alert.service';
@@ -20,10 +21,15 @@ export class RadiologyReportPrintComponent implements OnInit, OnDestroy {
   report: any = null;
   isPrintView = false;
 
+  /** Phase 4: whole-report declarative HTML when server PresentationMode=Declarative. */
+  useDeclarativePresentation = false;
+  declarativeSafeHtml: SafeHtml = null;
+
   constructor(
     private reportService: ReportService,
     private alertService: AlertService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private sanitizer: DomSanitizer
   ) { }
 
   ngOnInit() {
@@ -63,6 +69,8 @@ export class RadiologyReportPrintComponent implements OnInit, OnDestroy {
     this.report = null;
     this.searched = false;
     this.isPrintView = false;
+    this.useDeclarativePresentation = false;
+    this.declarativeSafeHtml = null;
     document.body.classList.remove('radiology-report-print-mode');
   }
 
@@ -85,6 +93,7 @@ export class RadiologyReportPrintComponent implements OnInit, OnDestroy {
     this.reportService.getRadiologyReport(+this.selectedId).subscribe(
       r => {
         this.report = this.normalizeReport(r);
+        this.applyPresentation(this.report);
         this.searched = true;
         this.loading = false;
       },
@@ -116,7 +125,10 @@ export class RadiologyReportPrintComponent implements OnInit, OnDestroy {
       return;
     }
     doc.open();
-    doc.write(`<!DOCTYPE html><html><head><title>Radiology Report</title><style>${this.getPrintStyles()}</style></head><body class="radiology-report-print-doc">${source.innerHTML}</body></html>`);
+    const styles = this.useDeclarativePresentation
+      ? 'html,body{margin:0;padding:0;background:#fff;}'
+      : this.getPrintStyles();
+    doc.write(`<!DOCTYPE html><html><head><title>Radiology Report</title><style>${styles}</style></head><body class="radiology-report-print-doc">${source.innerHTML}</body></html>`);
     doc.close();
     setTimeout(() => {
       try {
@@ -168,8 +180,24 @@ export class RadiologyReportPrintComponent implements OnInit, OnDestroy {
       findings: r?.findings ?? r?.Findings,
       impression: r?.impression ?? r?.Impression,
       recommendation: r?.recommendation ?? r?.Recommendation,
-      layout: r?.layout || r?.Layout || null
+      layout: r?.layout || r?.Layout || null,
+      presentation: r?.presentation || r?.Presentation || null
     };
+  }
+
+  private applyPresentation(report: any) {
+    const p = report?.presentation || report?.Presentation;
+    const mode = (p?.presentationMode || p?.PresentationMode || '').toString();
+    const html = p?.html || p?.Html;
+    const css = p?.css || p?.Css;
+    if (mode.toLowerCase() === 'declarative' && html) {
+      this.useDeclarativePresentation = true;
+      const styleBlock = css ? `<style type="text/css">${css}</style>` : '';
+      this.declarativeSafeHtml = this.sanitizer.bypassSecurityTrustHtml(styleBlock + html);
+    } else {
+      this.useDeclarativePresentation = false;
+      this.declarativeSafeHtml = null;
+    }
   }
 
   private readError(err: any, fallback = 'Unable to load radiology report.'): string {

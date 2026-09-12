@@ -64,7 +64,7 @@ export class ReportTemplateConfigurationComponent implements OnInit {
       m => {
         this.mode = m.mode || m.Mode;
         this.message = mode === 'Custom'
-          ? 'Custom mode enabled. Activated templates may apply at runtime resolution (production print flag remains OFF).'
+          ? 'Custom mode enabled. Activated templates may apply when production declarative print is enabled (ops flag; currently OFF by default).'
           : 'System Default mode enabled. Custom templates remain saved but inactive for runtime.';
         this.reload();
       },

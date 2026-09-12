@@ -291,11 +291,7 @@ namespace LIS.BusinessLogic
 
         public ReportTemplateDesignerItemDto ActivateTemplate(int templateId)
         {
-            if (ReportTemplateEngineFeatureFlags.UseDeclarativeRendererForProductionPrint)
-            {
-                throw new InvalidOperationException("Production declarative print flag must remain false in Phase 3.");
-            }
-
+            // Activate remains Admin-only (QAuthorize). Production print enablement is a separate ops flag (Phase 4).
             var template = RequireTemplate(templateId);
             if (template.IsSystemDefault)
             {

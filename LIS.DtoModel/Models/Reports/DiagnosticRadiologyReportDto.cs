@@ -12,6 +12,12 @@ namespace LIS.DtoModel.Models
         public string Recommendation { get; set; }
         /// <summary>Optional physical print layout (stationery clearance / signature). Null = client defaults.</summary>
         public ReportLayoutConfigurationDto Layout { get; set; }
+
+        /// <summary>
+        /// Phase 4 presentation decision. Null or PresentationMode=Existing → Angular templates.
+        /// PresentationMode=Declarative + Html → server-rendered HTML (flag ON + successful Custom only).
+        /// </summary>
+        public ReportProductionPresentationDto Presentation { get; set; }
     }
 
     public class DiagnosticRadiologyReportHeader

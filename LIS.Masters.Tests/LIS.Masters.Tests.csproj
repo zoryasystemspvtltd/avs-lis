@@ -106,6 +106,8 @@
     <Compile Include="Reports\ReportTemplateEnginePhase3Tests.cs" />
     <Compile Include="Security\ReportLayoutConfigurationRbacTests.cs" />
     <Compile Include="Security\ReportTemplateConfigurationRbacTests.cs" />
+    <Compile Include="Security\ReportTemplateConfigurationHttpAuthTests.cs" />
+    <Compile Include="Reports\ReportTemplateEnginePhase4Tests.cs" />
     <Compile Include="Users\UserSignatureValidationTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
