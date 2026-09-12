@@ -162,7 +162,8 @@ export class LeftNavMenuComponent implements OnInit {
       || this.hasMenu('Equipments', 'setup.equipment')
       || this.hasMenu('Equipments', 'setup.equipmentHeartbeat')
       || this.hasMenu('NotificationConfiguration', 'setup.notificationConfiguration')
-      || this.hasMenu('ReportLayoutConfiguration', 'setup.reportLayoutConfiguration');
+      || this.hasMenu('ReportLayoutConfiguration', 'setup.reportLayoutConfiguration')
+      || this.hasMenu('ReportTemplateConfiguration', 'setup.reportTemplateConfiguration');
   }
 
   hasMasterAccess(): boolean {
