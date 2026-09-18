@@ -136,7 +136,7 @@ export class ReportTemplateDesignerComponent implements OnInit {
     }).subscribe(
       () => {
         this.loading = false;
-        this.message = 'Saved (not activated).';
+        this.message = '✓ Template saved successfully. Status: Draft / Inactive. Saving does not activate the template.';
       },
       err => {
         this.loading = false;
@@ -172,6 +172,12 @@ export class ReportTemplateDesignerComponent implements OnInit {
   }
 
   activate() {
+    if (!confirm(
+      'Activate Template?\n\nTemplate:\n' + (this.templateName || this.templateId) +
+      '\n\nActivation does not change Template Mode. Saving does not activate; this action will activate explicitly.'
+    )) {
+      return;
+    }
     this.loading = true;
     this.service.saveDesign({
       templateId: this.templateId,
@@ -182,7 +188,7 @@ export class ReportTemplateDesignerComponent implements OnInit {
         this.service.activate(this.templateId).subscribe(
           () => {
             this.loading = false;
-            this.message = 'Activated. Switch Template Mode to Custom for runtime selection.';
+            this.message = 'Activated. Template Mode was not changed.';
           },
           err => {
             this.loading = false;
