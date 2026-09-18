@@ -33,8 +33,33 @@ import { ReportTemplateConfigurationService } from '../../_services/report-templ
     .rtc-empty { color: #888; font-style: italic; margin: 6px 0 10px; }
     .rtc-pager { margin-top: 8px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
     .rtc-pager .rtc-range { color: #666; font-size: 12px; }
-    .rtc-preview { margin-top: 16px; }
+    .rtc-preview { margin-top: 12px; }
     .table.rtc-table > thead > tr > th { white-space: nowrap; }
+    .rtc-tabs { margin: 8px 0 10px; border-bottom: 1px solid #ddd; }
+    .rtc-tabs .btn { border-radius: 0; margin-right: 2px; margin-bottom: -1px; }
+    .rtc-tabs .btn.active-tab {
+      background: #fff;
+      border-color: #ddd #ddd #fff;
+      border-bottom-color: #fff;
+      font-weight: 600;
+      color: #337ab7;
+    }
+    .rtc-tabs .btn:disabled,
+    .rtc-tabs .btn.disabled-tab {
+      opacity: 0.55;
+      cursor: not-allowed;
+      color: #888;
+      background: #f5f5f5;
+    }
+    .rtc-tabs .btn.active-tab:disabled,
+    .rtc-tabs .btn.active-tab.disabled-tab {
+      color: #888;
+      border-color: #ddd #ddd #fff;
+    }
+    .rtc-tab-body { padding-top: 4px; }
+    .rtc-section { margin-bottom: 12px; padding: 10px 12px; }
+    .rtc-create-panel { margin: 8px 0 10px; padding: 10px; }
+    .rtc-filters { margin-bottom: 6px; }
   `]
 })
 export class ReportTemplateConfigurationComponent implements OnInit {
@@ -48,6 +73,12 @@ export class ReportTemplateConfigurationComponent implements OnInit {
   workspace: any = null;
   preview: any = null;
   message = '';
+
+  /**
+   * Local UI-only tab for Custom Templates lists.
+   * Does not persist to DB and must not mutate templates/mode.
+   */
+  customTab: 'generic' | 'test' | 'profile' = 'generic';
 
   /** Which inline create panel is open: none | system | generic | specific */
   createPanel: 'none' | 'system' | 'generic' | 'specific' = 'none';
@@ -69,6 +100,11 @@ export class ReportTemplateConfigurationComponent implements OnInit {
   profileSearch = '';
   profileFilter: number | 'All' = 'All';
   profilePage = 1;
+
+  /** Tabs stay visible always; enabled only when persisted mode is Custom. */
+  get customTabsEnabled(): boolean {
+    return this.mode === 'Custom';
+  }
 
   constructor(
     private service: ReportTemplateConfigurationService,
@@ -170,12 +206,45 @@ export class ReportTemplateConfigurationComponent implements OnInit {
     this.beginCreate('system', 'CustomGeneric');
   }
 
+  /**
+   * UI-only tab switch. Must not call mutation APIs or change Template Mode.
+   * No-op when Template Mode is System Default (tabs visible but disabled).
+   */
+  selectCustomTab(tab: 'generic' | 'test' | 'profile') {
+    if (!this.customTabsEnabled) {
+      return;
+    }
+    if (this.customTab === tab) {
+      return;
+    }
+    this.customTab = tab;
+    // Close create panel when leaving its owning tab context.
+    if (this.createPanel === 'generic' && tab !== 'generic') {
+      this.cancelCreate();
+    }
+    if (this.createPanel === 'specific' && tab === 'generic') {
+      this.cancelCreate();
+    }
+  }
+
   openCreateGeneric() {
+    if (!this.customTabsEnabled) {
+      return;
+    }
+    this.customTab = 'generic';
     this.beginCreate('generic', 'CustomGeneric');
   }
 
   openCreateSpecific() {
+    if (!this.customTabsEnabled) {
+      return;
+    }
+    // Keep one Specific create workflow; preselect Target Type from active tab.
+    if (this.customTab !== 'test' && this.customTab !== 'profile') {
+      this.customTab = 'test';
+    }
     this.beginCreate('specific', 'Specific');
+    this.targetType = this.customTab === 'profile' ? 'Profile' : 'Test';
   }
 
   private beginCreate(panel: 'system' | 'generic' | 'specific', category: string) {
@@ -183,7 +252,7 @@ export class ReportTemplateConfigurationComponent implements OnInit {
     this.createName = '';
     this.createFrom = 'SystemDefault';
     this.createCategory = category;
-    this.targetType = 'Test';
+    this.targetType = panel === 'specific' && this.customTab === 'profile' ? 'Profile' : 'Test';
     this.targetId = null;
     if (panel === 'specific' || !this.targets.length) {
       this.service.targets('').subscribe(

@@ -43,8 +43,8 @@
       <!-- SYSTEM DEFAULT -->
       <div class="rtc-section" *ngIf="workspace">
         <div class="rtc-section-head">
-          <h4>System Default</h4>
-          <span class="label label-default">🔒 Locked</span>
+          <h4>🔒 System Default</h4>
+          <span class="label label-default">Locked</span>
         </div>
         <p class="rtc-muted">Current standard report format for {{ reportType }}.</p>
         <p>
@@ -53,6 +53,7 @@
         <div>
           <button type="button" class="btn btn-info btn-sm" (click)="previewSystemDefault()" [disabled]="loading">Preview</button>
           <button type="button" class="btn btn-primary btn-sm" style="margin-left:6px;"
+                  *ngIf="createPanel!=='system'"
                   (click)="openCreateSystem()" [disabled]="loading">Create Custom</button>
         </div>
 
@@ -77,7 +78,7 @@
         </div>
       </div>
 
-      <!-- CUSTOM TEMPLATES -->
+      <!-- CUSTOM TEMPLATES (tabbed) -->
       <div class="rtc-section" *ngIf="workspace">
         <div class="rtc-section-head">
           <h4>Custom Templates</h4>
@@ -89,232 +90,308 @@
           Custom templates are preserved. They apply at print time only when Template Mode is Custom.
         </p>
 
-        <!-- GENERIC -->
-        <div class="rtc-section-head" style="margin-top:8px;">
-          <h5>Generic Templates</h5>
-          <button type="button" class="btn btn-primary btn-xs"
-                  (click)="openCreateGeneric()" [disabled]="loading">+ Create Generic</button>
+        <div class="rtc-tabs btn-group">
+          <button type="button" class="btn btn-default btn-sm"
+                  [class.active-tab]="customTab==='generic'"
+                  [class.disabled-tab]="!customTabsEnabled"
+                  [disabled]="!customTabsEnabled || loading"
+                  (click)="selectCustomTab('generic')">Generic</button>
+          <button type="button" class="btn btn-default btn-sm"
+                  [class.active-tab]="customTab==='test'"
+                  [class.disabled-tab]="!customTabsEnabled"
+                  [disabled]="!customTabsEnabled || loading"
+                  (click)="selectCustomTab('test')">Test Specific</button>
+          <button type="button" class="btn btn-default btn-sm"
+                  [class.active-tab]="customTab==='profile'"
+                  [class.disabled-tab]="!customTabsEnabled"
+                  [disabled]="!customTabsEnabled || loading"
+                  (click)="selectCustomTab('profile')">Profile Specific</button>
         </div>
 
-        <div class="rtc-create-panel" *ngIf="createPanel==='generic'">
-          <h5>Create Generic Template</h5>
-          <div class="form-group">
-            <label>Template Name <span class="text-danger">*</span></label>
-            <input class="form-control input-sm" [(ngModel)]="createName" />
+        <!-- GENERIC TAB -->
+        <div class="rtc-tab-body" *ngIf="customTab==='generic'">
+          <div class="rtc-section-head">
+            <h5>Generic Templates</h5>
+            <button type="button" class="btn btn-primary btn-xs"
+                    *ngIf="createPanel!=='generic'"
+                    (click)="openCreateGeneric()" [disabled]="loading || !customTabsEnabled">+ Create Generic</button>
           </div>
-          <div class="form-group">
-            <label>Create From</label>
-            <select class="form-control input-sm" [(ngModel)]="createFrom">
-              <option value="SystemDefault">System Default</option>
-              <option value="Blank">Blank</option>
-            </select>
-          </div>
-          <div class="text-right">
-            <button type="button" class="btn btn-default btn-sm" (click)="cancelCreate()">Cancel</button>
-            <button type="button" class="btn btn-primary btn-sm" style="margin-left:6px;"
-                    (click)="createTemplate()" [disabled]="loading || !createName">Create &amp; Design</button>
-          </div>
-        </div>
 
-        <div class="rtc-filters form-inline">
-          <label>Search</label>
-          <input class="form-control input-sm" [(ngModel)]="genericSearch" (ngModelChange)="onGenericFilterChange()"
-                 placeholder="Template name" />
-          <label>Status</label>
-          <select class="form-control input-sm" [(ngModel)]="genericStatus" (ngModelChange)="onGenericFilterChange()">
-            <option value="All">All</option>
-            <option value="Active">Active</option>
-            <option value="Inactive">Draft / Inactive</option>
-          </select>
-        </div>
-
-        <table class="table table-bordered table-condensed rtc-table" *ngIf="filteredGenerics().length">
-          <thead>
-            <tr>
-              <th>Template Name</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let t of paged(filteredGenerics(), genericPage)">
-              <td>{{ val(t,'name','Name') }}</td>
-              <td>
-                <span *ngIf="val(t,'isActivated','IsActivated')" class="rtc-status-active">✓ Active</span>
-                <span *ngIf="!val(t,'isActivated','IsActivated')" class="rtc-status-draft">Draft / Inactive</span>
-              </td>
-              <td>
-                <button type="button" class="btn btn-link btn-xs" (click)="design(t)">Design</button>
-                <button type="button" class="btn btn-link btn-xs"
-                        *ngIf="val(t,'canActivate','CanActivate')" (click)="confirmActivate(t)">Activate</button>
-                <button type="button" class="btn btn-link btn-xs"
-                        *ngIf="val(t,'canDeactivate','CanDeactivate')" (click)="confirmDeactivate(t)">Deactivate</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        <p class="rtc-empty" *ngIf="!filteredGenerics().length">No Generic templates match the current filters.</p>
-        <div class="rtc-pager" *ngIf="filteredGenerics().length > pageSize">
-          <span class="rtc-range">{{ rangeLabel(filteredGenerics().length, genericPage) }}</span>
-          <ngb-pagination [(page)]="genericPage"
-                          [pageSize]="pageSize"
-                          [collectionSize]="filteredGenerics().length"
-                          [maxSize]="5"
-                          [rotate]="true"
-                          [boundaryLinks]="true"
-                          size="sm"></ngb-pagination>
-        </div>
-
-        <!-- SPECIFIC -->
-        <div class="rtc-section-head" style="margin-top:18px;">
-          <h5>Specific Templates</h5>
-          <button type="button" class="btn btn-primary btn-xs"
-                  (click)="openCreateSpecific()" [disabled]="loading">+ Create Specific</button>
-        </div>
-
-        <div class="rtc-create-panel" *ngIf="createPanel==='specific'">
-          <h5>Create Specific Template</h5>
-          <div class="form-group">
-            <label>Template Name <span class="text-danger">*</span></label>
-            <input class="form-control input-sm" [(ngModel)]="createName" />
-          </div>
-          <div class="form-group">
-            <label>Target Type</label>
-            <div>
-              <label class="radio-inline">
-                <input type="radio" name="targetType" value="Test"
-                       [(ngModel)]="targetType" (ngModelChange)="targetId=null" /> Test
-              </label>
-              <label class="radio-inline">
-                <input type="radio" name="targetType" value="Profile"
-                       [(ngModel)]="targetType" (ngModelChange)="targetId=null" /> Profile
-              </label>
+          <div class="rtc-create-panel" *ngIf="createPanel==='generic'">
+            <h5>Create Generic Template</h5>
+            <div class="form-group">
+              <label>Template Name <span class="text-danger">*</span></label>
+              <input class="form-control input-sm" [(ngModel)]="createName" />
+            </div>
+            <div class="form-group">
+              <label>Create From</label>
+              <select class="form-control input-sm" [(ngModel)]="createFrom">
+                <option value="SystemDefault">System Default</option>
+                <option value="Blank">Blank</option>
+              </select>
+            </div>
+            <div class="text-right">
+              <button type="button" class="btn btn-default btn-sm" (click)="cancelCreate()">Cancel</button>
+              <button type="button" class="btn btn-primary btn-sm" style="margin-left:6px;"
+                      (click)="createTemplate()" [disabled]="loading || !createName">Create &amp; Design</button>
             </div>
           </div>
-          <div class="form-group">
-            <label>Target <span class="text-danger">*</span></label>
-            <select class="form-control input-sm" [(ngModel)]="targetId">
-              <option [ngValue]="null">Select {{ targetType }}…</option>
-              <option *ngFor="let x of targetOptions()" [ngValue]="x.id || x.Id">
-                {{ x.label || x.Label }}
-              </option>
+
+          <div class="rtc-filters form-inline">
+            <label>Search</label>
+            <input class="form-control input-sm" [(ngModel)]="genericSearch" (ngModelChange)="onGenericFilterChange()"
+                   placeholder="Template name" />
+            <label>Status</label>
+            <select class="form-control input-sm" [(ngModel)]="genericStatus" (ngModelChange)="onGenericFilterChange()">
+              <option value="All">All</option>
+              <option value="Active">Active</option>
+              <option value="Inactive">Draft / Inactive</option>
             </select>
           </div>
-          <div class="form-group">
-            <label>Create From</label>
-            <select class="form-control input-sm" [(ngModel)]="createFrom">
-              <option value="SystemDefault">System Default</option>
-              <option value="Blank">Blank</option>
-            </select>
-          </div>
-          <div class="text-right">
-            <button type="button" class="btn btn-default btn-sm" (click)="cancelCreate()">Cancel</button>
-            <button type="button" class="btn btn-primary btn-sm" style="margin-left:6px;"
-                    (click)="createTemplate()"
-                    [disabled]="loading || !createName || targetId==null">Create &amp; Design</button>
+
+          <table class="table table-bordered table-condensed rtc-table" *ngIf="filteredGenerics().length">
+            <thead>
+              <tr>
+                <th>Template Name</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let t of paged(filteredGenerics(), genericPage)">
+                <td>{{ val(t,'name','Name') }}</td>
+                <td>
+                  <span *ngIf="val(t,'isActivated','IsActivated')" class="rtc-status-active">✓ Active</span>
+                  <span *ngIf="!val(t,'isActivated','IsActivated')" class="rtc-status-draft">Draft / Inactive</span>
+                </td>
+                <td>
+                  <button type="button" class="btn btn-link btn-xs" (click)="design(t)">Design</button>
+                  <button type="button" class="btn btn-link btn-xs"
+                          *ngIf="val(t,'canActivate','CanActivate')" (click)="confirmActivate(t)">Activate</button>
+                  <button type="button" class="btn btn-link btn-xs"
+                          *ngIf="val(t,'canDeactivate','CanDeactivate')" (click)="confirmDeactivate(t)">Deactivate</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <p class="rtc-empty" *ngIf="!filteredGenerics().length">No Generic templates match the current filters.</p>
+          <div class="rtc-pager" *ngIf="filteredGenerics().length > pageSize">
+            <span class="rtc-range">{{ rangeLabel(filteredGenerics().length, genericPage) }}</span>
+            <ngb-pagination [(page)]="genericPage"
+                            [pageSize]="pageSize"
+                            [collectionSize]="filteredGenerics().length"
+                            [maxSize]="5"
+                            [rotate]="true"
+                            [boundaryLinks]="true"
+                            size="sm"></ngb-pagination>
           </div>
         </div>
 
-        <!-- TEST SPECIFIC -->
-        <h5>Test Specific</h5>
-        <div class="rtc-filters form-inline">
-          <label>Search</label>
-          <input class="form-control input-sm" [(ngModel)]="testSearch" (ngModelChange)="onTestFilterChange()"
-                 placeholder="Name or test" />
-          <label>Test</label>
-          <select class="form-control input-sm" [(ngModel)]="testFilter" (ngModelChange)="onTestFilterChange()">
-            <option [ngValue]="'All'">All</option>
-            <option *ngFor="let o of testFilterOptions()" [ngValue]="o.id">{{ o.label }}</option>
-          </select>
-        </div>
-        <table class="table table-bordered table-condensed rtc-table" *ngIf="filteredTestSpecifics().length">
-          <thead>
-            <tr>
-              <th>Template</th>
-              <th>Test</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let t of paged(filteredTestSpecifics(), testPage)">
-              <td>{{ val(t,'name','Name') }}</td>
-              <td>{{ val(t,'targetLabel','TargetLabel') || ('Test #' + val(t,'targetTestId','TargetTestId')) }}</td>
-              <td>
-                <span *ngIf="val(t,'isActivated','IsActivated')" class="rtc-status-active">✓ Active</span>
-                <span *ngIf="!val(t,'isActivated','IsActivated')" class="rtc-status-draft">Draft / Inactive</span>
-              </td>
-              <td>
-                <button type="button" class="btn btn-link btn-xs" (click)="design(t)">Design</button>
-                <button type="button" class="btn btn-link btn-xs"
-                        *ngIf="val(t,'canActivate','CanActivate')" (click)="confirmActivate(t)">Activate</button>
-                <button type="button" class="btn btn-link btn-xs"
-                        *ngIf="val(t,'canDeactivate','CanDeactivate')" (click)="confirmDeactivate(t)">Deactivate</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        <p class="rtc-empty" *ngIf="!filteredTestSpecifics().length">No Test Specific templates created yet.</p>
-        <div class="rtc-pager" *ngIf="filteredTestSpecifics().length > pageSize">
-          <span class="rtc-range">{{ rangeLabel(filteredTestSpecifics().length, testPage) }}</span>
-          <ngb-pagination [(page)]="testPage"
-                          [pageSize]="pageSize"
-                          [collectionSize]="filteredTestSpecifics().length"
-                          [maxSize]="5"
-                          [rotate]="true"
-                          [boundaryLinks]="true"
-                          size="sm"></ngb-pagination>
+        <!-- TEST SPECIFIC TAB -->
+        <div class="rtc-tab-body" *ngIf="customTab==='test'">
+          <div class="rtc-section-head">
+            <h5>Test Specific</h5>
+            <button type="button" class="btn btn-primary btn-xs"
+                    *ngIf="createPanel!=='specific'"
+                    (click)="openCreateSpecific()" [disabled]="loading || !customTabsEnabled">+ Create Specific</button>
+          </div>
+
+          <div class="rtc-create-panel" *ngIf="createPanel==='specific'">
+            <h5>Create Specific Template</h5>
+            <div class="form-group">
+              <label>Template Name <span class="text-danger">*</span></label>
+              <input class="form-control input-sm" [(ngModel)]="createName" />
+            </div>
+            <div class="form-group">
+              <label>Target Type</label>
+              <div>
+                <label class="radio-inline">
+                  <input type="radio" name="targetType" value="Test"
+                         [(ngModel)]="targetType" (ngModelChange)="targetId=null" /> Test
+                </label>
+                <label class="radio-inline">
+                  <input type="radio" name="targetType" value="Profile"
+                         [(ngModel)]="targetType" (ngModelChange)="targetId=null" /> Profile
+                </label>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Target <span class="text-danger">*</span></label>
+              <select class="form-control input-sm" [(ngModel)]="targetId">
+                <option [ngValue]="null">Select {{ targetType }}…</option>
+                <option *ngFor="let x of targetOptions()" [ngValue]="x.id || x.Id">
+                  {{ x.label || x.Label }}
+                </option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Create From</label>
+              <select class="form-control input-sm" [(ngModel)]="createFrom">
+                <option value="SystemDefault">System Default</option>
+                <option value="Blank">Blank</option>
+              </select>
+            </div>
+            <div class="text-right">
+              <button type="button" class="btn btn-default btn-sm" (click)="cancelCreate()">Cancel</button>
+              <button type="button" class="btn btn-primary btn-sm" style="margin-left:6px;"
+                      (click)="createTemplate()"
+                      [disabled]="loading || !createName || targetId==null">Create &amp; Design</button>
+            </div>
+          </div>
+
+          <div class="rtc-filters form-inline">
+            <label>Search</label>
+            <input class="form-control input-sm" [(ngModel)]="testSearch" (ngModelChange)="onTestFilterChange()"
+                   placeholder="Name or test" />
+            <label>Test</label>
+            <select class="form-control input-sm" [(ngModel)]="testFilter" (ngModelChange)="onTestFilterChange()">
+              <option [ngValue]="'All'">All</option>
+              <option *ngFor="let o of testFilterOptions()" [ngValue]="o.id">{{ o.label }}</option>
+            </select>
+          </div>
+          <table class="table table-bordered table-condensed rtc-table" *ngIf="filteredTestSpecifics().length">
+            <thead>
+              <tr>
+                <th>Template</th>
+                <th>Test</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let t of paged(filteredTestSpecifics(), testPage)">
+                <td>{{ val(t,'name','Name') }}</td>
+                <td>{{ val(t,'targetLabel','TargetLabel') || ('Test #' + val(t,'targetTestId','TargetTestId')) }}</td>
+                <td>
+                  <span *ngIf="val(t,'isActivated','IsActivated')" class="rtc-status-active">✓ Active</span>
+                  <span *ngIf="!val(t,'isActivated','IsActivated')" class="rtc-status-draft">Draft / Inactive</span>
+                </td>
+                <td>
+                  <button type="button" class="btn btn-link btn-xs" (click)="design(t)">Design</button>
+                  <button type="button" class="btn btn-link btn-xs"
+                          *ngIf="val(t,'canActivate','CanActivate')" (click)="confirmActivate(t)">Activate</button>
+                  <button type="button" class="btn btn-link btn-xs"
+                          *ngIf="val(t,'canDeactivate','CanDeactivate')" (click)="confirmDeactivate(t)">Deactivate</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <p class="rtc-empty" *ngIf="!filteredTestSpecifics().length">No Test Specific templates created yet.</p>
+          <div class="rtc-pager" *ngIf="filteredTestSpecifics().length > pageSize">
+            <span class="rtc-range">{{ rangeLabel(filteredTestSpecifics().length, testPage) }}</span>
+            <ngb-pagination [(page)]="testPage"
+                            [pageSize]="pageSize"
+                            [collectionSize]="filteredTestSpecifics().length"
+                            [maxSize]="5"
+                            [rotate]="true"
+                            [boundaryLinks]="true"
+                            size="sm"></ngb-pagination>
+          </div>
         </div>
 
-        <!-- PROFILE SPECIFIC -->
-        <h5>Profile Specific</h5>
-        <div class="rtc-filters form-inline">
-          <label>Search</label>
-          <input class="form-control input-sm" [(ngModel)]="profileSearch" (ngModelChange)="onProfileFilterChange()"
-                 placeholder="Name or profile" />
-          <label>Profile</label>
-          <select class="form-control input-sm" [(ngModel)]="profileFilter" (ngModelChange)="onProfileFilterChange()">
-            <option [ngValue]="'All'">All</option>
-            <option *ngFor="let o of profileFilterOptions()" [ngValue]="o.id">{{ o.label }}</option>
-          </select>
-        </div>
-        <table class="table table-bordered table-condensed rtc-table" *ngIf="filteredProfileSpecifics().length">
-          <thead>
-            <tr>
-              <th>Template</th>
-              <th>Profile</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let t of paged(filteredProfileSpecifics(), profilePage)">
-              <td>{{ val(t,'name','Name') }}</td>
-              <td>{{ val(t,'targetLabel','TargetLabel') || ('Profile #' + val(t,'targetProfileId','TargetProfileId')) }}</td>
-              <td>
-                <span *ngIf="val(t,'isActivated','IsActivated')" class="rtc-status-active">✓ Active</span>
-                <span *ngIf="!val(t,'isActivated','IsActivated')" class="rtc-status-draft">Draft / Inactive</span>
-              </td>
-              <td>
-                <button type="button" class="btn btn-link btn-xs" (click)="design(t)">Design</button>
-                <button type="button" class="btn btn-link btn-xs"
-                        *ngIf="val(t,'canActivate','CanActivate')" (click)="confirmActivate(t)">Activate</button>
-                <button type="button" class="btn btn-link btn-xs"
-                        *ngIf="val(t,'canDeactivate','CanDeactivate')" (click)="confirmDeactivate(t)">Deactivate</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        <p class="rtc-empty" *ngIf="!filteredProfileSpecifics().length">No Profile Specific templates created yet.</p>
-        <div class="rtc-pager" *ngIf="filteredProfileSpecifics().length > pageSize">
-          <span class="rtc-range">{{ rangeLabel(filteredProfileSpecifics().length, profilePage) }}</span>
-          <ngb-pagination [(page)]="profilePage"
-                          [pageSize]="pageSize"
-                          [collectionSize]="filteredProfileSpecifics().length"
-                          [maxSize]="5"
-                          [rotate]="true"
-                          [boundaryLinks]="true"
-                          size="sm"></ngb-pagination>
+        <!-- PROFILE SPECIFIC TAB -->
+        <div class="rtc-tab-body" *ngIf="customTab==='profile'">
+          <div class="rtc-section-head">
+            <h5>Profile Specific</h5>
+            <button type="button" class="btn btn-primary btn-xs"
+                    *ngIf="createPanel!=='specific'"
+                    (click)="openCreateSpecific()" [disabled]="loading || !customTabsEnabled">+ Create Specific</button>
+          </div>
+
+          <div class="rtc-create-panel" *ngIf="createPanel==='specific'">
+            <h5>Create Specific Template</h5>
+            <div class="form-group">
+              <label>Template Name <span class="text-danger">*</span></label>
+              <input class="form-control input-sm" [(ngModel)]="createName" />
+            </div>
+            <div class="form-group">
+              <label>Target Type</label>
+              <div>
+                <label class="radio-inline">
+                  <input type="radio" name="targetTypeProfile" value="Test"
+                         [(ngModel)]="targetType" (ngModelChange)="targetId=null" /> Test
+                </label>
+                <label class="radio-inline">
+                  <input type="radio" name="targetTypeProfile" value="Profile"
+                         [(ngModel)]="targetType" (ngModelChange)="targetId=null" /> Profile
+                </label>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Target <span class="text-danger">*</span></label>
+              <select class="form-control input-sm" [(ngModel)]="targetId">
+                <option [ngValue]="null">Select {{ targetType }}…</option>
+                <option *ngFor="let x of targetOptions()" [ngValue]="x.id || x.Id">
+                  {{ x.label || x.Label }}
+                </option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Create From</label>
+              <select class="form-control input-sm" [(ngModel)]="createFrom">
+                <option value="SystemDefault">System Default</option>
+                <option value="Blank">Blank</option>
+              </select>
+            </div>
+            <div class="text-right">
+              <button type="button" class="btn btn-default btn-sm" (click)="cancelCreate()">Cancel</button>
+              <button type="button" class="btn btn-primary btn-sm" style="margin-left:6px;"
+                      (click)="createTemplate()"
+                      [disabled]="loading || !createName || targetId==null">Create &amp; Design</button>
+            </div>
+          </div>
+
+          <div class="rtc-filters form-inline" *ngIf="filteredProfileSpecifics().length || profileSearch || profileFilter!=='All'">
+            <label>Search</label>
+            <input class="form-control input-sm" [(ngModel)]="profileSearch" (ngModelChange)="onProfileFilterChange()"
+                   placeholder="Name or profile" />
+            <label>Profile</label>
+            <select class="form-control input-sm" [(ngModel)]="profileFilter" (ngModelChange)="onProfileFilterChange()">
+              <option [ngValue]="'All'">All</option>
+              <option *ngFor="let o of profileFilterOptions()" [ngValue]="o.id">{{ o.label }}</option>
+            </select>
+          </div>
+          <table class="table table-bordered table-condensed rtc-table" *ngIf="filteredProfileSpecifics().length">
+            <thead>
+              <tr>
+                <th>Template</th>
+                <th>Profile</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let t of paged(filteredProfileSpecifics(), profilePage)">
+                <td>{{ val(t,'name','Name') }}</td>
+                <td>{{ val(t,'targetLabel','TargetLabel') || ('Profile #' + val(t,'targetProfileId','TargetProfileId')) }}</td>
+                <td>
+                  <span *ngIf="val(t,'isActivated','IsActivated')" class="rtc-status-active">✓ Active</span>
+                  <span *ngIf="!val(t,'isActivated','IsActivated')" class="rtc-status-draft">Draft / Inactive</span>
+                </td>
+                <td>
+                  <button type="button" class="btn btn-link btn-xs" (click)="design(t)">Design</button>
+                  <button type="button" class="btn btn-link btn-xs"
+                          *ngIf="val(t,'canActivate','CanActivate')" (click)="confirmActivate(t)">Activate</button>
+                  <button type="button" class="btn btn-link btn-xs"
+                          *ngIf="val(t,'canDeactivate','CanDeactivate')" (click)="confirmDeactivate(t)">Deactivate</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="rtc-empty" *ngIf="!filteredProfileSpecifics().length">
+            <p>No Profile Specific templates created yet.</p>
+            <p>Use &quot;Create Specific&quot; to create a template for a Profile.</p>
+          </div>
+          <div class="rtc-pager" *ngIf="filteredProfileSpecifics().length > pageSize">
+            <span class="rtc-range">{{ rangeLabel(filteredProfileSpecifics().length, profilePage) }}</span>
+            <ngb-pagination [(page)]="profilePage"
+                            [pageSize]="pageSize"
+                            [collectionSize]="filteredProfileSpecifics().length"
+                            [maxSize]="5"
+                            [rotate]="true"
+                            [boundaryLinks]="true"
+                            size="sm"></ngb-pagination>
+          </div>
         </div>
       </div>
 
