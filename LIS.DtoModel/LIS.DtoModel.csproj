@@ -80,6 +80,12 @@
     <Compile Include="Models\DTO\SaleInvoice\SaleInvoiceDetails.cs" />
     <Compile Include="Models\DTO\HIS\TestRateMaster.cs" />
     <Compile Include="Models\DTO\Masters\ReferralDoctorMaster.cs" />
+    <Compile Include="Models\DTO\Masters\SampleCollectorMaster.cs" />
+    <Compile Include="Models\CommissionCalculation.cs" />
+    <Compile Include="Models\CommissionReport.cs" />
+    <Compile Include="Models\CommissionPayout.cs" />
+    <Compile Include="Models\DTO\Masters\ReferralDoctorCommissionRate.cs" />
+    <Compile Include="Models\DTO\Masters\SampleCollectorCommissionRate.cs" />
     <Compile Include="Models\DTO\Masters\CorporateMaster.cs" />
     <Compile Include="Models\DTO\Masters\TestGroupMaster.cs" />
     <Compile Include="Models\DTO\Masters\TestCategoryMaster.cs" />

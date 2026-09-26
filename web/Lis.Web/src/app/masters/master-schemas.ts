@@ -34,6 +34,37 @@ export const MASTER_LIST_SCHEMAS: { [key: string]: any } = {
       { heading: 'Active', fieldName: 'isActive', sortable: false, width: '10%', type: 'label' }
     ]
   },
+  sampleCollector: {
+    url: 'sample-collectors', heading: 'Sample Collector Master', module: 'SampleCollector', hideAction: true,
+    elements: [
+      { heading: 'Code', fieldName: 'code', sortable: true, width: '15%', type: 'link' },
+      { heading: 'Name', fieldName: 'name', sortable: true, width: '40%', type: 'label' },
+      { heading: 'Phone', fieldName: 'phone', sortable: false, width: '20%', type: 'label' },
+      { heading: 'Active', fieldName: 'isActive', sortable: false, width: '10%', type: 'label' }
+    ]
+  },
+  doctorCommissionRate: {
+    url: 'doctor-commission-rates', heading: 'Doctor Commission Rate', module: 'ReferralDoctorCommissionRate', hideAction: true,
+    elements: [
+      { heading: 'Doctor', fieldName: 'recipientName', sortable: true, width: '28%', type: 'link' },
+      { heading: 'Percent', fieldName: 'commissionPercent', sortable: true, width: '12%', type: 'label' },
+      { heading: 'From', fieldName: 'effectiveFrom', sortable: true, width: '16%', type: 'label' },
+      { heading: 'To', fieldName: 'effectiveTo', sortable: false, width: '16%', type: 'label' },
+      { heading: 'Active', fieldName: 'isActive', sortable: false, width: '10%', type: 'label' },
+      { heading: 'Locked', fieldName: 'isLocked', sortable: false, width: '10%', type: 'label' }
+    ]
+  },
+  collectorCommissionRate: {
+    url: 'collector-commission-rates', heading: 'Collector Commission Rate', module: 'SampleCollectorCommissionRate', hideAction: true,
+    elements: [
+      { heading: 'Collector', fieldName: 'recipientName', sortable: true, width: '28%', type: 'link' },
+      { heading: 'Percent', fieldName: 'commissionPercent', sortable: true, width: '12%', type: 'label' },
+      { heading: 'From', fieldName: 'effectiveFrom', sortable: true, width: '16%', type: 'label' },
+      { heading: 'To', fieldName: 'effectiveTo', sortable: false, width: '16%', type: 'label' },
+      { heading: 'Active', fieldName: 'isActive', sortable: false, width: '10%', type: 'label' },
+      { heading: 'Locked', fieldName: 'isLocked', sortable: false, width: '10%', type: 'label' }
+    ]
+  },
   corporate: {
     url: 'corporates', heading: 'Corporate Master', module: 'Corporate', hideAction: true,
     elements: [

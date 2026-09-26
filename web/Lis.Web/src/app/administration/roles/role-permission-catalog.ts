@@ -48,6 +48,9 @@ const MENUS: RoleMenuDef[] = [
   { menuKey: 'MASTER_SPECIMEN', moduleName: 'Masters', section: 'Masters', label: 'Specimen', route: '/specimens', order: 80 },
   { menuKey: 'MASTER_TESTRATE', moduleName: 'TestRates', section: 'Masters', label: 'Test Rate', route: '/test-rates', order: 90 },
   { menuKey: 'MASTER_REFERRAL_DOCTOR', moduleName: 'Masters', section: 'Masters', label: 'Referral Doctor', route: '/referral-doctors', order: 100 },
+  { menuKey: 'MASTER_DOCTOR_COMMISSION_RATE', moduleName: 'Masters', section: 'Masters', label: 'Doctor Commission Rate', route: '/doctor-commission-rates', order: 102 },
+  { menuKey: 'MASTER_SAMPLE_COLLECTOR', moduleName: 'Masters', section: 'Masters', label: 'Sample Collector', route: '/sample-collectors', order: 105 },
+  { menuKey: 'MASTER_COLLECTOR_COMMISSION_RATE', moduleName: 'Masters', section: 'Masters', label: 'Collector Commission Rate', route: '/collector-commission-rates', order: 107 },
   { menuKey: 'MASTER_CORPORATE', moduleName: 'Masters', section: 'Masters', label: 'Corporate', route: '/corporates', order: 110 },
   { menuKey: 'MASTER_PARAMETER', moduleName: 'Masters', section: 'Masters', label: 'Parameter Master', route: '/his-parameters', order: 120 },
   { menuKey: 'MASTER_TEST_PARAM_MAPPING', moduleName: 'Masters', section: 'Masters', label: 'Test Parameter Mapping', route: '/test-parameters', order: 130 },
@@ -74,6 +77,11 @@ const MENUS: RoleMenuDef[] = [
   { menuKey: 'REPORT_RADIOLOGY_AUTHORIZED', moduleName: 'RadiologyReports', section: 'Reports', label: 'Authorized Radiology', route: '/reports/radiology/authorized', order: 130 },
   { menuKey: 'REPORT_RADIOLOGY_MODALITY', moduleName: 'RadiologyReports', section: 'Reports', label: 'Modality Statistics', route: '/reports/radiology/modality-stats', order: 140 },
   { menuKey: 'REPORT_RADIOLOGY_PRODUCTIVITY', moduleName: 'RadiologyReports', section: 'Reports', label: 'Radiologist Productivity', route: '/reports/radiology/productivity', order: 150 },
+  { menuKey: 'REPORT_DOCTOR_COMMISSION', moduleName: 'Reports', section: 'Reports', label: 'Doctor Commission', route: '/reports/doctor-commission', order: 160 },
+  { menuKey: 'REPORT_COLLECTOR_COMMISSION', moduleName: 'Reports', section: 'Reports', label: 'Collector Commission', route: '/reports/collector-commission', order: 170 },
+
+  // Commission payout is its own module so invoice users do not receive it.
+  { menuKey: 'COMMISSION_PAYOUT', moduleName: 'CommissionPayout', section: 'Commission', label: 'Commission Payout', route: '/commission-payouts', order: 10 },
 
   // Account
   { menuKey: 'ACCOUNT_USERS', moduleName: 'Users', section: 'Account', label: 'Users', route: '/users', order: 10 },
@@ -106,6 +114,9 @@ const LEGACY_MENU_KEYS: { [k: string]: string } = {
   'masters.specimen': 'MASTER_SPECIMEN',
   'masters.testRate': 'MASTER_TESTRATE',
   'masters.referralDoctor': 'MASTER_REFERRAL_DOCTOR',
+  'masters.doctorCommissionRate': 'MASTER_DOCTOR_COMMISSION_RATE',
+  'masters.sampleCollector': 'MASTER_SAMPLE_COLLECTOR',
+  'masters.collectorCommissionRate': 'MASTER_COLLECTOR_COMMISSION_RATE',
   'masters.corporate': 'MASTER_CORPORATE',
   'masters.parameter': 'MASTER_PARAMETER',
   'masters.testParamMapping': 'MASTER_TEST_PARAM_MAPPING',
@@ -128,6 +139,9 @@ const LEGACY_MENU_KEYS: { [k: string]: string } = {
   'reports.radiologyAuthorized': 'REPORT_RADIOLOGY_AUTHORIZED',
   'reports.radiologyModality': 'REPORT_RADIOLOGY_MODALITY',
   'reports.radiologyProductivity': 'REPORT_RADIOLOGY_PRODUCTIVITY',
+  'reports.doctorCommission': 'REPORT_DOCTOR_COMMISSION',
+  'reports.collectorCommission': 'REPORT_COLLECTOR_COMMISSION',
+  'commission.payout': 'COMMISSION_PAYOUT',
   'account.users': 'ACCOUNT_USERS',
   'account.roles': 'ACCOUNT_ROLES'
 };

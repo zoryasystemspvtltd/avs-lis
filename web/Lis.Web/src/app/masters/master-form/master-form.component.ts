@@ -47,6 +47,7 @@ export class MasterFormComponent implements OnInit {
   visitHistory: any[] = [];
   visitHistoryLoading = false;
   visitStarting = false;
+  commissionRateLocked = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -98,6 +99,17 @@ export class MasterFormComponent implements OnInit {
     if (this.fields.find(f => f.name === 'isActive')) {
       group['isActive'] = [true];
     }
+    this.fields.filter(f => f.lookup).forEach(f => {
+      this.masterService.getAll(f.lookup).subscribe(rows => {
+        const list = Array.isArray(rows) ? rows : [];
+        f.options = [{ value: '', label: '-- Select --' }].concat(list
+          .filter((x: any) => x.isActive !== false && x.IsActive !== false)
+          .map((x: any) => ({
+            value: String(x.id ?? x.Id),
+            label: ((x.name ?? x.Name) || '') + ((x.code || x.Code) ? ' (' + (x.code || x.Code) + ')' : '')
+          })));
+      });
+    });
     this.form = this.fb.group(group);
 
     if (this.apiName === 'TestRate') {
@@ -223,6 +235,9 @@ export class MasterFormComponent implements OnInit {
   }
 
   isFieldReadonly(field: any): boolean {
+    if (this.commissionRateLocked) {
+      return true;
+    }
     if (!field) {
       return false;
     }
@@ -887,6 +902,13 @@ export class MasterFormComponent implements OnInit {
     if (patch.ProcessingCategory != null && patch.processingCategory == null) { patch.processingCategory = patch.ProcessingCategory; }
     if (patch.effectiveStart) { patch.effectiveStart = this.toDateInput(patch.effectiveStart); }
     if (patch.effectiveEnd) { patch.effectiveEnd = this.toDateInput(patch.effectiveEnd); }
+    if (patch.effectiveFrom) { patch.effectiveFrom = this.toDateInput(patch.effectiveFrom); }
+    if (patch.effectiveTo) { patch.effectiveTo = this.toDateInput(patch.effectiveTo); }
+    if (patch.referralDoctorId != null) { patch.referralDoctorId = String(patch.referralDoctorId); }
+    if (patch.ReferralDoctorId != null && patch.referralDoctorId == null) { patch.referralDoctorId = String(patch.ReferralDoctorId); }
+    if (patch.collectorId != null) { patch.collectorId = String(patch.collectorId); }
+    if (patch.CollectorId != null && patch.collectorId == null) { patch.collectorId = String(patch.CollectorId); }
+    this.commissionRateLocked = patch.isLocked === true || patch.IsLocked === true;
     if (patch.dateOfBirth) { patch.dateOfBirth = this.toDateInput(patch.dateOfBirth); }
     if (patch.testId != null) { patch.testId = +patch.testId; }
     if (patch.rateType != null) { patch.rateType = +patch.rateType; }
@@ -1069,6 +1091,10 @@ export class MasterFormComponent implements OnInit {
     if (item.comments != null) { item.comments = '' + item.comments; }
     if (item.effectiveStart) { item.effectiveStart = this.toApiDateString(item.effectiveStart); }
     if (item.effectiveEnd) { item.effectiveEnd = this.toApiDateString(item.effectiveEnd); }
+    if (item.effectiveFrom) { item.effectiveFrom = this.toApiDateString(item.effectiveFrom); }
+    item.effectiveTo = item.effectiveTo ? this.toApiDateString(item.effectiveTo) : null;
+    if (item.referralDoctorId) { item.referralDoctorId = +item.referralDoctorId; }
+    if (item.collectorId) { item.collectorId = +item.collectorId; }
     if (item.dateOfBirth) { item.dateOfBirth = this.toApiDateString(item.dateOfBirth); }
     if (this.apiName === 'PatientMaster' && item.gender) {
       item.gender = this.normalizePatientGenderForForm(item.gender);

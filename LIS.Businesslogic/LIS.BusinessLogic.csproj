@@ -88,6 +88,11 @@
     <Compile Include="SaleInvoiceManager.cs" />
     <Compile Include="PatientVisitManager.cs" />
     <Compile Include="LookupMasterManagers.cs" />
+    <Compile Include="CommissionRateRules.cs" />
+    <Compile Include="CommissionRateManagers.cs" />
+    <Compile Include="CommissionCalculationService.cs" />
+    <Compile Include="CommissionReportService.cs" />
+    <Compile Include="CommissionPayoutManager.cs" />
     <Compile Include="Notifications\NotificationConfigurationManager.cs" />
     <Compile Include="Notifications\NotificationBackgroundDispatcher.cs" />
     <Compile Include="Notifications\NotificationHttpTransport.cs" />

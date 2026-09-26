@@ -1,0 +1,78 @@
+<div class="container-fluid">
+  <div class="panel panel-default">
+    <div class="panel-body">
+      <h3 class="panel-title"><span class="glyphicon glyphicon-briefcase"></span> Commission Payout</h3>
+      <p class="text-muted">The From date is fixed. The first payout starts on the first day of the implementation month. The next From date is the day after the previous To date.</p>
+      <div class="row">
+        <div class="col-sm-2">
+          <label>Recipient</label>
+          <select class="form-control" [(ngModel)]="recipientType" (ngModelChange)="onTypeChange()">
+            <option [ngValue]="1">Referral Doctor</option>
+            <option [ngValue]="2">Sample Collector</option>
+          </select>
+        </div>
+        <div class="col-sm-3">
+          <label>Name</label>
+          <select class="form-control" [(ngModel)]="recipientId" (ngModelChange)="onRecipientChange()">
+            <option [ngValue]="null">-- Select --</option>
+            <option *ngFor="let p of people" [ngValue]="p.id">{{ p.name }}</option>
+          </select>
+        </div>
+        <div class="col-sm-2">
+          <label>From Date</label>
+          <input type="date" class="form-control" [value]="fromDate" disabled>
+          <span class="help-block" *ngIf="isFirst">First payout</span>
+        </div>
+        <div class="col-sm-2">
+          <label>To Date</label>
+          <input type="date" class="form-control" [(ngModel)]="toDate" [min]="fromDate">
+        </div>
+        <div class="col-sm-3" style="padding-top: 25px;">
+          <button type="button" class="btn btn-default" (click)="runPreview()" [disabled]="loading">Preview</button>
+          <button type="button" class="btn btn-primary" (click)="confirm()" [disabled]="loading || !preview?.lines?.length">Confirm</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel panel-default" *ngIf="preview">
+    <div class="panel-body">
+      <p>{{ preview.fromDate }} to {{ preview.toDate }}. Total {{ preview.totalAmount | number:'1.2-2' }}</p>
+      <p *ngIf="!preview.lines.length">No eligible invoices.</p>
+      <table class="table table-bordered table-condensed" *ngIf="preview.lines.length">
+        <thead>
+          <tr><th>Invoice No</th><th>Invoice Date</th><th>Commission Base</th><th>Rate</th><th>Amount</th></tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let line of preview.lines">
+            <td>{{ line.invoiceNo }}</td>
+            <td>{{ line.invoiceDate | date:'dd/MM/yyyy' }}</td>
+            <td>{{ line.commissionBase | number:'1.2-2' }}</td>
+            <td>{{ line.commissionPercent }}</td>
+            <td>{{ line.amount | number:'1.2-2' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel panel-default">
+    <div class="panel-heading">History</div>
+    <table class="table table-condensed">
+      <thead>
+        <tr><th>Payout No</th><th>Recipient</th><th>From</th><th>To</th><th>Amount</th><th></th></tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of history">
+          <td>{{ row.payoutNo || row.PayoutNo }}</td>
+          <td>{{ row.recipientName || row.RecipientName }}</td>
+          <td>{{ (row.fromDate || row.FromDate) | date:'dd/MM/yyyy' }}</td>
+          <td>{{ (row.toDate || row.ToDate) | date:'dd/MM/yyyy' }}</td>
+          <td>{{ (row.totalAmount || row.TotalAmount) | number:'1.2-2' }}</td>
+          <td><a [routerLink]="['/commission-payouts', row.id || row.Id, 'memo']">Memo</a></td>
+        </tr>
+        <tr *ngIf="!history.length"><td colspan="6">No payouts yet.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>

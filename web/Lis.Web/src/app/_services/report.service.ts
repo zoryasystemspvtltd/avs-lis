@@ -10,6 +10,8 @@ export interface ReportFilter {
   patientId?: number | null;
   referralDoctorId?: number | null;
   invoiceNo?: string;
+  collectorId?: number | null;
+  commissionFormat?: string;
   createdById?: string | null;
   currentPage?: number;
   recordPerPage?: number;
@@ -25,6 +27,34 @@ export class ReportService {
 
   getSaleInvoiceRegister(filter: ReportFilter): Observable<{ items: any[]; totalRecord: number }> {
     return this.fetchReport('SaleInvoiceRegister', filter, 'InvoiceDate');
+  }
+
+  getCommissionReport(kind: 'doctor' | 'collector', filter: ReportFilter): Observable<{ format: string; items: any[]; totalRecord: number; totalAmount: number }> {
+    const endpoint = kind === 'doctor' ? 'DoctorCommission' : 'CollectorCommission';
+    const option = {
+      FromDate: filter.fromDate,
+      ToDate: filter.toDate,
+      ReferralDoctorId: filter.referralDoctorId || null,
+      CollectorId: filter.collectorId || null,
+      CommissionFormat: filter.commissionFormat,
+      CurrentPage: filter.currentPage || 1,
+      RecordPerPage: filter.recordPerPage == null ? 25 : filter.recordPerPage,
+      SortColumnName: 'InvoiceDate',
+      SortDirection: false
+    };
+    const headers = new HttpHeaders({ ApiOption: JSON.stringify(option) });
+    return this.http.get<any>(`${this.baseUrl}/api/Reports/${endpoint}`, { headers }).pipe(
+      map(r => {
+        const format = r?.format || r?.Format || filter.commissionFormat;
+        const source = format === 'Detail' ? (r?.detail || r?.Detail) : (r?.summary || r?.Summary);
+        return {
+          format,
+          items: (source || []).map(normalizeRow),
+          totalRecord: r?.totalRecord ?? r?.TotalRecord ?? 0,
+          totalAmount: r?.totalAmount ?? r?.TotalAmount ?? 0
+        };
+      })
+    );
   }
 
   getTestBookingRegister(filter: ReportFilter): Observable<{ items: any[]; totalRecord: number }> {

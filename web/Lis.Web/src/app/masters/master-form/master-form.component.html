@@ -246,7 +246,7 @@
         </div>
         <div class="row" *ngIf="field.type === 'checkbox'">
           <div class="col-sm-12 form-grid-stye">
-            <label><input type="checkbox" [formControlName]="field.name" /> {{field.label}}</label>
+            <label><input type="checkbox" [formControlName]="field.name" [disabled]="commissionRateLocked" /> {{field.label}}</label>
           </div>
         </div>
         <br *ngIf="field.type !== 'checkbox'" />
@@ -463,7 +463,8 @@
       </table>
     </div>
 
-    <button type="submit" class="btn btn-primary" [disabled]="loading">Save</button>
+    <p *ngIf="commissionRateLocked" class="text-muted">This period is locked and cannot be changed.</p>
+    <button type="submit" class="btn btn-primary" [disabled]="loading || commissionRateLocked">Save</button>
     <button type="button" class="btn btn-default" (click)="cancel()">Cancel</button>
     <button type="button" class="btn btn-warning" *ngIf="id" (click)="deactivate()">{{apiName === 'HisParameterMaster' || apiName === 'Department' ? 'Delete' : 'Deactivate'}}</button>
   </form>

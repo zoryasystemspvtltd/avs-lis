@@ -60,6 +60,11 @@ namespace LIS.DataAccess
 
         // Billing / lookup masters
         public virtual DbSet<ReferralDoctorMaster> ReferralDoctorMaster { get; set; }
+        public virtual DbSet<SampleCollectorMaster> SampleCollectorMaster { get; set; }
+        public virtual DbSet<ReferralDoctorCommissionRate> ReferralDoctorCommissionRate { get; set; }
+        public virtual DbSet<SampleCollectorCommissionRate> SampleCollectorCommissionRate { get; set; }
+        public virtual DbSet<CommissionPayout> CommissionPayout { get; set; }
+        public virtual DbSet<CommissionPayoutDetail> CommissionPayoutDetail { get; set; }
         public virtual DbSet<CorporateMaster> CorporateMaster { get; set; }
         public virtual DbSet<TestGroupMaster> TestGroupMaster { get; set; }
         public virtual DbSet<TestCategoryMaster> TestCategoryMaster { get; set; }

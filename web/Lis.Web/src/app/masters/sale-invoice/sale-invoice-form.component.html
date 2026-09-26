@@ -66,11 +66,21 @@
       </div>
       <div class="col-md-4 form-group">
         <label>Referral Doctor</label>
-        <select class="form-control" formControlName="referralDoctorId" (change)="onRateContextChange()">
+        <select class="form-control" formControlName="referralDoctorId" (change)="onReferralDoctorChange()">
           <option [ngValue]="null">-- None --</option>
           <option *ngFor="let d of doctors" [ngValue]="d.id">{{d.name}}</option>
         </select>
       </div>
+      <div class="col-md-4 form-group">
+        <label>Sample Collector</label>
+        <select class="form-control" formControlName="collectorId" (change)="onCollectorChange()">
+          <option [ngValue]="null">-- None --</option>
+          <option *ngFor="let c of collectors" [ngValue]="c.id">{{c.name}}</option>
+        </select>
+      </div>
+    </div>
+    <p class="text-danger" *ngIf="commissionRateMessage">{{commissionRateMessage}}</p>
+    <div class="row">
       <div class="col-md-4 form-group">
         <label>Payment Type</label>
         <select class="form-control" formControlName="paymentType">
@@ -357,6 +367,10 @@
             <td class="meta-value">{{getCorporateName(invoiceDto.invoice.corporateId)}}</td>
             <td class="meta-label">Referral Doctor</td>
             <td class="meta-value">{{getDoctorName(invoiceDto.invoice.referralDoctorId, invoiceDto.invoice.refDoctorName)}}</td>
+          </tr>
+          <tr>
+            <td class="meta-label">Sample Collector</td>
+            <td class="meta-value" colspan="3">{{getCollectorName(invoiceDto.invoice.collectorId)}}</td>
           </tr>
           <tr>
             <td class="meta-label">Invoice Status</td>

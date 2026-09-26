@@ -55,7 +55,9 @@ import { TestDetailsComponent } from './LIS/testMaster/test-details/test-details
 import { TestCreateComponent } from './LIS/testMaster/test-create/test-create.component';
 import { TestEditComponent } from './LIS/testMaster/test-edit/test-edit.component';
 import { MasterListComponent, MasterFormComponent, SaleInvoiceFormComponent, TestProfileFormComponent, TestProfileViewComponent } from './masters';
-import { SaleInvoiceRegisterComponent, TestBookingRegisterComponent, TestReportComponent, FddReportComponent, RadiologyReportPrintComponent } from './reports';
+import { SaleInvoiceRegisterComponent, TestBookingRegisterComponent, TestReportComponent, FddReportComponent, RadiologyReportPrintComponent, CommissionReportComponent } from './reports';
+import { CommissionPayoutComponent } from './commission/commission-payout.component';
+import { CommissionPayoutMemoComponent } from './commission/commission-payout-memo.component';
 import { SampleCollectionComponent } from './LIS/sample-workflow/sample-collection/sample-collection.component';
 import { SampleReceivingComponent } from './LIS/sample-workflow/sample-receiving/sample-receiving.component';
 import { RadiologyReportEntryComponent } from './LIS/radiology/radiology-report-entry/radiology-report-entry.component';
@@ -174,6 +176,9 @@ export const options: Partial<IConfig> | (() => Partial<IConfig>) = null;
     TestReportComponent,
     RadiologyReportPrintComponent,
     FddReportComponent,
+    CommissionReportComponent,
+    CommissionPayoutComponent,
+    CommissionPayoutMemoComponent,
     SampleCollectionComponent,
     SampleReceivingComponent,
     RadiologyReportEntryComponent,

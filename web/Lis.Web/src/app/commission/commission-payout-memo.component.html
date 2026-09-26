@@ -1,0 +1,31 @@
+<div class="memo" *ngIf="memo">
+  <div class="no-print" style="margin-bottom: 12px;">
+    <button type="button" class="btn btn-primary" (click)="print()">Print</button>
+    <a class="btn btn-default" routerLink="/commission-payouts">Back</a>
+  </div>
+  <h3>{{ labName }}</h3>
+  <h4>Commission Payout Memo</h4>
+  <p>
+    <strong>{{ payout.payoutNo || payout.PayoutNo }}</strong><br>
+    {{ payout.recipientName || payout.RecipientName }}<br>
+    {{ (payout.fromDate || payout.FromDate) | date:'dd/MM/yyyy' }}
+    to
+    {{ (payout.toDate || payout.ToDate) | date:'dd/MM/yyyy' }}
+  </p>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr><th>Invoice No</th><th>Invoice Date</th><th>Commission Base</th><th>Rate</th><th>Amount</th></tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let row of details">
+        <td>{{ row.invoiceNo || row.InvoiceNo }}</td>
+        <td>{{ (row.invoiceDate || row.InvoiceDate) | date:'dd/MM/yyyy' }}</td>
+        <td>{{ (row.commissionBase || row.CommissionBase) | number:'1.2-2' }}</td>
+        <td>{{ row.commissionPercent || row.CommissionPercent }}</td>
+        <td>{{ (row.amount || row.Amount) | number:'1.2-2' }}</td>
+      </tr>
+    </tbody>
+  </table>
+  <p><strong>Total {{ (payout.totalAmount || payout.TotalAmount) | number:'1.2-2' }}</strong></p>
+  <div class="signature">Acknowledged</div>
+</div>

@@ -200,6 +200,12 @@
 
                             <tr *ngIf="hasMenu('Masters','masters.referralDoctor')"><td><span class="glyphicon glyphicon-user nav-icon"></span><a routerLink="/referral-doctors" routerLinkActive="active-menu-link">Referral Doctor</a></td></tr>
 
+                            <tr *ngIf="hasMenu('Masters','masters.doctorCommissionRate')"><td><span class="glyphicon glyphicon-usd nav-icon"></span><a routerLink="/doctor-commission-rates" routerLinkActive="active-menu-link">Doctor Commission Rate</a></td></tr>
+
+                            <tr *ngIf="hasMenu('Masters','masters.sampleCollector')"><td><span class="glyphicon glyphicon-user nav-icon"></span><a routerLink="/sample-collectors" routerLinkActive="active-menu-link">Sample Collector</a></td></tr>
+
+                            <tr *ngIf="hasMenu('Masters','masters.collectorCommissionRate')"><td><span class="glyphicon glyphicon-usd nav-icon"></span><a routerLink="/collector-commission-rates" routerLinkActive="active-menu-link">Collector Commission Rate</a></td></tr>
+
                             <tr *ngIf="hasMenu('Masters','masters.corporate')"><td><span class="glyphicon glyphicon-briefcase nav-icon"></span><a routerLink="/corporates" routerLinkActive="active-menu-link">Corporate</a></td></tr>
 
                             <tr *ngIf="hasMenu('Masters','masters.parameter')"><td><span class="glyphicon glyphicon-filter nav-icon"></span><a routerLink="/his-parameters" routerLinkActive="active-menu-link">Parameter Master</a></td></tr>
@@ -311,6 +317,31 @@
                             </tr>
                             <tr *ngIf="showReportMenu('RadiologyReports','reports.radiologyProductivity')">
                                 <td><span class="glyphicon glyphicon-stats nav-icon"></span><a routerLink="/reports/radiology/productivity" routerLinkActive="active-menu-link">Radiologist Productivity</a></td>
+                            </tr>
+                            <tr *ngIf="showReportMenu('Reports','reports.doctorCommission')">
+                                <td><span class="glyphicon glyphicon-list-alt nav-icon"></span><a routerLink="/reports/doctor-commission" routerLinkActive="active-menu-link">Doctor Commission</a></td>
+                            </tr>
+                            <tr *ngIf="showReportMenu('Reports','reports.collectorCommission')">
+                                <td><span class="glyphicon glyphicon-list-alt nav-icon"></span><a routerLink="/reports/collector-commission" routerLinkActive="active-menu-link">Collector Commission</a></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel panel-default" *ngIf="hasMenu('CommissionPayout','commission.payout')">
+                <div class="panel-heading">
+                    <h4 class="panel-title">
+                        <a data-toggle="collapse" data-parent="#accordion" target="_self" href="#collapseCommissionPayout">
+                            <span class="glyphicon glyphicon-briefcase"></span> Commission
+                        </a>
+                    </h4>
+                </div>
+                <div id="collapseCommissionPayout" class="panel-collapse collapse">
+                    <div class="panel-body">
+                        <table class="table">
+                            <tr>
+                                <td><span class="glyphicon glyphicon-file nav-icon"></span><a routerLink="/commission-payouts" routerLinkActive="active-menu-link">Commission Payout</a></td>
                             </tr>
                         </table>
                     </div>

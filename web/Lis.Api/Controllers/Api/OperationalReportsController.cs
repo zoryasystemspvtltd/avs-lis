@@ -27,6 +27,7 @@ namespace Lis.Api.Controllers.Api
         private readonly IReportLayoutConfigurationManager reportLayoutManager;
         private readonly IReportProductionPresentationAdapter presentationAdapter;
         private readonly ApplicationUserManager userManager;
+        private readonly CommissionReportService commissionReports;
         private readonly ILogger logger;
 
         public OperationalReportsController(
@@ -36,6 +37,7 @@ namespace Lis.Api.Controllers.Api
             IReportLayoutConfigurationManager reportLayoutManager,
             IReportProductionPresentationAdapter presentationAdapter,
             ApplicationUserManager userManager,
+            CommissionReportService commissionReports,
             ILogger logger)
         {
             this.reportManager = reportManager;
@@ -44,6 +46,7 @@ namespace Lis.Api.Controllers.Api
             this.reportLayoutManager = reportLayoutManager;
             this.presentationAdapter = presentationAdapter;
             this.userManager = userManager;
+            this.commissionReports = commissionReports;
             this.logger = logger;
         }
 
@@ -570,6 +573,45 @@ namespace Lis.Api.Controllers.Api
                     FallbackReason = ReportProductionFallbackReasons.RenderException,
                     PresentationTraceId = Guid.NewGuid().ToString("N")
                 };
+            }
+        }
+
+        [HttpGet]
+        [Route("DoctorCommission")]
+        [QAuthorize(ModuleName = "Reports", ModulePermissionTypes = ModulePermissionType.CanView)]
+        public CommissionReportPage GetDoctorCommission()
+        {
+            return RunCommission(CommissionRecipientType.ReferralDoctor);
+        }
+
+        [HttpGet]
+        [Route("CollectorCommission")]
+        [QAuthorize(ModuleName = "Reports", ModulePermissionTypes = ModulePermissionType.CanView)]
+        public CommissionReportPage GetCollectorCommission()
+        {
+            return RunCommission(CommissionRecipientType.SampleCollector);
+        }
+
+        private CommissionReportPage RunCommission(CommissionRecipientType recipientType)
+        {
+            try
+            {
+                return commissionReports.Get(recipientType, FilterOption);
+            }
+            catch (ArgumentException ex)
+            {
+                logger.LogError(ex.Message);
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ex.Message));
+            }
+            catch (InvalidOperationException ex)
+            {
+                logger.LogError(ex.Message);
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ex.Message));
+            }
+            catch (Exception ex)
+            {
+                logger.LogException(ex);
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "Commission report failed."));
             }
         }
 

@@ -34,6 +34,72 @@ namespace Lis.Api.Controllers.Api
         public override HttpResponseMessage Delete(ReferralDoctorMaster item) => base.Delete(item);
     }
 
+    [RoutePrefix("api/SampleCollector")]
+    public class SampleCollectorController : MasterApiControllerBase<SampleCollectorMaster>
+    {
+        public SampleCollectorController(SampleCollectorManager manager, IResponseManager responseManager, ILogger logger)
+            : base(manager, responseManager, logger, "Masters") { }
+
+        [HttpGet, Route(""), Route("{id:int}")]
+        public IHttpActionResult Get(int? id = null) => GetCore(id);
+
+        [HttpGet, Route("GetAll")]
+        public IEnumerable<SampleCollectorMaster> GetAllRecords() => FetchAllActiveCore();
+
+        [HttpPost, Route("")]
+        public override HttpResponseMessage Post(SampleCollectorMaster item) => base.Post(item);
+
+        [HttpPost, Route("Put")]
+        public override HttpResponseMessage Put(SampleCollectorMaster item) => base.Put(item);
+
+        [HttpPost, Route("Delete")]
+        public override HttpResponseMessage Delete(SampleCollectorMaster item) => base.Delete(item);
+    }
+
+    [RoutePrefix("api/ReferralDoctorCommissionRate")]
+    public class ReferralDoctorCommissionRateController : MasterApiControllerBase<ReferralDoctorCommissionRate>
+    {
+        public ReferralDoctorCommissionRateController(ReferralDoctorCommissionRateManager manager, IResponseManager responseManager, ILogger logger)
+            : base(manager, responseManager, logger, "Masters") { }
+
+        [HttpGet, Route(""), Route("{id:int}")]
+        public IHttpActionResult Get(int? id = null) => GetCore(id);
+
+        [HttpGet, Route("GetAll")]
+        public IEnumerable<ReferralDoctorCommissionRate> GetAllRecords() => FetchAllActiveCore();
+
+        [HttpPost, Route("")]
+        public override HttpResponseMessage Post(ReferralDoctorCommissionRate item) => base.Post(item);
+
+        [HttpPost, Route("Put")]
+        public override HttpResponseMessage Put(ReferralDoctorCommissionRate item) => base.Put(item);
+
+        [HttpPost, Route("Delete")]
+        public override HttpResponseMessage Delete(ReferralDoctorCommissionRate item) => base.Delete(item);
+    }
+
+    [RoutePrefix("api/SampleCollectorCommissionRate")]
+    public class SampleCollectorCommissionRateController : MasterApiControllerBase<SampleCollectorCommissionRate>
+    {
+        public SampleCollectorCommissionRateController(SampleCollectorCommissionRateManager manager, IResponseManager responseManager, ILogger logger)
+            : base(manager, responseManager, logger, "Masters") { }
+
+        [HttpGet, Route(""), Route("{id:int}")]
+        public IHttpActionResult Get(int? id = null) => GetCore(id);
+
+        [HttpGet, Route("GetAll")]
+        public IEnumerable<SampleCollectorCommissionRate> GetAllRecords() => FetchAllActiveCore();
+
+        [HttpPost, Route("")]
+        public override HttpResponseMessage Post(SampleCollectorCommissionRate item) => base.Post(item);
+
+        [HttpPost, Route("Put")]
+        public override HttpResponseMessage Put(SampleCollectorCommissionRate item) => base.Put(item);
+
+        [HttpPost, Route("Delete")]
+        public override HttpResponseMessage Delete(SampleCollectorCommissionRate item) => base.Delete(item);
+    }
+
     [RoutePrefix("api/Corporate")]
     public class CorporateController : MasterApiControllerBase<CorporateMaster>
     {

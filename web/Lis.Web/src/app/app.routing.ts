@@ -24,7 +24,9 @@ import { TestDetailsComponent } from './LIS/testMaster/test-details/test-details
 import { TestCreateComponent } from './LIS/testMaster/test-create/test-create.component';
 import { TestEditComponent } from './LIS/testMaster/test-edit/test-edit.component';
 import { MasterListComponent, MasterFormComponent, SaleInvoiceFormComponent, TestProfileFormComponent, TestProfileViewComponent } from './masters';
-import { SaleInvoiceRegisterComponent, TestBookingRegisterComponent, TestReportComponent, FddReportComponent, RadiologyReportPrintComponent } from './reports';
+import { SaleInvoiceRegisterComponent, TestBookingRegisterComponent, TestReportComponent, FddReportComponent, RadiologyReportPrintComponent, CommissionReportComponent } from './reports';
+import { CommissionPayoutComponent } from './commission/commission-payout.component';
+import { CommissionPayoutMemoComponent } from './commission/commission-payout-memo.component';
 import { ListEquipmentHeartbeatComponent } from './LIS';
 import { SampleCollectionComponent } from './LIS/sample-workflow/sample-collection/sample-collection.component';
 import { SampleReceivingComponent } from './LIS/sample-workflow/sample-receiving/sample-receiving.component';
@@ -52,6 +54,26 @@ const LOOKUP_FIELDS = {
     { name: 'name', label: 'Name', type: 'text', required: true },
     { name: 'phone', label: 'Phone', type: 'text' },
     { name: 'email', label: 'Email', type: 'text' },
+    { name: 'isActive', label: 'Active', type: 'checkbox' }
+  ],
+  sampleCollector: [
+    { name: 'code', label: 'Code', type: 'text', required: true },
+    { name: 'name', label: 'Name', type: 'text', required: true },
+    { name: 'phone', label: 'Phone', type: 'text' },
+    { name: 'isActive', label: 'Active', type: 'checkbox' }
+  ],
+  doctorCommissionRate: [
+    { name: 'referralDoctorId', label: 'Referral Doctor', type: 'select', required: true, lookup: 'ReferralDoctor' },
+    { name: 'commissionPercent', label: 'Commission %', type: 'number', required: true },
+    { name: 'effectiveFrom', label: 'Effective From', type: 'date', required: true },
+    { name: 'effectiveTo', label: 'Effective To', type: 'date' },
+    { name: 'isActive', label: 'Active', type: 'checkbox' }
+  ],
+  collectorCommissionRate: [
+    { name: 'collectorId', label: 'Sample Collector', type: 'select', required: true, lookup: 'SampleCollector' },
+    { name: 'commissionPercent', label: 'Commission %', type: 'number', required: true },
+    { name: 'effectiveFrom', label: 'Effective From', type: 'date', required: true },
+    { name: 'effectiveTo', label: 'Effective To', type: 'date' },
     { name: 'isActive', label: 'Active', type: 'checkbox' }
   ],
   corporate: [
@@ -249,6 +271,15 @@ const appRoutes: Routes = [
     { path: 'referral-doctors', component: MasterListComponent, data: { masterKey: 'referralDoctor' }, canActivate: ROUTE_GUARDS },
     { path: 'referral-doctors/create', component: MasterFormComponent, data: { apiName: 'ReferralDoctor', returnUrl: '/referral-doctors', title: 'Referral Doctor', fields: LOOKUP_FIELDS.referral }, canActivate: ROUTE_GUARDS },
     { path: 'referral-doctors/:id', component: MasterFormComponent, data: { apiName: 'ReferralDoctor', returnUrl: '/referral-doctors', title: 'Referral Doctor', fields: LOOKUP_FIELDS.referral }, canActivate: ROUTE_GUARDS },
+    { path: 'sample-collectors', component: MasterListComponent, data: { masterKey: 'sampleCollector' }, canActivate: ROUTE_GUARDS },
+    { path: 'sample-collectors/create', component: MasterFormComponent, data: { apiName: 'SampleCollector', returnUrl: '/sample-collectors', title: 'Sample Collector', fields: LOOKUP_FIELDS.sampleCollector }, canActivate: ROUTE_GUARDS },
+    { path: 'sample-collectors/:id', component: MasterFormComponent, data: { apiName: 'SampleCollector', returnUrl: '/sample-collectors', title: 'Sample Collector', fields: LOOKUP_FIELDS.sampleCollector }, canActivate: ROUTE_GUARDS },
+    { path: 'doctor-commission-rates', component: MasterListComponent, data: { masterKey: 'doctorCommissionRate' }, canActivate: ROUTE_GUARDS },
+    { path: 'doctor-commission-rates/create', component: MasterFormComponent, data: { apiName: 'ReferralDoctorCommissionRate', returnUrl: '/doctor-commission-rates', title: 'Doctor Commission Rate', fields: LOOKUP_FIELDS.doctorCommissionRate }, canActivate: ROUTE_GUARDS },
+    { path: 'doctor-commission-rates/:id', component: MasterFormComponent, data: { apiName: 'ReferralDoctorCommissionRate', returnUrl: '/doctor-commission-rates', title: 'Doctor Commission Rate', fields: LOOKUP_FIELDS.doctorCommissionRate }, canActivate: ROUTE_GUARDS },
+    { path: 'collector-commission-rates', component: MasterListComponent, data: { masterKey: 'collectorCommissionRate' }, canActivate: ROUTE_GUARDS },
+    { path: 'collector-commission-rates/create', component: MasterFormComponent, data: { apiName: 'SampleCollectorCommissionRate', returnUrl: '/collector-commission-rates', title: 'Collector Commission Rate', fields: LOOKUP_FIELDS.collectorCommissionRate }, canActivate: ROUTE_GUARDS },
+    { path: 'collector-commission-rates/:id', component: MasterFormComponent, data: { apiName: 'SampleCollectorCommissionRate', returnUrl: '/collector-commission-rates', title: 'Collector Commission Rate', fields: LOOKUP_FIELDS.collectorCommissionRate }, canActivate: ROUTE_GUARDS },
 
     { path: 'corporates', component: MasterListComponent, data: { masterKey: 'corporate' }, canActivate: ROUTE_GUARDS },
     { path: 'corporates/create', component: MasterFormComponent, data: { apiName: 'Corporate', returnUrl: '/corporates', title: 'Corporate', fields: LOOKUP_FIELDS.corporate }, canActivate: ROUTE_GUARDS },
@@ -313,6 +344,10 @@ const appRoutes: Routes = [
     { path: 'sale-invoices/print/:id', component: SaleInvoiceFormComponent, canActivate: ROUTE_GUARDS },
     { path: 'sale-invoices/:id', component: SaleInvoiceFormComponent, canActivate: ROUTE_GUARDS },
 
+    { path: 'reports/doctor-commission', component: CommissionReportComponent, data: { recipient: 'doctor', title: 'Doctor Commission' }, canActivate: ROUTE_GUARDS },
+    { path: 'reports/collector-commission', component: CommissionReportComponent, data: { recipient: 'collector', title: 'Collector Commission' }, canActivate: ROUTE_GUARDS },
+    { path: 'commission-payouts', component: CommissionPayoutComponent, canActivate: ROUTE_GUARDS },
+    { path: 'commission-payouts/:id/memo', component: CommissionPayoutMemoComponent, canActivate: ROUTE_GUARDS },
     { path: 'reports/sale-invoice-register', component: SaleInvoiceRegisterComponent, canActivate: ROUTE_GUARDS },
     { path: 'reports/test-booking-register', component: TestBookingRegisterComponent, canActivate: ROUTE_GUARDS },
     { path: 'reports/test-report', component: TestReportComponent, canActivate: ROUTE_GUARDS },

@@ -65,6 +65,9 @@ namespace LIS.DtoModel.Models
 
         public int? ReferralDoctorId { get; set; }
 
+        /// <summary>Optional outside/home collection attribution. Not TestRequestDetail.CollectedBy.</summary>
+        public int? CollectorId { get; set; }
+
         public int? CorporateId { get; set; }
 
         public string Notes { get; set; }

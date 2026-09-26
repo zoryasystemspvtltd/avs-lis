@@ -56,6 +56,63 @@ namespace LIS.BusinessLogic
         }
     }
 
+    public class SampleCollectorManager : MasterCrudManager<SampleCollectorMaster>, IMasterCrudManager<SampleCollectorMaster>
+    {
+        public SampleCollectorManager(ILogger logger, IModuleIdentity identity, GenericUnitOfWork uow)
+            : base(logger, identity, uow, x => x.Code, x => x.Name, x => x.IsActive) { }
+
+        public override long Add(SampleCollectorMaster item)
+        {
+            if (item == null)
+            {
+                throw new ArgumentException("Sample collector is required.");
+            }
+
+            item.Code = (item.Code ?? string.Empty).Trim();
+            item.Name = (item.Name ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(item.Code) || string.IsNullOrWhiteSpace(item.Name))
+            {
+                throw new ArgumentException("Collector code and name are required.");
+            }
+
+            Stamp(item, true);
+            return base.Add(item);
+        }
+
+        public override void Update(SampleCollectorMaster item)
+        {
+            if (item == null || item.Id <= 0)
+            {
+                throw new ArgumentException("Invalid sample collector record.");
+            }
+
+            var existing = Repo.Get(item.Id);
+            if (existing == null)
+            {
+                throw new InvalidOperationException("Sample collector not found.");
+            }
+
+            existing.Code = (item.Code ?? string.Empty).Trim();
+            existing.Name = (item.Name ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(existing.Code) || string.IsNullOrWhiteSpace(existing.Name))
+            {
+                throw new ArgumentException("Collector code and name are required.");
+            }
+
+            existing.Phone = item.Phone;
+            existing.IsActive = item.IsActive;
+            Stamp(existing, false);
+            base.Update(existing);
+        }
+
+        private void Stamp(SampleCollectorMaster item, bool isNew)
+        {
+            var now = DateTime.Now;
+            if (isNew) { item.CreatedOn = now; item.CreatedBy = Identity.ActivityMember; }
+            item.ModifiedOn = now; item.ModifiedBy = Identity.ActivityMember;
+        }
+    }
+
     public class CorporateManager : MasterCrudManager<CorporateMaster>, IMasterCrudManager<CorporateMaster>
     {
         public CorporateManager(ILogger logger, IModuleIdentity identity, GenericUnitOfWork uow)

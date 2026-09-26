@@ -8,6 +8,9 @@ namespace LIS.DtoModel.Models
         public DateTime? ToDate { get; set; }
         public long? PatientId { get; set; }
         public int? ReferralDoctorId { get; set; }
+        public int? CollectorId { get; set; }
+        /// <summary>Commission reports only. Summary or Detail, never both.</summary>
+        public string CommissionFormat { get; set; }
         public string InvoiceNo { get; set; }
         public string BarcodeNumber { get; set; }
         public string OrderNumber { get; set; }

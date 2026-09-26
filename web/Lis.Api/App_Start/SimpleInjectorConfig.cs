@@ -154,6 +154,9 @@ namespace Lis.Api
             container.Register<INotificationService, NotificationService>(Lifestyle.Scoped);
             container.Register<INotificationSecureDownloadManager, NotificationSecureDownloadManager>(Lifestyle.Scoped);
             container.Register<IMasterCrudManager<ReferralDoctorMaster>, ReferralDoctorManager>(Lifestyle.Scoped);
+            container.Register<IMasterCrudManager<SampleCollectorMaster>, SampleCollectorManager>(Lifestyle.Scoped);
+            container.Register<IMasterCrudManager<ReferralDoctorCommissionRate>, ReferralDoctorCommissionRateManager>(Lifestyle.Scoped);
+            container.Register<IMasterCrudManager<SampleCollectorCommissionRate>, SampleCollectorCommissionRateManager>(Lifestyle.Scoped);
             container.Register<IMasterCrudManager<CorporateMaster>, CorporateManager>(Lifestyle.Scoped);
             container.Register<IMasterCrudManager<TestGroupMaster>, TestGroupManager>(Lifestyle.Scoped);
             container.Register<IMasterCrudManager<TestCategoryMaster>, TestCategoryManager>(Lifestyle.Scoped);
@@ -163,6 +166,12 @@ namespace Lis.Api
             container.Register<IMasterCrudManager<ContainerMaster>, ContainerManager>(Lifestyle.Scoped);
             container.Register<ITestProfileMasterManager, TestProfileMasterManager>(Lifestyle.Scoped);
             container.Register<ReferralDoctorManager, ReferralDoctorManager>(Lifestyle.Scoped);
+            container.Register<SampleCollectorManager, SampleCollectorManager>(Lifestyle.Scoped);
+            container.Register<ReferralDoctorCommissionRateManager, ReferralDoctorCommissionRateManager>(Lifestyle.Scoped);
+            container.Register<SampleCollectorCommissionRateManager, SampleCollectorCommissionRateManager>(Lifestyle.Scoped);
+            container.Register<CommissionCalculationService, CommissionCalculationService>(Lifestyle.Scoped);
+            container.Register<CommissionReportService, CommissionReportService>(Lifestyle.Scoped);
+            container.Register<CommissionPayoutManager, CommissionPayoutManager>(Lifestyle.Scoped);
             container.Register<CorporateManager, CorporateManager>(Lifestyle.Scoped);
             container.Register<TestGroupManager, TestGroupManager>(Lifestyle.Scoped);
             container.Register<TestCategoryManager, TestCategoryManager>(Lifestyle.Scoped);

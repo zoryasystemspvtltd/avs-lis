@@ -16,6 +16,17 @@ namespace LIS.Masters.Tests.Infrastructure
             };
         }
 
+        public static SampleCollectorMaster SampleCollector(string code, bool active = true)
+        {
+            return new SampleCollectorMaster
+            {
+                Code = code,
+                Name = $"Collector {code}",
+                Phone = "8888888888",
+                IsActive = active
+            };
+        }
+
         public static CorporateMaster Corporate(string code, bool active = true)
         {
             return new CorporateMaster

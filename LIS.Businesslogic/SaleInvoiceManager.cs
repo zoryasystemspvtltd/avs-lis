@@ -21,6 +21,9 @@ namespace LIS.BusinessLogic
         private readonly ModuleRepo<HisTestMaster> testRepo;
         private readonly ModuleRepo<Departments> departmentRepo;
         private readonly ModuleRepo<TestRateMaster> rateRepo;
+        private readonly ModuleRepo<SampleCollectorMaster> collectorRepo;
+        private readonly ModuleRepo<ReferralDoctorCommissionRate> doctorCommissionRateRepo;
+        private readonly ModuleRepo<SampleCollectorCommissionRate> collectorCommissionRateRepo;
         private readonly ModuleRepo<TestParameter> parameterRepo;
         private readonly ModuleRepo<HISParameterMaster> hisParameterRepo;
         private readonly ModuleRepo<TestParameterMappingMaster> testParameterMappingRepo;
@@ -54,10 +57,86 @@ namespace LIS.BusinessLogic
             testRepo = new ModuleRepo<HisTestMaster>(logger, identity, unitOfWork);
             departmentRepo = new ModuleRepo<Departments>(logger, identity, unitOfWork);
             rateRepo = new ModuleRepo<TestRateMaster>(logger, identity, unitOfWork);
+            collectorRepo = new ModuleRepo<SampleCollectorMaster>(logger, identity, unitOfWork);
+            doctorCommissionRateRepo = new ModuleRepo<ReferralDoctorCommissionRate>(logger, identity, unitOfWork);
+            collectorCommissionRateRepo = new ModuleRepo<SampleCollectorCommissionRate>(logger, identity, unitOfWork);
             parameterRepo = new ModuleRepo<TestParameter>(logger, identity, unitOfWork);
             hisParameterRepo = new ModuleRepo<HISParameterMaster>(logger, identity, unitOfWork);
             testParameterMappingRepo = new ModuleRepo<TestParameterMappingMaster>(logger, identity, unitOfWork);
             processingRouter = new DepartmentProcessingRouter(departmentRepo);
+        }
+
+        /// <summary>
+        /// Optional invoice attribution. Does not read or write TestRequestDetail.CollectedBy.
+        /// </summary>
+        private void NormalizeAndValidateCollector(SaleInvoice header)
+        {
+            if (!header.CollectorId.HasValue || header.CollectorId.Value <= 0)
+            {
+                header.CollectorId = null;
+                return;
+            }
+
+            var collector = collectorRepo.Get(header.CollectorId.Value);
+            if (collector == null)
+            {
+                throw new ArgumentException("Selected sample collector was not found.");
+            }
+
+            if (!collector.IsActive)
+            {
+                var existingId = header.Id > 0 ? invoiceRepo.Get(header.Id)?.CollectorId : null;
+                if (existingId != header.CollectorId)
+                {
+                    throw new ArgumentException("Selected sample collector is inactive.");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Doctor precedence: a selected doctor needs a doctor rate for InvoiceDate.
+        /// A collector rate is required only when a collector is selected and no doctor is selected.
+        /// Applies to draft and confirmed saves. Does not calculate commission.
+        /// </summary>
+        private void RequireCommissionRate(SaleInvoice header)
+        {
+            var day = header.InvoiceDate.Date;
+            var doctorId = header.ReferralDoctorId.HasValue && header.ReferralDoctorId.Value > 0
+                ? header.ReferralDoctorId
+                : null;
+            var collectorId = header.CollectorId.HasValue && header.CollectorId.Value > 0
+                ? header.CollectorId
+                : null;
+
+            if (doctorId.HasValue)
+            {
+                var doctorKey = doctorId.Value;
+                var covered = doctorCommissionRateRepo.Get(r =>
+                    r.IsActive &&
+                    r.ReferralDoctorId == doctorKey &&
+                    r.EffectiveFrom <= day &&
+                    (r.EffectiveTo == null || r.EffectiveTo >= day)).Any();
+                if (!covered)
+                {
+                    throw new ArgumentException("No commission rate is defined for the selected referral doctor on this invoice date. Define the rate or remove the referral doctor.");
+                }
+
+                return;
+            }
+
+            if (collectorId.HasValue)
+            {
+                var collectorKey = collectorId.Value;
+                var covered = collectorCommissionRateRepo.Get(r =>
+                    r.IsActive &&
+                    r.CollectorId == collectorKey &&
+                    r.EffectiveFrom <= day &&
+                    (r.EffectiveTo == null || r.EffectiveTo >= day)).Any();
+                if (!covered)
+                {
+                    throw new ArgumentException("No commission rate is defined for the selected sample collector on this invoice date. Define the rate or remove the sample collector.");
+                }
+            }
         }
 
         public SaleInvoiceDto GetById(long id)
@@ -293,6 +372,8 @@ namespace LIS.BusinessLogic
                 header.PatientId,
                 header.PatientVisitId);
 
+            NormalizeAndValidateCollector(header);
+
             foreach (var line in lines)
             {
                 if (line.TestProfileId.HasValue && line.TestProfileId > 0)
@@ -338,6 +419,7 @@ namespace LIS.BusinessLogic
 
             if (header.Id <= 0)
             {
+                RequireCommissionRate(header);
                 header.Id = 0;
                 var duplicateNo = invoiceRepo.Get(i => i.InvoiceNo == header.InvoiceNo && i.IsActive).FirstOrDefault();
                 if (duplicateNo != null)
@@ -385,6 +467,8 @@ namespace LIS.BusinessLogic
             {
                 throw new InvalidOperationException("Cancelled invoice cannot be edited");
             }
+
+            RequireCommissionRate(header);
 
             // Save must never deactivate; Cancel() is the only deactivation path.
             ApplyInvoiceHeaderUpdate(existingHeader, header);
@@ -795,6 +879,7 @@ namespace LIS.BusinessLogic
             existing.DueAmount = incoming.DueAmount;
             existing.RefDoctorName = incoming.RefDoctorName;
             existing.ReferralDoctorId = incoming.ReferralDoctorId;
+            existing.CollectorId = incoming.CollectorId;
             existing.CorporateId = incoming.CorporateId;
             existing.Notes = incoming.Notes;
             existing.IsActive = true;
@@ -1130,6 +1215,7 @@ namespace LIS.BusinessLogic
                 DueAmount = invoice.DueAmount,
                 RefDoctorName = invoice.RefDoctorName,
                 ReferralDoctorId = invoice.ReferralDoctorId,
+                CollectorId = invoice.CollectorId,
                 CorporateId = invoice.CorporateId,
                 Notes = invoice.Notes,
                 CreatedOn = invoice.CreatedOn,

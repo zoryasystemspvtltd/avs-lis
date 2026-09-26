@@ -22,6 +22,9 @@ namespace LIS.Masters.Tests.Infrastructure
         public IModuleIdentity Identity { get; }
 
         public ReferralDoctorManager ReferralDoctor { get; }
+        public SampleCollectorManager SampleCollector { get; }
+        public ReferralDoctorCommissionRateManager DoctorCommissionRate { get; }
+        public SampleCollectorCommissionRateManager CollectorCommissionRate { get; }
         public CorporateManager Corporate { get; }
         public TestGroupManager TestGroup { get; }
         public TestCategoryManager TestCategory { get; }
@@ -35,6 +38,9 @@ namespace LIS.Masters.Tests.Infrastructure
         public HISTestMasterManager HisTest { get; }
         public TestRateMasterManager TestRate { get; }
         public SaleInvoiceManager SaleInvoice { get; }
+        public CommissionCalculationService Commission { get; }
+        public CommissionReportService CommissionReport { get; }
+        public CommissionPayoutManager CommissionPayout { get; }
         public PatientVisitManager PatientVisit { get; }
         public PatientMasterManager PatientMaster { get; }
         public PatientDetailManager PatientWorkflow { get; }
@@ -58,6 +64,9 @@ namespace LIS.Masters.Tests.Infrastructure
             Identity = new TestModuleIdentity();
 
             ReferralDoctor = new ReferralDoctorManager(Logger, Identity, Uow);
+            SampleCollector = new SampleCollectorManager(Logger, Identity, Uow);
+            DoctorCommissionRate = new ReferralDoctorCommissionRateManager(Logger, Identity, Uow);
+            CollectorCommissionRate = new SampleCollectorCommissionRateManager(Logger, Identity, Uow);
             Corporate = new CorporateManager(Logger, Identity, Uow);
             TestGroup = new TestGroupManager(Logger, Identity, Uow);
             TestCategory = new TestCategoryManager(Logger, Identity, Uow);
@@ -72,6 +81,9 @@ namespace LIS.Masters.Tests.Infrastructure
             TestRate = new TestRateMasterManager(Logger, Identity, Uow);
             PatientVisit = new PatientVisitManager(Logger, Identity, Uow);
             SaleInvoice = new SaleInvoiceManager(Logger, Identity, Uow, TestRate, TestProfile, PatientVisit);
+            Commission = new CommissionCalculationService(Logger, Identity, Uow);
+            CommissionReport = new CommissionReportService(Logger, Identity, Uow);
+            CommissionPayout = new CommissionPayoutManager(Logger, Identity, Uow);
             PatientMaster = new PatientMasterManager(Logger, Identity, Uow, PatientVisit);
             PatientWorkflow = new PatientDetailManager(Logger, Identity, Uow, db);
             HisParameter = new HisParameterMasterManager(Logger, Identity, Uow);

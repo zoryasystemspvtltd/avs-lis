@@ -14,10 +14,10 @@ export interface RoutePermissionRule {
 
 /** Mirrors left-nav menu module resolution and bitmask checks (default access = 63). */
 const SETUP_API_MODULES = [
-  'Department', 'Specimens', 'ReferralDoctor', 'Corporate', 'TestGroup',
+  'Department', 'Specimens', 'ReferralDoctor', 'SampleCollector', 'Corporate', 'TestGroup',
   'TestCategory', 'Unit', 'Method', 'SampleType', 'Container', 'TestProfile',
   'HisParameterMaster', 'HisParameterRangeMaster', 'TestMappingMaster',
-  'TestParameterMappingMaster'
+  'TestParameterMappingMaster', 'ReferralDoctorCommissionRate', 'SampleCollectorCommissionRate'
 ];
 
 export const ROUTE_PERMISSION_RULES: RoutePermissionRule[] = [
@@ -55,6 +55,9 @@ export const ROUTE_PERMISSION_RULES: RoutePermissionRule[] = [
   { pattern: /^\/reports\/radiology(?:\/|$)/, modules: ['RadiologyReports', 'Reports'] },
   { pattern: /^\/reports\/test-report(?:\/|$)/, modules: ['Reports', 'DoctorsApprovals'], menuKey: 'REPORT_DIAGNOSTIC' },
   { pattern: /^\/reports\/radiology-report(?:\/|$)/, modules: ['RadiologyReports', 'Reports'], menuKey: 'REPORT_RADIOLOGY' },
+  { pattern: /^\/reports\/doctor-commission(?:\/|$)/, modules: ['Reports'], menuKey: 'REPORT_DOCTOR_COMMISSION' },
+  { pattern: /^\/reports\/collector-commission(?:\/|$)/, modules: ['Reports'], menuKey: 'REPORT_COLLECTOR_COMMISSION' },
+  { pattern: /^\/commission-payouts(?:\/|$)/, modules: ['CommissionPayout'], menuKey: 'COMMISSION_PAYOUT' },
   { pattern: /^\/reports\/sale-invoice-register(?:\/|$)/, modules: ['Reports'], menuKey: 'REPORT_INVOICE_REGISTER' },
   { pattern: /^\/reports\/test-booking-register(?:\/|$)/, modules: ['Reports'], menuKey: 'REPORT_TEST_BOOKING' },
   { pattern: /^\/reports\/collection-summary(?:\/|$)/, modules: ['Reports'], menuKey: 'REPORT_COLLECTION_SUMMARY' },
@@ -68,6 +71,9 @@ export const ROUTE_PERMISSION_RULES: RoutePermissionRule[] = [
   { pattern: /^\/departments(?:\/|$)/, modules: ['Masters'], menuKey: 'MASTER_DEPARTMENT' },
   { pattern: /^\/specimens(?:\/|$)/, modules: ['Masters'], menuKey: 'MASTER_SPECIMEN' },
   { pattern: /^\/referral-doctors(?:\/|$)/, modules: ['Masters'], menuKey: 'MASTER_REFERRAL_DOCTOR' },
+  { pattern: /^\/sample-collectors(?:\/|$)/, modules: ['Masters'], menuKey: 'MASTER_SAMPLE_COLLECTOR' },
+  { pattern: /^\/doctor-commission-rates(?:\/|$)/, modules: ['Masters'], menuKey: 'MASTER_DOCTOR_COMMISSION_RATE' },
+  { pattern: /^\/collector-commission-rates(?:\/|$)/, modules: ['Masters'], menuKey: 'MASTER_COLLECTOR_COMMISSION_RATE' },
   { pattern: /^\/corporates(?:\/|$)/, modules: ['Masters'], menuKey: 'MASTER_CORPORATE' },
   // These masters have no MenuCatalog entry (not grantable in Role edit): when the role
   // has a Masters menu overlay, the unknown key denies access; module-only roles keep access.

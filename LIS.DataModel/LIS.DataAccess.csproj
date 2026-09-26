@@ -149,6 +149,25 @@
       <DependentUpon>202609121600000_ReportTemplateEngine.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\202609121800000_ReportTemplateDesignerPhase3.cs" />
+    <Compile Include="Migrations\202609121800000_ReportTemplateDesignerPhase3.Designer.cs">
+      <DependentUpon>202609121800000_ReportTemplateDesignerPhase3.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202609261530000_SampleCollectorMaster.cs" />
+    <Compile Include="Migrations\202609261530000_SampleCollectorMaster.Designer.cs">
+      <DependentUpon>202609261530000_SampleCollectorMaster.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202609262330000_CommissionRateFoundation.cs" />
+    <Compile Include="Migrations\202609262330000_CommissionRateFoundation.Designer.cs">
+      <DependentUpon>202609262330000_CommissionRateFoundation.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202609270100000_CommissionPayout.cs" />
+    <Compile Include="Migrations\202609270100000_CommissionPayout.Designer.cs">
+      <DependentUpon>202609270100000_CommissionPayout.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202609270115000_CommissionSchemaModelSync.cs" />
+    <Compile Include="Migrations\202609270115000_CommissionSchemaModelSync.Designer.cs">
+      <DependentUpon>202609270115000_CommissionSchemaModelSync.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repo\IGenericRepository.cs" />
@@ -236,6 +255,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202609120130000_ReportLayoutConfiguration.resx">
       <DependentUpon>202609120130000_ReportLayoutConfiguration.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202609270115000_CommissionSchemaModelSync.resx">
+      <DependentUpon>202609270115000_CommissionSchemaModelSync.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -207,7 +207,9 @@ export class LeftNavMenuComponent implements OnInit {
       || this.showReportMenu('RadiologyReports', 'reports.radiologyPending')
       || this.showReportMenu('RadiologyReports', 'reports.radiologyAuthorized')
       || this.showReportMenu('RadiologyReports', 'reports.radiologyModality')
-      || this.showReportMenu('RadiologyReports', 'reports.radiologyProductivity');
+      || this.showReportMenu('RadiologyReports', 'reports.radiologyProductivity')
+      || this.showReportMenu('Reports', 'reports.doctorCommission')
+      || this.showReportMenu('Reports', 'reports.collectorCommission');
   }
 
   /** True when the role has at least one menu row for the module (overlay active). */

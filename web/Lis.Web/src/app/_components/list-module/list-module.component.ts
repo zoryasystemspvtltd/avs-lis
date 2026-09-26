@@ -18,7 +18,7 @@ export class ListModuleComponent implements OnInit, OnChanges {
   @Input() listModuleKey: string;
 
   private readonly getAllApiModules = [
-    'ReferralDoctor', 'Corporate', 'TestGroup', 'TestCategory', 'Unit', 'Method',
+    'ReferralDoctor', 'SampleCollector', 'Corporate', 'TestGroup', 'TestCategory', 'Unit', 'Method',
     'SampleType', 'Container', 'TestProfile'
   ];
 
@@ -71,8 +71,10 @@ export class ListModuleComponent implements OnInit, OnChanges {
     if (this.schemma.module === 'HisTest') {
       this.option.SortColumnName = 'HISTestCode';
     }
-    if (this.schemma.module === 'TestRate') {
-      this.option.SortColumnName = 'EffectiveStart';
+    if (this.schemma.module === 'TestRate'
+      || this.schemma.module === 'ReferralDoctorCommissionRate'
+      || this.schemma.module === 'SampleCollectorCommissionRate') {
+      this.option.SortColumnName = 'EffectiveFrom';
     }
     if (this.schemma.module === 'TestProfile') {
       this.option.SortColumnName = 'Code';
@@ -175,7 +177,8 @@ export class ListModuleComponent implements OnInit, OnChanges {
 
     const masterApiModules = [
       'HisTest', 'TestRate', 'SaleInvoice', 'HisParameterMaster', 'HisParameterRangeMaster',
-      'TestMappingMaster', 'TestParameterMappingMaster', 'PatientMaster', 'EquipmentHeartbeat', 'Department', 'Specimens'
+      'TestMappingMaster', 'TestParameterMappingMaster', 'PatientMaster', 'EquipmentHeartbeat', 'Department', 'Specimens',
+      'ReferralDoctorCommissionRate', 'SampleCollectorCommissionRate'
     ];
     const source$ = this.shouldUseGetAll()
       ? this.masterService.getAll(this.schemma.module)
@@ -429,9 +432,10 @@ export class ListModuleComponent implements OnInit, OnChanges {
     }
     let acc = this.user.access.find(element => element.name == module);
     if (acc == null) {
-      const setupApiModules = ['Department', 'Specimens', 'ReferralDoctor', 'Corporate', 'TestGroup',
+      const setupApiModules = ['Department', 'Specimens', 'ReferralDoctor', 'SampleCollector', 'Corporate', 'TestGroup',
         'TestCategory', 'Unit', 'Method', 'SampleType', 'Container', 'TestProfile',
-        'HisParameterMaster', 'HisParameterRangeMaster', 'TestMappingMaster', 'TestParameterMappingMaster'];
+        'HisParameterMaster', 'HisParameterRangeMaster', 'TestMappingMaster', 'TestParameterMappingMaster',
+        'ReferralDoctorCommissionRate', 'SampleCollectorCommissionRate'];
       if (module === 'PatientMaster' || module === 'PatientDetails') {
         acc = this.user.access.find(element => element.name == 'PatientDetails')
           || this.user.access.find(element => element.name == 'Masters');
@@ -452,7 +456,8 @@ export class ListModuleComponent implements OnInit, OnChanges {
   private readonly inactiveHighlightModules = [
     'HisTest', 'TestRate', 'TestMappingMaster', 'TestParameterMappingMaster', 'PatientMaster', 'HisParameterMaster',
     'Specimens', 'Unit', 'Method', 'Department', 'TestProfile',
-    'ReferralDoctor', 'Corporate', 'TestGroup', 'TestCategory', 'SampleType', 'Container'
+    'ReferralDoctor', 'SampleCollector', 'Corporate', 'TestGroup', 'TestCategory', 'SampleType', 'Container',
+    'ReferralDoctorCommissionRate', 'SampleCollectorCommissionRate'
   ];
 
   isInactiveRow(item: any): boolean {

@@ -63,6 +63,11 @@
     <Compile Include="Masters\DepartmentManagerTests.cs" />
     <Compile Include="Masters\HisTestMasterManagerTests.cs" />
     <Compile Include="Masters\LookupMasterCrudTests.cs" />
+    <Compile Include="Masters\SampleCollectorMasterTests.cs" />
+    <Compile Include="Masters\CommissionRateTests.cs" />
+    <Compile Include="Masters\InvoiceCommissionRateValidationTests.cs" />
+    <Compile Include="Masters\CommissionCalculationTests.cs" />
+    <Compile Include="Masters\CommissionStages4To8Tests.cs" />
     <Compile Include="Masters\SpecimenManagerTests.cs" />
     <Compile Include="Lookups\ActiveLookupFilterTests.cs" />
     <Compile Include="Transactions\SaleInvoiceManagerTests.cs" />
