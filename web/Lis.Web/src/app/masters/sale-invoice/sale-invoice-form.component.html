@@ -73,13 +73,12 @@
       </div>
       <div class="col-md-4 form-group">
         <label>Sample Collector</label>
-        <select class="form-control" formControlName="collectorId" (change)="onCollectorChange()">
+        <select class="form-control" formControlName="collectorId">
           <option [ngValue]="null">-- None --</option>
           <option *ngFor="let c of collectors" [ngValue]="c.id">{{c.name}}</option>
         </select>
       </div>
     </div>
-    <p class="text-danger" *ngIf="commissionRateMessage">{{commissionRateMessage}}</p>
     <div class="row">
       <div class="col-md-4 form-group">
         <label>Payment Type</label>

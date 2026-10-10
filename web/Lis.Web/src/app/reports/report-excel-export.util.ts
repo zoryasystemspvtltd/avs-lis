@@ -40,30 +40,13 @@ export function exportRowsToExcel<T>(
   sheetName: string,
   fileName: string,
   columns: ExcelColumn<T>[],
-  rows: T[]
+  rows: T[],
+  disclosure?: { sheetName: string; columns: ExcelColumn<any>[]; rows: any[] }
 ): void {
-  const headerCells = columns.map(c =>
-    cellXml(c.header, 'Header', 'String')
-  ).join('');
-
-  const bodyRows = rows.map(row => {
-    const cells = columns.map(col => {
-      const raw = col.value(row);
-      if (col.type === 'currency') {
-        const num = raw == null || raw === '' ? 0 : Number(raw);
-        return cellXml(isNaN(num) ? 0 : num.toFixed(2), 'Currency', 'Number');
-      }
-      if (col.type === 'date') {
-        return cellXml(formatDateForExcel(raw as string), 'DateCell', 'String');
-      }
-      return cellXml(raw == null ? '' : String(raw), 'Text', 'String');
-    }).join('');
-    return `<Row>${cells}</Row>`;
-  }).join('');
-
-  const colWidths = columns.map(c =>
-    `<Column ss:Width="${(c.width || 90) * 0.75}"/>`
-  ).join('');
+  const sheets = [worksheetXml(sheetName, columns, rows)];
+  if (disclosure) {
+    sheets.push(worksheetXml(disclosure.sheetName, disclosure.columns, disclosure.rows));
+  }
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <?mso-application progid="Excel.Sheet"?>
@@ -84,13 +67,7 @@ export function exportRowsToExcel<T>(
     <Alignment ss:Horizontal="Right"/>
   </Style>
 </Styles>
-<Worksheet ss:Name="${escapeXml(sheetName.substring(0, 31))}">
-  <Table>
-    ${colWidths}
-    <Row>${headerCells}</Row>
-    ${bodyRows}
-  </Table>
-</Worksheet>
+${sheets.join('\n')}
 </Workbook>`;
 
   const blob = new Blob([xml], { type: 'application/vnd.ms-excel;charset=utf-8;' });
@@ -102,6 +79,32 @@ export function exportRowsToExcel<T>(
   link.click();
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
+}
+
+function worksheetXml<T>(sheetName: string, columns: ExcelColumn<T>[], rows: T[]): string {
+  const headerCells = columns.map(c => cellXml(c.header, 'Header', 'String')).join('');
+  const bodyRows = rows.map(row => {
+    const cells = columns.map(col => {
+      const raw = col.value(row);
+      if (col.type === 'currency') {
+        const num = raw == null || raw === '' ? 0 : Number(raw);
+        return cellXml(isNaN(num) ? 0 : num.toFixed(2), 'Currency', 'Number');
+      }
+      if (col.type === 'date') {
+        return cellXml(formatDateForExcel(raw as string), 'DateCell', 'String');
+      }
+      return cellXml(raw == null ? '' : String(raw), 'Text', 'String');
+    }).join('');
+    return `<Row>${cells}</Row>`;
+  }).join('');
+  const colWidths = columns.map(c => `<Column ss:Width="${(c.width || 90) * 0.75}"/>`).join('');
+  return `<Worksheet ss:Name="${escapeXml(sheetName.substring(0, 31))}">
+  <Table>
+    ${colWidths}
+    <Row>${headerCells}</Row>
+    ${bodyRows}
+  </Table>
+</Worksheet>`;
 }
 
 export function reportFileName(prefix: string): string {

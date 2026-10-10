@@ -27,5 +27,11 @@ namespace LIS.DtoModel.Models
         public List<CommissionSummaryRow> Summary { get; set; }
 
         public List<CommissionCalculationLine> Detail { get; set; }
+
+        /// <summary>
+        /// Eligible invoices with no applicable active rate. Present for both Summary and Detail.
+        /// Not a commission row and not included in TotalAmount.
+        /// </summary>
+        public List<CommissionRateExclusion> ExcludedInvoices { get; set; }
     }
 }

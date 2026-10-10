@@ -29,7 +29,7 @@ export class ReportService {
     return this.fetchReport('SaleInvoiceRegister', filter, 'InvoiceDate');
   }
 
-  getCommissionReport(kind: 'doctor' | 'collector', filter: ReportFilter): Observable<{ format: string; items: any[]; totalRecord: number; totalAmount: number }> {
+  getCommissionReport(kind: 'doctor' | 'collector', filter: ReportFilter): Observable<{ format: string; items: any[]; totalRecord: number; totalAmount: number; excludedInvoices: any[] }> {
     const endpoint = kind === 'doctor' ? 'DoctorCommission' : 'CollectorCommission';
     const option = {
       FromDate: filter.fromDate,
@@ -51,7 +51,8 @@ export class ReportService {
           format,
           items: (source || []).map(normalizeRow),
           totalRecord: r?.totalRecord ?? r?.TotalRecord ?? 0,
-          totalAmount: r?.totalAmount ?? r?.TotalAmount ?? 0
+          totalAmount: r?.totalAmount ?? r?.TotalAmount ?? 0,
+          excludedInvoices: (r?.excludedInvoices || r?.ExcludedInvoices || []).map(normalizeRow)
         };
       })
     );

@@ -20,6 +20,7 @@ export class CommissionReportComponent implements OnInit {
   recipientId: number = null;
   people: Array<{ id: number; name: string }> = [];
   rows: any[] = [];
+  excludedInvoices: any[] = [];
   totalRecord = 0;
   totalAmount = 0;
   loading = false;
@@ -76,6 +77,7 @@ export class CommissionReportComponent implements OnInit {
       r => {
         this.searchedFormat = this.format;
         this.rows = r.items || [];
+        this.excludedInvoices = r.excludedInvoices || [];
         this.totalRecord = r.totalRecord || 0;
         this.totalAmount = r.totalAmount || 0;
         this.searched = true;
@@ -89,7 +91,7 @@ export class CommissionReportComponent implements OnInit {
   }
 
   exportExcel(): void {
-    if (!this.searched || this.totalRecord === 0) {
+    if (!this.searched || (this.totalRecord === 0 && this.excludedInvoices.length === 0)) {
       this.alertService.error('No data to export. Run Search first.');
       return;
     }
@@ -98,11 +100,21 @@ export class CommissionReportComponent implements OnInit {
       r => {
         this.exporting = false;
         const items = r.items || [];
-        if (!items.length) {
+        const excluded = r.excludedInvoices || [];
+        if (!items.length && !excluded.length) {
           this.alertService.error('No records found for export.');
           return;
         }
-        exportRowsToExcel(this.pageTitle, reportFileName(this.kind === 'doctor' ? 'DoctorCommission' : 'CollectorCommission'), this.columns(), items);
+        exportRowsToExcel(
+          this.pageTitle,
+          reportFileName(this.kind === 'doctor' ? 'DoctorCommission' : 'CollectorCommission'),
+          this.columns(),
+          items,
+          {
+            sheetName: 'Missing Rates',
+            columns: this.exclusionColumns(),
+            rows: excluded
+          });
         this.alertService.success(`Exported ${items.length} record(s).`);
       },
       err => {
@@ -139,6 +151,15 @@ export class CommissionReportComponent implements OnInit {
       { header: 'Recipient', width: 160, value: r => displayValue(r.recipientName) },
       { header: 'Invoices', width: 80, value: r => r.invoiceCount },
       { header: 'Amount', width: 100, type: 'currency', value: r => r.amount }
+    ];
+  }
+
+  private exclusionColumns(): ExcelColumn<any>[] {
+    return [
+      { header: 'Invoice No', width: 110, value: r => displayValue(r.invoiceNo) },
+      { header: 'Invoice Date', width: 95, type: 'date', value: r => r.invoiceDate },
+      { header: 'Recipient', width: 140, value: r => displayValue(r.recipientName) },
+      { header: 'Reason', width: 280, value: r => displayValue(r.reason) }
     ];
   }
 

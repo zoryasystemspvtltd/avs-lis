@@ -49,11 +49,6 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
   corporates: any[] = [];
   doctors: any[] = [];
   collectors: any[] = [];
-  doctorCommissionRates: any[] = [];
-  collectorCommissionRates: any[] = [];
-  doctorCommissionRatesLoaded = false;
-  collectorCommissionRatesLoaded = false;
-  commissionRateMessage = '';
   isPrintView = false;
   invoiceDto: any;
   private patientSearchTimer: ReturnType<typeof setTimeout>;
@@ -140,16 +135,6 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
     });
     this.masterService.getAll('SampleCollector').subscribe(c => {
       this.collectors = (c || []).filter(x => x.isActive !== false && x.IsActive !== false);
-    });
-    this.masterService.getAll('ReferralDoctorCommissionRate').subscribe(rows => {
-      this.doctorCommissionRates = Array.isArray(rows) ? rows : [];
-      this.doctorCommissionRatesLoaded = true;
-      this.refreshCommissionRateMessage();
-    });
-    this.masterService.getAll('SampleCollectorCommissionRate').subscribe(rows => {
-      this.collectorCommissionRates = Array.isArray(rows) ? rows : [];
-      this.collectorCommissionRatesLoaded = true;
-      this.refreshCommissionRateMessage();
     });
     this.masterService.getAll('Department').subscribe(d => {
       this.departments = (d || []).map(x => ({
@@ -1193,7 +1178,6 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
   }
 
   onInvoiceDateChange() {
-    this.refreshCommissionRateMessage();
     this.onRateContextChange();
     if (this.lines.length > 0) {
       const itemType = this.lines.at(this.activeBillableLineIndex || 0)?.get('itemType')?.value === 'profile'
@@ -1217,64 +1201,6 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
 
   onReferralDoctorChange(): void {
     this.onRateContextChange();
-    this.warnCommissionRate();
-  }
-
-  onCollectorChange(): void {
-    this.warnCommissionRate();
-  }
-
-  private warnCommissionRate(): void {
-    this.refreshCommissionRateMessage();
-    if (this.commissionRateMessage) {
-      this.alertService.error(this.commissionRateMessage);
-    }
-  }
-
-  private refreshCommissionRateMessage(): void {
-    this.commissionRateMessage = this.commissionRateError() || '';
-  }
-
-  private commissionRateError(): string | null {
-    const doctorId = +this.form?.get('referralDoctorId')?.value;
-    const collectorId = +this.form?.get('collectorId')?.value;
-    const day = (this.form?.get('invoiceDate')?.value || '').toString().substring(0, 10);
-    if (!day) {
-      return null;
-    }
-    if (doctorId > 0) {
-      if (!this.doctorCommissionRatesLoaded) {
-        return null;
-      }
-      if (!this.rateCovers(this.doctorCommissionRates, doctorId, 'referralDoctorId', 'ReferralDoctorId', day)) {
-        return 'No commission rate is defined for the selected referral doctor on this invoice date. Define the rate or remove the referral doctor.';
-      }
-      return null;
-    }
-    if (collectorId > 0) {
-      if (!this.collectorCommissionRatesLoaded) {
-        return null;
-      }
-      if (!this.rateCovers(this.collectorCommissionRates, collectorId, 'collectorId', 'CollectorId', day)) {
-        return 'No commission rate is defined for the selected sample collector on this invoice date. Define the rate or remove the sample collector.';
-      }
-    }
-    return null;
-  }
-
-  private rateCovers(rates: any[], personId: number, idName: string, idPascal: string, day: string): boolean {
-    return (rates || []).some(r => {
-      const id = +(r[idName] ?? r[idPascal]);
-      if (id !== personId) {
-        return false;
-      }
-      if (r.isActive === false || r.IsActive === false) {
-        return false;
-      }
-      const from = (r.effectiveFrom || r.EffectiveFrom || '').toString().substring(0, 10);
-      const to = (r.effectiveTo || r.EffectiveTo || '').toString().substring(0, 10);
-      return !!from && from <= day && (!to || to >= day);
-    });
   }
 
   onRateContextChange() {
@@ -1461,13 +1387,6 @@ export class SaleInvoiceFormComponent implements OnInit, OnDestroy {
     }
     if (paid > +val.netAmount) {
       this.alertService.error('Paid amount cannot exceed net amount');
-      return;
-    }
-
-    const rateMessage = this.commissionRateError();
-    if (rateMessage) {
-      this.commissionRateMessage = rateMessage;
-      this.alertService.error(rateMessage);
       return;
     }
 

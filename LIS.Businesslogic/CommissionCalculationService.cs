@@ -84,6 +84,7 @@ namespace LIS.BusinessLogic
 
             var invoices = LoadEligible(rangeStart, to.AddDays(1), request.RecipientType, request.RecipientId);
             var lines = new List<CommissionCalculationLine>();
+            var exclusions = new List<CommissionRateExclusion>();
             if (invoices.Count == 0)
             {
                 return Empty();
@@ -135,17 +136,17 @@ namespace LIS.BusinessLogic
                         r.ReferralDoctorId == doctorId &&
                         r.EffectiveFrom.Date <= day &&
                         (r.EffectiveTo == null || r.EffectiveTo.Value.Date >= day)).ToList();
-                    var percent = SinglePercent(
+                    AddRatedOrExclude(
+                        request,
+                        lines,
+                        exclusions,
                         doctorMatches.Count,
                         doctorMatches.Count == 1 ? doctorMatches[0].CommissionPercent : 0m,
-                        invoice,
-                        "referral doctor");
-                    lines.Add(BuildLine(
                         invoice,
                         CommissionRecipientType.ReferralDoctor,
                         doctorId,
                         doctorNames.ContainsKey(doctorId) ? doctorNames[doctorId] : string.Empty,
-                        percent));
+                        "referral doctor");
                     continue;
                 }
 
@@ -169,17 +170,17 @@ namespace LIS.BusinessLogic
                     r.CollectorId == collectorId &&
                     r.EffectiveFrom.Date <= day &&
                     (r.EffectiveTo == null || r.EffectiveTo.Value.Date >= day)).ToList();
-                var collectorPercent = SinglePercent(
+                AddRatedOrExclude(
+                    request,
+                    lines,
+                    exclusions,
                     collectorMatches.Count,
                     collectorMatches.Count == 1 ? collectorMatches[0].CommissionPercent : 0m,
-                    invoice,
-                    "sample collector");
-                lines.Add(BuildLine(
                     invoice,
                     CommissionRecipientType.SampleCollector,
                     collectorId,
                     collectorNames.ContainsKey(collectorId) ? collectorNames[collectorId] : string.Empty,
-                    collectorPercent));
+                    "sample collector");
             }
 
             var ordered = lines
@@ -189,10 +190,18 @@ namespace LIS.BusinessLogic
                 .ThenBy(l => l.RecipientId)
                 .ToList();
 
+            var orderedExclusions = exclusions
+                .OrderBy(l => l.InvoiceDate)
+                .ThenBy(l => l.InvoiceNo)
+                .ThenBy(l => l.RecipientType)
+                .ThenBy(l => l.RecipientId)
+                .ToList();
+
             return new CommissionCalculationResult
             {
                 Lines = ordered,
-                TotalAmount = ordered.Sum(l => l.Amount)
+                TotalAmount = ordered.Sum(l => l.Amount),
+                Exclusions = orderedExclusions
             };
         }
 
@@ -261,22 +270,48 @@ namespace LIS.BusinessLogic
             };
         }
 
-        private static decimal SinglePercent(int matchCount, decimal percent, SaleInvoice invoice, string recipientLabel)
+        private static void AddRatedOrExclude(
+            CommissionCalculationRequest request,
+            List<CommissionCalculationLine> lines,
+            List<CommissionRateExclusion> exclusions,
+            int matchCount,
+            decimal percent,
+            SaleInvoice invoice,
+            CommissionRecipientType recipientType,
+            int recipientId,
+            string recipientName,
+            string recipientLabel)
         {
-            if (matchCount == 0)
-            {
-                throw new InvalidOperationException(
-                    "No commission rate is defined for the selected " + recipientLabel +
-                    " on invoice " + invoice.InvoiceNo + " (" + invoice.InvoiceDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + ").");
-            }
-
             if (matchCount > 1)
             {
                 throw new InvalidOperationException(
                     "More than one commission rate covers invoice " + invoice.InvoiceNo + ".");
             }
 
-            return percent;
+            if (matchCount == 0)
+            {
+                if (request.ReportMissingRatesAsExclusions)
+                {
+                    exclusions.Add(new CommissionRateExclusion
+                    {
+                        SaleInvoiceId = invoice.Id,
+                        InvoiceNo = invoice.InvoiceNo,
+                        InvoiceDate = invoice.InvoiceDate.Date,
+                        RecipientType = recipientType,
+                        RecipientId = recipientId,
+                        RecipientName = recipientName ?? string.Empty,
+                        Reason = "No commission rate is defined for the selected " + recipientLabel +
+                            " on this invoice date."
+                    });
+                    return;
+                }
+
+                throw new InvalidOperationException(
+                    "No commission rate is defined for the selected " + recipientLabel +
+                    " on invoice " + invoice.InvoiceNo + " (" + invoice.InvoiceDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + ").");
+            }
+
+            lines.Add(BuildLine(invoice, recipientType, recipientId, recipientName, percent));
         }
 
         private static bool HasDoctor(SaleInvoice invoice)
@@ -294,7 +329,8 @@ namespace LIS.BusinessLogic
             return new CommissionCalculationResult
             {
                 Lines = new List<CommissionCalculationLine>(),
-                TotalAmount = 0m
+                TotalAmount = 0m,
+                Exclusions = new List<CommissionRateExclusion>()
             };
         }
     }

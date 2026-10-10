@@ -76,4 +76,24 @@
       </div>
     </div>
   </div>
+
+  <div class="panel panel-default" *ngIf="searched && excludedInvoices.length">
+    <div class="panel-body">
+      <h4>Missing Rate / Excluded Invoices</h4>
+      <p class="text-muted">These invoices are eligible but have no applicable active commission rate. They are not included in the totals above and are not given a zero rate.</p>
+      <table class="table table-bordered table-condensed">
+        <thead>
+          <tr><th>Invoice No</th><th>Invoice Date</th><th>Recipient</th><th>Reason</th></tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of excludedInvoices">
+            <td>{{ row.invoiceNo }}</td>
+            <td>{{ row.invoiceDate | date:'dd/MM/yyyy' }}</td>
+            <td>{{ row.recipientName }}</td>
+            <td>{{ row.reason }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 </div>

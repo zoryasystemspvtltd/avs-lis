@@ -51,10 +51,12 @@ namespace LIS.BusinessLogic
                 FromDate = options.FromDate.Value,
                 ToDate = options.ToDate.Value,
                 RecipientType = recipientType,
-                RecipientId = recipientId
+                RecipientId = recipientId,
+                ReportMissingRatesAsExclusions = true
             });
 
             var lines = calculated.Lines ?? new List<CommissionCalculationLine>();
+            var excluded = calculated.Exclusions ?? new List<CommissionRateExclusion>();
             if (summary)
             {
                 var groups = lines
@@ -76,7 +78,8 @@ namespace LIS.BusinessLogic
                     TotalRecord = groups.Count,
                     TotalAmount = groups.Sum(g => g.Amount),
                     Summary = page,
-                    Detail = null
+                    Detail = null,
+                    ExcludedInvoices = excluded
                 };
             }
 
@@ -87,7 +90,8 @@ namespace LIS.BusinessLogic
                 TotalRecord = lines.Count,
                 TotalAmount = lines.Sum(l => l.Amount),
                 Summary = null,
-                Detail = detailPage
+                Detail = detailPage,
+                ExcludedInvoices = excluded
             };
         }
 
